@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, input, Output, output } from '@angular/core';
+import { Component, EventEmitter, Input, input, Output, output, model } from '@angular/core';
 
 /**
  * FooComponent description
@@ -85,6 +85,11 @@ export class FooComponent {
      * An example aliased output signal
      */
     public readonly aliasedOutputSignal = output(null, { alias: 'aliasedOutSignal' });
+
+    /**
+     * An example model input signal
+     */
+    public readonly modelInputSignal = model(0);
 
     /**
      * constructor description

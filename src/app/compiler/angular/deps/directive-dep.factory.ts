@@ -26,8 +26,8 @@ export class DirectiveDepFactory {
 
             standalone: this.helper.getComponentStandalone(props, srcFile) ? true : false,
 
-            inputsClass: this.helper.getInputSignals(IO.properties).concat(IO.inputs),
-            outputsClass: this.helper.getOutputSignals(IO.properties).concat(IO.outputs),
+            inputsClass: IO.inputs,
+            outputsClass: IO.outputs,
 
             deprecated: IO.deprecated,
             deprecationMessage: IO.deprecationMessage,
@@ -57,6 +57,13 @@ export class DirectiveDepFactory {
         }
         if (IO.accessors) {
             directiveDeps.accessors = IO.accessors;
+        }
+        if (IO.properties) {
+            const {inputSignals, outputSignals, properties} = this.helper.getInputOutputSignals(IO.properties);
+
+            directiveDeps.inputsClass = directiveDeps.inputsClass.concat(inputSignals)
+            directiveDeps.outputsClass = directiveDeps.outputsClass.concat(outputSignals)
+            directiveDeps.propertiesClass = properties;
         }
         return directiveDeps;
     }
