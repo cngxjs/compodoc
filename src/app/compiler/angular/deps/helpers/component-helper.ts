@@ -220,7 +220,7 @@ export class ComponentHelper {
 
             const result = {
                 required: !!required,
-                type,
+                type: this.parseSignalType(type),
                 defaultValue
             };
 
@@ -233,6 +233,32 @@ export class ComponentHelper {
 
             return result;
         }
+    }
+
+    public parseSignalType(type: string) {
+        if (!type) {
+            return type;
+        }
+
+        // adjust union string expression like: 'foo' | 'bar' | 'test'
+        // which should be outputed as: "foo" | "bar" | "test"
+
+        const unionTypeRegex = /^'([\w-]+)'\s?\|\s?('([\w-]+)'|.*)$/
+        let typeRest = type;
+        let newType = "";
+        let typeMatch: RegExpMatchArray;
+        while ((typeMatch = typeRest.match(unionTypeRegex))) {
+            const [, first, rest, second] = typeMatch;
+            if (second) {
+                newType += `"${first}" | "${second}"`;
+                type = newType;
+                break;
+            }
+            newType += `"${first}" | `;
+            typeRest = rest;
+        }
+
+        return type;
     }
 
     public getComponentStandalone(

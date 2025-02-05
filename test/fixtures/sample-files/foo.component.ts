@@ -44,12 +44,12 @@ export class FooComponent {
     /**
      * An example aliased input using the object syntax
      */
-    @Input({ alias: 'aliasedInput' }) objectAliasedInput: string;
+    @Input({ alias: 'aliasedInputObjectSyntax' }) objectAliasedInput: string;
 
     /**
      * An example aliased required input using the object syntax
      */
-    @Input({ alias: 'aliasedInput', required: true }) aliasedAndRequired: string;
+    @Input({ alias: 'aliasedAndRequiredInput', required: true }) aliasedAndRequired: string;
 
     /**
      * An example output
