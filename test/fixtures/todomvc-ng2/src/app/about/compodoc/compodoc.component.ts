@@ -50,15 +50,10 @@ export class CompodocComponent {
      */
 
     outputSignal = output();
-    outputSignalWithDefaultValue = output(this.defaultValue);
-    outputSignalWithDefaultStringValue = output('value');
-    outputSignalWithAlias = output(0, { alias: 'aliasedSignal' });
+    outputSignalWithAlias = output({ alias: 'aliasedSignal' });
 
-    requiredOutputSignal = output.required();
-    requiredOutputSignalWithType = output.required<number>();
-
-    outputSignalWithType = output<string>('value');
-    outputSignalWithStringType = output<'value'>('value');
-    outputSignalWithMultipleTypes = output<string | number>(0);
-    outputSignalWithMultipleMixedTypes = output<'asc' | 'dsc' | number>('asc');
+    outputSignalWithType = output<string>();
+    outputSignalWithStringType = output<'value'>();
+    outputSignalWithMultipleTypes = output<string | number>();
+    outputSignalWithMultipleMixedTypes = output<'asc' | 'dsc' | number>();
 }

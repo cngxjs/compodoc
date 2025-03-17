@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, input, Output, output } from '@angular/core';
+import { Component, EventEmitter, Input, input, Output, output, model } from '@angular/core';
 
 /**
  * FooComponent description
@@ -44,12 +44,12 @@ export class FooComponent {
     /**
      * An example aliased input using the object syntax
      */
-    @Input({ alias: 'aliasedInput' }) objectAliasedInput: string;
+    @Input({ alias: 'aliasedInputObjectSyntax' }) objectAliasedInput: string;
 
     /**
      * An example aliased required input using the object syntax
      */
-    @Input({ alias: 'aliasedInput', required: true }) aliasedAndRequired: string;
+    @Input({ alias: 'aliasedAndRequiredInput', required: true }) aliasedAndRequired: string;
 
     /**
      * An example output
@@ -85,6 +85,11 @@ export class FooComponent {
      * An example aliased output signal
      */
     public readonly aliasedOutputSignal = output(null, { alias: 'aliasedOutSignal' });
+
+    /**
+     * An example model input signal
+     */
+    public readonly modelInputSignal = model(0);
 
     /**
      * constructor description

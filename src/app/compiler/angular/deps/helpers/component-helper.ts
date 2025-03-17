@@ -135,42 +135,58 @@ export class ComponentHelper {
         return this.symbolHelper.getSymbolDeps(props, 'inputs', srcFile);
     }
 
-    public getInputSignals(props) {
+    public getInputOutputSignals(props) {
         const inputSignals = [];
-        props?.forEach(prop => {
-            const config =
-                this.getSignalConfig('input', prop.defaultValue) ??
-                this.getSignalConfig('model', prop.defaultValue);
+        const outputSignals = [];
+        const properties = [];
 
-            if (config) {
-                const newInput = {
-                    ...prop,
-                    ...config
-                };
+        props.forEach(prop => {
+            const inputSignal = this.getInputSignal(prop);
+            if (inputSignal) {
+                inputSignals.push(inputSignal)
+            }
 
-                inputSignals.push(newInput);
+            const outputSignal = this.getOutputSignal(prop);
+            if (outputSignal) {
+                outputSignals.push(outputSignal)
+            }
+
+            if (!inputSignal && !outputSignal) {
+                properties.push(prop)
             }
         });
-        return inputSignals;
+
+        return {inputSignals, outputSignals, properties}
     }
 
-    public getOutputSignals(props) {
-        const outputSignals = [];
-        props?.forEach(prop => {
-            const config =
-                this.getSignalConfig('output', prop.defaultValue) ??
-                this.getSignalConfig('model', prop.defaultValue);
+    public getInputSignal(prop) {
+        const config =
+            this.getSignalConfig('input', prop.defaultValue) ??
+            this.getSignalConfig('model', prop.defaultValue);
 
-            if (config) {
-                const newInput = {
-                    ...prop,
-                    ...config
-                };
+        if (config) {
+            return  {
+                ...prop,
+                ...config
+            };
+        }
 
-                outputSignals.push(newInput);
-            }
-        });
-        return outputSignals;
+        return undefined;
+    }
+
+    public getOutputSignal(prop) {
+        const config =
+            this.getSignalConfig('output', prop.defaultValue) ??
+            this.getSignalConfig('model', prop.defaultValue);
+
+        if (config) {
+            return  {
+                ...prop,
+                ...config
+            };
+        }
+
+        return undefined;
     }
 
     private getSignalConfig(type: 'input' | 'output' | 'model', defaultValue: string) {
@@ -204,7 +220,7 @@ export class ComponentHelper {
 
             const result = {
                 required: !!required,
-                type,
+                type: this.parseSignalType(type),
                 defaultValue
             };
 
@@ -217,6 +233,32 @@ export class ComponentHelper {
 
             return result;
         }
+    }
+
+    public parseSignalType(type: string) {
+        if (!type) {
+            return type;
+        }
+
+        // adjust union string expression like: 'foo' | 'bar' | 'test'
+        // which should be outputed as: "foo" | "bar" | "test"
+
+        const unionTypeRegex = /^'([\w-]+)'\s?\|\s?('([\w-]+)'|.*)$/
+        let typeRest = type;
+        let newType = "";
+        let typeMatch: RegExpMatchArray;
+        while ((typeMatch = typeRest.match(unionTypeRegex))) {
+            const [, first, rest, second] = typeMatch;
+            if (second) {
+                newType += `"${first}" | "${second}"`;
+                type = newType;
+                break;
+            }
+            newType += `"${first}" | `;
+            typeRest = rest;
+        }
+
+        return type;
     }
 
     public getComponentStandalone(
