@@ -1343,161 +1343,25 @@ describe('CLI simple generation - big app', () => {
             );
         });
 
-        it('should support output signals with a default value', () => {
-            const file = read(distFolder + '/components/CompodocComponent.html');
-
-            expect(file).to.contain(
-                `<tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="outputSignalWithDefaultValue"></a>
-                    <span class="name">
-                        <span ><b>outputSignalWithDefaultValue</b></span>
-                        <a href="#outputSignalWithDefaultValue"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Default value : </i><code>output(this.defaultValue)</code>
-                    </td>
-                </tr>
-                    <tr>
-                        <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="53" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:53</a></div>
-                        </td>
-                    </tr>
-
-
-        </tbody>`
-            );
-        });
-
-        it('should support output signals a default quoted value', () => {
-            const file = read(distFolder + '/components/CompodocComponent.html');
-
-            expect(file).to.contain(
-                `<table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="outputSignalWithDefaultStringValue"></a>
-                    <span class="name">
-                        <span ><b>outputSignalWithDefaultStringValue</b></span>
-                        <a href="#outputSignalWithDefaultStringValue"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Default value : </i><code>output(&#x27;value&#x27;)</code>
-                    </td>
-                </tr>
-                    <tr>
-                        <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="54" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:54</a></div>
-                        </td>
-                    </tr>
-
-
-        </tbody>
-    </table>`
-            );
-        });
-
         it('should support output signals with an alias', () => {
             const file = read(distFolder + '/components/CompodocComponent.html');
 
             expect(file).to.contain(
                 `<table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="outputSignalWithAlias"></a>
-                    <span class="name">
-                        <span ><b>outputSignalWithAlias</b></span>
-                        <a href="#outputSignalWithAlias"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
+            <tbody>
                 <tr>
                     <td class="col-md-4">
-                        <i>Default value : </i><code>output(0, { alias: &#x27;aliasedSignal&#x27; })</code>
+                        <a name="outputSignalWithAlias"></a>
+                        <b>outputSignalWithAlias</b>
                     </td>
                 </tr>
-                    <tr>
-                        <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="55" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:55</a></div>
-                        </td>
-                    </tr>
-
-
-        </tbody>
-    </table>`
-            );
-        });
-
-        it('should support required output signals', () => {
-            const file = read(distFolder + '/components/CompodocComponent.html');
-
-            expect(file).to.contain(
-                `<table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="requiredOutputSignal"></a>
-                    <span class="name">
-                        <span ><b>requiredOutputSignal</b></span>
-                        <a href="#requiredOutputSignal"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Default value : </i><code>output.required()</code>
-                    </td>
-                </tr>
-                    <tr>
-                        <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="57" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:57</a></div>
-                        </td>
-                    </tr>
-
-
-        </tbody>
-    </table>`
-            );
-        });
-
-        it('should support required output signals with a type ', () => {
-            const file = read(distFolder + '/components/CompodocComponent.html');
-
-            expect(file).to.contain(
-                `<table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="requiredOutputSignalWithType"></a>
-                    <span class="name">
-                        <span ><b>requiredOutputSignalWithType</b></span>
-                        <a href="#requiredOutputSignalWithType"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Default value : </i><code>output.required&lt;number&gt;()</code>
-                    </td>
-                </tr>
-                    <tr>
-                        <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="58" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:58</a></div>
-                        </td>
-                    </tr>
-
-
-        </tbody>
-    </table>`
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="53" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:53</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>`
             );
         });
 
@@ -1521,7 +1385,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="60" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:60</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="55" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:55</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1534,30 +1398,26 @@ describe('CLI simple generation - big app', () => {
 
             expect(file).to.contain(
                 `<table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="outputSignalWithStringType"></a>
-                    <span class="name">
-                        <span ><b>outputSignalWithStringType</b></span>
-                        <a href="#outputSignalWithStringType"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
+            <tbody>
                 <tr>
                     <td class="col-md-4">
-                        <i>Default value : </i><code>output&lt;&#x27;value&#x27;&gt;(&#x27;value&#x27;)</code>
+                        <a name="outputSignalWithStringType"></a>
+                        <b>outputSignalWithStringType</b>
                     </td>
                 </tr>
-                    <tr>
-                        <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="61" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:61</a></div>
-                        </td>
-                    </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>&#x27;value&#x27;</code>
 
-
-        </tbody>
-    </table>`
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="56" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:56</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>`
             );
         });
 
@@ -1581,7 +1441,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="62" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:62</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="57" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:57</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1593,31 +1453,27 @@ describe('CLI simple generation - big app', () => {
             const file = read(distFolder + '/components/CompodocComponent.html');
 
             expect(file).to.contain(
-                ` <table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="outputSignalWithMultipleMixedTypes"></a>
-                    <span class="name">
-                        <span ><b>outputSignalWithMultipleMixedTypes</b></span>
-                        <a href="#outputSignalWithMultipleMixedTypes"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
+                `<table class="table table-sm table-bordered">
+            <tbody>
                 <tr>
                     <td class="col-md-4">
-                        <i>Default value : </i><code>output&lt;&#x27;asc&#x27; | &#x27;dsc&#x27; | number&gt;(&#x27;asc&#x27;)</code>
+                        <a name="outputSignalWithMultipleMixedTypes"></a>
+                        <b>outputSignalWithMultipleMixedTypes</b>
                     </td>
                 </tr>
-                    <tr>
-                        <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="63" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:63</a></div>
-                        </td>
-                    </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>&#x27;asc&#x27; | &#x27;dsc&#x27; | number</code>
 
-
-        </tbody>
-    </table>`
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="58" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:58</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>`
             );
         });
     });
@@ -1891,30 +1747,31 @@ describe('CLI simple generation - big app', () => {
 
             expect(file).to.contain(
                 `<table class="table table-sm table-bordered">
-        <tbody>
-            <tr>
-                <td class="col-md-4">
-                    <a name="modelSignalWithMultipleMixedTypes"></a>
-                    <span class="name">
-                        <span ><b>modelSignalWithMultipleMixedTypes</b></span>
-                        <a href="#modelSignalWithMultipleMixedTypes"><span class="icon ion-ios-link"></span></a>
-                    </span>
-                </td>
-            </tr>
+            <tbody>
                 <tr>
                     <td class="col-md-4">
-                        <i>Default value : </i><code>model&lt;&#x27;asc&#x27; | &#x27;dsc&#x27; | number&gt;(&#x27;asc&#x27;)</code>
+                        <a name="modelSignalWithMultipleMixedTypes"></a>
+                        <b>modelSignalWithMultipleMixedTypes</b>
                     </td>
                 </tr>
-                    <tr>
-                        <td class="col-md-4">
-                                <div class="io-line">Defined in <a href="" data-line="46" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:46</a></div>
-                        </td>
-                    </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>&#x27;asc&#x27; | &#x27;dsc&#x27; | number</code>
 
-
-        </tbody>
-    </table>`
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;asc&#x27;</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="46" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:46</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>`
             );
         });
     });
