@@ -337,7 +337,7 @@ describe('CLI simple generation', () => {
                 </tr>
                 <tr>
                     <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="../miscellaneous/functions.html#foo" target="_self" >&#x27;foo&#x27; | &#x27;bar&#x27;</a></code>
+                        <i>Type : </i>        <code><a href="../miscellaneous/functions.html#foo" target="_self" >&quot;foo&quot; | &quot;bar&quot;</a></code>
 
                     </td>
                 </tr>
@@ -505,7 +505,7 @@ describe('CLI simple generation', () => {
                 </tr>
                 <tr>
                     <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="../miscellaneous/functions.html#foo" target="_self" >&#x27;foo&#x27; | &#x27;bar&#x27;</a></code>
+                        <i>Type : </i>        <code><a href="../miscellaneous/functions.html#foo" target="_self" >&quot;foo&quot; | &quot;bar&quot;</a></code>
 
                     </td>
                 </tr>

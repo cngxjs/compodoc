@@ -259,7 +259,7 @@ export class AngularDependencies extends FrameworkDependencies {
 
             deps.inputsClass = deps.inputsClass.concat(inputSignals)
             deps.outputsClass = deps.outputsClass.concat(outputSignals)
-            deps.propertiesClass = properties;
+            deps.properties = properties;
         }
         if (IO.description) {
             deps.description = IO.description;
