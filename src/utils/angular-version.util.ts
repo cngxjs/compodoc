@@ -26,7 +26,7 @@ export class AngularVersionUtil {
         let _result = '';
 
         if (packageData.dependencies) {
-            let angularCore = packageData.dependencies[AngularVersionUtil.CorePackage];
+            const angularCore = packageData.dependencies[AngularVersionUtil.CorePackage];
             if (angularCore) {
                 _result = this.cleanVersion(angularCore);
             }
@@ -36,21 +36,29 @@ export class AngularVersionUtil {
     }
 
     private isAngularVersionArchived(version: string): boolean {
-        let result;
+        let result = false; // Default to false if version parsing fails
 
         try {
             result = semver.compare(version, '2.4.10') <= 0;
-        } catch (e) {}
+        } catch (e) {
+            console.error('Error parsing version:', version, e);
+            result = false; // Return false for invalid versions
+        }
 
         return result;
     }
 
     public prefixOfficialDoc(version: string): string {
+        // Handle empty, undefined, or invalid version strings
+        if (!version || typeof version !== 'string' || version.trim() === '') {
+            return '';
+        }
+
         return this.isAngularVersionArchived(version) ? 'v2.' : '';
     }
 
     public getApiLink(api: IAngularApi, angularVersion: string): string {
-        let angularDocPrefix = this.prefixOfficialDoc(angularVersion);
+        const angularDocPrefix = this.prefixOfficialDoc(angularVersion);
         return `https://${angularDocPrefix}angular.io/${api.path}`;
     }
 }

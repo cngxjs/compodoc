@@ -268,12 +268,12 @@ export class RouterParserUtil {
                         let routeAddedOnce = false;
                         for (i; i < len; i++) {
                             const route = routes[i];
-                            if (routes[i].component) {
+                            if (route.component) {
                                 routeAddedOnce = true;
                                 routesTree.children.push({
                                     kind: 'component',
-                                    component: routes[i].component,
-                                    path: routes[i].path
+                                    component: route.component,
+                                    path: route.path
                                 });
                             }
                         }
@@ -296,9 +296,6 @@ export class RouterParserUtil {
         let cleanedRoutesTree = undefined;
 
         const cleanRoutesTree = route => {
-            for (const i in route.children) {
-                const routes = route.children[i].routes;
-            }
             return route;
         };
 
@@ -414,7 +411,10 @@ export class RouterParserUtil {
                     result
                 );
             },
-            err => Promise.reject('Error during routes index generation')
+            err => {
+                console.log(err);
+                Promise.reject('Error during routes index generation');
+            }
         );
     }
 
@@ -483,7 +483,7 @@ export class RouterParserUtil {
         for (const identifier of identifiers) {
             // Loop through their parents nodes, and if one is a variableStatement and === 'routes'
             let foundParentVariableStatement = false;
-            const parent = identifier.getParentWhile(n => {
+            identifier.getParentWhile(n => {
                 if (n.getKind() === SyntaxKind.VariableStatement) {
                     if (this.isVariableRoutes(n.compilerNode)) {
                         foundParentVariableStatement = true;
@@ -530,7 +530,7 @@ export class RouterParserUtil {
         for (const spreadElement of spreadElements) {
             // Loop through their parents nodes, and if one is a variableStatement and === 'routes'
             let foundParentVariableStatement = false;
-            const parent = spreadElement.getParentWhile(n => {
+            spreadElement.getParentWhile(n => {
                 if (n.getKind() === SyntaxKind.VariableStatement) {
                     if (this.isVariableRoutes(n.compilerNode)) {
                         foundParentVariableStatement = true;
@@ -545,8 +545,8 @@ export class RouterParserUtil {
 
         // inline the ArrayLiteralExpression SpreadElements
         for (const spreadElement of spreadElementsInRoutesVariableStatement) {
-            let spreadElementIdentifier = spreadElement.getExpression().getText(),
-                searchedImport,
+            const spreadElementIdentifier = spreadElement.getExpression().getText();
+            let searchedImport,
                 aliasOriginalName = '',
                 foundWithAliasInImports = false,
                 foundWithAlias = false;
@@ -555,14 +555,14 @@ export class RouterParserUtil {
             const imports = file.getImportDeclarations();
 
             imports.forEach(i => {
-                let namedImports = i.getNamedImports(),
-                    namedImportsLength = namedImports.length,
-                    j = 0;
+                const namedImports = i.getNamedImports(),
+                    namedImportsLength = namedImports.length;
+                let j = 0;
 
                 if (namedImportsLength > 0) {
                     for (j; j < namedImportsLength; j++) {
-                        let importName = namedImports[j].getNameNode().getText() as string,
-                            importAlias;
+                        const importName = namedImports[j].getNameNode().getText() as string;
+                        let importAlias = '';
 
                         if (namedImports[j].getAliasNode()) {
                             importAlias = namedImports[j].getAliasNode().getText();
@@ -601,8 +601,8 @@ export class RouterParserUtil {
                             return [];
                         }
                         let startIndex = 0,
-                            index,
-                            indices = [];
+                            index;
+                        const indices = [];
                         if (!caseSensitive) {
                             str = str.toLowerCase();
                             searchStr = searchStr.toLowerCase();
@@ -690,7 +690,7 @@ export class RouterParserUtil {
         for (const propertyAccessExpression of propertyAccessExpressions) {
             // Loop through their parents nodes, and if one is a variableStatement and === 'routes'
             let foundParentVariableStatement = false;
-            const parent = propertyAccessExpression.getParentWhile(n => {
+            propertyAccessExpression.getParentWhile(n => {
                 if (n.getKind() === SyntaxKind.VariableStatement) {
                     if (this.isVariableRoutes(n.compilerNode)) {
                         foundParentVariableStatement = true;
@@ -708,8 +708,10 @@ export class RouterParserUtil {
             const propertyAccessExpressionNodeName = propertyAccessExpression.getNameNode();
             if (propertyAccessExpressionNodeName) {
                 try {
+                    // Try to get the symbol - this may fail for dynamic imports or unresolvable references
                     const propertyAccessExpressionNodeNameSymbol =
-                        propertyAccessExpressionNodeName.getSymbolOrThrow();
+                        propertyAccessExpressionNodeName.getSymbol();
+
                     if (propertyAccessExpressionNodeNameSymbol) {
                         const referencedDeclaration =
                             propertyAccessExpressionNodeNameSymbol.getValueDeclarationOrThrow();
@@ -729,7 +731,13 @@ export class RouterParserUtil {
                             );
                         }
                     }
-                } catch (e) {}
+                    // If symbol is null/undefined, just skip this property access expression
+                } catch (e) {
+                    // Gracefully handle cases where symbols cannot be resolved
+                    // This is common with dynamic imports and other runtime expressions
+                    // We'll just skip processing this property access expression
+                    continue;
+                }
             }
         }
 
@@ -812,9 +820,9 @@ export class RouterParserUtil {
                                 if (
                                     propertyInitializer.kind === SyntaxKind.PropertyAccessExpression
                                 ) {
-                                    let lastObjectLiteralAttributeName =
-                                            propertyInitializer.name.getText(),
-                                        firstObjectLiteralAttributeName;
+                                    const lastObjectLiteralAttributeName =
+                                        propertyInitializer.name.getText();
+                                    let firstObjectLiteralAttributeName;
                                     if (propertyInitializer.expression) {
                                         firstObjectLiteralAttributeName =
                                             propertyInitializer.expression.getText();

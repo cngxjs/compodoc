@@ -27,7 +27,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             fooComponentFile = read(`${distFolder}/components/FooComponent.html`);
@@ -599,7 +600,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             done();
         });
@@ -640,7 +642,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             fooComponentFile = read(`/tmp/${distFolder}/components/FooComponent.html`);
@@ -708,7 +711,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             fooComponentFile = read(`/tmp/${distFolder}/components/FooComponent.html`);
@@ -767,7 +771,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             done();
         });
@@ -794,7 +799,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             done();
         });
@@ -821,7 +827,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -856,7 +863,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -906,7 +914,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -936,7 +945,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -967,7 +977,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -996,7 +1007,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -1025,7 +1037,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -1054,7 +1067,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -1083,7 +1097,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -1116,7 +1131,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             index = read(`${distFolder}/components/BarComponent.html`);
@@ -1163,7 +1179,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             index = read(`${distFolder}/modules/AppModule.html`);
@@ -1192,7 +1209,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -1221,7 +1239,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -1250,7 +1269,8 @@ describe('CLI simple generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             stdoutString = ls.stdout.toString();
             done();

@@ -20,11 +20,10 @@ describe('CLI Deprecated', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
-
             menuFile = read(`${distFolder}/js/menu-wc.js`);
-
             done();
         });
         after(() => tmp.clean(tmpFolder));
@@ -138,11 +137,10 @@ describe('CLI Deprecated', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
-
             menuFile = read(`${distFolder}/js/menu-wc.js`);
-
             done();
         });
         after(() => tmp.clean(tmpFolder));

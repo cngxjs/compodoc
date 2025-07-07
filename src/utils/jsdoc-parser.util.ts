@@ -25,7 +25,7 @@ export class JsdocParserUtil {
 
     isTopmostModuleDeclaration(node: ts.ModuleDeclaration): boolean {
         if (node.nextContainer && node.nextContainer.kind === ts.SyntaxKind.ModuleDeclaration) {
-            let next = <ts.ModuleDeclaration>node.nextContainer;
+            const next = <ts.ModuleDeclaration>node.nextContainer;
             if (node.name.end + 1 === next.name.pos) {
                 return false;
             }
@@ -36,7 +36,7 @@ export class JsdocParserUtil {
 
     getRootModuleDeclaration(node: ts.ModuleDeclaration): ts.Node {
         while (node.parent && node.parent.kind === ts.SyntaxKind.ModuleDeclaration) {
-            let parent = <ts.ModuleDeclaration>node.parent;
+            const parent = <ts.ModuleDeclaration>node.parent;
             if (node.name.pos === parent.name.end + 1) {
                 node = parent;
             } else {
@@ -97,8 +97,8 @@ export class JsdocParserUtil {
         const CODE_FENCE = /^\s*```(?!.*```)/;
         let inCode = false;
         let inExample = false; // first line with @example, end line with empty string or string or */
-        let nbLines = 0;
-        function readLine(line: string, index: number) {
+        let exampleHasCodeFence = false; // track if the example already has code fences
+        function readLine(line: string) {
             line = line.replace(/^\s*\*? ?/, '');
             line = line.replace(/\s*$/, '');
 
@@ -108,12 +108,34 @@ export class JsdocParserUtil {
 
             if (line.indexOf('@example') !== -1) {
                 inExample = true;
-                line = '```html';
+                exampleHasCodeFence = false;
+                // Don't add html wrapper yet - check if code fences exist first
+                // eslint-disable-next-line no-self-assign
+                line = line; // Keep the original @example line
+            }
+
+            // Check if we're in an example and found a code fence
+            if (inExample && CODE_FENCE.test(line)) {
+                exampleHasCodeFence = true;
+            }
+
+            // If we're starting an example and the next non-empty line doesn't have a code fence,
+            // we need to add html wrapper
+            if (inExample && line !== '' && !exampleHasCodeFence && !line.includes('@example')) {
+                // Check if this line starts with a code fence
+                if (!CODE_FENCE.test(line)) {
+                    // No code fence found, add html wrapper
+                    comment += '\n```html';
+                    exampleHasCodeFence = true; // Prevent adding wrapper again
+                }
             }
 
             if (inExample && line === '') {
                 inExample = false;
-                line = '```';
+                // Only add closing fence if we added an opening one
+                if (exampleHasCodeFence && !CODE_FENCE.test(comment.split('\n').slice(-1)[0])) {
+                    line = '```';
+                }
             }
 
             if (!inCode) {
@@ -134,8 +156,6 @@ export class JsdocParserUtil {
 
         text = text.replace(/^\s*\/\*+/, '');
         text = text.replace(/\*+\/\s*$/, '');
-
-        nbLines = text.split(/\r\n?|\n/).length;
 
         text.split(/\r\n?|\n/).forEach(readLine);
 
@@ -189,8 +209,8 @@ export class JsdocParserUtil {
         const variableStatementNode = isInitializerOfVariableDeclarationInStatement
             ? parent.parent.parent
             : isVariableOfVariableDeclarationStatement
-            ? parent.parent
-            : undefined;
+              ? parent.parent
+              : undefined;
         if (variableStatementNode) {
             cache = this.getJSDocsWorker(variableStatementNode, cache);
         }
@@ -248,7 +268,7 @@ export class JsdocParserUtil {
             const name = param.name.text;
             return _.filter(tags, tag => {
                 if (ts && ts.isJSDocParameterTag(tag)) {
-                    let t: JSDocParameterTagExt = tag;
+                    const t: JSDocParameterTagExt = tag;
                     if (typeof t.parameterName !== 'undefined') {
                         return t.parameterName.text === name;
                     } else if (typeof t.name !== 'undefined') {

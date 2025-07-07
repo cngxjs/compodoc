@@ -22,7 +22,8 @@ describe('CLI toggle menu items', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+                return;
             }
             stdoutString = ls.stdout.toString();
             fooIndexFile = read(`${distFolder}/js/menu-wc.js`);

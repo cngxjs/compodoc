@@ -18,7 +18,8 @@ describe('CLI include with tsconfig', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             done();
         });
@@ -47,7 +48,8 @@ describe('CLI include with tsconfig', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             done();
         });
@@ -74,7 +76,8 @@ describe('CLI include with tsconfig', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
             done();
         });

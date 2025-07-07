@@ -19,7 +19,8 @@ describe('CLI generation - TypeDoc examples', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            done(new Error('Shell command failed'));
+            return;
         }
         stdoutString = ls.stdout.toString();
         done();

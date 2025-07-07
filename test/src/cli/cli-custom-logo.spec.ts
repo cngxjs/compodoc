@@ -24,9 +24,9 @@ describe('CLI custom logo', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
-
             done();
         });
         after(() => tmp.clean(distFolder));
@@ -55,9 +55,9 @@ describe('CLI custom logo', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
-
             done();
         });
         after(() => tmp.clean(distFolder));
@@ -84,9 +84,9 @@ describe('CLI custom logo', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                done(new Error('Shell command failed'));
+            return;
             }
-
             done();
         });
         after(() => tmp.clean(distFolder));
