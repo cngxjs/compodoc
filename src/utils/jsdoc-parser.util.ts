@@ -130,12 +130,8 @@ export class JsdocParserUtil {
                 }
             }
 
-            if (inExample && line === '') {
+            if (inExample && line === '' && !exampleHasCodeFence) {
                 inExample = false;
-                // Only add closing fence if we added an opening one
-                if (exampleHasCodeFence && !CODE_FENCE.test(comment.split('\n').slice(-1)[0])) {
-                    line = '```';
-                }
             }
 
             if (!inCode) {
