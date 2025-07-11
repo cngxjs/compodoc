@@ -142,12 +142,6 @@ export const PUBLIC_FLAGS: Flag[] = [
         defaultValue: false
     },
     {
-        label: 'disableProperties',
-        flag: '--disableProperties',
-        description: 'Do not add the properties list',
-        defaultValue: COMPODOC_DEFAULTS.disableProperties
-    },
-    {
         label: 'disableOverview',
         flag: '--disableOverview',
         description: 'Do not add the overview page',
