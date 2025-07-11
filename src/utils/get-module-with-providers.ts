@@ -4,16 +4,16 @@ export function getModuleWithProviders(node: ts.VariableStatement) {
     let result;
     if (node.declarationList) {
         if (node.declarationList.declarations && node.declarationList.declarations.length > 0) {
-            let i = 0,
-                len = node.declarationList.declarations.length;
+            let i = 0;
+            const len = node.declarationList.declarations.length;
 
             for (i; i < len; i++) {
-                let declaration = node.declarationList.declarations[i];
+                const declaration = node.declarationList.declarations[i];
 
                 if (declaration.type) {
-                    let type: ts.TypeReferenceNode = declaration.type as ts.TypeReferenceNode;
+                    const type: ts.TypeReferenceNode = declaration.type as ts.TypeReferenceNode;
                     if (type.typeName) {
-                        let text = type.typeName.getText();
+                        const text = type.typeName.getText();
                         if (text === 'ModuleWithProviders') {
                             result = declaration.initializer;
                         }

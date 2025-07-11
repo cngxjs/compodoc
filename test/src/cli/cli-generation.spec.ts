@@ -1281,6 +1281,64 @@ describe('CLI simple generation', () => {
         });
     });
 
+    describe('when generation with --disableFilePath flag', () => {
+        let stdoutString = undefined,
+            componentFile = undefined,
+            moduleFile = undefined,
+            directiveFile = undefined,
+            pipeFile = undefined,
+            serviceFile = undefined;
+        before(function (done) {
+            tmp.create(distFolder);
+            let ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/sample-files/tsconfig.simple.json',
+                '--disableFilePath',
+                '-d',
+                distFolder
+            ]);
+
+            if (ls.stderr.toString() !== '') {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                done('error');
+            }
+            stdoutString = ls.stdout.toString();
+            done();
+        });
+        after(() => tmp.clean(distFolder));
+
+        it('should not contain file path in component documentation', () => {
+            componentFile = read(`${distFolder}/components/BarComponent.html`);
+            expect(componentFile).to.not.contain('<h3>File</h3>');
+            expect(componentFile).to.not.contain('<code>bar.component.ts</code>');
+        });
+
+        it('should not contain file path in module documentation', () => {
+            moduleFile = read(`${distFolder}/modules/AppModule.html`);
+            expect(moduleFile).to.not.contain('<h3>File</h3>');
+            expect(moduleFile).to.not.contain('<code>app.module.ts</code>');
+        });
+
+        it('should not contain file path in directive documentation', () => {
+            directiveFile = read(`${distFolder}/directives/BarDirective.html`);
+            expect(directiveFile).to.not.contain('<h3>File</h3>');
+            expect(directiveFile).to.not.contain('<code>bar.directive.ts</code>');
+        });
+
+        it('should not contain file path in pipe documentation', () => {
+            pipeFile = read(`${distFolder}/pipes/BarPipe.html`);
+            expect(pipeFile).to.not.contain('<h3>File</h3>');
+            expect(pipeFile).to.not.contain('<code>bar.pipe.ts</code>');
+        });
+
+        it('should not contain file path in service documentation', () => {
+            serviceFile = read(`${distFolder}/injectables/BarService.html`);
+            expect(serviceFile).to.not.contain('<h3>File</h3>');
+            expect(serviceFile).to.not.contain('<code>bar.service.ts</code>');
+        });
+    });
+
     describe('when generation with -r flag', () => {
         let stdoutString = '',
             port = 6666,

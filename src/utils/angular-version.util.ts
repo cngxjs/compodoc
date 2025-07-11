@@ -26,7 +26,7 @@ export class AngularVersionUtil {
         let _result = '';
 
         if (packageData.dependencies) {
-            let angularCore = packageData.dependencies[AngularVersionUtil.CorePackage];
+            const angularCore = packageData.dependencies[AngularVersionUtil.CorePackage];
             if (angularCore) {
                 _result = this.cleanVersion(angularCore);
             }
@@ -40,7 +40,10 @@ export class AngularVersionUtil {
 
         try {
             result = semver.compare(version, '2.4.10') <= 0;
-        } catch (e) {}
+        } catch (e) {
+            console.error('Error parsing version:', version, e);
+            result = false; // Return false for invalid versions
+        }
 
         return result;
     }
@@ -50,7 +53,7 @@ export class AngularVersionUtil {
     }
 
     public getApiLink(api: IAngularApi, angularVersion: string): string {
-        let angularDocPrefix = this.prefixOfficialDoc(angularVersion);
+        const angularDocPrefix = this.prefixOfficialDoc(angularVersion);
         return `https://${angularDocPrefix}angular.io/${api.path}`;
     }
 }

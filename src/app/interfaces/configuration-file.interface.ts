@@ -39,6 +39,7 @@ export interface ConfigurationFileInterface {
     disableSearch: boolean;
     disableDependencies: boolean;
     disableProperties: boolean;
+    disableFilePath: boolean;
     minimal: boolean;
     customFavicon: string;
     customLogo: string;
