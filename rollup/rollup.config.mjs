@@ -4,7 +4,8 @@ import typescript from '@rollup/plugin-typescript';
 export default {
     input: {
         'index-cli': './src/index-cli.ts',
-        index: './src/index.ts'
+        index: './src/index.ts',
+        'template-playground-server': './src/template-playground/template-playground-server.ts'
     },
     output: {
         sourcemap: 'inline',
@@ -34,6 +35,12 @@ export default {
         'ts-morph',
         'cosmiconfig',
         'html-entities',
-        'uuid'
+        'uuid',
+        'express',
+        'crypto',
+        'child_process',
+        'os',
+        'http',
+        'archiver'
     ]
 };
