@@ -35,9 +35,6 @@ export class JsdocCodeExampleHelper implements IHtmlEngineHelper {
     }
 
     private parseCodeFences(comment: string): CodeBlock[] {
-        // DEBUG: Log the input comment
-        // eslint-disable-next-line no-console
-        console.log('parseCodeFences input:', JSON.stringify(comment));
         const codeFenceRegex = /```(\w+)?\s*\n([\s\S]*?)```/g;
         const blocks: CodeBlock[] = [];
         let match;
@@ -50,11 +47,11 @@ export class JsdocCodeExampleHelper implements IHtmlEngineHelper {
             if (language === 'js') language = 'javascript';
             if (language === 'ts') language = 'typescript';
             let code = match[2];
-            code = code.trim();
-            code = code.replace(/```[\s\S]*?```/g, '').trim();
-            // DEBUG: Log each extracted block
-            // eslint-disable-next-line no-console
-            console.log('Extracted block:', { language, code });
+            // Only trim trailing newlines, not internal empty lines
+            code = code.replace(/^\n+/, '').replace(/\n+$/, '');
+            code = code.replace(/```[\s\S]*?```/g, '');
+            // Convert placeholder back to empty lines
+            code = code.replace(/___COMPODOC_EMPTY_LINE___/g, '\n');
             if (code.length === 0) {
                 continue;
             }
@@ -67,9 +64,6 @@ export class JsdocCodeExampleHelper implements IHtmlEngineHelper {
         if (!hasCodeFences) {
             const trimmedComment = comment.trim();
             if (trimmedComment.length > 0) {
-                // DEBUG: Log fallback block
-                // eslint-disable-next-line no-console
-                console.log('Fallback block:', { language: 'html', code: trimmedComment });
                 blocks.push({
                     language: 'html',
                     code: trimmedComment

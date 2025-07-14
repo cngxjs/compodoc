@@ -99,6 +99,7 @@ export class JsdocParserUtil {
         let inExample = false; // first line with @example, end line with empty string or string or */
         let exampleHasCodeFence = false; // track if the example already has code fences
         function readLine(line: string, index: number) {
+            const originalLine = line;
             line = line.replace(/^\s*\*? ?/, '');
             line = line.replace(/\s*$/, '');
 
@@ -129,6 +130,11 @@ export class JsdocParserUtil {
                     // Skip the @example line if it already has code fences
                     return;
                 }
+            }
+
+            // Preserve empty lines within code blocks by using a placeholder
+            if (inCode && inExample && exampleHasCodeFence && line === '') {
+                line = '___COMPODOC_EMPTY_LINE___';
             }
 
             if (inExample && line === '') {

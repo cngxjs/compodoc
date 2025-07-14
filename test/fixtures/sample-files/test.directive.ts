@@ -7,6 +7,8 @@ import { Directive } from '@angular2/core';
  * ```typescript
  * // TypeScript example
  * const instance = new TestClass();
+ * 
+ * // Calling the test method
  * instance.testMethod();
  * ```
  * 
