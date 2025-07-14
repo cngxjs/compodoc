@@ -411,10 +411,7 @@ export class RouterParserUtil {
                     result
                 );
             },
-            err => {
-                console.log(err);
-                Promise.reject('Error during routes index generation');
-            }
+            err => Promise.reject('Error during routes index generation')
         );
     }
 
@@ -483,7 +480,7 @@ export class RouterParserUtil {
         for (const identifier of identifiers) {
             // Loop through their parents nodes, and if one is a variableStatement and === 'routes'
             let foundParentVariableStatement = false;
-            identifier.getParentWhile(n => {
+            const parent = identifier.getParentWhile(n => {
                 if (n.getKind() === SyntaxKind.VariableStatement) {
                     if (this.isVariableRoutes(n.compilerNode)) {
                         foundParentVariableStatement = true;
@@ -530,7 +527,7 @@ export class RouterParserUtil {
         for (const spreadElement of spreadElements) {
             // Loop through their parents nodes, and if one is a variableStatement and === 'routes'
             let foundParentVariableStatement = false;
-            spreadElement.getParentWhile(n => {
+            const parent = spreadElement.getParentWhile(n => {
                 if (n.getKind() === SyntaxKind.VariableStatement) {
                     if (this.isVariableRoutes(n.compilerNode)) {
                         foundParentVariableStatement = true;
