@@ -65,7 +65,7 @@ jobs:
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
             - name: Angular expo test
-              if: ${{ matrix.node-version == '26.x' && matrix.os == 'ubuntu-latest' }}
+              if: ${{ matrix.node-version == '24.x' && matrix.os == 'ubuntu-latest' }}
               run: npm run angularexpo
 
     e2e:
