@@ -426,71 +426,392 @@ class TemplatePlayground {
         const container = document.getElementById('variablesList');
         container.innerHTML = '';
 
-        // Create variables from current data
-        this.createVariableElements(this.currentData, '', container);
+        // Check if we have the new categorized data format
+        if (this.currentData && this.currentData.categories) {
+            this.renderCategorizedVariables(container);
+        } else {
+            // Fallback to legacy format
+            this.renderLegacyVariables(container);
+        }
+
+        // Add custom variables section
+        this.renderCustomVariables(container);
+    }
+
+    renderCategorizedVariables(container) {
+        const categories = this.currentData.categories;
+
+        // Render Compodoc Configuration section
+        if (categories.compodocConfig) {
+            this.createCategorySection(
+                container,
+                'compodoc-config',
+                categories.compodocConfig.title,
+                categories.compodocConfig.description,
+                categories.compodocConfig.data,
+                '#2196F3' // Blue for config
+            );
+        }
+
+        // Render Template Variables section
+        if (categories.templateVariables) {
+            this.createCategorySection(
+                container,
+                'template-variables',
+                categories.templateVariables.title,
+                categories.templateVariables.description,
+                categories.templateVariables.data,
+                '#4CAF50' // Green for template variables
+            );
+        }
+    }
+
+    createCategorySection(container, categoryId, title, description, data, accentColor) {
+        const section = document.createElement('div');
+        section.className = 'variable-category';
+        section.style.marginBottom = '20px';
+
+        section.innerHTML = `
+            <div class="category-header" style="
+                background: linear-gradient(135deg, ${accentColor}15, ${accentColor}05);
+                border-left: 4px solid ${accentColor};
+                padding: 12px 16px;
+                margin-bottom: 10px;
+                border-radius: 0 6px 6px 0;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            ">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h3 style="
+                            margin: 0;
+                            color: ${accentColor};
+                            font-size: 14px;
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        ">${title}</h3>
+                        <p style="
+                            margin: 4px 0 0 0;
+                            color: #666;
+                            font-size: 12px;
+                            line-height: 1.4;
+                        ">${description}</p>
+                    </div>
+                    <button class="category-toggle" style="
+                        background: ${accentColor};
+                        color: white;
+                        border: none;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        font-size: 12px;
+                        transition: transform 0.3s ease;
+                    ">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="category-content" style="
+                padding: 0 16px;
+                max-height: 400px;
+                overflow-y: auto;
+                border-left: 4px solid ${accentColor}20;
+                margin-left: 12px;
+            ">
+                <div class="category-variables"></div>
+            </div>
+        `;
+
+        // Add toggle functionality
+        const header = section.querySelector('.category-header');
+        const content = section.querySelector('.category-content');
+        const toggle = section.querySelector('.category-toggle');
+
+        header.addEventListener('click', () => {
+            const isCollapsed = content.style.display === 'none';
+            content.style.display = isCollapsed ? 'block' : 'none';
+            toggle.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-180deg)';
+        });
+
+        container.appendChild(section);
+
+        // Populate variables in this category
+        const variableContainer = section.querySelector('.category-variables');
+        this.createVariableElements(data, '', variableContainer, 0, accentColor);
+    }
+
+    renderLegacyVariables(container) {
+        // Legacy rendering for backward compatibility
+        const section = document.createElement('div');
+        section.innerHTML = `
+            <div class="category-header" style="padding: 12px 16px; background: #f8f9fa; margin-bottom: 10px;">
+                <h3 style="margin: 0; color: #333; font-size: 14px;">Template Data</h3>
+                <p style="margin: 4px 0 0 0; color: #666; font-size: 12px;">Available template variables and context</p>
+            </div>
+            <div class="category-variables"></div>
+        `;
+
+        container.appendChild(section);
+        const variableContainer = section.querySelector('.category-variables');
+        this.createVariableElements(this.currentData, '', variableContainer);
+    }
+
+    renderCustomVariables(container) {
+        if (Object.keys(this.customVariables).length === 0) return;
+
+        const section = document.createElement('div');
+        section.className = 'variable-category custom-variables';
+        section.style.marginTop = '20px';
+
+        section.innerHTML = `
+            <div class="category-header" style="
+                background: linear-gradient(135deg, #FF9800 15%, #FF9800 05%);
+                border-left: 4px solid #FF9800;
+                padding: 12px 16px;
+                margin-bottom: 10px;
+                border-radius: 0 6px 6px 0;
+            ">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h3 style="
+                            margin: 0;
+                            color: #FF9800;
+                            font-size: 14px;
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        ">Custom Variables</h3>
+                        <p style="
+                            margin: 4px 0 0 0;
+                            color: #666;
+                            font-size: 12px;
+                            line-height: 1.4;
+                        ">User-defined variables for template customization</p>
+                    </div>
+                    <button class="btn-icon" id="addCustomVariableBtn" style="
+                        background: #FF9800;
+                        color: white;
+                        border: none;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        font-size: 12px;
+                    " onclick="templatePlayground.addCustomVariable()" title="Add Custom Variable">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="custom-variables-content" style="
+                padding: 0 16px;
+                border-left: 4px solid #FF980020;
+                margin-left: 12px;
+            "></div>
+        `;
+
+        container.appendChild(section);
 
         // Add custom variables
+        const customContainer = section.querySelector('.custom-variables-content');
         Object.entries(this.customVariables).forEach(([key, value]) => {
-            this.createVariableElement(key, typeof value, value, container, true);
+            this.createVariableElement(key, typeof value, value, customContainer, true, null, '#FF9800');
         });
     }
 
-    createVariableElements(obj, prefix, container, depth = 0) {
-        if (depth > 2) return; // Prevent too deep nesting
+    createVariableElements(obj, prefix, container, depth = 0, accentColor = '#007bff') {
+        if (depth > 3) return; // Prevent too deep nesting
 
-        Object.entries(obj).forEach(([key, value]) => {
+        const sortedEntries = Object.entries(obj).sort(([a], [b]) => {
+            // Sort by importance: put functions and complex objects at the end
+            const aIsSimple = typeof obj[a] !== 'object' && typeof obj[a] !== 'function';
+            const bIsSimple = typeof obj[b] !== 'object' && typeof obj[b] !== 'function';
+            if (aIsSimple && !bIsSimple) return -1;
+            if (!aIsSimple && bIsSimple) return 1;
+            return a.localeCompare(b);
+        });
+
+        sortedEntries.forEach(([key, value]) => {
             const fullKey = prefix ? `${prefix}.${key}` : key;
 
             if (value && typeof value === 'object' && !Array.isArray(value)) {
                 // Create expandable object
-                if (depth < 2) {
+                if (depth < 3) {
                     const objectElement = document.createElement('div');
-                    objectElement.className = 'variable-item';
+                    objectElement.className = 'variable-item expandable-object';
+                    objectElement.style.marginBottom = '8px';
+
+                    const isExpanded = depth === 0; // Expand top-level objects by default
+
                     objectElement.innerHTML = `
-                        <div class="variable-name">${key}</div>
-                        <div class="variable-type">object</div>
-                        <button class="btn-icon" style="background: #e3f2fd; color: #1976d2;" onclick="this.parentElement.querySelector('.nested-variables').style.display = this.parentElement.querySelector('.nested-variables').style.display === 'none' ? 'block' : 'none'">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                        <div class="nested-variables" style="margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid #e9ecef;"></div>
+                        <div class="variable-header" style="
+                            display: flex;
+                            align-items: center;
+                            padding: 8px 12px;
+                            background: ${depth === 0 ? '#f8f9fa' : '#ffffff'};
+                            border: 1px solid #e9ecef;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                        ">
+                            <button class="expand-toggle" style="
+                                background: none;
+                                border: none;
+                                color: ${accentColor};
+                                font-size: 12px;
+                                margin-right: 8px;
+                                cursor: pointer;
+                                transform: ${isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'};
+                                transition: transform 0.2s ease;
+                            ">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <div class="variable-name" style="
+                                font-weight: ${depth === 0 ? '600' : '500'};
+                                color: ${depth === 0 ? '#333' : '#555'};
+                                flex: 1;
+                                font-size: ${depth === 0 ? '13px' : '12px'};
+                            ">${key}</div>
+                            <div class="variable-type" style="
+                                font-size: 10px;
+                                color: #888;
+                                background: #f1f3f4;
+                                padding: 2px 6px;
+                                border-radius: 10px;
+                                text-transform: uppercase;
+                                letter-spacing: 0.3px;
+                            ">object</div>
+                        </div>
+                        <div class="nested-variables" style="
+                            margin-top: 4px;
+                            padding-left: ${(depth + 1) * 16}px;
+                            border-left: 2px solid ${accentColor}20;
+                            margin-left: 20px;
+                            display: ${isExpanded ? 'block' : 'none'};
+                        "></div>
                     `;
+
+                    // Add click handler for expansion
+                    const header = objectElement.querySelector('.variable-header');
+                    const toggle = objectElement.querySelector('.expand-toggle');
+                    const nested = objectElement.querySelector('.nested-variables');
+
+                    header.addEventListener('click', () => {
+                        const isCurrentlyExpanded = nested.style.display !== 'none';
+                        nested.style.display = isCurrentlyExpanded ? 'none' : 'block';
+                        toggle.style.transform = isCurrentlyExpanded ? 'rotate(0deg)' : 'rotate(90deg)';
+                    });
+
                     container.appendChild(objectElement);
 
                     const nestedContainer = objectElement.querySelector('.nested-variables');
-                    this.createVariableElements(value, fullKey, nestedContainer, depth + 1);
+                    this.createVariableElements(value, fullKey, nestedContainer, depth + 1, accentColor);
                 }
             } else {
-                this.createVariableElement(key, typeof value, value, container, false, fullKey);
+                this.createVariableElement(key, typeof value, value, container, false, fullKey, accentColor);
             }
         });
     }
 
-    createVariableElement(name, type, value, container, isCustom = false, fullPath = null) {
+    createVariableElement(name, type, value, container, isCustom = false, fullPath = null, accentColor = '#007bff') {
         const variableElement = document.createElement('div');
-        variableElement.className = 'variable-item';
+        variableElement.className = 'variable-item simple-variable';
+        variableElement.style.marginBottom = '6px';
 
         let displayValue = value;
-        if (typeof value === 'object') {
+        let rows = 1;
+
+        if (typeof value === 'object' && value !== null) {
             displayValue = JSON.stringify(value, null, 2);
+            rows = Math.min(displayValue.split('\n').length, 6);
         } else if (typeof value === 'string') {
             displayValue = value;
+            rows = Math.min(displayValue.split('\n').length, 4);
+        } else if (typeof value === 'function') {
+            displayValue = value.toString().substring(0, 100) + '...';
+            type = 'function';
+            rows = 2;
         } else {
             displayValue = String(value);
         }
 
+        // Determine type color
+        const getTypeColor = (type) => {
+            switch (type) {
+                case 'string': return '#4CAF50';
+                case 'number': return '#2196F3';
+                case 'boolean': return '#FF9800';
+                case 'function': return '#9C27B0';
+                case 'object': return '#607D8B';
+                default: return '#666';
+            }
+        };
+
         variableElement.innerHTML = `
-            <div class="variable-actions">
-                ${isCustom ?
-                    `<button class="btn-icon" style="background: #ffebee; color: #d32f2f;" onclick="templatePlayground.removeVariable('${name}')">
-                        <i class="fas fa-trash"></i>
-                    </button>` : ''
-                }
+            <div style="
+                display: flex;
+                align-items: flex-start;
+                padding: 8px 12px;
+                background: white;
+                border: 1px solid #e9ecef;
+                border-radius: 4px;
+                transition: all 0.2s ease;
+            " onmouseover="this.style.borderColor='${accentColor}'" onmouseout="this.style.borderColor='#e9ecef'">
+                <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                        <div class="variable-name" style="
+                            font-weight: 500;
+                            color: #333;
+                            font-size: 12px;
+                            margin-right: 8px;
+                            font-family: 'Consolas', 'Monaco', monospace;
+                        ">${name}</div>
+                        <div class="variable-type" style="
+                            font-size: 9px;
+                            color: ${getTypeColor(type)};
+                            background: ${getTypeColor(type)}15;
+                            padding: 2px 6px;
+                            border-radius: 8px;
+                            text-transform: uppercase;
+                            letter-spacing: 0.3px;
+                            font-weight: 600;
+                        ">${type}</div>
+                        ${isCustom ? `
+                            <button class="btn-icon" style="
+                                background: #ffebee;
+                                color: #d32f2f;
+                                border: none;
+                                width: 18px;
+                                height: 18px;
+                                border-radius: 50%;
+                                margin-left: auto;
+                                cursor: pointer;
+                                font-size: 10px;
+                            " onclick="templatePlayground.removeVariable('${name}')" title="Remove variable">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                    <textarea class="variable-value" style="
+                        width: 100%;
+                        min-height: ${rows * 16}px;
+                        border: 1px solid #ddd;
+                        border-radius: 3px;
+                        padding: 6px 8px;
+                        font-size: 11px;
+                        font-family: 'Consolas', 'Monaco', monospace;
+                        resize: vertical;
+                        background: #f8f9fa;
+                        ${isCustom ? '' : 'background: #f1f3f4; cursor: not-allowed;'}
+                    }"
+                    ${isCustom ? `onchange="templatePlayground.updateVariable('${fullPath || name}', this.value, ${isCustom})"` : 'readonly'}
+                    rows="${rows}">${displayValue}</textarea>
+                </div>
             </div>
-            <div class="variable-name">${name}</div>
-            <div class="variable-type">${type}</div>
-            <textarea class="variable-value"
-                     onchange="templatePlayground.updateVariable('${fullPath || name}', this.value, ${isCustom})"
-                     rows="${displayValue.split('\n').length}">${displayValue}</textarea>
         `;
 
         container.appendChild(variableElement);
