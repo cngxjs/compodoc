@@ -67,10 +67,12 @@ export class HtmlEngine {
             'package-properties'
         ];
         if (templatePath) {
-            if (
-                FileEngine.existsSync(path.resolve(process.cwd() + path.sep + templatePath)) ===
-                false
-            ) {
+            // Check if templatePath is absolute or relative
+            const resolvedTemplatePath = path.isAbsolute(templatePath)
+                ? templatePath
+                : path.resolve(process.cwd() + path.sep + templatePath);
+
+            if (FileEngine.existsSync(resolvedTemplatePath) === false) {
                 logger.warn(
                     'Template path specificed but does not exist...using default templates'
                 );
@@ -134,9 +136,12 @@ export class HtmlEngine {
     private determineTemplatePath(templatePath: string, filePath: string): string {
         let outPath = path.resolve(__dirname + '/../src/templates/' + filePath);
         if (templatePath) {
-            const testPath = path.resolve(
-                process.cwd() + path.sep + templatePath + path.sep + filePath
-            );
+            // Handle both absolute and relative template paths correctly
+            const baseTemplatePath = path.isAbsolute(templatePath)
+                ? templatePath
+                : path.resolve(process.cwd() + path.sep + templatePath);
+
+            const testPath = path.resolve(baseTemplatePath + path.sep + filePath);
             outPath = FileEngine.existsSync(testPath) ? testPath : outPath;
         }
         return outPath;
