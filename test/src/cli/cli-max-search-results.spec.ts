@@ -21,7 +21,7 @@ describe('CLI max search results', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             coverageFile = read(`${distFolder}/index.html`);
@@ -48,7 +48,7 @@ describe('CLI max search results', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             coverageFile = read(`${distFolder}/index.html`);

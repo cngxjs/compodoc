@@ -20,7 +20,7 @@ describe('CLI duplicates support', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done(new Error('Shell command failed'));
+            done('error');
             return;
         }
         done();

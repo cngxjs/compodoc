@@ -20,7 +20,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
@@ -65,7 +65,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
@@ -105,7 +105,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
@@ -158,7 +158,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
@@ -204,7 +204,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             componentFile = read(`${distFolder}/components/AppComponent.html`);
@@ -235,7 +235,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
@@ -275,7 +275,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
@@ -309,7 +309,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             componentFile = read(`${distFolder}/components/AppComponent.html`);
@@ -336,7 +336,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             done();
@@ -370,7 +370,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             done();
@@ -397,7 +397,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             done();
@@ -426,7 +426,7 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             done();

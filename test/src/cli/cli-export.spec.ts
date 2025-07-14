@@ -23,7 +23,7 @@ describe('CLI Export', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             stdoutString = ls.stdout.toString();
@@ -287,7 +287,7 @@ describe('CLI Export', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             stdoutString = ls.stdout.toString();
@@ -347,7 +347,7 @@ describe('CLI Export', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             stdoutString = ls.stdout.toString();
@@ -392,7 +392,7 @@ describe('CLI Export', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             stdoutString = ls.stdout.toString();

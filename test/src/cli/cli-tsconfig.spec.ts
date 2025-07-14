@@ -20,7 +20,7 @@ describe('CLI simple flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             moduleFile = read(`${distFolder}/modules/AppModule.html`);
@@ -54,7 +54,7 @@ describe('CLI simple flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             moduleFile = read(`${distFolder}/modules/AppModule.html`);

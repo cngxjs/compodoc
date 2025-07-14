@@ -29,7 +29,7 @@ describe('CLI Unit Test Report', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             stdoutString = ls.stdout.toString();
@@ -82,7 +82,7 @@ describe('CLI Unit Test Report', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             stdoutString = ls.stdout.toString();
@@ -135,7 +135,7 @@ describe('CLI Unit Test Report', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('Shell command failed'));
+                done('error');
             return;
             }
             stdoutString = ls.stdout.toString();

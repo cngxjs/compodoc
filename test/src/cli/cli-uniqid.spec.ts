@@ -19,7 +19,7 @@ describe('CLI Uniq id for file', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done(new Error('Shell command failed'));
+            done('error');
             return;
         }
         indexFile = read(`${distFolder}/js/menu-wc.js`);
