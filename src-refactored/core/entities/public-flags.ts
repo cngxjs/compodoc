@@ -271,4 +271,36 @@ export const PUBLIC_FLAGS: Flag[] = [
     {
         label: 'theme',
         flag: '--theme [theme]',
-        description: `
+        description: `Choose one of available themes, default is 'gitbook' (laravel, original, material, postmark, readthedocs, stripe, vagrant)`,
+        defaultValue: COMPODOC_DEFAULTS.theme
+    },
+    {
+        label: 'toggleMenuItems',
+        flag: '--toggleMenuItems <items>',
+        description: `Close by default items in the menu values : ['all'] or one of these ['modules','components','directives','controllers','classes','injectables','guards','interfaces','interceptors','pipes','miscellaneous','additionalPages']`,
+        defaultValue: COMPODOC_DEFAULTS.toggleMenuItems,
+        parsingFunction: list
+    },
+    {
+        label: 'tsconfig',
+        flag: '-p, --tsconfig [config]',
+        description: 'A tsconfig.json file'
+    },
+    {
+        label: 'unitTestCoverage',
+        flag: '--unitTestCoverage [json-summary]',
+        description: 'To include unit test coverage, specify istanbul JSON coverage summary file'
+    },
+    {
+        label: 'watch',
+        flag: '-w, --watch',
+        description: 'Watch source files after serve and force documentation rebuild',
+        defaultValue: false
+    },
+    {
+        label: 'maxSearchResults',
+        flag: '--maxSearchResults [number]',
+        description: 'Max search results on the results page. To show all results, set to 0',
+        defaultValue: 15
+    }
+];
