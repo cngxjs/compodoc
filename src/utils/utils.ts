@@ -386,13 +386,7 @@ export function detectIndent(str, count): string {
     return indentString(stripIndent(str), count || 0);
 }
 
-export function getSubstringFromMultilineString(
-    multilineString: string,
-    startLine: number,
-    startColumn: number,
-    endLine: number,
-    endColumn: number
-) {
+export function getSubstringFromMultilineString(multilineString: string, startLine: number, startColumn: number, endLine: number, endColumn: number) {
     // Split the string into lines
     const lines = multilineString.split('\n');
 
@@ -407,10 +401,7 @@ export function getSubstringFromMultilineString(
         selectedLines[0] = selectedLines[0].slice(startColumn + 1);
 
         // And slice the end line from the start to endColumn
-        selectedLines[selectedLines.length - 1] = selectedLines[selectedLines.length - 1].slice(
-            0,
-            endColumn - 1
-        );
+        selectedLines[selectedLines.length - 1] = selectedLines[selectedLines.length - 1].slice(0, endColumn - 1);
     }
 
     // Join the lines back together into a single string
