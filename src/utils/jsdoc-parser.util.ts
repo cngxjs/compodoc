@@ -205,8 +205,8 @@ export class JsdocParserUtil {
         const variableStatementNode = isInitializerOfVariableDeclarationInStatement
             ? parent.parent.parent
             : isVariableOfVariableDeclarationStatement
-              ? parent.parent
-              : undefined;
+            ? parent.parent
+            : undefined;
         if (variableStatementNode) {
             cache = this.getJSDocsWorker(variableStatementNode, cache);
         }
@@ -264,7 +264,7 @@ export class JsdocParserUtil {
             const name = param.name.text;
             return _.filter(tags, tag => {
                 if (ts && ts.isJSDocParameterTag(tag)) {
-                    const t: JSDocParameterTagExt = tag;
+                    let t: JSDocParameterTagExt = tag;
                     if (typeof t.parameterName !== 'undefined') {
                         return t.parameterName.text === name;
                     } else if (typeof t.name !== 'undefined') {
