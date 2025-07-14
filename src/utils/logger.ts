@@ -1,15 +1,10 @@
 const log = require('fancy-log');
 const c = require('picocolors');
 
-// eslint-disable-next-line no-unused-vars
 enum LEVEL {
-    // eslint-disable-next-line no-unused-vars
     INFO,
-    // eslint-disable-next-line no-unused-vars
     DEBUG,
-    // eslint-disable-next-line no-unused-vars
     ERROR,
-    // eslint-disable-next-line no-unused-vars
     WARN
 }
 
@@ -48,7 +43,7 @@ class Logger {
     }
 
     private format(level, ...args) {
-        const pad = (s, l, z = '') => {
+        let pad = (s, l, z = '') => {
             return s + Array(Math.max(0, l - s.length + 1)).join(z);
         };
 
@@ -79,4 +74,4 @@ class Logger {
     }
 }
 
-export const logger = new Logger();
+export let logger = new Logger();
