@@ -89,12 +89,12 @@ export class ComponentDepFactory {
             componentDep.accessors = IO.accessors;
         }
         if (IO.properties) {
-            const { inputSignals, outputSignals, properties } = this.helper.getInputOutputSignals(
+            const {inputSignals, outputSignals, properties} = this.helper.getInputOutputSignals(
                 IO.properties
             );
 
-            componentDep.inputsClass = componentDep.inputsClass.concat(inputSignals);
-            componentDep.outputsClass = componentDep.outputsClass.concat(outputSignals);
+            componentDep.inputsClass = componentDep.inputsClass.concat(inputSignals)
+            componentDep.outputsClass = componentDep.outputsClass.concat(outputSignals)
             componentDep.propertiesClass = properties;
         }
 
