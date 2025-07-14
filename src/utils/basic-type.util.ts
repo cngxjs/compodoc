@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 enum BasicTypes {
     number,
     boolean,
@@ -8,7 +7,6 @@ enum BasicTypes {
     function
 }
 
-// eslint-disable-next-line no-unused-vars
 enum BasicTypeScriptTypes {
     any,
     void
