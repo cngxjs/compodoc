@@ -774,9 +774,24 @@ class TemplatePlayground {
             }
         };
 
-        // Render checkbox for boolean config variables
+        // Render dropdown for string config variables with known options
         let inputElement = '';
-        if (isEditable && type === 'boolean') {
+        const selectOptions = {
+            theme: [
+                'gitbook', 'laravel', 'material', 'readthedocs', 'postmark', 'vagrant', 'minimal', 'default', 'plain', 'stripe', 'aglio', 'book', 'github', 'vuepress', 'docusaurus', 'mkdocs', 'slate', 'swagger', 'modern', 'clean', 'classic', 'simple', 'bootstrap', 'angular', 'react', 'vue', 'bulma', 'tailwind', 'windicss', 'dracula', 'solarized', 'nord', 'night', 'light', 'dark', 'custom'
+            ],
+            language: [
+                'en-US', 'fr-FR', 'de-DE', 'es-ES', 'it-IT', 'ja-JP', 'ko-KR', 'nl-NL', 'pl-PL', 'pt-BR', 'ru-RU', 'sk-SK', 'zh-CN', 'zh-TW', 'bg-BG', 'hu-HU', 'ka-GE'
+            ],
+            exportFormat: [
+                'html', 'json', 'pdf'
+            ]
+        };
+        if (isEditable && type === 'string' && selectOptions[name]) {
+            inputElement = `<select class="variable-value" onchange="templatePlayground.updateVariable('${fullPath || name}', this.value, ${isCustom}, '${categoryType}')">
+                ${selectOptions[name].map(opt => `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+            </select>`;
+        } else if (isEditable && type === 'boolean') {
             inputElement = `<input type="checkbox" class="variable-value" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;" ${value ? 'checked' : ''} onchange="templatePlayground.updateVariable('${fullPath || name}', this.checked, ${isCustom}, '${categoryType}')">`;
         } else {
             inputElement = `<textarea class="variable-value" style="
