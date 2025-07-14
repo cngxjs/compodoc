@@ -17,7 +17,7 @@ export function nodeHasDecorator(node: ts.Node) {
 }
 
 export function getNodeDecorators(node: ts.Node) {
-    const result = [];
+    let result = [];
 
     const nodeModifiers = node.modifiers; // ts.getModifiers(node);
 
