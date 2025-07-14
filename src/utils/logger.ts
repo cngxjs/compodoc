@@ -1,5 +1,5 @@
-const log = require('fancy-log');
-const c = require('picocolors');
+let log = require('fancy-log');
+let c = require('picocolors');
 
 enum LEVEL {
     INFO,
