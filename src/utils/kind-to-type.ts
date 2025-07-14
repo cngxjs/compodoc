@@ -1,40 +1,24 @@
 import { SyntaxKind } from 'ts-morph';
 
 export enum KindType {
-    // eslint-disable-next-line no-unused-vars
     UNKNOWN = '',
-    // eslint-disable-next-line no-unused-vars
     STRING = 'string',
-    // eslint-disable-next-line no-unused-vars
     NUMBER = 'number',
-    // eslint-disable-next-line no-unused-vars
     ARRAY = '[]',
-    // eslint-disable-next-line no-unused-vars
     VOID = 'void',
-    // eslint-disable-next-line no-unused-vars
     FUNCTION = 'function',
-    // eslint-disable-next-line no-unused-vars
     TEMPLATE_LITERAL = 'template literal type',
-    // eslint-disable-next-line no-unused-vars
     LITERAL = 'literal type',
-    // eslint-disable-next-line no-unused-vars
     BOOLEAN = 'boolean',
-    // eslint-disable-next-line no-unused-vars
     ANY = 'any',
-    // eslint-disable-next-line no-unused-vars
     NULL = 'null',
-    // eslint-disable-next-line no-unused-vars
     SYMBOL = 'symbol',
-    // eslint-disable-next-line no-unused-vars
     NEVER = 'never',
-    // eslint-disable-next-line no-unused-vars
     UNDEFINED = 'undefined',
-    // eslint-disable-next-line no-unused-vars
     OBJECT = 'object'
 }
 
 export type IsKindTypeMethods = {
-    // eslint-disable-next-line no-unused-vars
     [key in keyof typeof KindType]: (kind: number) => boolean;
 };
 
