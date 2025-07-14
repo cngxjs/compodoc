@@ -142,7 +142,7 @@ describe('CLI Deprecated', () => {
             }
 
             menuFile = read(`${distFolder}/js/menu-wc.js`);
-            
+
             done();
         });
         after(() => tmp.clean(tmpFolder));
