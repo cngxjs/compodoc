@@ -25,7 +25,6 @@ describe('CLI custom logo', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             done();
         });
@@ -56,7 +55,6 @@ describe('CLI custom logo', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             done();
         });
@@ -85,7 +83,6 @@ describe('CLI custom logo', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             done();
         });

@@ -22,7 +22,6 @@ describe('CLI max search results', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             coverageFile = read(`${distFolder}/index.html`);
             done();
@@ -49,7 +48,6 @@ describe('CLI max search results', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             coverageFile = read(`${distFolder}/index.html`);
             done();

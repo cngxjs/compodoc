@@ -21,7 +21,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
             done();
@@ -66,7 +65,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
             done();
@@ -106,7 +104,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
             done();
@@ -159,7 +156,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
             done();
@@ -205,7 +201,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             componentFile = read(`${distFolder}/components/AppComponent.html`);
             done();
@@ -236,7 +231,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
             done();
@@ -276,7 +270,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
             done();
@@ -310,7 +303,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             componentFile = read(`${distFolder}/components/AppComponent.html`);
             done();
@@ -337,7 +329,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             done();
         });
@@ -371,7 +362,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             done();
         });
@@ -398,7 +388,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             done();
         });
@@ -427,7 +416,6 @@ describe('CLI disable flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             done();
         });

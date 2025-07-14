@@ -20,7 +20,6 @@ describe('CLI generation - JSDoc @example language specifications', () => {
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
             done('error');
-            return;
         }
         stdoutString = ls.stdout.toString();
         done();

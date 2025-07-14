@@ -43,7 +43,6 @@ describe('CLI simple generation - big app', () => {
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
             done('error');
-            return;
         }
         stdoutString = ls.stdout.toString();
         interfaceIDATAFile = read(`${distFolder}/interfaces/IDATA.html`);

@@ -30,7 +30,6 @@ describe('CLI Unit Test Report', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             stdoutString = ls.stdout.toString();
             unitTestFile = read(`${distFolder}/unit-test.html`);
@@ -83,7 +82,6 @@ describe('CLI Unit Test Report', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             stdoutString = ls.stdout.toString();
             unitTestFile = read(`${distFolder}/unit-test.html`);
@@ -136,7 +134,6 @@ describe('CLI Unit Test Report', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-            return;
             }
             stdoutString = ls.stdout.toString();
             unitTestFile = read(`${distFolder}/unit-test.html`);

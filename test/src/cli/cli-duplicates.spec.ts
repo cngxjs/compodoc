@@ -21,7 +21,6 @@ describe('CLI duplicates support', () => {
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
             done('error');
-            return;
         }
         done();
     });
