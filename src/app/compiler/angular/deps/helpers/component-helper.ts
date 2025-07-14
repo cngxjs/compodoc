@@ -143,20 +143,20 @@ export class ComponentHelper {
         props.forEach(prop => {
             const inputSignal = this.getInputSignal(prop);
             if (inputSignal) {
-                inputSignals.push(inputSignal);
+                inputSignals.push(inputSignal)
             }
 
             const outputSignal = this.getOutputSignal(prop);
             if (outputSignal) {
-                outputSignals.push(outputSignal);
+                outputSignals.push(outputSignal)
             }
 
             if (!inputSignal && !outputSignal) {
-                properties.push(prop);
+                properties.push(prop)
             }
         });
 
-        return { inputSignals, outputSignals, properties };
+        return {inputSignals, outputSignals, properties};
     }
 
     public getInputSignal(prop) {
@@ -165,7 +165,7 @@ export class ComponentHelper {
             this.getSignalConfig('model', prop.defaultValue);
 
         if (config) {
-            return {
+            return  {
                 ...prop,
                 ...config
             };
@@ -180,7 +180,7 @@ export class ComponentHelper {
             this.getSignalConfig('model', prop.defaultValue);
 
         if (config) {
-            return {
+            return  {
                 ...prop,
                 ...config
             };
@@ -243,9 +243,9 @@ export class ComponentHelper {
         // adjust union string expression like: 'foo' | 'bar' | 'test'
         // which should be outputed as: "foo" | "bar" | "test"
 
-        const unionTypeRegex = /^'([\w-]+)'\s?\|\s?('([\w-]+)'|.*)$/;
+        const unionTypeRegex = /^'([\w-]+)'\s?\|\s?('([\w-]+)'|.*)$/
         let typeRest = type;
-        let newType = '';
+        let newType = "";
         let typeMatch: RegExpMatchArray;
         while ((typeMatch = typeRest.match(unionTypeRegex))) {
             const [, first, rest, second] = typeMatch;
