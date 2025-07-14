@@ -156,7 +156,7 @@ export class ComponentHelper {
             }
         });
 
-        return {inputSignals, outputSignals, properties};
+        return {inputSignals, outputSignals, properties}
     }
 
     public getInputSignal(prop) {
