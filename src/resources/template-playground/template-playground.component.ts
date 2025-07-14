@@ -531,10 +531,53 @@ export class TemplatePlaygroundComponent implements OnInit, OnDestroy {
     }
   }
 
-  exportZip(): void {
-    // Implementation for exporting templates as ZIP
-    console.log('Export templates as ZIP');
-    // TODO: Implement ZIP export functionality
+  async exportZip(): Promise<void> {
+    try {
+      if (!this.sessionId) {
+        console.error('No active session. Please refresh the page and try again.');
+        return;
+      }
+
+      console.log('Creating template package...');
+
+      // Call server-side ZIP creation endpoint for all templates
+      const response = await this.http.post(`/api/session/${this.sessionId}/download-all-templates`, {}, {
+        responseType: 'blob',
+        observe: 'response'
+      }).toPromise();
+
+      if (!response || !response.body) {
+        throw new Error('Failed to create template package');
+      }
+
+      // Get the ZIP file as a blob
+      const zipBlob = response.body;
+
+      // Get filename from response headers or construct it
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `compodoc-templates-${this.sessionId}.zip`;
+
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      // Create download link and trigger download
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      console.log('Template package downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading template package:', error);
+    }
   }
 
   trackByName(index: number, item: Template): string {
