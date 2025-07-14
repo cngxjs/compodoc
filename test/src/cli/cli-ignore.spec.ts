@@ -147,11 +147,10 @@ describe('CLI ignore JSDoc tag support', () => {
                 console.error(`shell error: ${ls.stdout.toString()}`);
                 done('error');
             }
+
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-
-                return;
             }
             done();
         });

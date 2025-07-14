@@ -16,11 +16,11 @@ describe('CLI nest projects support', () => {
                 distFolder
             ]);
 
-                    if (ls.stderr.toString() !== '') {
-            console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
-        }
-        done();
+            if (ls.stderr.toString() !== '') {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                done('error');
+            }
+            done();
         });
         after(() => tmp.clean(distFolder));
 

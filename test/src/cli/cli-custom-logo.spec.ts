@@ -26,6 +26,7 @@ describe('CLI custom logo', () => {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
             }
+
             done();
         });
         after(() => tmp.clean(distFolder));
@@ -56,6 +57,7 @@ describe('CLI custom logo', () => {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
             }
+
             done();
         });
         after(() => tmp.clean(distFolder));
@@ -84,6 +86,7 @@ describe('CLI custom logo', () => {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
             }
+            
             done();
         });
         after(() => tmp.clean(distFolder));

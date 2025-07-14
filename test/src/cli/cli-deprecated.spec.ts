@@ -22,7 +22,9 @@ describe('CLI Deprecated', () => {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
             }
+
             menuFile = read(`${distFolder}/js/menu-wc.js`);
+
             done();
         });
         after(() => tmp.clean(tmpFolder));
@@ -138,7 +140,9 @@ describe('CLI Deprecated', () => {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
             }
+
             menuFile = read(`${distFolder}/js/menu-wc.js`);
+            
             done();
         });
         after(() => tmp.clean(tmpFolder));

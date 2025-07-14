@@ -109,6 +109,7 @@ describe('CLI i18n', () => {
                 done('error');
             }
             indexFile = read(`${distFolder}/js/menu-wc.js`);
+            
             done();
         });
         after(() => tmp.clean(distFolder));
