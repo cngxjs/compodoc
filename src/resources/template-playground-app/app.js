@@ -172,10 +172,6 @@ class TemplatePlayground {
         });
 
         // Variable management
-        document.getElementById('addVariable').addEventListener('click', () => {
-            this.addCustomVariable();
-        });
-
         document.getElementById('resetVariables').addEventListener('click', () => {
             this.resetVariables();
         });
@@ -198,14 +194,14 @@ class TemplatePlayground {
         });
 
         // Enter key for adding variables
-        ['newVariableName', 'newVariableType', 'newVariableValue'].forEach(id => {
-            document.getElementById(id).addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    this.addCustomVariable();
-                }
-            });
-        });
+        // ['newVariableName', 'newVariableType', 'newVariableValue'].forEach(id => {
+        //     document.getElementById(id).addEventListener('keypress', (e) => {
+        //         if (e.key === 'Enter' && !e.shiftKey) {
+        //             e.preventDefault();
+        //             this.addCustomVariable();
+        //         }
+        //     });
+        // });
     }
 
     setupResizer() {
@@ -245,17 +241,26 @@ class TemplatePlayground {
         }
 
         try {
-            this.showLoading('Loading template and data...');
+            this.showLoading('Loading template and configuration...');
 
-            // Load example data for the selected template type
-            const encodedTemplatePath = encodeURIComponent(templatePath);
-            const dataResponse = await fetch(`/api/session/${this.sessionId}/template-data/${encodedTemplatePath}`);
-            if (!dataResponse.ok) {
-                throw new Error('Failed to load example data');
+            // Load configuration data instead of template-specific data
+            const configResponse = await fetch(`/api/session/${this.sessionId}/config`);
+            if (!configResponse.ok) {
+                throw new Error('Failed to load configuration data');
             }
 
-            const { data, context } = await dataResponse.json();
-            this.currentData = { ...data, ...context };
+            const { config } = await configResponse.json();
+
+            // Format config data to match expected structure
+            this.currentData = {
+                categories: {
+                    compodocConfig: {
+                        title: 'Compodoc Configuration Options',
+                        description: 'Edit these configuration options to customize the generated documentation. Changes will automatically regenerate the documentation.',
+                        data: config
+                    }
+                }
+            };
             this.originalData = JSON.parse(JSON.stringify(this.currentData));
 
             // Load template content - try specific template first, then fallback
@@ -280,8 +285,12 @@ class TemplatePlayground {
                 content: templateContent
             };
 
-            // Update UI
-            this.updateTemplateMetadata(templatePath, data);
+            // Defensive: Only update metadata if config data is present
+            if (this.currentData && this.currentData.categories && this.currentData.categories.compodocConfig && this.currentData.categories.compodocConfig.data) {
+                this.updateTemplateMetadata(templatePath, this.currentData.categories.compodocConfig.data);
+            } else {
+                this.updateTemplateMetadata(templatePath, {});
+            }
             this.editor.setValue(templateContent);
             this.renderVariables();
             this.updatePreview();
@@ -434,39 +443,49 @@ class TemplatePlayground {
             this.renderLegacyVariables(container);
         }
 
-        // Add custom variables section
-        this.renderCustomVariables(container);
+        // Remove custom variables section
+        // this.renderCustomVariables(container);
     }
 
-    renderCategorizedVariables(container) {
+        renderCategorizedVariables(container) {
         const categories = this.currentData.categories;
 
-        // Render Compodoc Configuration section
+        // Only render Compodoc Configuration section
         if (categories.compodocConfig) {
+            // Add a special header for config section
+            const configHeader = document.createElement('div');
+            configHeader.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #2196F3, #1976D2);
+                    color: white;
+                    padding: 8px 16px;
+                    margin-bottom: 16px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                ">
+                    <i class="fas fa-cog"></i> Editable Configuration
+                </div>
+            `;
+            container.appendChild(configHeader);
+
             this.createCategorySection(
                 container,
                 'compodoc-config',
                 categories.compodocConfig.title,
                 categories.compodocConfig.description,
                 categories.compodocConfig.data,
-                '#2196F3' // Blue for config
+                '#2196F3', // Blue for config
+                'config' // Mark as config category - these will be editable
             );
         }
 
-        // Render Template Variables section
-        if (categories.templateVariables) {
-            this.createCategorySection(
-                container,
-                'template-variables',
-                categories.templateVariables.title,
-                categories.templateVariables.description,
-                categories.templateVariables.data,
-                '#4CAF50' // Green for template variables
-            );
-        }
+        // Template variables section removed - only show config options
     }
 
-    createCategorySection(container, categoryId, title, description, data, accentColor) {
+    createCategorySection(container, categoryId, title, description, data, accentColor, categoryType = 'template') {
         const section = document.createElement('div');
         section.className = 'variable-category';
         section.style.marginBottom = '20px';
@@ -542,7 +561,7 @@ class TemplatePlayground {
 
         // Populate variables in this category
         const variableContainer = section.querySelector('.category-variables');
-        this.createVariableElements(data, '', variableContainer, 0, accentColor);
+        this.createVariableElements(data, '', variableContainer, 0, accentColor, categoryType);
     }
 
     renderLegacyVariables(container) {
@@ -623,7 +642,7 @@ class TemplatePlayground {
         });
     }
 
-    createVariableElements(obj, prefix, container, depth = 0, accentColor = '#007bff') {
+        createVariableElements(obj, prefix, container, depth = 0, accentColor = '#007bff', categoryType = 'template') {
         if (depth > 3) return; // Prevent too deep nesting
 
         const sortedEntries = Object.entries(obj).sort(([a], [b]) => {
@@ -709,15 +728,15 @@ class TemplatePlayground {
                     container.appendChild(objectElement);
 
                     const nestedContainer = objectElement.querySelector('.nested-variables');
-                    this.createVariableElements(value, fullKey, nestedContainer, depth + 1, accentColor);
+                    this.createVariableElements(value, fullKey, nestedContainer, depth + 1, accentColor, categoryType);
                 }
             } else {
-                this.createVariableElement(key, typeof value, value, container, false, fullKey, accentColor);
+                this.createVariableElement(key, typeof value, value, container, false, fullKey, accentColor, categoryType);
             }
         });
     }
 
-    createVariableElement(name, type, value, container, isCustom = false, fullPath = null, accentColor = '#007bff') {
+        createVariableElement(name, type, value, container, isCustom = false, fullPath = null, accentColor = '#007bff', categoryType = 'template') {
         const variableElement = document.createElement('div');
         variableElement.className = 'variable-item simple-variable';
         variableElement.style.marginBottom = '6px';
@@ -739,6 +758,10 @@ class TemplatePlayground {
             displayValue = String(value);
         }
 
+                // Determine if variable should be editable
+        // Config variables are editable, template variables are read-only, custom variables are always editable
+        const isEditable = isCustom || categoryType === 'config';
+
         // Determine type color
         const getTypeColor = (type) => {
             switch (type) {
@@ -750,6 +773,27 @@ class TemplatePlayground {
                 default: return '#666';
             }
         };
+
+        // Render checkbox for boolean config variables
+        let inputElement = '';
+        if (isEditable && type === 'boolean') {
+            inputElement = `<input type="checkbox" class="variable-value" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;" ${value ? 'checked' : ''} onchange="templatePlayground.updateVariable('${fullPath || name}', this.checked, ${isCustom}, '${categoryType}')">`;
+        } else {
+            inputElement = `<textarea class="variable-value" style="
+                width: 100%;
+                min-height: ${rows * 16}px;
+                border: 1px solid #ddd;
+                border-radius: 3px;
+                padding: 6px 8px;
+                font-size: 11px;
+                font-family: 'Consolas', 'Monaco', monospace;
+                resize: vertical;
+                background: #f8f9fa;
+                ${isEditable ? '' : 'background: #f1f3f4; cursor: not-allowed;'}
+            }"
+            ${isEditable ? `onchange=\"templatePlayground.updateVariable('${fullPath || name}', this.value, ${isCustom}, '${categoryType}')\"` : 'readonly'}
+            rows="${rows}">${displayValue}</textarea>`;
+        }
 
         variableElement.innerHTML = `
             <div style="
@@ -796,20 +840,7 @@ class TemplatePlayground {
                             </button>
                         ` : ''}
                     </div>
-                    <textarea class="variable-value" style="
-                        width: 100%;
-                        min-height: ${rows * 16}px;
-                        border: 1px solid #ddd;
-                        border-radius: 3px;
-                        padding: 6px 8px;
-                        font-size: 11px;
-                        font-family: 'Consolas', 'Monaco', monospace;
-                        resize: vertical;
-                        background: #f8f9fa;
-                        ${isCustom ? '' : 'background: #f1f3f4; cursor: not-allowed;'}
-                    }"
-                    ${isCustom ? `onchange="templatePlayground.updateVariable('${fullPath || name}', this.value, ${isCustom})"` : 'readonly'}
-                    rows="${rows}">${displayValue}</textarea>
+                    ${inputElement}
                 </div>
             </div>
         `;
@@ -817,7 +848,7 @@ class TemplatePlayground {
         container.appendChild(variableElement);
     }
 
-    updateVariable(path, value, isCustom = false) {
+    updateVariable(path, value, isCustom = false, categoryType = 'template') {
         try {
             let parsedValue;
 
@@ -831,14 +862,63 @@ class TemplatePlayground {
 
             if (isCustom) {
                 this.customVariables[path] = parsedValue;
+                this.debouncePreviewUpdate();
+            } else if (categoryType === 'config') {
+                // Handle config variable updates
+                this.updateSessionConfig(path, parsedValue);
             } else {
-                // Update nested property
+                // Update nested property for template variables
                 this.setNestedProperty(this.currentData, path, parsedValue);
+                this.debouncePreviewUpdate();
             }
 
-            this.debouncePreviewUpdate();
         } catch (error) {
             console.error('Error updating variable:', error);
+        }
+    }
+
+    async updateSessionConfig(configPath, newValue) {
+        try {
+            // Update the local config data immediately for responsiveness
+            this.setNestedProperty(this.currentData.categories.compodocConfig.data, configPath, newValue);
+
+            // Prepare config update for server
+            const configUpdate = {};
+            this.setNestedProperty(configUpdate, configPath, newValue);
+
+            this.showMessage('💾 Saving configuration...', 'info');
+
+            // Send config update to server
+            const response = await fetch(`/api/session/${this.sessionId}/config`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    config: configUpdate
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server responded with ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showSuccess('✅ Configuration saved! Documentation regenerating...');
+                // Automatically update the preview after config is saved
+                this.updatePreview();
+            } else {
+                throw new Error(result.message || 'Failed to save configuration');
+            }
+
+        } catch (error) {
+            console.error('Error updating session config:', error);
+            this.showError(`❌ Failed to save configuration: ${error.message}`);
+
+            // Revert the local change if save failed
+            this.renderVariables();
         }
     }
 
@@ -1157,28 +1237,52 @@ class TemplatePlayground {
 
     exportData() {
         try {
-            const exportData = {
-                template: this.currentTemplate,
-                originalData: this.originalData,
-                currentData: this.currentData,
-                customVariables: this.customVariables
-            };
+            // Generate the CompoDoc CLI command based on current config
+            const config = this.currentData.categories?.compodocConfig?.data || {};
+            const booleanFlags = [
+                'hideGenerator', 'disableSourceCode', 'disableGraph', 'disableCoverage', 'disablePrivate', 'disableProtected', 'disableInternal',
+                'disableLifeCycleHooks', 'disableConstructors', 'disableRoutesGraph', 'disableSearch', 'disableDependencies', 'disableProperties',
+                'disableDomTree', 'disableTemplateTab', 'disableStyleTab', 'disableMainGraph', 'hideDarkModeToggle', 'minimal', 'serve', 'open', 'watch', 'silent',
+                'coverageTest', 'coverageTestThresholdFail', 'coverageTestShowOnlyFailed'
+            ];
+            const valueFlags = [
+                'theme', 'language', 'base', 'customFavicon', 'customLogo', 'assetsFolder', 'extTheme', 'includes', 'includesName', 'output', 'port', 'hostname',
+                'exportFormat', 'coverageTestThreshold', 'coverageMinimumPerFile', 'unitTestCoverage', 'gaID', 'gaSite', 'maxSearchResults', 'toggleMenuItems', 'navTabConfig'
+            ];
+            let cmd = ['npx compodoc'];
+            for (const flag of booleanFlags) {
+                if (config[flag] === true) {
+                    cmd.push(`--${flag}`);
+                }
+            }
+            for (const flag of valueFlags) {
+                if (config[flag] !== undefined && config[flag] !== "") {
+                    let value = config[flag];
+                    if (Array.isArray(value) || typeof value === 'object') {
+                        value = JSON.stringify(value);
+                    }
+                    cmd.push(`--${flag} \"${value}\"`);
+                }
+            }
+            // Always include -p and -d
+            cmd.push(`-p \"tsconfig.json\"`);
+            cmd.push(`-d \"${config.output || './documentation/'}\"`);
+            const commandString = cmd.join(' ');
 
-            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const blob = new Blob([commandString], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
-
             const a = document.createElement('a');
             a.href = url;
-            a.download = `template-playground-data.json`;
+            a.download = `compodoc-command.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            this.showSuccess('Data exported successfully');
+            this.showSuccess('CompoDoc CLI command exported successfully');
         } catch (error) {
-            console.error('Error exporting data:', error);
-            this.showError('Failed to export data');
+            console.error('Error exporting command:', error);
+            this.showError('Failed to export command');
         }
     }
 

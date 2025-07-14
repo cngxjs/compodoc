@@ -17,16 +17,77 @@ interface PlaygroundSession {
 }
 
 interface CompoDocConfig {
-    hideGenerator?: boolean;
+    // Documentation Metadata
+    name?: string;
+
+    // Paths and Output
+    output?: string;
+    theme?: string;
+    language?: string;
+    base?: string;
+
+    // Assets and Custom UI
+    customFavicon?: string;
+    customLogo?: string;
+    assetsFolder?: string;
+    extTheme?: string;
+
+    // Feature Toggles - Disable Options
     disableSourceCode?: boolean;
     disableGraph?: boolean;
     disableCoverage?: boolean;
     disablePrivate?: boolean;
     disableProtected?: boolean;
     disableInternal?: boolean;
-    customFavicon?: string;
+    disableLifeCycleHooks?: boolean;
+    disableConstructors?: boolean;
+    disableRoutesGraph?: boolean;
+    disableSearch?: boolean;
+    disableDependencies?: boolean;
+    disableProperties?: boolean;
+    disableDomTree?: boolean;
+    disableTemplateTab?: boolean;
+    disableStyleTab?: boolean;
+    disableMainGraph?: boolean;
+
+    // UI Options
+    hideGenerator?: boolean;
+    hideDarkModeToggle?: boolean;
+    minimal?: boolean;
+
+    // Additional Content
     includes?: string;
     includesName?: string;
+
+    // Serving Options
+    port?: number;
+    hostname?: string;
+    serve?: boolean;
+    open?: boolean;
+    watch?: boolean;
+
+    // Export Options
+    exportFormat?: string;
+
+    // Coverage Options
+    coverageTest?: boolean;
+    coverageTestThreshold?: number;
+    coverageMinimumPerFile?: number;
+    coverageTestThresholdFail?: boolean;
+    coverageTestShowOnlyFailed?: boolean;
+    unitTestCoverage?: string;
+
+    // Google Analytics
+    gaID?: string;
+    gaSite?: string;
+
+    // Advanced Options
+    silent?: boolean;
+    maxSearchResults?: number;
+
+    // Menu Configuration
+    toggleMenuItems?: string[] | string;
+    navTabConfig?: any[] | string;
 }
 
 export class TemplatePlaygroundServer {
@@ -201,23 +262,37 @@ export class TemplatePlaygroundServer {
 
             const cmd = [
                 'node bin/index-cli.js',
-                `-p "${fakeProjectTsConfigPath}"`, // Use dynamic path to fake project
-                `-d "${session.documentationDir}"`, // Use absolute path to temp directory
-                '--theme material',
-                `--templates "${session.templateDir}"` // Use absolute path to temp directory
+                `-p "${fakeProjectTsConfigPath}"`,
+                `-d "${session.documentationDir}"`,
+                `--templates "${session.templateDir}"`
             ];
 
-            // Add configuration options
-            if (session.config.hideGenerator) cmd.push('--hideGenerator');
-            if (session.config.disableSourceCode) cmd.push('--disableSourceCode');
-            if (session.config.disableGraph) cmd.push('--disableGraph');
-            if (session.config.disableCoverage) cmd.push('--disableCoverage');
-            if (session.config.disablePrivate) cmd.push('--disablePrivate');
-            if (session.config.disableProtected) cmd.push('--disableProtected');
-            if (session.config.disableInternal) cmd.push('--disableInternal');
-
-            if (session.config.customFavicon) {
-                cmd.push(`--customFavicon ${session.config.customFavicon}`);
+            // Dynamically add all config options as CLI flags
+            const config = session.config || {};
+            const booleanFlags = [
+                'hideGenerator', 'disableSourceCode', 'disableGraph', 'disableCoverage', 'disablePrivate', 'disableProtected', 'disableInternal',
+                'disableLifeCycleHooks', 'disableConstructors', 'disableRoutesGraph', 'disableSearch', 'disableDependencies', 'disableProperties',
+                'disableDomTree', 'disableTemplateTab', 'disableStyleTab', 'disableMainGraph', 'hideDarkModeToggle', 'minimal', 'serve', 'open', 'watch', 'silent',
+                'coverageTest', 'coverageTestThresholdFail', 'coverageTestShowOnlyFailed'
+            ];
+            const valueFlags = [
+                'theme', 'language', 'base', 'customFavicon', 'customLogo', 'assetsFolder', 'extTheme', 'includes', 'includesName', 'output', 'port', 'hostname',
+                'exportFormat', 'coverageTestThreshold', 'coverageMinimumPerFile', 'unitTestCoverage', 'gaID', 'gaSite', 'maxSearchResults', 'toggleMenuItems', 'navTabConfig'
+            ];
+            for (const flag of booleanFlags) {
+                if (config[flag] === true) {
+                    cmd.push(`--${flag}`);
+                }
+            }
+            for (const flag of valueFlags) {
+                if (config[flag] !== undefined && config[flag] !== "") {
+                    let value = config[flag];
+                    // For arrays/objects, stringify
+                    if (Array.isArray(value) || typeof value === 'object') {
+                        value = JSON.stringify(value);
+                    }
+                    cmd.push(`--${flag} \"${value}\"`);
+                }
             }
 
             const fullCmd = cmd.join(' ');
@@ -715,17 +790,9 @@ export class TemplatePlaygroundServer {
             const sessionId = session.id;
 
             // Update session config if custom template content is provided
-            if (customTemplateContent) {
-                try {
-                    const templatesDir = path.join(session.templateDir, 'partials');
-                    fs.ensureDirSync(templatesDir);
-                    fs.writeFileSync(path.join(templatesDir, 'page.hbs'), customTemplateContent);
-                    logger.info(`📝 Custom template written to session template directory`);
-                } catch (error) {
-                    logger.error(`Error writing custom template to session directory:`, error);
-                    res.status(500).json({ error: 'Failed to write custom template' });
-                    return;
-                }
+            if (customTemplateContent && req.body.templatePath) {
+                const templatePath = path.join(session.templateDir, req.body.templatePath);
+                await fs.writeFile(templatePath, customTemplateContent, 'utf8');
             }
 
             // Generate documentation for the new session
@@ -1775,88 +1842,84 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             // Get example data for the template type
             const templateName = path.basename(templatePath, '.hbs');
 
-            // **COMPODOC CONFIGURATION VALUES**
-            // These are the actual configuration values that Compodoc uses
+            // **COMPODOC CONFIGURATION OPTIONS**
+            // Return only actual Compodoc configuration options that can be edited
             const compodocConfig = {
-                // Basic Configuration
-                documentationMainName: 'Documentation',
-                documentationMainDescription: 'A technical documentation for this project',
-                theme: 'gitbook',
-                output: './documentation/',
-                tsconfig: './tsconfig.json',
+                // Documentation Metadata
+                name: session?.config?.name || 'Application documentation',
 
-                // Feature Toggles
-                hideGenerator: session?.config?.hideGenerator || false,
+                // Paths and Output
+                output: session?.config?.output || './documentation/',
+                theme: session?.config?.theme || 'gitbook',
+                language: session?.config?.language || 'en-US',
+                base: session?.config?.base || '/',
+
+                // Assets and Custom UI
+                customFavicon: session?.config?.customFavicon || '',
+                customLogo: session?.config?.customLogo || '',
+                assetsFolder: session?.config?.assetsFolder || '',
+                extTheme: session?.config?.extTheme || '',
+
+                // Feature Toggles - Disable Options
                 disableSourceCode: session?.config?.disableSourceCode || false,
                 disableGraph: session?.config?.disableGraph || false,
                 disableCoverage: session?.config?.disableCoverage || false,
                 disablePrivate: session?.config?.disablePrivate || false,
                 disableProtected: session?.config?.disableProtected || false,
                 disableInternal: session?.config?.disableInternal || false,
-                disableLifeCycleHooks: false,
-                disableRoutesGraph: false,
-                disableSearch: false,
-                disableDomTree: false,
-                disableTemplateTab: false,
-                disableStyleTab: false,
+                disableLifeCycleHooks: session?.config?.disableLifeCycleHooks || false,
+                disableConstructors: session?.config?.disableConstructors || false,
+                disableRoutesGraph: session?.config?.disableRoutesGraph || false,
+                disableSearch: session?.config?.disableSearch || false,
+                disableDependencies: session?.config?.disableDependencies || false,
+                disableProperties: session?.config?.disableProperties || false,
+                disableDomTree: session?.config?.disableDomTree || false,
+                disableTemplateTab: session?.config?.disableTemplateTab || false,
+                disableStyleTab: session?.config?.disableStyleTab || false,
+                disableMainGraph: session?.config?.disableMainGraph || false,
 
-                // UI Configuration
-                customFavicon: session?.config?.customFavicon || '',
-                customLogo: '',
+                // UI Options
+                hideGenerator: session?.config?.hideGenerator || false,
+                hideDarkModeToggle: session?.config?.hideDarkModeToggle || false,
+                minimal: session?.config?.minimal || false,
+
+                // Additional Content
                 includes: session?.config?.includes || '',
                 includesName: session?.config?.includesName || 'Additional documentation',
-                port: 8080,
-                silent: false,
-                serve: false,
 
-                // Advanced Configuration
-                language: 'en-US',
-                extTheme: '',
-                coverageThreshold: 70,
-                coverageMinimumPerFile: 0,
-                unitTestCoverage: '',
-                exportFormat: 'html',
-                toggleMenuItems: [
-                    'all',
-                    'modules',
-                    'components',
-                    'directives',
-                    'classes',
-                    'injectables',
-                    'interfaces',
-                    'pipes',
-                    'guards',
-                    'interceptors',
-                    'miscellaneous',
-                    'routes',
-                    'coverage'
-                ],
+                // Serving Options
+                port: session?.config?.port || 8080,
+                hostname: session?.config?.hostname || '127.0.0.1',
+                serve: session?.config?.serve || false,
+                open: session?.config?.open || false,
+                watch: session?.config?.watch || false,
 
-                // Navigation Configuration
-                navTabConfig: [
-                    { id: 'info', label: 'Info', isInitialTab: true },
-                    { id: 'source', label: 'Source' },
-                    { id: 'templateData', label: 'Template' },
-                    { id: 'styleData', label: 'Styles' },
-                    { id: 'tree', label: 'DOM Tree' }
-                ],
+                // Export Options
+                exportFormat: session?.config?.exportFormat || 'html',
 
-                // File paths and URLs
-                mainData: {
-                    documentationMainName: 'Documentation',
-                    documentationMainDescription: 'A technical documentation for this project',
-                    mainPage: './README.md',
-                    assetsFolder: './src/assets/',
-                    output: './documentation/',
-                    base: '/',
-                    includes: '',
-                    gitRepository: ''
-                }
+                // Coverage Options
+                coverageTest: session?.config?.coverageTest || false,
+                coverageTestThreshold: session?.config?.coverageTestThreshold || 70,
+                coverageMinimumPerFile: session?.config?.coverageMinimumPerFile || 0,
+                coverageTestThresholdFail: session?.config?.coverageTestThresholdFail || true,
+                coverageTestShowOnlyFailed: session?.config?.coverageTestShowOnlyFailed || false,
+                unitTestCoverage: session?.config?.unitTestCoverage || '',
+
+                // Google Analytics
+                gaID: session?.config?.gaID || '',
+                gaSite: session?.config?.gaSite || 'auto',
+
+                // Advanced Options
+                silent: session?.config?.silent || false,
+                maxSearchResults: session?.config?.maxSearchResults || 15,
+
+                // Menu Configuration (as JSON string for editing)
+                toggleMenuItems: JSON.stringify(session?.config?.toggleMenuItems || ['all']),
+                navTabConfig: JSON.stringify(session?.config?.navTabConfig || [])
             };
 
-            // **TEMPLATE-SPECIFIC VARIABLES**
-            // These are the data objects that templates receive during rendering
-            let templateVariables: any = {};
+            // Return only the Compodoc configuration - no template variables
+            const responseData = compodocConfig;
             let additionalContext: any = {};
 
             // Determine template type and provide comprehensive realistic data
@@ -2241,31 +2304,20 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
                 showInternalMembers: !compodocConfig.disableInternal
             };
 
-            // Return categorized data as requested
+            // Return only the Compodoc configuration options
             res.json({
                 success: true,
                 categories: {
                     compodocConfig: {
-                        title: 'Compodoc Configuration Values',
-                        description: 'Settings and configuration options that control Compodoc behavior',
+                        title: 'Compodoc Configuration Options',
+                        description: 'Edit these configuration options to customize the generated documentation. Changes will automatically regenerate the documentation.',
                         data: compodocConfig
-                    },
-                    templateVariables: {
-                        title: 'Template Variables',
-                        description: 'Data objects and context variables available to this template',
-                        data: {
-                            // Main template data (component, service, etc.)
-                            [templateName.replace('-', '')]: templateVariables,
-
-                            // Common context available to all templates
-                            ...commonContext
-                        }
                     }
                 },
 
                 // Legacy format for backward compatibility
-                data: templateVariables,
-                context: { ...commonContext, config: compodocConfig }
+                data: compodocConfig,
+                context: { config: compodocConfig }
             });
 
         } catch (error) {
@@ -2330,8 +2382,83 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
 
             this.updateSessionActivity(sessionId);
 
+            // Return complete Compodoc configuration with current values or defaults
+            const fullConfig = {
+                // Documentation Metadata
+                name: session.config?.name || 'Application documentation',
+
+                // Paths and Output
+                output: session.config?.output || './documentation/',
+                theme: session.config?.theme || 'gitbook',
+                language: session.config?.language || 'en-US',
+                base: session.config?.base || '/',
+
+                // Assets and Custom UI
+                customFavicon: session.config?.customFavicon || '',
+                customLogo: session.config?.customLogo || '',
+                assetsFolder: session.config?.assetsFolder || '',
+                extTheme: session.config?.extTheme || '',
+
+                // Feature Toggles - Disable Options
+                disableSourceCode: !!session.config?.disableSourceCode,
+                disableGraph: !!session.config?.disableGraph,
+                disableCoverage: !!session.config?.disableCoverage,
+                disablePrivate: !!session.config?.disablePrivate,
+                disableProtected: !!session.config?.disableProtected,
+                disableInternal: !!session.config?.disableInternal,
+                disableLifeCycleHooks: !!session.config?.disableLifeCycleHooks,
+                disableConstructors: !!session.config?.disableConstructors,
+                disableRoutesGraph: !!session.config?.disableRoutesGraph,
+                disableSearch: !!session.config?.disableSearch,
+                disableDependencies: !!session.config?.disableDependencies,
+                disableProperties: !!session.config?.disableProperties,
+                disableDomTree: !!session.config?.disableDomTree,
+                disableTemplateTab: !!session.config?.disableTemplateTab,
+                disableStyleTab: !!session.config?.disableStyleTab,
+                disableMainGraph: !!session.config?.disableMainGraph,
+
+                // UI Options
+                hideGenerator: !!session.config?.hideGenerator,
+                hideDarkModeToggle: !!session.config?.hideDarkModeToggle,
+                minimal: !!session.config?.minimal,
+
+                // Additional Content
+                includes: session.config?.includes || '',
+                includesName: session.config?.includesName || 'Additional documentation',
+
+                // Serving Options
+                port: session.config?.port || 8080,
+                hostname: session.config?.hostname || '127.0.0.1',
+                serve: !!session.config?.serve,
+                open: !!session.config?.open,
+                watch: !!session.config?.watch,
+
+                // Export Options
+                exportFormat: session.config?.exportFormat || 'html',
+
+                // Coverage Options
+                coverageTest: !!session.config?.coverageTest,
+                coverageTestThreshold: session.config?.coverageTestThreshold || 70,
+                coverageMinimumPerFile: session.config?.coverageMinimumPerFile || 0,
+                coverageTestThresholdFail: !!session.config?.coverageTestThresholdFail,
+                coverageTestShowOnlyFailed: !!session.config?.coverageTestShowOnlyFailed,
+                unitTestCoverage: session.config?.unitTestCoverage || '',
+
+                // Google Analytics
+                gaID: session.config?.gaID || '',
+                gaSite: session.config?.gaSite || 'auto',
+
+                // Advanced Options
+                silent: !!session.config?.silent,
+                maxSearchResults: session.config?.maxSearchResults || 15,
+
+                // Menu Configuration (as JSON string for editing)
+                toggleMenuItems: JSON.stringify(session.config?.toggleMenuItems || ['all']),
+                navTabConfig: JSON.stringify(session.config?.navTabConfig || [])
+            };
+
             res.json({
-                config: session.config,
+                config: fullConfig,
                 success: true
             });
         } catch (error) {
