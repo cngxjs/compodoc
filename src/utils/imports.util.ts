@@ -63,7 +63,7 @@ export class ImportsUtil {
         if (variableKind && variableKind === SyntaxKind.VariableDeclaration) {
             let initializer = variableDeclaration.getInitializer();
             if (initializer) {
-                const initializerKind = initializer.getKind();
+                let initializerKind = initializer.getKind();
                 if (initializerKind && initializerKind === SyntaxKind.ObjectLiteralExpression) {
                     let compilerNode = initializer.compilerNode as ts.ObjectLiteralExpression,
                         finalValue = '';
