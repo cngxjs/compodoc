@@ -45,7 +45,7 @@ export function splitLinkText(text) {
     };
 }
 
-export let LinkParser = (function () {
+export let LinkParser = (function() {
     let processTheLink = function(string, tagInfo, leadingText) {
         let leading = extractLeadingText(string, tagInfo.completeTag),
             linkText,
