@@ -47,11 +47,11 @@ export class JsdocCodeExampleHelper implements IHtmlEngineHelper {
             if (language === 'js') language = 'javascript';
             if (language === 'ts') language = 'typescript';
             let code = match[2];
-            // Only trim trailing newlines, not internal empty lines
-            code = code.replace(/^\n+/, '').replace(/\n+$/, '');
-            code = code.replace(/```[\s\S]*?```/g, '');
-            // Convert placeholder back to empty lines
+            // Convert placeholder back to empty lines first
             code = code.replace(/___COMPODOC_EMPTY_LINE___/g, '\n');
+            // Trim leading and trailing whitespace, but preserve internal empty lines
+            code = code.trim();
+            code = code.replace(/```[\s\S]*?```/g, '');
             if (code.length === 0) {
                 continue;
             }
