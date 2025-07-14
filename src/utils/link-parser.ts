@@ -76,7 +76,7 @@ export let LinkParser = (function() {
      * {@link http://www.google.com|Google} or {@link https://github.com GitHub} or [Github]{@link https://github.com} to [Github](https://github.com)
      */
 
-    let replaceLinkTag = function (str: string) {
+    let replaceLinkTag = function(str: string) {
         if (typeof str === 'undefined') {
             return {
                 newString: ''
@@ -87,7 +87,7 @@ export let LinkParser = (function() {
         // new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i').exec('ee [TODO]{@link Todo} fo') -> "{@link Todo}", "Todo"
 
         let tagRegExpLight = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i'),
-            tagRegExpFull = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i');
+            tagRegExpFull = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i'),
             tagRegExp,
             matches,
             previousString,
@@ -127,7 +127,7 @@ export let LinkParser = (function() {
         };
     };
 
-    let _resolveLinks = function (str: string) {
+    let _resolveLinks = function(str: string) {
         return replaceLinkTag(str).newString;
     };
 
