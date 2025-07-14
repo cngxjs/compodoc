@@ -45,10 +45,10 @@ export function splitLinkText(text) {
     };
 }
 
-export const LinkParser = (function () {
-    let processTheLink = function (string, tagInfo, leadingText) {
+export let LinkParser = (function () {
+    let processTheLink = function(string, tagInfo, leadingText) {
         let leading = extractLeadingText(string, tagInfo.completeTag),
-            linkText = '',
+            linkText,
             split,
             target,
             stringtoReplace;
