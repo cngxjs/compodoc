@@ -25,7 +25,7 @@ describe('JsdocCodeExampleHelper', () => {
         it('should parse TypeScript code fence correctly', () => {
             const comment = '```typescript\nconst test = "hello";\nconsole.log(test);\n```';
             const result = helper['parseCodeFences'](comment);
-            
+
             expect(result).to.have.length(1);
             expect(result[0].language).to.equal('typescript');
             expect(result[0].code).to.contain('const test = "hello";');
@@ -35,7 +35,7 @@ describe('JsdocCodeExampleHelper', () => {
         it('should parse HTML code fence correctly', () => {
             const comment = '```html\n<div>Hello World</div>\n<p>Test paragraph</p>\n```';
             const result = helper['parseCodeFences'](comment);
-            
+
             expect(result).to.have.length(1);
             expect(result[0].language).to.equal('html');
             expect(result[0].code).to.contain('<div>Hello World</div>');
@@ -45,7 +45,7 @@ describe('JsdocCodeExampleHelper', () => {
         it('should parse JavaScript code fence correctly', () => {
             const comment = '```javascript\nfunction test() {\n  return "hello";\n}\n```';
             const result = helper['parseCodeFences'](comment);
-            
+
             expect(result).to.have.length(1);
             expect(result[0].language).to.equal('javascript');
             expect(result[0].code).to.contain('function test() {');
@@ -64,9 +64,9 @@ describe('JsdocCodeExampleHelper', () => {
                 'const js = "javascript";',
                 '```'
             ].join('\n');
-            
+
             const result = helper['parseCodeFences'](comment);
-            
+
             expect(result).to.have.length(2);
             expect(result[0].language).to.equal('typescript');
             expect(result[0].code).to.contain('const ts = "typescript";');
@@ -77,7 +77,7 @@ describe('JsdocCodeExampleHelper', () => {
         it('should default to html language when no language specified', () => {
             const comment = '```\n<div>No language specified</div>\n```';
             const result = helper['parseCodeFences'](comment);
-            
+
             expect(result).to.have.length(1);
             expect(result[0].language).to.equal('html');
             expect(result[0].code).to.contain('<div>No language specified</div>');
@@ -86,7 +86,7 @@ describe('JsdocCodeExampleHelper', () => {
         it('should handle comment without code fences', () => {
             const comment = 'Simple text without code fences';
             const result = helper['parseCodeFences'](comment);
-            
+
             expect(result).to.have.length(1);
             expect(result[0].language).to.equal('html');
             expect(result[0].code).to.equal('Simple text without code fences');
@@ -95,14 +95,14 @@ describe('JsdocCodeExampleHelper', () => {
         it('should handle empty code blocks', () => {
             const comment = '```typescript\n\n```';
             const result = helper['parseCodeFences'](comment);
-            
+
             expect(result).to.have.length(0); // Empty code blocks should be filtered out
         });
 
         it('should handle code fences with whitespace', () => {
             const comment = '```typescript   \n  const test = "hello";  \n  ```';
             const result = helper['parseCodeFences'](comment);
-            
+
             expect(result).to.have.length(1);
             expect(result[0].language).to.equal('typescript');
             expect(result[0].code).to.equal('const test = "hello";');
@@ -221,8 +221,10 @@ describe('JsdocCodeExampleHelper', () => {
 
             const result = helper.helperFunc(mockContext, jsdocTags, mockOptions);
 
-            expect(mockContext.tags).to.have.length(1);
+            expect(mockContext.tags).to.have.length(2);
             expect(mockContext.tags[0].comment).to.contain('<b><i>Test Caption</i></b>');
+            expect(mockContext.tags[1].comment).to.contain('language-typescript');
+            expect(mockContext.tags[1].comment).to.contain('const test = &quot;hello&quot;;');
         });
 
         it('should ignore non-example tags', () => {
@@ -260,4 +262,4 @@ describe('JsdocCodeExampleHelper', () => {
             expect(mockContext.tags[0].comment).to.contain('</code></pre>');
         });
     });
-}); 
+});

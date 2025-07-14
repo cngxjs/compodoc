@@ -35,6 +35,9 @@ export class JsdocCodeExampleHelper implements IHtmlEngineHelper {
     }
 
     private parseCodeFences(comment: string): CodeBlock[] {
+        // DEBUG: Log the input comment
+        // eslint-disable-next-line no-console
+        console.log('parseCodeFences input:', JSON.stringify(comment));
         const codeFenceRegex = /```(\w+)?\s*\n([\s\S]*?)```/g;
         const blocks: CodeBlock[] = [];
         let match;
@@ -43,27 +46,30 @@ export class JsdocCodeExampleHelper implements IHtmlEngineHelper {
         // Find all code fences
         while ((match = codeFenceRegex.exec(comment)) !== null) {
             hasCodeFences = true;
-            const language = match[1] || 'html';
+            let language = (match[1] || 'html').toLowerCase();
+            if (language === 'js') language = 'javascript';
+            if (language === 'ts') language = 'typescript';
             let code = match[2];
-
-            // Trim whitespace from the code
             code = code.trim();
-
-            // Skip empty code blocks
+            code = code.replace(/```[\s\S]*?```/g, '').trim();
+            // DEBUG: Log each extracted block
+            // eslint-disable-next-line no-console
+            console.log('Extracted block:', { language, code });
             if (code.length === 0) {
                 continue;
             }
-
             blocks.push({
                 language: language,
                 code: code
             });
         }
 
-        // If no code fences found, treat entire comment as plain text with html language
         if (!hasCodeFences) {
             const trimmedComment = comment.trim();
             if (trimmedComment.length > 0) {
+                // DEBUG: Log fallback block
+                // eslint-disable-next-line no-console
+                console.log('Fallback block:', { language: 'html', code: trimmedComment });
                 blocks.push({
                     language: 'html',
                     code: trimmedComment
@@ -83,28 +89,31 @@ export class JsdocCodeExampleHelper implements IHtmlEngineHelper {
             if (jsdocTags[i].tagName) {
                 if (jsdocTags[i].tagName.text === 'example') {
                     if (jsdocTags[i].comment) {
-                        const comment = jsdocTags[i].comment;
-
-                        // Handle captions
-                        if (comment.indexOf('<caption>') !== -1) {
+                        // DEBUG: Log the comment for each @example tag
+                        // eslint-disable-next-line no-console
+                        console.log('helperFunc @example comment:', JSON.stringify(jsdocTags[i].comment));
+                        let comment = jsdocTags[i].comment;
+                        let caption = '';
+                        // Extract and render caption if present
+                        const captionMatch = comment.match(/<caption>([\s\S]*?)<\/caption>/);
+                        if (captionMatch) {
+                            caption = captionMatch[1];
+                            // Remove caption from comment
+                            comment = comment.replace(/<caption>[\s\S]*?<\/caption>/, '').trim();
+                            // Render caption as a separate tag
+                            const captionTag = {} as JsdocTagInterface;
+                            captionTag.comment = `<b><i>${caption}</i></b>`;
+                            tags.push(captionTag);
+                        }
+                        // Parse code fences for the rest of the comment
+                        const codeBlocks = this.parseCodeFences(comment);
+                        for (const block of codeBlocks) {
                             const tag = {} as JsdocTagInterface;
-                            tag.comment = comment
-                                .replace(/<caption>/g, '<b><i>')
-                                .replace(/<\/caption>/g, '</i></b>');
+                            tag.comment =
+                                `<pre class="line-numbers"><code class="language-${block.language}">` +
+                                this.getHtmlEntities(block.code) +
+                                `</code></pre>`;
                             tags.push(tag);
-                        } else {
-                            // Parse code fences
-                            const codeBlocks = this.parseCodeFences(comment);
-
-                            // Create a tag for each code block
-                            for (const block of codeBlocks) {
-                                const tag = {} as JsdocTagInterface;
-                                tag.comment =
-                                    `<pre class="line-numbers"><code class="language-${block.language}">` +
-                                    this.getHtmlEntities(block.code) +
-                                    `</code></pre>`;
-                                tags.push(tag);
-                            }
                         }
                     }
                 }

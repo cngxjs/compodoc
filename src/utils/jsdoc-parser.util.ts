@@ -98,40 +98,47 @@ export class JsdocParserUtil {
         let inCode = false;
         let inExample = false; // first line with @example, end line with empty string or string or */
         let exampleHasCodeFence = false; // track if the example already has code fences
-        function readLine(line: string) {
+        function readLine(line: string, index: number) {
             line = line.replace(/^\s*\*? ?/, '');
             line = line.replace(/\s*$/, '');
 
             if (CODE_FENCE.test(line)) {
                 inCode = !inCode;
+                if (inExample) {
+                    exampleHasCodeFence = true;
+                }
             }
 
             if (line.indexOf('@example') !== -1) {
                 inExample = true;
                 exampleHasCodeFence = false;
-                // Don't add html wrapper yet - check if code fences exist first
-                // eslint-disable-next-line no-self-assign
-                line = line; // Keep the original @example line
-            }
-
-            // Check if we're in an example and found a code fence
-            if (inExample && CODE_FENCE.test(line)) {
-                exampleHasCodeFence = true;
-            }
-
-            // If we're starting an example and the next non-empty line doesn't have a code fence,
-            // we need to add html wrapper
-            if (inExample && line !== '' && !exampleHasCodeFence && !line.includes('@example')) {
-                // Check if this line starts with a code fence
-                if (!CODE_FENCE.test(line)) {
-                    // No code fence found, add html wrapper
-                    comment += '\n```html';
-                    exampleHasCodeFence = true; // Prevent adding wrapper again
+                // Check if the next non-empty line has a code fence
+                const lines = text.split(/\r\n?|\n/);
+                for (let i = index + 1; i < lines.length; i++) {
+                    const nextLine = lines[i].replace(/^\s*\*? ?/, '').replace(/\s*$/, '');
+                    if (nextLine === '') continue; // Skip empty lines
+                    if (CODE_FENCE.test(nextLine)) {
+                        exampleHasCodeFence = true;
+                    }
+                    break; // Only check the first non-empty line
+                }
+                
+                if (!exampleHasCodeFence) {
+                    line = '```html';
+                } else {
+                    // Skip the @example line if it already has code fences
+                    return;
                 }
             }
 
-            if (inExample && line === '' && !exampleHasCodeFence) {
+            if (inExample && line === '') {
                 inExample = false;
+                if (!exampleHasCodeFence) {
+                    line = '```';
+                } else {
+                    // Don't add closing fence if example has its own
+                    return;
+                }
             }
 
             if (!inCode) {
@@ -153,7 +160,7 @@ export class JsdocParserUtil {
         text = text.replace(/^\s*\/\*+/, '');
         text = text.replace(/\*+\/\s*$/, '');
 
-        text.split(/\r\n?|\n/).forEach(readLine);
+        text.split(/\r\n?|\n/).forEach((line, index) => readLine(line, index));
 
         return comment;
     }

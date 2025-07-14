@@ -1,7 +1,7 @@
 import { Directive } from '@angular2/core';
 
 /**
- * Test class for JSDoc @example language specification
+ * Test class for JSDoc Example language specification
  * 
  * @example
  * ```typescript

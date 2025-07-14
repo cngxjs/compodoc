@@ -331,8 +331,8 @@ export class Application {
                         (readmeData: markdownReadedDatas) => {
                             Configuration.addPage({
                                 name: markdowns[i] === 'readme' ? 'index' : markdowns[i],
-                                context: 'getting-started',
-                                id: 'getting-started',
+                                context: 'overview',
+                                id: 'overview',
                                 markdown: readmeData.markdown,
                                 data: readmeData.rawData,
                                 depth: 0,
