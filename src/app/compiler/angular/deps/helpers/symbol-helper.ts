@@ -13,7 +13,7 @@ enum AngularProviderConfigProperties {
     UseValue = 'useValue',
     UseFactory = 'useFactory',
     UseExisting = 'useExisting',
-}
+};
 
 export class SymbolHelper {
     private readonly unknown = '???';
