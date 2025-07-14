@@ -25,7 +25,7 @@ export class JsdocParserUtil {
 
     isTopmostModuleDeclaration(node: ts.ModuleDeclaration): boolean {
         if (node.nextContainer && node.nextContainer.kind === ts.SyntaxKind.ModuleDeclaration) {
-            const next = <ts.ModuleDeclaration>node.nextContainer;
+            let next = <ts.ModuleDeclaration>node.nextContainer;
             if (node.name.end + 1 === next.name.pos) {
                 return false;
             }
@@ -36,7 +36,7 @@ export class JsdocParserUtil {
 
     getRootModuleDeclaration(node: ts.ModuleDeclaration): ts.Node {
         while (node.parent && node.parent.kind === ts.SyntaxKind.ModuleDeclaration) {
-            const parent = <ts.ModuleDeclaration>node.parent;
+            let parent = <ts.ModuleDeclaration>node.parent;
             if (node.name.pos === parent.name.end + 1) {
                 node = parent;
             } else {
