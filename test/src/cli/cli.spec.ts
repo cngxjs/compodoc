@@ -117,7 +117,6 @@ describe('CLI simple flags', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-                return;
             }
             componentFile = read(`${distFolder}/documentation/components/FooComponent.html`);
             done();

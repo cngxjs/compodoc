@@ -24,7 +24,6 @@ describe('CLI Analytics tracking', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-                return;
             }
             coverageFile = read(`${distFolder}/index.html`);
             done();

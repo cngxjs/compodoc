@@ -21,7 +21,6 @@ describe('CLI exclude from tsconfig', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-                return;
             }
             done();
         });

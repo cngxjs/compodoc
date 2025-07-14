@@ -23,7 +23,6 @@ describe('CLI handlebars templates', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-                return;
             }
             indexFile = read(`${distFolder}/index.html`);
             barComponentFile = read(`${distFolder}/components/BarComponent.html`);

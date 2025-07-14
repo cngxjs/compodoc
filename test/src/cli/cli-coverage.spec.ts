@@ -21,7 +21,6 @@ describe('CLI coverage report', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-                return;
             }
             done();
         });
@@ -50,7 +49,6 @@ describe('CLI coverage report', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-                return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -80,7 +78,6 @@ describe('CLI coverage report', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-                return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -109,7 +106,6 @@ describe('CLI coverage report', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-                return;
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -138,7 +134,6 @@ describe('CLI coverage report', () => {
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 done('error');
-                return;
             }
             stdoutString = ls.stdout.toString();
             done();
