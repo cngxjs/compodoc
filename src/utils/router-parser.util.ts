@@ -817,7 +817,7 @@ export class RouterParserUtil {
                                     propertyInitializer.kind === SyntaxKind.PropertyAccessExpression
                                 ) {
                                     let lastObjectLiteralAttributeName =
-                                        propertyInitializer.name.getText(),
+                                            propertyInitializer.name.getText(),
                                         firstObjectLiteralAttributeName;
                                     if (propertyInitializer.expression) {
                                         firstObjectLiteralAttributeName =
