@@ -9,7 +9,7 @@ export function promiseSequential(promises) {
 
         const iterateeFunc = (previousPromise, currentPromise) => {
             return previousPromise
-                .then(function (result) {
+                .then(function(result) {
                     if (count++ !== 0) {
                         results = results.concat(result);
                     }
