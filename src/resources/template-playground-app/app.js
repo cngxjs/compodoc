@@ -13,6 +13,21 @@ class TemplatePlayground {
         this.debounceTimer = null;
         this.sessionId = null;
 
+        // Track last visited doc URL in the iframe
+        this.lastVisitedDocUrl = null;
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'compodoc-iframe-navigate') {
+                this.lastVisitedDocUrl = event.data.url;
+                // Optionally persist in sessionStorage
+                sessionStorage.setItem('compodocLastVisitedDocUrl', this.lastVisitedDocUrl);
+            }
+        });
+        // Restore from sessionStorage if available
+        const storedUrl = sessionStorage.getItem('compodocLastVisitedDocUrl');
+        if (storedUrl) {
+            this.lastVisitedDocUrl = storedUrl;
+        }
+
         this.init();
     }
 
@@ -1037,10 +1052,17 @@ class TemplatePlayground {
                 // Documentation generated successfully, now load it in iframe
                 this.setPreviewStatus('📄 Loading generated documentation...', true);
 
-                // Point iframe to the generated documentation
+                // Point iframe to the last visited documentation page if available
                 const iframe = document.getElementById('templatePreviewFrame');
                 if (iframe) {
-                    iframe.src = `/docs/${this.sessionId}/index.html?t=` + Date.now(); // Add timestamp to prevent caching
+                    let url = `/docs/${this.sessionId}/index.html?t=` + Date.now();
+                    if (this.lastVisitedDocUrl) {
+                        // Remove /docs/<sessionId>/ prefix if present
+                        let docPath = this.lastVisitedDocUrl.replace(new RegExp(`^/docs/${this.sessionId}/?`), '');
+                        url = `/docs/${this.sessionId}/${docPath}`;
+                        url += (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+                    }
+                    iframe.src = url;
 
                     iframe.onload = () => {
                         this.setPreviewStatus('✅ Documentation loaded successfully', false);
@@ -1143,7 +1165,7 @@ class TemplatePlayground {
                             <div class="error-container">
                                 <div class="error-icon">⚠️</div>
                                 <h2 class="error-title">Documentation Generation Failed</h2>
-                                <div class="error-message">${error.message}</div>
+                                <div class="error-message">
                                 <div class="suggestions">
                                     <h4>Possible solutions:</h4>
                                     <ul>
