@@ -44,7 +44,7 @@ class Logger {
 
     private format(level, ...args) {
         let pad = (s, l, z = '') => {
-            return s + Array(Math.max(0, l - s.length + 1)).join(z);
+            return s + Array(Math.max(0, l - (s.length ?? 0) + 1)).join(z);
         };
 
         let msg = args.join(' ');
