@@ -1,24 +1,14 @@
-// eslint-disable-next-line no-unused-vars
 enum BasicTypes {
-    // eslint-disable-next-line no-unused-vars
     number,
-    // eslint-disable-next-line no-unused-vars
     boolean,
-    // eslint-disable-next-line no-unused-vars
     string,
-    // eslint-disable-next-line no-unused-vars
     object,
-    // eslint-disable-next-line no-unused-vars
     date,
-    // eslint-disable-next-line no-unused-vars
     function
 }
 
-// eslint-disable-next-line no-unused-vars
 enum BasicTypeScriptTypes {
-    // eslint-disable-next-line no-unused-vars
     any,
-    // eslint-disable-next-line no-unused-vars
     void
 }
 
