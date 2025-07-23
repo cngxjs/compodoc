@@ -255,11 +255,10 @@ export class AngularDependencies extends FrameworkDependencies {
         deps.inputsClass = IO.inputs ?? [];
         deps.outputsClass = IO.outputs ?? [];
         if (IO.properties) {
-            const { inputSignals, outputSignals, properties } =
-                this.componentHelper.getInputOutputSignals(IO.properties);
+            const { inputSignals, outputSignals, properties } = this.componentHelper.getInputOutputSignals(IO.properties);
 
-            deps.inputsClass = deps.inputsClass.concat(inputSignals);
-            deps.outputsClass = deps.outputsClass.concat(outputSignals);
+            deps.inputsClass = deps.inputsClass.concat(inputSignals)
+            deps.outputsClass = deps.outputsClass.concat(outputSignals)
             deps.properties = properties;
         }
         if (IO.description) {
