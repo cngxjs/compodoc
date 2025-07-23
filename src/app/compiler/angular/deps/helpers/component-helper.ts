@@ -243,9 +243,9 @@ export class ComponentHelper {
         // adjust union string expression like: 'foo' | 'bar' | 'test'
         // which should be outputed as: "foo" | "bar" | "test"
 
-        const unionTypeRegex = /^'([\w-]+)'\s?\|\s?('([\w-]+)'|.*)$/;
+        const unionTypeRegex = /^'([\w-]+)'\s?\|\s?('([\w-]+)'|.*)$/
         let typeRest = type;
-        let newType = '';
+        let newType = "";
         let typeMatch: RegExpMatchArray;
         while ((typeMatch = typeRest.match(unionTypeRegex))) {
             const [, first, rest, second] = typeMatch;
