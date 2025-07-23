@@ -13,7 +13,7 @@ enum AngularProviderConfigProperties {
     UseValue = 'useValue',
     UseFactory = 'useFactory',
     UseExisting = 'useExisting',
-}
+};
 
 export class SymbolHelper {
     private readonly unknown = '???';
@@ -108,7 +108,7 @@ export class SymbolHelper {
      */
     public parseProviderConfiguration(node: ts.ObjectLiteralExpression): string {
         if (node.kind && node.kind === SyntaxKind.ObjectLiteralExpression) {
-            const provideProperty = node.properties.find(props => props.name.getText() === 'provide');
+            const provideProperty = node.properties.find((props) => props.name.getText() === 'provide');
 
             if (!provideProperty) {
                 throw new Error("provide property not found in provider object config");
