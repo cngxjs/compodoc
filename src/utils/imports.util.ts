@@ -289,8 +289,8 @@ export class ImportsUtil {
             foundWithAlias = false;
         imports.forEach(i => {
             let namedImports = i.getNamedImports(),
-                namedImportsLength = namedImports.length;
-            let j = 0;
+                namedImportsLength = namedImports.length,
+                j = 0;
 
             if (namedImportsLength > 0) {
                 for (j; j < namedImportsLength; j++) {
@@ -405,13 +405,13 @@ export class ImportsUtil {
          */
         imports.forEach(i => {
             let namedImports = i.getNamedImports(),
-                namedImportsLength = namedImports.length;
-            let j = 0;
+                namedImportsLength = namedImports.length,
+                j = 0;
 
             if (namedImportsLength > 0) {
                 for (j; j < namedImportsLength; j++) {
-                    const importName = namedImports[j].getNameNode().getText() as string;
-                    let importAlias;
+                    let importName = namedImports[j].getNameNode().getText() as string,
+                        importAlias;
 
                     if (namedImports[j].getAliasNode()) {
                         importAlias = namedImports[j].getAliasNode().getText();
