@@ -180,7 +180,7 @@ export class ComponentHelper {
             this.getSignalConfig('model', prop.defaultValue);
 
         if (config) {
-            return {
+            return  {
                 ...prop,
                 ...config
             };
