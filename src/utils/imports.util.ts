@@ -43,7 +43,7 @@ export class ImportsUtil {
     private findInClasses(srcFile, variableName: string, variableValue: string) {
         let res = '';
         srcFile.getClass(c => {
-            const staticProperty: PropertyDeclaration = c.getStaticProperty(variableValue);
+            let staticProperty: PropertyDeclaration = c.getStaticProperty(variableValue);
             if (staticProperty) {
                 if (staticProperty.getInitializer()) {
                     res = staticProperty.getInitializer().getText();
@@ -59,17 +59,17 @@ export class ImportsUtil {
      * @param variablesAttributes
      */
     private findInObjectVariableDeclaration(variableDeclaration, variablesAttributes) {
-        const variableKind = variableDeclaration.getKind();
+        let variableKind = variableDeclaration.getKind();
         if (variableKind && variableKind === SyntaxKind.VariableDeclaration) {
-            const initializer = variableDeclaration.getInitializer();
+            let initializer = variableDeclaration.getInitializer();
             if (initializer) {
-                const initializerKind = initializer.getKind();
+                let initializerKind = initializer.getKind();
                 if (initializerKind && initializerKind === SyntaxKind.ObjectLiteralExpression) {
-                    const compilerNode = initializer.compilerNode as ts.ObjectLiteralExpression;
-                    let finalValue = '';
+                    let compilerNode = initializer.compilerNode as ts.ObjectLiteralExpression,
+                        finalValue = '';
                     // Find thestring from AVAR.BVAR.thestring inside properties
                     let depth = 0;
-                    const loopProperties = properties => {
+                    let loopProperties = properties => {
                         properties.forEach(prop => {
                             if (prop.name) {
                                 if (variablesAttributes[depth + 1]) {
@@ -106,10 +106,11 @@ export class ImportsUtil {
         sourceFile: ts.SourceFile,
         decoratorType?: string
     ) {
-        const metadataVariableName = inputVariableName;
-        let searchedImport,
+        let metadataVariableName = inputVariableName,
+            searchedImport,
             aliasOriginalName = '',
             foundWithNamedImport = false,
+            foundWithDefaultImport = false,
             foundWithAlias = false;
 
         const file =
