@@ -12,7 +12,7 @@ enum AngularProviderConfigProperties {
     Useclass = 'useClass',
     UseValue = 'useValue',
     UseFactory = 'useFactory',
-    UseExisting = 'useExisting'
+    UseExisting = 'useExisting',
 }
 
 export class SymbolHelper {
@@ -108,18 +108,16 @@ export class SymbolHelper {
      */
     public parseProviderConfiguration(node: ts.ObjectLiteralExpression): string {
         if (node.kind && node.kind === SyntaxKind.ObjectLiteralExpression) {
-            const provideProperty = node.properties.find(
-                props => props.name.getText() === 'provide'
-            );
+            const provideProperty = node.properties.find(props => props.name.getText() === 'provide');
 
             if (!provideProperty) {
-                throw new Error('provide property not found in provider object config');
+                throw new Error("provide property not found in provider object config");
             }
 
-            const providerObjectProps = Object.values(AngularProviderConfigProperties);
+            const providerObjectProps = Object.values(AngularProviderConfigProperties)
             for (let i = 0; i < providerObjectProps.length; i++) {
                 const providerProp = providerObjectProps[i];
-                const prop = node.properties.find(props => props.name.getText() === providerProp);
+                const prop = node.properties.find((props) => props.name.getText() === providerProp);
                 if (prop) {
                     return prop.getLastToken().getText();
                 }
