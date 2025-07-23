@@ -143,20 +143,20 @@ export class ComponentHelper {
         props.forEach(prop => {
             const inputSignal = this.getInputSignal(prop);
             if (inputSignal) {
-                inputSignals.push(inputSignal);
+                inputSignals.push(inputSignal)
             }
 
             const outputSignal = this.getOutputSignal(prop);
             if (outputSignal) {
-                outputSignals.push(outputSignal);
+                outputSignals.push(outputSignal)
             }
 
             if (!inputSignal && !outputSignal) {
-                properties.push(prop);
+                properties.push(prop)
             }
         });
 
-        return { inputSignals, outputSignals, properties };
+        return {inputSignals, outputSignals, properties}
     }
 
     public getInputSignal(prop) {
