@@ -45,8 +45,8 @@ export function splitLinkText(text) {
     };
 }
 
-export let LinkParser = (function () {
-    let processTheLink = function (string, tagInfo, leadingText) {
+export let LinkParser = (function() {
+    let processTheLink = function(string, tagInfo, leadingText) {
         let leading = extractLeadingText(string, tagInfo.completeTag),
             linkText,
             split,
@@ -76,7 +76,7 @@ export let LinkParser = (function () {
      * {@link http://www.google.com|Google} or {@link https://github.com GitHub} or [Github]{@link https://github.com} to [Github](https://github.com)
      */
 
-    let replaceLinkTag = function (str: string) {
+    let replaceLinkTag = function(str: string) {
         if (typeof str === 'undefined') {
             return {
                 newString: ''
@@ -127,7 +127,7 @@ export let LinkParser = (function () {
         };
     };
 
-    let _resolveLinks = function (str: string) {
+    let _resolveLinks = function(str: string) {
         return replaceLinkTag(str).newString;
     };
 
