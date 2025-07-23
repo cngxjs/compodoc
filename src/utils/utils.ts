@@ -11,6 +11,7 @@ import { AngularLifecycleHooks } from './angular-lifecycles-hooks';
 import { kindToType } from './kind-to-type';
 import { JsdocParserUtil } from './jsdoc-parser.util';
 import { markedAcl } from './marked.acl';
+import exp = require('node:constants');
 
 const getCurrentDirectory = ts.sys.getCurrentDirectory;
 const useCaseSensitiveFileNames = ts.sys.useCaseSensitiveFileNames;
@@ -36,7 +37,7 @@ export const formatDiagnosticsHost: ts.FormatDiagnosticsHost = {
 
 export function markedtags(tags: Array<any>) {
     const jsdocParserUtil = new JsdocParserUtil();
-    const mtags = tags;
+    let mtags = tags;
     _.forEach(mtags, tag => {
         const rawComment = jsdocParserUtil.parseJSDocNode(tag);
         tag.comment = markedAcl(LinkParser.resolveLinks(rawComment));
@@ -45,7 +46,7 @@ export function markedtags(tags: Array<any>) {
 }
 
 export function mergeTagsAndArgs(args: Array<any>, jsdoctags?: Array<any>): Array<any> {
-    const margs = _.cloneDeep(args);
+    let margs = _.cloneDeep(args);
     _.forEach(margs, arg => {
         arg.tagName = {
             text: 'param'
@@ -77,7 +78,7 @@ export function mergeTagsAndArgs(args: Array<any>, jsdoctags?: Array<any>): Arra
                 jsdoctag.tagName &&
                 (jsdoctag.tagName.text === 'returns' || jsdoctag.tagName.text === 'return')
             ) {
-                const ret = {
+                let ret = {
                     tagName: jsdoctag.tagName,
                     comment: jsdoctag.comment
                 };
@@ -92,9 +93,9 @@ export function mergeTagsAndArgs(args: Array<any>, jsdoctags?: Array<any>): Arra
 }
 
 export function readConfig(configFile: string): any {
-    const result = ts.readConfigFile(configFile, ts.sys.readFile);
+    let result = ts.readConfigFile(configFile, ts.sys.readFile);
     if (result.error) {
-        const message = ts.formatDiagnostics([result.error], formatDiagnosticsHost);
+        let message = ts.formatDiagnostics([result.error], formatDiagnosticsHost);
         throw new Error(message);
     }
     return result.config;
@@ -112,9 +113,9 @@ export function hasBom(source: string): boolean {
 }
 
 export function handlePath(files: Array<string>, cwd: string): Array<string> {
-    const _files = files;
+    let _files = files;
     let i = 0;
-    const len = files.length;
+    let len = files.length;
 
     for (i; i < len; i++) {
         if (files[i].indexOf(cwd) === -1) {
@@ -126,10 +127,10 @@ export function handlePath(files: Array<string>, cwd: string): Array<string> {
 }
 
 export function cleanLifecycleHooksFromMethods(methods: Array<any>): Array<any> {
-    const result = [];
+    let result = [];
     if (typeof methods !== 'undefined') {
         let i = 0;
-        const len = methods.length;
+        let len = methods.length;
         for (i; i < len; i++) {
             if (!(methods[i].name in AngularLifecycleHooks)) {
                 result.push(methods[i]);
@@ -186,10 +187,10 @@ if (!Array.prototype.includes) {
             }
 
             // 1. Let O be ? ToObject(this value).
-            const o = Object(this);
+            let o = Object(this);
 
             // 2. Let len be ? ToLength(? Get(O, "length")).
-            const len = o.length >>> 0;
+            let len = o.length >>> 0;
 
             // 3. If len is 0, return false.
             if (len === 0) {
@@ -198,7 +199,7 @@ if (!Array.prototype.includes) {
 
             // 4. Let n be ? ToInteger(fromIndex).
             //    (If fromIndex is undefined, this step produces the value 0.)
-            const n = fromIndex | 0;
+            let n = fromIndex | 0;
 
             // 5. If n ≥ 0, then
             //  a. Let k be n.
@@ -235,14 +236,14 @@ export function findMainSourceFolder(files: string[]) {
     let mainFolder = '';
     let mainFolderCount = 0;
     let rawFolders = files.map(filepath => {
-        const shortPath = filepath.replace(process.cwd() + path.sep, '');
+        let shortPath = filepath.replace(process.cwd() + path.sep, '');
         return path.dirname(shortPath);
     });
-    const folders = {};
+    let folders = {};
     rawFolders = _.uniq(rawFolders);
 
     for (let i = 0; i < rawFolders.length; i++) {
-        const sep = rawFolders[i].split(path.sep);
+        let sep = rawFolders[i].split(path.sep);
         sep.forEach(folder => {
             if (folders[folder]) {
                 folders[folder] += 1;
@@ -251,7 +252,7 @@ export function findMainSourceFolder(files: string[]) {
             }
         });
     }
-    for (const f in folders) {
+    for (let f in folders) {
         if (folders[f] > mainFolderCount) {
             mainFolderCount = folders[f];
             mainFolder = f;
@@ -298,7 +299,7 @@ export function compilerHost(transpileOptions: any): ts.CompilerHost {
             }
             return undefined;
         },
-        writeFile: () => {},
+        writeFile: (name, text) => {},
         getDefaultLibFileName: () => 'lib.d.ts',
         useCaseSensitiveFileNames: () => false,
         getCanonicalFileName: fileName => fileName,
@@ -314,7 +315,7 @@ export function compilerHost(transpileOptions: any): ts.CompilerHost {
 }
 
 export function detectIndent(str, count): string {
-    const stripIndent = (stripedString: string) => {
+    let stripIndent = (stripedString: string) => {
         const match = stripedString.match(/^[ \t]*(?=\S)/gm);
 
         if (!match) {
@@ -322,13 +323,16 @@ export function detectIndent(str, count): string {
         }
 
         // TODO: use spread operator when targeting Node.js 6
-        const indent = Math.min(...match.map(x => x.length));
+        const indent = Math.min.apply(
+            Math,
+            match.map(x => x.length)
+        ); // eslint-disable-line
         const re = new RegExp(`^[ \\t]{${indent}}`, 'gm');
 
         return indent > 0 ? stripedString.replace(re, '') : stripedString;
     };
 
-    const repeating = (n, repeatString) => {
+    let repeating = (n, repeatString) => {
         repeatString = repeatString === undefined ? ' ' : repeatString;
 
         if (typeof repeatString !== 'string') {
@@ -354,7 +358,7 @@ export function detectIndent(str, count): string {
         return ret;
     };
 
-    const indentString = (indentedString, indentCount) => {
+    let indentString = (indentedString, indentCount) => {
         let indent = ' ';
         indentCount = indentCount === undefined ? 1 : indentCount;
 
@@ -386,13 +390,7 @@ export function detectIndent(str, count): string {
     return indentString(stripIndent(str), count || 0);
 }
 
-export function getSubstringFromMultilineString(
-    multilineString: string,
-    startLine: number,
-    startColumn: number,
-    endLine: number,
-    endColumn: number
-) {
+export function getSubstringFromMultilineString(multilineString: string, startLine: number, startColumn: number, endLine: number, endColumn: number) {
     // Split the string into lines
     const lines = multilineString.split('\n');
 
@@ -407,10 +405,7 @@ export function getSubstringFromMultilineString(
         selectedLines[0] = selectedLines[0].slice(startColumn + 1);
 
         // And slice the end line from the start to endColumn
-        selectedLines[selectedLines.length - 1] = selectedLines[selectedLines.length - 1].slice(
-            0,
-            endColumn - 1
-        );
+        selectedLines[selectedLines.length - 1] = selectedLines[selectedLines.length - 1].slice(0, endColumn - 1);
     }
 
     // Join the lines back together into a single string
