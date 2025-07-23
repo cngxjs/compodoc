@@ -207,7 +207,6 @@ export class ImportsUtil {
 
                         if (exportDeclarations && exportDeclarations.size > 0) {
                             for (const [
-                                // eslint-disable-next-line no-unused-vars
                                 exportDeclarationKey,
                                 exportDeclarationValues
                             ] of exportDeclarations) {
@@ -242,9 +241,9 @@ export class ImportsUtil {
             }
         } else {
             // Find in local variables of the file
-            let variableDeclaration = file.getVariableDeclaration(metadataVariableName);
+            const variableDeclaration = file.getVariableDeclaration(metadataVariableName);
             if (variableDeclaration) {
-                const variableKind = variableDeclaration.getKind();
+                let variableKind = variableDeclaration.getKind();
 
                 if (variableKind && variableKind === SyntaxKind.VariableDeclaration) {
                     let initializer = variableDeclaration.getInitializer();
@@ -285,16 +284,18 @@ export class ImportsUtil {
                 : ast.addSourceFileAtPath(sourceFile.fileName); // tslint:disable-line
         const imports = file.getImportDeclarations();
         let searchedImport,
-            finalPath = '';
+            aliasOriginalName = '',
+            finalPath = '',
+            foundWithAlias = false;
         imports.forEach(i => {
-            const namedImports = i.getNamedImports();
-            const namedImportsLength = namedImports.length;
+            let namedImports = i.getNamedImports(),
+                namedImportsLength = namedImports.length;
             let j = 0;
 
             if (namedImportsLength > 0) {
                 for (j; j < namedImportsLength; j++) {
-                    const importName = namedImports[j].getNameNode().getText() as string;
-                    let importAlias;
+                    let importName = namedImports[j].getNameNode().getText() as string,
+                        importAlias;
 
                     if (namedImports[j].getAliasNode()) {
                         importAlias = namedImports[j].getAliasNode().getText();
@@ -304,6 +305,8 @@ export class ImportsUtil {
                         break;
                     }
                     if (importAlias === variableName) {
+                        foundWithAlias = true;
+                        aliasOriginalName = importName;
                         searchedImport = i;
                         break;
                     }
@@ -311,13 +314,13 @@ export class ImportsUtil {
             }
         });
         if (typeof searchedImport !== 'undefined') {
-            const importPath = path.resolve(
+            let importPath = path.resolve(
                 path.dirname(sourceFile.fileName) +
                     '/' +
                     searchedImport.getModuleSpecifierValue() +
                     '.ts'
             );
-            const cleaner = (process.cwd() + path.sep).replace(/\\/g, '/');
+            let cleaner = (process.cwd() + path.sep).replace(/\\/g, '/');
             finalPath = importPath.replace(cleaner, '');
         }
         return finalPath;
@@ -330,7 +333,9 @@ export class ImportsUtil {
      */
     public findFilePathOfImportedVariable(inputVariableName, sourceFilePath: string) {
         let searchedImport,
-            finalPath = '';
+            finalPath = '',
+            aliasOriginalName = '',
+            foundWithAlias = false;
         const file =
             typeof ast.getSourceFile(sourceFilePath) !== 'undefined'
                 ? ast.getSourceFile(sourceFilePath)
@@ -341,14 +346,14 @@ export class ImportsUtil {
          * Loop through all imports, and find one matching inputVariableName
          */
         imports.forEach(i => {
-            const namedImports = i.getNamedImports(),
-                namedImportsLength = namedImports.length;
-            let j = 0;
+            let namedImports = i.getNamedImports(),
+                namedImportsLength = namedImports.length,
+                j = 0;
 
             if (namedImportsLength > 0) {
                 for (j; j < namedImportsLength; j++) {
-                    const importName = namedImports[j].getNameNode().getText() as string;
-                    let importAlias;
+                    let importName = namedImports[j].getNameNode().getText() as string,
+                        importAlias;
 
                     if (namedImports[j].getAliasNode()) {
                         importAlias = namedImports[j].getAliasNode().getText();
@@ -358,6 +363,8 @@ export class ImportsUtil {
                         break;
                     }
                     if (importAlias === inputVariableName) {
+                        foundWithAlias = true;
+                        aliasOriginalName = importName;
                         searchedImport = i;
                         break;
                     }
@@ -381,9 +388,9 @@ export class ImportsUtil {
      * @return {[type]}                                thestring value
      */
     public findPropertyValueInImportOrLocalVariables(inputVariableName, sourceFile: ts.SourceFile) {
-        const variablesAttributes = inputVariableName.split('.'),
-            metadataVariableName = variablesAttributes[0];
-        let searchedImport,
+        let variablesAttributes = inputVariableName.split('.'),
+            metadataVariableName = variablesAttributes[0],
+            searchedImport,
             aliasOriginalName = '',
             foundWithAlias = false;
 
@@ -397,7 +404,7 @@ export class ImportsUtil {
          * Loop through all imports, and find one matching inputVariableName
          */
         imports.forEach(i => {
-            const namedImports = i.getNamedImports(),
+            let namedImports = i.getNamedImports(),
                 namedImportsLength = namedImports.length;
             let j = 0;
 
@@ -425,7 +432,7 @@ export class ImportsUtil {
 
         let fileToSearchIn, variableDeclaration;
         if (typeof searchedImport !== 'undefined') {
-            const importPath = path.resolve(
+            let importPath = path.resolve(
                 path.dirname(sourceFile.fileName) +
                     '/' +
                     searchedImport.getModuleSpecifierValue() +
@@ -437,7 +444,7 @@ export class ImportsUtil {
                     : ast.addSourceFileAtPath(importPath); // tslint:disable-line
             if (sourceFileImport) {
                 fileToSearchIn = sourceFileImport;
-                const variableName = foundWithAlias ? aliasOriginalName : metadataVariableName;
+                let variableName = foundWithAlias ? aliasOriginalName : metadataVariableName;
                 variableDeclaration = fileToSearchIn.getVariableDeclaration(variableName);
             }
         } else {
