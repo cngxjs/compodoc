@@ -196,8 +196,8 @@ export class ImportsUtil {
                         : ast.addSourceFileAtPathIfExists(importPath); // tslint:disable-line
 
                 if (sourceFileImport) {
-                    const variableName = foundWithAlias ? aliasOriginalName : metadataVariableName;
-                    const variableDeclaration =
+                    let variableName = foundWithAlias ? aliasOriginalName : metadataVariableName;
+                    let variableDeclaration =
                         sourceFileImport.getVariableDeclaration(variableName);
 
                     if (variableDeclaration) {
@@ -243,19 +243,19 @@ export class ImportsUtil {
             }
         } else {
             // Find in local variables of the file
-            const variableDeclaration = file.getVariableDeclaration(metadataVariableName);
+            let variableDeclaration = file.getVariableDeclaration(metadataVariableName);
             if (variableDeclaration) {
                 const variableKind = variableDeclaration.getKind();
 
                 if (variableKind && variableKind === SyntaxKind.VariableDeclaration) {
-                    const initializer = variableDeclaration.getInitializer();
+                    let initializer = variableDeclaration.getInitializer();
                     if (initializer) {
-                        const initializerKind = initializer.getKind();
+                        let initializerKind = initializer.getKind();
                         if (
                             initializerKind &&
                             initializerKind === SyntaxKind.ObjectLiteralExpression
                         ) {
-                            const compilerNode =
+                            let compilerNode =
                                 initializer.compilerNode as ts.ObjectLiteralExpression;
                             return compilerNode.properties;
                         } else if (
