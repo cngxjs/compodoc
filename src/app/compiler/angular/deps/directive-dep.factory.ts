@@ -61,8 +61,8 @@ export class DirectiveDepFactory {
         if (IO.properties) {
             const {inputSignals, outputSignals, properties} = this.helper.getInputOutputSignals(IO.properties);
 
-            directiveDeps.inputsClass = directiveDeps.inputsClass.concat(inputSignals);
-            directiveDeps.outputsClass = directiveDeps.outputsClass.concat(outputSignals);
+            directiveDeps.inputsClass = directiveDeps.inputsClass.concat(inputSignals)
+            directiveDeps.outputsClass = directiveDeps.outputsClass.concat(outputSignals)
             directiveDeps.propertiesClass = properties;
         }
         return directiveDeps;
