@@ -1,7 +1,7 @@
 export function extractLeadingText(string, completeTag) {
-    const tagIndex = string.indexOf(completeTag);
+    let tagIndex = string.indexOf(completeTag);
     let leadingText = undefined;
-    const leadingTextRegExp = /\[(.+?)\]/g;
+    let leadingTextRegExp = /\[(.+?)\]/g;
     let leadingTextInfo = leadingTextRegExp.exec(string);
 
     // did we find leading text, and if so, does it immediately precede the tag?
@@ -45,16 +45,18 @@ export function splitLinkText(text) {
     };
 }
 
-export const LinkParser = (function () {
-    const processTheLink = function (string, tagInfo, leadingText) {
-        const leading = extractLeadingText(string, tagInfo.completeTag);
-        let linkText = '';
-        let stringtoReplace = '';
+export let LinkParser = (function () {
+    let processTheLink = function (string, tagInfo, leadingText) {
+        let leading = extractLeadingText(string, tagInfo.completeTag),
+            linkText,
+            split,
+            target,
+            stringtoReplace;
 
         linkText = leadingText ? leadingText : leading.leadingText || '';
 
-        const split = splitLinkText(tagInfo.text);
-        const target = split.target;
+        split = splitLinkText(tagInfo.text);
+        target = split.target;
 
         if (leading.leadingText !== undefined) {
             stringtoReplace = '[' + leading.leadingText + ']' + tagInfo.completeTag;
@@ -74,7 +76,7 @@ export const LinkParser = (function () {
      * {@link http://www.google.com|Google} or {@link https://github.com GitHub} or [Github]{@link https://github.com} to [Github](https://github.com)
      */
 
-    const replaceLinkTag = function (str: string) {
+    let replaceLinkTag = function (str: string) {
         if (typeof str === 'undefined') {
             return {
                 newString: ''
@@ -84,17 +86,17 @@ export const LinkParser = (function () {
         // new RegExp('\\[((?:.|\n)+?)]\\{@link\\s+((?:.|\n)+?)\\}', 'i').exec('ee [TO DO]{@link Todo} fo') -> "[TO DO]{@link Todo}", "TO DO", "Todo"
         // new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i').exec('ee [TODO]{@link Todo} fo') -> "{@link Todo}", "Todo"
 
-        // eslint-disable-next-line no-control-regex
-        const tagRegExpLight = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i');
-        // eslint-disable-next-line no-control-regex
-        const tagRegExpFull = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i');
-        const tagInfo = [];
-        let matches, previousString;
+        let tagRegExpLight = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i'),
+            tagRegExpFull = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i'),
+            tagRegExp,
+            matches,
+            previousString,
+            tagInfo = [];
 
-        const tagRegExp = str.indexOf(']{') !== -1 ? tagRegExpFull : tagRegExpLight;
+        tagRegExp = str.indexOf(']{') !== -1 ? tagRegExpFull : tagRegExpLight;
 
         function replaceMatch(replacer, tag, match, text, linkText?) {
-            const matchedTag = {
+            let matchedTag = {
                 completeTag: match,
                 tag: tag,
                 text: text
@@ -125,7 +127,7 @@ export const LinkParser = (function () {
         };
     };
 
-    const _resolveLinks = function (str: string) {
+    let _resolveLinks = function (str: string) {
         return replaceLinkTag(str).newString;
     };
 
