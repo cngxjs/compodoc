@@ -25,7 +25,7 @@ export class JsdocParserUtil {
 
     isTopmostModuleDeclaration(node: ts.ModuleDeclaration): boolean {
         if (node.nextContainer && node.nextContainer.kind === ts.SyntaxKind.ModuleDeclaration) {
-            const next = <ts.ModuleDeclaration>node.nextContainer;
+            let next = <ts.ModuleDeclaration>node.nextContainer;
             if (node.name.end + 1 === next.name.pos) {
                 return false;
             }
@@ -36,7 +36,7 @@ export class JsdocParserUtil {
 
     getRootModuleDeclaration(node: ts.ModuleDeclaration): ts.Node {
         while (node.parent && node.parent.kind === ts.SyntaxKind.ModuleDeclaration) {
-            const parent = <ts.ModuleDeclaration>node.parent;
+            let parent = <ts.ModuleDeclaration>node.parent;
             if (node.name.pos === parent.name.end + 1) {
                 node = parent;
             } else {
@@ -97,6 +97,7 @@ export class JsdocParserUtil {
         const CODE_FENCE = /^\s*```(?!.*```)/;
         let inCode = false;
         let inExample = false; // first line with @example, end line with empty string or string or */
+        let nbLines = 0;
         function readLine(line: string) {
             line = line.replace(/^\s*\*? ?/, '');
             line = line.replace(/\s*$/, '');
@@ -133,6 +134,8 @@ export class JsdocParserUtil {
 
         text = text.replace(/^\s*\/\*+/, '');
         text = text.replace(/\*+\/\s*$/, '');
+
+        nbLines = text.split(/\r\n?|\n/).length;
 
         text.split(/\r\n?|\n/).forEach(readLine);
 
@@ -186,8 +189,8 @@ export class JsdocParserUtil {
         const variableStatementNode = isInitializerOfVariableDeclarationInStatement
             ? parent.parent.parent
             : isVariableOfVariableDeclarationStatement
-              ? parent.parent
-              : undefined;
+            ? parent.parent
+            : undefined;
         if (variableStatementNode) {
             cache = this.getJSDocsWorker(variableStatementNode, cache);
         }
@@ -245,7 +248,7 @@ export class JsdocParserUtil {
             const name = param.name.text;
             return _.filter(tags, tag => {
                 if (ts && ts.isJSDocParameterTag(tag)) {
-                    const t: JSDocParameterTagExt = tag;
+                    let t: JSDocParameterTagExt = tag;
                     if (typeof t.parameterName !== 'undefined') {
                         return t.parameterName.text === name;
                     } else if (typeof t.name !== 'undefined') {
