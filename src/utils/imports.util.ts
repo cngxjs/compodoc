@@ -197,8 +197,7 @@ export class ImportsUtil {
 
                 if (sourceFileImport) {
                     let variableName = foundWithAlias ? aliasOriginalName : metadataVariableName;
-                    let variableDeclaration =
-                        sourceFileImport.getVariableDeclaration(variableName);
+                    let variableDeclaration = sourceFileImport.getVariableDeclaration(variableName);
 
                     if (variableDeclaration) {
                         return hasFoundValues(variableDeclaration);
