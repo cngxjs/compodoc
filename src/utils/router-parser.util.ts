@@ -268,12 +268,12 @@ export class RouterParserUtil {
                         let routeAddedOnce = false;
                         for (i; i < len; i++) {
                             const route = routes[i];
-                            if (route.component) {
+                            if (routes[i].component) {
                                 routeAddedOnce = true;
                                 routesTree.children.push({
                                     kind: 'component',
-                                    component: route.component,
-                                    path: route.path
+                                    component: routes[i].component,
+                                    path: routes[i].path
                                 });
                             }
                         }
@@ -296,6 +296,9 @@ export class RouterParserUtil {
         let cleanedRoutesTree = undefined;
 
         const cleanRoutesTree = route => {
+            for (const i in route.children) {	
+                const routes = route.children[i].routes;	
+            }
             return route;
         };
 
@@ -411,10 +414,7 @@ export class RouterParserUtil {
                     result
                 );
             },
-            err => {
-                console.log(err);
-                Promise.reject('Error during routes index generation');
-            }
+            err => Promise.reject('Error during routes index generation')
         );
     }
 
