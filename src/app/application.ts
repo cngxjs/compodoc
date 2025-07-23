@@ -2382,7 +2382,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 }
                 return status;
             };
-            const getCoverageData = function (data, fileName) {
+            let getCoverageData = function (data, fileName) {
                 let out = {};
                 if (fileName !== 'total') {
                     if (covDat === undefined) {
