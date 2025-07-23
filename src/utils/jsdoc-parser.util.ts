@@ -98,7 +98,7 @@ export class JsdocParserUtil {
         let inCode = false;
         let inExample = false; // first line with @example, end line with empty string or string or */
         let nbLines = 0;
-        function readLine(line: string, index:number) {
+        function readLine(line: string, index: number) {
             line = line.replace(/^\s*\*? ?/, '');
             line = line.replace(/\s*$/, '');
 
