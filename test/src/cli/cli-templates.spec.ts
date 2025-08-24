@@ -34,7 +34,7 @@ describe('CLI handlebars templates', () => {
 
         it('should use templated "page.hbs"', () => {
             expect(indexFile).to.contain('<span>THIS IS TEST CONTENT</span>');
-            expect(indexFile).to.contain('<div class="content getting-started bg-info">');
+            expect(indexFile).to.contain('<div class="content overview bg-info">');
         });
 
         it('should use partial "component-detail.hbs"', () => {
