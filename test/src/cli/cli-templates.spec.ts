@@ -7,6 +7,7 @@ describe('CLI handlebars templates', () => {
 
     describe('with alternative handlebar template files', () => {
         let indexFile, barComponentFile, fooComponentFile;
+
         before(function (done) {
             tmp.create(distFolder);
 
@@ -33,7 +34,7 @@ describe('CLI handlebars templates', () => {
 
         it('should use templated "page.hbs"', () => {
             expect(indexFile).to.contain('<span>THIS IS TEST CONTENT</span>');
-            expect(indexFile).to.contain('<div class="content overview bg-info">');
+            expect(indexFile).to.contain('<div class="content getting-started bg-info">');
         });
 
         it('should use partial "component-detail.hbs"', () => {
