@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { temporaryDir, shell, read } from '../helpers';
 const tmp = temporaryDir();
 
-describe('CLI simple flags', () => {
+describe('CLI tsconfig', () => {
     const tmpFolder = tmp.name + '-tsconfig';
     const distFolder = tmpFolder + '/documentation';
 
@@ -40,6 +40,8 @@ describe('CLI simple flags', () => {
         let moduleFile = undefined;
         before(function (done) {
             tmp.create(tmpFolder);
+            tmp.copy('./test/fixtures/sample-files/', tmpFolder);
+
             const ls = shell(
                 'node',
                 [
