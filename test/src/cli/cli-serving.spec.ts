@@ -75,7 +75,7 @@ describe('CLI serving', () => {
                     './test/fixtures/sample-files/tsconfig.simple.json',
                     '-s',
                     '--host',
-                    '127.0.0.2'
+                    '0.0.0.0'
                 ],
                 { timeout: 25000 }
             );
@@ -90,7 +90,7 @@ describe('CLI serving', () => {
 
         it('should display message', () => {
             expect(stdoutString).to.contain(
-                'Serving documentation from ./documentation/ at http://127.0.0.2:8080'
+                'Serving documentation from ./documentation/ at http://0.0.0.0:8080'
             );
         });
     });

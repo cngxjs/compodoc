@@ -12,7 +12,7 @@ fs.copy('./package.json', './package.json.old', err => {
             delete packageData.watch;
 
             fs.outputFile('./package.json', JSON.stringify(packageData, null, 4), err => {
-                console.log(err) // => null
+                console.error(err) // => null
                 console.log('Successfully backup package.json !');
             });
         })

@@ -268,12 +268,12 @@ export class RouterParserUtil {
                         let routeAddedOnce = false;
                         for (i; i < len; i++) {
                             const route = routes[i];
-                            if (routes[i].component) {
+                            if (route.component) {
                                 routeAddedOnce = true;
                                 routesTree.children.push({
                                     kind: 'component',
-                                    component: routes[i].component,
-                                    path: routes[i].path
+                                    component: route.component,
+                                    path: route.path
                                 });
                             }
                         }
@@ -296,9 +296,6 @@ export class RouterParserUtil {
         let cleanedRoutesTree = undefined;
 
         const cleanRoutesTree = route => {
-            for (const i in route.children) {
-                const routes = route.children[i].routes;
-            }
             return route;
         };
 
@@ -709,7 +706,8 @@ export class RouterParserUtil {
             if (propertyAccessExpressionNodeName) {
                 try {
                     const propertyAccessExpressionNodeNameSymbol =
-                        propertyAccessExpressionNodeName.getSymbolOrThrow();
+                        propertyAccessExpressionNodeName.getSymbol();
+
                     if (propertyAccessExpressionNodeNameSymbol) {
                         const referencedDeclaration =
                             propertyAccessExpressionNodeNameSymbol.getValueDeclarationOrThrow();
@@ -729,7 +727,13 @@ export class RouterParserUtil {
                             );
                         }
                     }
-                } catch (e) {}
+                    // If symbol is null/undefined, just skip this property access expression
+                } catch (e) {
+                    // Gracefully handle cases where symbols cannot be resolved
+                    // This is common with dynamic imports and other runtime expressions
+                    // We'll just skip processing this property access expression
+                    continue;
+                }
             }
         }
 

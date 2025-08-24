@@ -205,6 +205,9 @@ export class ParseDescriptionHelper implements IHtmlEngineHelper {
             }
         } while (matches && previousString !== description);
 
+        // Convert empty line placeholders back to actual empty lines
+        description = description.replace(/___COMPODOC_EMPTY_LINE___/g, '\n');
+
         return description;
     }
 }
