@@ -85,7 +85,7 @@ export class JsdocCodeExampleHelper implements IHtmlEngineHelper {
                     if (jsdocTags[i].comment) {
                         // DEBUG: Log the comment for each @example tag
                         // eslint-disable-next-line no-console
-                        console.log('helperFunc @example comment:', JSON.stringify(jsdocTags[i].comment));
+                        // console.log('helperFunc @example comment:', JSON.stringify(jsdocTags[i].comment));
                         let comment = jsdocTags[i].comment;
                         let caption = '';
                         // Extract and render caption if present
