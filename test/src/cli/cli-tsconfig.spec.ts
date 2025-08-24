@@ -25,7 +25,7 @@ describe('CLI simple flags', () => {
             moduleFile = read(`${distFolder}/modules/AppModule.html`);
             done();
         });
-        after(() => tmp.clean(distFolder));
+        after(() => tmp.clean(tmpFolder));
 
         it('should only create links to files included via tsconfig', () => {
             expect(moduleFile).to.contain('components/FooComponent.html');
@@ -39,6 +39,7 @@ describe('CLI simple flags', () => {
     describe('when specific files are included in tsconfig + others', () => {
         let moduleFile = undefined;
         before(function (done) {
+            tmp.create(tmpFolder);
             const ls = shell(
                 'node',
                 [
@@ -58,7 +59,7 @@ describe('CLI simple flags', () => {
             moduleFile = read(`${distFolder}/modules/AppModule.html`);
             done();
         });
-        after(() => tmp.clean(distFolder));
+        after(() => tmp.clean(tmpFolder));
 
         it('should only create links to files included via tsconfig', () => {
             expect(moduleFile).to.contain('components/FooComponent.html');
