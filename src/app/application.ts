@@ -340,13 +340,15 @@ export class Application {
                             });
                             if (markdowns[i] === 'readme') {
                                 Configuration.mainData.readme = true;
-                                Configuration.addPage({
-                                    name: 'overview',
-                                    id: 'overview',
-                                    context: 'overview',
-                                    depth: 0,
-                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                });
+                                if (!Configuration.mainData.disableOverview) {
+                                    Configuration.addPage({
+                                        name: 'overview',
+                                        id: 'overview',
+                                        context: 'overview',
+                                        depth: 0,
+                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                    });
+                                }
                             } else {
                                 Configuration.mainData.markdowns.push({
                                     name: markdowns[i],
@@ -363,13 +365,15 @@ export class Application {
                             logger.warn(errorMessage);
                             logger.warn(`Continuing without ${markdowns[i].toUpperCase()}.md file`);
                             if (markdowns[i] === 'readme') {
-                                Configuration.addPage({
-                                    name: 'index',
-                                    id: 'index',
-                                    context: 'overview',
-                                    depth: 0,
-                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                });
+                                if (!Configuration.mainData.disableOverview) {
+                                    Configuration.addPage({
+                                        name: 'index',
+                                        id: 'index',
+                                        context: 'overview',
+                                        depth: 0,
+                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                    });
+                                }
                             }
                             i++;
                             loop();

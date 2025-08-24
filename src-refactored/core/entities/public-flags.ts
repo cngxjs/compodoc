@@ -142,6 +142,12 @@ export const PUBLIC_FLAGS: Flag[] = [
         defaultValue: false
     },
     {
+        label: 'disableOverview',
+        flag: '--disableOverview',
+        description: 'Do not add the overview page',
+        defaultValue: false
+    },
+    {
         label: 'exportFormat',
         flag: '-e, --exportFormat [format]',
         description: 'Export in specified format (json, html)',

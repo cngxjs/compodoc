@@ -59,6 +59,7 @@ export interface MainDataInterface {
     disableSearch: boolean;
     disableDependencies: boolean;
     disableProperties: boolean;
+    disableOverview: boolean;
     watch: boolean;
     mainGraph: string;
     coverageTest: boolean;
