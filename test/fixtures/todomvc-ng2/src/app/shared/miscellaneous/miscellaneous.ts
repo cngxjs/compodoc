@@ -73,4 +73,21 @@ function sumFunction(trackId, { a, b, c }: { a: number; b: number; c: number }, 
     return a + b + c;
 }
 
+/**
+ * Returns a question and answer for documentation
+ */
+function getQuestionAndAnswer(): { question: string; answer: number } {
+    return { question: 'What is 2 + 2?', answer: 4 };
+}
+
+/**
+ * Question extracted from object destructuring
+ */
+export const { question } = getQuestionAndAnswer();
+
+/**
+ * Answer extracted from object destructuring
+ */
+export const { answer } = getQuestionAndAnswer();
+
 var [first, second, third] = ['Laide', 'Gabriel', 'Jets'];

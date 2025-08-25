@@ -861,6 +861,21 @@ describe('CLI simple generation - big app', () => {
         expect(file).to.contain('<code>&#x27;Gabriel&#x27;</code>');
     });
 
+    it('should support object destructuring for variables', () => {
+        const file = read(distFolder + '/miscellaneous/variables.html');
+        expect(file).to.contain('<code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>');
+        expect(file).to.contain('<code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>');
+        expect(file).to.contain('<p>Question extracted from object destructuring</p>');
+        expect(file).to.contain('<p>Answer extracted from object destructuring</p>');
+        expect(file).to.contain('<i>Default value : </i><code>getQuestionAndAnswer()</code>');
+    });
+
+    it('should show detailed return types for functions instead of literal type', () => {
+        const file = read(distFolder + '/miscellaneous/functions.html');
+        expect(file).to.contain('<b>Returns : </b>    <code>{ question: string; answer: number }</code>');
+        expect(file).not.to.contain('literal type');
+    });
+
     it('should support JSDoc @link in JSDoc @param tag', () => {
         let file = read(distFolder + '/injectables/TodoStore.html');
         expect(file).to.contain(

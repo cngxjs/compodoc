@@ -1054,6 +1054,43 @@ export class ClassHelper {
             _return = 'any[]';
         } else {
             _return = kindToType(node.kind);
+            
+            // Enhanced handling for TypeLiteral to show actual object structure
+            if (node.kind === SyntaxKind.TypeLiteral && node.members) {
+                _return = '{ ';
+                const memberStrings = [];
+                
+                for (let i = 0; i < node.members.length; i++) {
+                    const member = node.members[i];
+                    
+                    if (ts.isPropertySignature(member) && member.name && member.type) {
+                        const memberName = (member.name as any).text || (member.name as any).escapedText;
+                        const memberType = this.visitType(member.type);
+                        const optionalMarker = member.questionToken ? '?' : '';
+                        memberStrings.push(`${memberName}${optionalMarker}: ${memberType}`);
+                    } else if (ts.isMethodSignature(member) && member.name) {
+                        const memberName = (member.name as any).text || (member.name as any).escapedText;
+                        const returnType = member.type ? this.visitType(member.type) : 'void';
+                        
+                        let parameters = '';
+                        if (member.parameters && member.parameters.length > 0) {
+                            const paramStrings = member.parameters.map(param => {
+                                const paramName = param.name ? ((param.name as any).text || (param.name as any).escapedText) : '';
+                                const paramType = param.type ? this.visitType(param.type) : 'any';
+                                const optionalMarker = param.questionToken ? '?' : '';
+                                return `${paramName}${optionalMarker}: ${paramType}`;
+                            });
+                            parameters = paramStrings.join(', ');
+                        }
+                        
+                        memberStrings.push(`${memberName}(${parameters}): ${returnType}`);
+                    }
+                }
+                
+                _return += memberStrings.join('; ');
+                _return += ' }';
+            }
+            
             if (
                 _return === '' &&
                 node.initializer &&

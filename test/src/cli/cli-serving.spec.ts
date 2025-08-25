@@ -17,7 +17,7 @@ describe('CLI serving', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                return done(new Error('shell error'));
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -49,7 +49,7 @@ describe('CLI serving', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                return done(new Error('shell error'));
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -75,14 +75,14 @@ describe('CLI serving', () => {
                     './test/fixtures/sample-files/tsconfig.simple.json',
                     '-s',
                     '--host',
-                    '127.0.0.2'
+                    '127.0.0.1'
                 ],
                 { timeout: 25000 }
             );
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                return done(new Error('shell error'));
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -90,7 +90,7 @@ describe('CLI serving', () => {
 
         it('should display message', () => {
             expect(stdoutString).to.contain(
-                'Serving documentation from ./documentation/ at http://127.0.0.2:8080'
+                'Serving documentation from ./documentation/ at http://127.0.0.1:8080'
             );
         });
     });
@@ -105,7 +105,7 @@ describe('CLI serving', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                return done(new Error('shell error'));
             }
             stdoutString = ls.stdout.toString();
             done();
@@ -126,7 +126,7 @@ describe('CLI serving', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                return done(new Error('shell error'));
             }
             stdoutString = ls.stdout.toString();
             done();
