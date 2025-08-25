@@ -39,6 +39,9 @@ export interface ConfigurationFileInterface {
     disableSearch: boolean;
     disableDependencies: boolean;
     disableProperties: boolean;
+    disableFilePath: boolean;
+    disableOverview: boolean;
+    templatePlayground: boolean;
     minimal: boolean;
     customFavicon: string;
     customLogo: string;

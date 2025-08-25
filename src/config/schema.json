@@ -298,6 +298,13 @@
             "default": false,
             "examples": [false]
         },
+        "disableOverview": {
+            "$id": "/properties/disableOverview",
+            "type": "boolean",
+            "title": "Do not add the overview page",
+            "default": false,
+            "examples": [false]
+        },
         "minimal": {
             "$id": "/properties/minimal",
             "type": "boolean",

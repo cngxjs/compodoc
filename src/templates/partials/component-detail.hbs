@@ -1,9 +1,11 @@
+{{#unless disableFilePath}}
 <p class="comment">
     <h3>{{t "file" }}</h3>
 </p>
 <p class="comment">
     <code>{{component.file}}</code>
 </p>
+{{/unless}}
 
 {{#if component.deprecated}}
     <p class="comment">

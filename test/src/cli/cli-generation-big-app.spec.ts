@@ -74,7 +74,7 @@ describe('CLI simple generation - big app', () => {
         done();
     });
     after(() => {
-        //tmp.clean(distFolder);
+        tmp.clean(tmpFolder);
     });
 
     it('should display generated message', () => {

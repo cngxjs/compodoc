@@ -455,4 +455,88 @@ describe('CLI disable flags', () => {
             expect(isFileExists).to.be.false;
         });
     });
+
+    describe('disabling file path with --disableFilePath', () => {
+        let componentFile,
+            moduleFile,
+            directiveFile,
+            pipeFile,
+            serviceFile,
+            classFile,
+            interfaceFile,
+            controllerFile,
+            entityFile,
+            interceptorFile,
+            guardFile;
+
+        before(function (done) {
+            tmp.create(distFolder);
+            let ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/sample-files/tsconfig.simple.json',
+                '--disableFilePath',
+                '-d',
+                distFolder
+            ]);
+
+            if (ls.stderr.toString() !== '') {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                done('error');
+            }
+            done();
+        });
+        after(() => tmp.clean(distFolder));
+
+        it('should not display file path in component documentation', () => {
+            componentFile = read(`${distFolder}/components/BarComponent.html`);
+            expect(componentFile).not.to.contain('<h3>File</h3>');
+            expect(componentFile).not.to.contain('<code>bar.component.ts</code>');
+        });
+
+        it('should not display file path in module documentation', () => {
+            moduleFile = read(`${distFolder}/modules/AppModule.html`);
+            expect(moduleFile).not.to.contain('<h3>File</h3>');
+            expect(moduleFile).not.to.contain('<code>app.module.ts</code>');
+        });
+
+        it('should not display file path in directive documentation', () => {
+            directiveFile = read(`${distFolder}/directives/BarDirective.html`);
+            expect(directiveFile).not.to.contain('<h3>File</h3>');
+            expect(directiveFile).not.to.contain('<code>bar.directive.ts</code>');
+        });
+
+        it('should not display file path in pipe documentation', () => {
+            pipeFile = read(`${distFolder}/pipes/BarPipe.html`);
+            expect(pipeFile).not.to.contain('<h3>File</h3>');
+            expect(pipeFile).not.to.contain('<code>bar.pipe.ts</code>');
+        });
+
+        it('should not display file path in service documentation', () => {
+            serviceFile = read(`${distFolder}/injectables/BarService.html`);
+            expect(serviceFile).not.to.contain('<h3>File</h3>');
+            expect(serviceFile).not.to.contain('<code>bar.service.ts</code>');
+        });
+
+        it('should not display file path in class documentation', () => {
+            classFile = read(`${distFolder}/classes/NavigationData.html`);
+            expect(classFile).not.to.contain('<h3>File</h3>');
+            expect(classFile).not.to.contain('<code>query-param-group.service.ts</code>');
+        });
+
+        it('should still display other content sections', () => {
+            componentFile = read(`${distFolder}/components/BarComponent.html`);
+            // Should still contain other sections like metadata, implements, etc.
+            expect(componentFile).to.contain('<h3>Metadata</h3>');
+            expect(componentFile).to.contain('<h3>Implements</h3>');
+        });
+
+        it('should work with file paths that have dependencies', () => {
+            // Test that the file path is disabled but other file references in "defined-in" remain
+            componentFile = read(`${distFolder}/components/BarComponent.html`);
+            expect(componentFile).not.to.contain('<h3>File</h3>');
+            // But should still contain source code references if --disableSourceCode is not used
+            expect(componentFile).to.contain('bar.component.ts');
+        });
+    });
 });

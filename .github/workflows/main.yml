@@ -9,6 +9,7 @@ on:
 env:
     SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
     SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 jobs:
     build-and-test:
@@ -22,7 +23,7 @@ jobs:
                 os: [ubuntu-latest, windows-latest]
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
               with:
                   fetch-depth: 0
 
@@ -54,11 +55,11 @@ jobs:
               run: npm run test-refactoring
 
             - name: Merge lcov
-              if: ${{ matrix.node-version == '20.x' && matrix.os == 'ubuntu-latest' }}
+              if: ${{ matrix.node-version == '22.x' && matrix.os == 'ubuntu-latest' }}
               run: npm run merge-lcov
 
             - name: Sonarcloud
-              if: ${{ matrix.node-version == '20.x' && matrix.os == 'ubuntu-latest' }}
+              if: ${{ matrix.node-version == '22.x' && matrix.os == 'ubuntu-latest' }}
               uses: SonarSource/sonarqube-scan-action@v5
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -76,11 +77,11 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                node-version: [20.x]
+                node-version: [22.x]
                 os: [ubuntu-latest]
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
 
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v4

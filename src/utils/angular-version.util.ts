@@ -46,6 +46,11 @@ export class AngularVersionUtil {
     }
 
     public prefixOfficialDoc(version: string): string {
+        // Handle empty, undefined, or invalid version strings
+        if (!version || typeof version !== 'string' || version.trim() === '') {
+            return '';
+        }
+
         return this.isAngularVersionArchived(version) ? 'v2.' : '';
     }
 
