@@ -2,6 +2,11 @@ import { expect } from 'chai';
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
+// Helper function to strip ANSI escape codes
+function stripAnsi(str: string): string {
+    return str.replace(/\u001b\[[0-9;]*m/g, '');
+}
+
 describe('CLI serving', () => {
     const distFolder = tmp.name + '-serving',
         TIMEOUT = 8000;
@@ -26,7 +31,7 @@ describe('CLI serving', () => {
         after(() => tmp.clean(distFolder));
 
         it('should serve', () => {
-            expect(stdoutString).to.contain(
+            expect(stripAnsi(stdoutString)).to.contain(
                 `Serving documentation from ${distFolder} at http://127.0.0.1:8080`
             );
         });
@@ -94,7 +99,7 @@ describe('CLI serving', () => {
         });
 
         it('should display message', () => {
-            expect(stdoutString).to.contain(
+            expect(stripAnsi(stdoutString)).to.contain(
                 'Serving documentation from ./documentation/ at http://127.0.0.1:8080'
             );
         });
@@ -169,7 +174,7 @@ describe('CLI serving', () => {
                 this.skip();
                 return;
             }
-            expect(stdoutString).to.contain(
+            expect(stripAnsi(stdoutString)).to.contain(
                 'Serving documentation from ./documentation/ at http://127.0.0.1:8080'
             );
         });
@@ -193,7 +198,7 @@ describe('CLI serving', () => {
         });
 
         it('should display message', () => {
-            expect(stdoutString).to.contain(
+            expect(stripAnsi(stdoutString)).to.contain(
                 'Serving documentation from ./documentation/ at http://127.0.0.1:8080'
             );
         });
@@ -216,7 +221,7 @@ describe('CLI serving', () => {
         after(() => tmp.clean('documentation'));
 
         it('should display message', () => {
-            expect(stdoutString).to.contain(
+            expect(stripAnsi(stdoutString)).to.contain(
                 'Serving documentation from ./documentation/ at http://127.0.0.1:8080'
             );
         });

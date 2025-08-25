@@ -1,7 +1,17 @@
-import * as fs from 'fs-extra';
+import * as fs from 'fs/promises';
 import * as path from 'path';
 import { expect } from 'chai';
 import { execSync } from 'child_process';
+
+// Helper function to check if path exists
+async function pathExists(path: string): Promise<boolean> {
+    try {
+        await fs.access(path);
+        return true;
+    } catch {
+        return false;
+    }
+}
 
 describe('Build Template Playground', () => {
     let testDir: string;
@@ -10,15 +20,15 @@ describe('Build Template Playground', () => {
     beforeEach(async () => {
         originalCwd = process.cwd();
         testDir = path.join(process.cwd(), 'test-temp-build');
-        await fs.ensureDir(testDir);
+        await fs.mkdir(testDir, { recursive: true });
 
         // Create mock project structure
         const srcDir = path.join(testDir, 'src');
-        await fs.ensureDir(srcDir);
+        await fs.mkdir(srcDir, { recursive: true });
 
         // Create playground-demo structure
         const playgroundDemoDir = path.join(srcDir, 'playground-demo');
-        await fs.ensureDir(path.join(playgroundDemoDir, 'src', 'app'));
+        await fs.mkdir(path.join(playgroundDemoDir, 'src', 'app'), { recursive: true });
         await fs.writeFile(path.join(playgroundDemoDir, 'package.json'), JSON.stringify({
             name: "compodoc-playground-demo",
             version: "1.0.0"
@@ -38,21 +48,21 @@ describe('Build Template Playground', () => {
 
         // Create templates structure
         const templatesDir = path.join(srcDir, 'templates');
-        await fs.ensureDir(path.join(templatesDir, 'partials'));
+        await fs.mkdir(path.join(templatesDir, 'partials'), { recursive: true });
         await fs.writeFile(path.join(templatesDir, 'page.hbs'), '<html>{{content}}</html>');
         await fs.writeFile(path.join(templatesDir, 'partials', 'component.hbs'), '<div>{{component.name}}</div>');
 
         // Create resources structure
         const resourcesDir = path.join(srcDir, 'resources');
-        await fs.ensureDir(path.join(resourcesDir, 'template-playground'));
-        await fs.ensureDir(path.join(resourcesDir, 'template-playground-app'));
-        await fs.ensureDir(path.join(resourcesDir, 'js'));
-        await fs.ensureDir(path.join(resourcesDir, 'styles'));
-        await fs.ensureDir(path.join(resourcesDir, 'images'));
+        await fs.mkdir(path.join(resourcesDir, 'template-playground'), { recursive: true });
+        await fs.mkdir(path.join(resourcesDir, 'template-playground-app'), { recursive: true });
+        await fs.mkdir(path.join(resourcesDir, 'js'), { recursive: true });
+        await fs.mkdir(path.join(resourcesDir, 'styles'), { recursive: true });
+        await fs.mkdir(path.join(resourcesDir, 'images'), { recursive: true });
 
         // Create mock build script
         const toolsDir = path.join(testDir, 'tools');
-        await fs.ensureDir(toolsDir);
+        await fs.mkdir(toolsDir, { recursive: true });
 
         // Copy our actual build script but modify paths
         const buildScriptContent = `
@@ -134,7 +144,7 @@ buildTemplatePlayground();
 
     afterEach(async () => {
         process.chdir(originalCwd);
-        await fs.remove(testDir);
+        await fs.rm(testDir, { recursive: true, force: true });
     });
 
     describe('Build Script Execution', () => {
@@ -159,12 +169,12 @@ buildTemplatePlayground();
             const distDir = path.join(testDir, 'dist');
             const distResourcesDir = path.join(distDir, 'resources');
 
-            expect(await fs.pathExists(distDir)).to.be.true;
-            expect(await fs.pathExists(distResourcesDir)).to.be.true;
-            expect(await fs.pathExists(path.join(distResourcesDir, 'playground-demo'))).to.be.true;
-            expect(await fs.pathExists(path.join(distResourcesDir, 'template-playground'))).to.be.true;
-            expect(await fs.pathExists(path.join(distResourcesDir, 'template-playground-app'))).to.be.true;
-            expect(await fs.pathExists(path.join(distDir, 'templates'))).to.be.true;
+            expect(await pathExists(distDir)).to.be.true;
+            expect(await pathExists(distResourcesDir)).to.be.true;
+            expect(await pathExists(path.join(distResourcesDir, 'playground-demo'))).to.be.true;
+            expect(await pathExists(path.join(distResourcesDir, 'template-playground'))).to.be.true;
+            expect(await pathExists(path.join(distResourcesDir, 'template-playground-app'))).to.be.true;
+            expect(await pathExists(path.join(distDir, 'templates'))).to.be.true;
         });
 
         it('should copy playground-demo files correctly', async () => {
@@ -173,15 +183,16 @@ buildTemplatePlayground();
             const distPlaygroundDemo = path.join(testDir, 'dist', 'resources', 'playground-demo');
 
             // Check main configuration files
-            expect(await fs.pathExists(path.join(distPlaygroundDemo, 'package.json'))).to.be.true;
-            expect(await fs.pathExists(path.join(distPlaygroundDemo, 'angular.json'))).to.be.true;
-            expect(await fs.pathExists(path.join(distPlaygroundDemo, 'tsconfig.json'))).to.be.true;
+            expect(await pathExists(path.join(distPlaygroundDemo, 'package.json'))).to.be.true;
+            expect(await pathExists(path.join(distPlaygroundDemo, 'angular.json'))).to.be.true;
+            expect(await pathExists(path.join(distPlaygroundDemo, 'tsconfig.json'))).to.be.true;
 
             // Check source files
-            expect(await fs.pathExists(path.join(distPlaygroundDemo, 'src', 'app', 'app.component.ts'))).to.be.true;
+            expect(await pathExists(path.join(distPlaygroundDemo, 'src', 'app', 'app.component.ts'))).to.be.true;
 
             // Verify content is copied correctly
-            const packageJson = await fs.readJSON(path.join(distPlaygroundDemo, 'package.json'));
+            const packageJsonContent = await fs.readFile(path.join(distPlaygroundDemo, 'package.json'), 'utf8');
+            const packageJson = JSON.parse(packageJsonContent);
             expect(packageJson.name).to.equal('compodoc-playground-demo');
         });
 
@@ -190,8 +201,8 @@ buildTemplatePlayground();
 
             const distTemplates = path.join(testDir, 'dist', 'templates');
 
-            expect(await fs.pathExists(path.join(distTemplates, 'page.hbs'))).to.be.true;
-            expect(await fs.pathExists(path.join(distTemplates, 'partials', 'component.hbs'))).to.be.true;
+            expect(await pathExists(path.join(distTemplates, 'page.hbs'))).to.be.true;
+            expect(await pathExists(path.join(distTemplates, 'partials', 'component.hbs'))).to.be.true;
 
             // Verify content
             const pageTemplate = await fs.readFile(path.join(distTemplates, 'page.hbs'), 'utf8');
@@ -218,7 +229,7 @@ buildTemplatePlayground();
             ];
 
             for (const dir of expectedDirectories) {
-                expect(await fs.pathExists(path.join(distDir, dir))).to.be.true;
+                expect(await pathExists(path.join(distDir, dir))).to.be.true;
             }
         });
     });
@@ -226,7 +237,7 @@ buildTemplatePlayground();
     describe('Error Handling', () => {
         it('should handle missing source directories gracefully', async () => {
             // Remove playground-demo directory
-            await fs.remove(path.join(testDir, 'src', 'playground-demo'));
+            await fs.rm(path.join(testDir, 'src', 'playground-demo'), { recursive: true, force: true });
 
             try {
                 execSync('node tools/build-template-playground.js', {
@@ -241,7 +252,7 @@ buildTemplatePlayground();
 
         it('should handle missing templates directory gracefully', async () => {
             // Remove templates directory
-            await fs.remove(path.join(testDir, 'src', 'templates'));
+            await fs.rm(path.join(testDir, 'src', 'templates'), { recursive: true, force: true });
 
             try {
                 execSync('node tools/build-template-playground.js', {
@@ -271,7 +282,7 @@ buildTemplatePlayground();
             ];
 
             for (const file of packageStructure) {
-                expect(await fs.pathExists(path.join(distDir, file))).to.be.true;
+                expect(await pathExists(path.join(distDir, file))).to.be.true;
             }
         });
 
