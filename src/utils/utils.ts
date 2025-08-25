@@ -322,11 +322,7 @@ export function detectIndent(str, count): string {
             return stripedString;
         }
 
-        // TODO: use spread operator when targeting Node.js 6
-        const indent = Math.min.apply(
-            Math,
-            match.map(x => x.length)
-        ); // eslint-disable-line
+        const indent = Math.min(...match.map(x => x.length));
         const re = new RegExp(`^[ \\t]{${indent}}`, 'gm');
 
         return indent > 0 ? stripedString.replace(re, '') : stripedString;

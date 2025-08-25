@@ -40,6 +40,7 @@ export interface ConfigurationFileInterface {
     disableDependencies: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
+    disableOverview: boolean;
     minimal: boolean;
     customFavicon: string;
     customLogo: string;

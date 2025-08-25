@@ -69,6 +69,7 @@ export class Configuration implements ConfigurationInterface {
         disableDependencies: COMPODOC_DEFAULTS.disableDependencies,
         disableProperties: COMPODOC_DEFAULTS.disableProperties,
         disableFilePath: COMPODOC_DEFAULTS.disableFilePath,
+        disableOverview: COMPODOC_DEFAULTS.disableOverview,
         watch: false,
         mainGraph: '',
         coverageTest: false,

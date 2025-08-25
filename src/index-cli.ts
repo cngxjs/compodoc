@@ -186,6 +186,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 COMPODOC_DEFAULTS.disableProperties
             )
             .option('--disableFilePath', 'Do not add the file path', false)
+            .option('--disableOverview', 'Do not add the overview page', false)
             .option(
                 '--minimal',
                 'Minimal mode with only documentation. No search, no graph, no coverage.',
@@ -552,6 +553,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.disableFilePath) {
             Configuration.mainData.disableFilePath = programOptions.disableFilePath;
+        }
+      
+        if (configFile.disableOverview) {
+            Configuration.mainData.disableOverview = configFile.disableOverview;
+        }
+        if (programOptions.disableOverview) {
+            Configuration.mainData.disableOverview = programOptions.disableOverview;
         }
 
         if (configFile.minimal) {

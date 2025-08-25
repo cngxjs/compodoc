@@ -30,6 +30,7 @@ export const COMPODOC_DEFAULTS = {
     disableDependencies: false,
     disableProperties: false,
     disableFilePath: false,
+    disableOverview: false,
     PAGE_TYPES: {
         ROOT: 'root',
         INTERNAL: 'internal'

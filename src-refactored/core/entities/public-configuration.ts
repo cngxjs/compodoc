@@ -21,6 +21,7 @@ export class PublicConfiguration {
     public disableSourceCode: boolean;
     public disableStyleTab: boolean;
     public disableTemplateTab: boolean;
+    public disableOverview: boolean;
     public exportFormat: string;
     public extTheme: string;
     public files: string;

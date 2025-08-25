@@ -77,7 +77,7 @@ describe('CLI serving', () => {
                     './test/fixtures/sample-files/tsconfig.simple.json',
                     '-s',
                     '--host',
-                    '127.0.0.1' // Use localhost instead of 127.0.0.2
+                    '127.0.0.1'
                 ],
                 { timeout: 25000 }
             );

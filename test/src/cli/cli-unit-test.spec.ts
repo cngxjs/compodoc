@@ -35,7 +35,8 @@ describe('CLI Unit Test Report', () => {
             unitTestFile = read(`${distFolder}/unit-test.html`);
             done();
         });
-        after(() => tmp.clean(distFolder));
+
+        after(() => tmp.clean(tmpFolder));
 
         it('should have unit test page', () => {
             expect(unitTestFile).to.contain('Unit test coverage');
@@ -87,7 +88,7 @@ describe('CLI Unit Test Report', () => {
             unitTestFile = read(`${distFolder}/unit-test.html`);
             done();
         });
-        after(() => tmp.clean(distFolder));
+        after(() => tmp.clean(tmpFolder));
 
         it('should have unit test page', () => {
             expect(unitTestFile).to.contain('Unit test coverage');
@@ -139,7 +140,7 @@ describe('CLI Unit Test Report', () => {
             unitTestFile = read(`${distFolder}/unit-test.html`);
             done();
         });
-        after(() => tmp.clean(distFolder));
+        after(() => tmp.clean(tmpFolder));
 
         it('should have unit test page', () => {
             expect(unitTestFile).to.contain('Unit test coverage');

@@ -60,6 +60,7 @@ export interface MainDataInterface {
     disableDependencies: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
+    disableOverview: boolean;
     watch: boolean;
     mainGraph: string;
     coverageTest: boolean;

@@ -7,6 +7,7 @@ describe('CLI handlebars templates', () => {
 
     describe('with alternative handlebar template files', () => {
         let indexFile, barComponentFile, fooComponentFile;
+
         before(function (done) {
             tmp.create(distFolder);
 
