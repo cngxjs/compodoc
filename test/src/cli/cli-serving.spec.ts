@@ -111,7 +111,6 @@ describe('CLI serving', () => {
         before(function (done) {
             this.timeout(10000);
             tmp.create('documentation');
-            
             const child = shellAsync('node', [
                 './bin/index-cli.js',
                 '-p',

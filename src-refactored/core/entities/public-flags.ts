@@ -70,6 +70,12 @@ export const PUBLIC_FLAGS: Flag[] = [
         defaultValue: COMPODOC_DEFAULTS.disableDependencies
     },
     {
+        label: 'disableFilePath',
+        flag: '--disableFilePath',
+        description: 'Do not add the file path',
+        defaultValue: false
+    },
+    {
         label: 'disableDomTree',
         flag: '--disableDomTree',
         description: 'Do not add dom tree tab',
