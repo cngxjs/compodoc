@@ -40,6 +40,7 @@ export interface ConfigurationFileInterface {
     disableDependencies: boolean;
     disableProperties: boolean;
     disableOverview: boolean;
+    templatePlayground: boolean;
     minimal: boolean;
     customFavicon: string;
     customLogo: string;

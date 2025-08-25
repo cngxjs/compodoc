@@ -69,7 +69,7 @@ export class AppComponent {
         this.timeout(5000);
 
         if (server) {
-            server.stop();
+            await server.stop();
         }
 
         process.chdir(originalCwd);
@@ -123,9 +123,10 @@ export class AppComponent {
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
-            expect(templatesResponse.body).to.be.an('array');
-            expect(templatesResponse.body.length).to.be.greaterThan(0);
-            expect(templatesResponse.body.some((t: any) => t.path === 'page.hbs')).to.be.true;
+            expect(templatesResponse.body).to.have.property('templates');
+            expect(templatesResponse.body.templates).to.be.an('array');
+            expect(templatesResponse.body.templates.length).to.be.greaterThan(0);
+            expect(templatesResponse.body.templates.some((t: any) => t.path === 'page.hbs')).to.be.true;
         });
 
         it('should get template content', async () => {
@@ -202,7 +203,13 @@ export class AppComponent {
                 .expect(200);
 
             expect(zipResponse.headers['content-type']).to.include('application/zip');
-            expect(zipResponse.body.length).to.be.greaterThan(0);
+            
+            // Check ZIP content using content-length header (more reliable for binary data)
+            const contentLength = parseInt(zipResponse.headers['content-length']);
+            expect(contentLength).to.be.greaterThan(0);
+            
+            // Also verify body exists (supertest populates it as object for binary)
+            expect(zipResponse.body).to.not.be.undefined;
         });
     });
 
@@ -210,10 +217,10 @@ export class AppComponent {
         it('should handle multiple concurrent sessions', async () => {
             const sessions = [];
 
-            // Create multiple sessions
+            // Create multiple sessions with explicit forceNew parameter
             for (let i = 0; i < 3; i++) {
                 const response = await request(server['app'])
-                    .post('/api/session')
+                    .post('/api/session?forceNew=true')
                     .expect(200);
 
                 sessions.push(response.body.sessionId);
@@ -229,19 +236,20 @@ export class AppComponent {
                     .get(`/api/session/${sessionId}/templates`)
                     .expect(200);
 
-                expect(templatesResponse.body).to.be.an('array');
-                expect(templatesResponse.body.length).to.be.greaterThan(0);
+                expect(templatesResponse.body).to.have.property('templates');
+                expect(templatesResponse.body.templates).to.be.an('array');
+                expect(templatesResponse.body.templates.length).to.be.greaterThan(0);
             }
         });
 
         it('should isolate template modifications between sessions', async () => {
-            // Create two sessions
+            // Create two sessions with explicit forceNew parameter
             const session1Response = await request(server['app'])
-                .post('/api/session')
+                .post('/api/session?forceNew=true')
                 .expect(200);
 
             const session2Response = await request(server['app'])
-                .post('/api/session')
+                .post('/api/session?forceNew=true')
                 .expect(200);
 
             const session1Id = session1Response.body.sessionId;
@@ -337,10 +345,10 @@ export class AppComponent {
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
-            expect(finalTemplates.body.length).to.equal(initialTemplates.body.length);
+            expect(finalTemplates.body.templates.length).to.equal(initialTemplates.body.templates.length);
 
             // Verify structure is maintained
-            const templatePaths = finalTemplates.body.map((t: any) => t.path);
+            const templatePaths = finalTemplates.body.templates.map((t: any) => t.path);
             expect(templatePaths).to.include('page.hbs');
             expect(templatePaths).to.include('partials/component.hbs');
         });

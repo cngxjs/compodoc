@@ -17,14 +17,15 @@ describe('Template Playground', () => {
             "templatePlayground": true
         };
 
-        fs.writeFileSync(path.join(tmp.name, '.compodocrc'), JSON.stringify(compodocConfig));
+        const configPath = path.join(tmp.name, '.compodocrc');
+        fs.writeFileSync(configPath, JSON.stringify(compodocConfig));
 
         let ls = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-c',
-            '.compodocrc',
+            configPath,
             '-d',
             distFolder
         ]);
@@ -58,10 +59,14 @@ describe('Template Playground', () => {
         expect(templatePlaygroundCssExists).to.be.true;
     });
 
-    it('should have template playground in navigation menu', () => {
-        const indexContent = fs.readFileSync(path.join(distFolder, 'index.html'), 'utf8');
-        expect(indexContent).to.contain('template-playground.html');
-        expect(indexContent).to.contain('Customize Templates');
+    it('should generate template playground as standalone page', () => {
+        // Template playground should exist as a separate page, not in navigation
+        const templatePlaygroundExists = exists(path.join(distFolder, 'template-playground.html'));
+        expect(templatePlaygroundExists).to.be.true;
+        
+        // Verify it's a functional standalone page
+        const templatePlaygroundContent = fs.readFileSync(path.join(distFolder, 'template-playground.html'), 'utf8');
+        expect(templatePlaygroundContent).to.contain('Template Playground');
     });
 
     it('should include template playground dependencies when enabled', () => {
@@ -91,14 +96,15 @@ describe('Template Playground Configuration', () => {
             "templatePlayground": false
         };
 
-        fs.writeFileSync(path.join(tmpDisabled.name, '.compodocrc'), JSON.stringify(compodocConfig));
+        const configPathDisabled = path.join(tmpDisabled.name, '.compodocrc');
+        fs.writeFileSync(configPathDisabled, JSON.stringify(compodocConfig));
 
         let ls = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-c',
-            '.compodocrc',
+            configPathDisabled,
             '-d',
             tmpDisabled.name
         ]);
@@ -140,14 +146,15 @@ describe('Template Playground Integration', () => {
             "templatePlayground": true
         };
 
-        fs.writeFileSync(path.join(tmpIntegration.name, '.compodocrc'), JSON.stringify(compodocConfig));
+        const configPathIntegration = path.join(tmpIntegration.name, '.compodocrc');
+        fs.writeFileSync(configPathIntegration, JSON.stringify(compodocConfig));
 
         let ls = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-c',
-            '.compodocrc',
+            configPathIntegration,
             '-d',
             tmpIntegration.name
         ]);
@@ -155,11 +162,15 @@ describe('Template Playground Integration', () => {
         // Check that existing functionality still works
         const isIndexExists = exists(path.join(tmpIntegration.name, 'index.html'));
         const isModulesExists = exists(path.join(tmpIntegration.name, 'modules.html'));
-        const isComponentsExists = exists(path.join(tmpIntegration.name, 'components.html'));
+        
+        // Check that individual component pages exist (not a components.html index)
+        const barComponentExists = exists(path.join(tmpIntegration.name, 'components', 'BarComponent.html'));
+        const fooComponentExists = exists(path.join(tmpIntegration.name, 'components', 'FooComponent.html'));
 
         expect(isIndexExists).to.be.true;
         expect(isModulesExists).to.be.true;
-        expect(isComponentsExists).to.be.true;
+        expect(barComponentExists).to.be.true;
+        expect(fooComponentExists).to.be.true;
 
         tmpIntegration.clean();
         done();

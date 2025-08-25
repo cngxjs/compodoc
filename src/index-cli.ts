@@ -186,6 +186,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 COMPODOC_DEFAULTS.disableProperties
             )
             .option('--disableOverview', 'Do not add the overview page', false)
+            .option('--templatePlayground', 'Generate template playground page for customizing templates', false)
             .option(
                 '--minimal',
                 'Minimal mode with only documentation. No search, no graph, no coverage.',
@@ -338,6 +339,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.serve) {
             Configuration.mainData.serve = programOptions.serve;
+        }
+
+        if (configFile.templatePlayground) {
+            Configuration.mainData.templatePlayground = configFile.templatePlayground;
+        }
+        if (programOptions.templatePlayground) {
+            Configuration.mainData.templatePlayground = programOptions.templatePlayground;
         }
 
         if (configFile.host) {

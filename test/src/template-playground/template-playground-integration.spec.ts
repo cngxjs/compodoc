@@ -227,7 +227,7 @@ console.log('Template playground app loaded');
         this.timeout(5000); // Increase timeout for cleanup
 
         if (server) {
-            server.stop();
+            await server.stop();
         }
 
         process.chdir(originalCwd);
@@ -266,8 +266,9 @@ console.log('Template playground app loaded');
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
-            expect(templatesResponse.body).to.be.an('array');
-            expect(templatesResponse.body.length).to.be.greaterThan(0);
+            expect(templatesResponse.body).to.have.property('templates');
+            expect(templatesResponse.body.templates).to.be.an('array');
+            expect(templatesResponse.body.templates.length).to.be.greaterThan(0);
 
             // 3. Get template content
             const templateResponse = await request(server['app'])
@@ -304,7 +305,13 @@ console.log('Template playground app loaded');
                 .expect(200);
 
             expect(zipResponse.headers['content-type']).to.include('application/zip');
-            expect(zipResponse.body.length).to.be.greaterThan(0);
+            
+            // Check ZIP content using content-length header (more reliable for binary data)
+            const contentLength = parseInt(zipResponse.headers['content-length']);
+            expect(contentLength).to.be.greaterThan(0);
+            
+            // Also verify body exists (supertest populates it as object for binary)
+            expect(zipResponse.body).to.not.be.undefined;
         });
 
         it('should handle concurrent sessions with isolation', async function() {
@@ -314,7 +321,7 @@ console.log('Template playground app loaded');
             const sessions = [];
             for (let i = 0; i < 3; i++) {
                 const response = await request(server['app'])
-                    .post('/api/session')
+                    .post('/api/session?forceNew=true')
                     .expect(200);
                 sessions.push(response.body.sessionId);
             }
@@ -387,7 +394,9 @@ console.log('Template playground app loaded');
                 .get(`/api/session/${sessionId}/download/all`)
                 .expect(200);
 
-            expect(zipResponse.body.length).to.be.greaterThan(0);
+            // Check ZIP content using content-length header (more reliable for binary data)
+            const contentLength = parseInt(zipResponse.headers['content-length']);
+            expect(contentLength).to.be.greaterThan(0);
 
             // Verify modifications are still intact after ZIP creation
             for (const mod of modifications) {
@@ -426,8 +435,9 @@ console.log('Template playground app loaded');
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
-            expect(templatesResponse.body).to.be.an('array');
-            expect(templatesResponse.body.length).to.be.greaterThan(0);
+            expect(templatesResponse.body).to.have.property('templates');
+            expect(templatesResponse.body.templates).to.be.an('array');
+            expect(templatesResponse.body.templates.length).to.be.greaterThan(0);
         });
 
         it('should handle malformed requests', async function() {
@@ -457,7 +467,8 @@ console.log('Template playground app loaded');
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
-            expect(templatesResponse.body).to.be.an('array');
+            expect(templatesResponse.body).to.have.property('templates');
+            expect(templatesResponse.body.templates).to.be.an('array');
         });
     });
 
@@ -471,7 +482,7 @@ console.log('Template playground app loaded');
             // Create multiple sessions
             for (let i = 0; i < numSessions; i++) {
                 const response = await request(server['app'])
-                    .post('/api/session')
+                    .post('/api/session?forceNew=true')
                     .expect(200);
 
                 sessions.push(response.body.sessionId);
@@ -499,7 +510,9 @@ console.log('Template playground app loaded');
                     .get(`/api/session/${sessionId}/download/all`)
                     .expect(200);
 
-                expect(zipResponse.body.length).to.be.greaterThan(0);
+                // Check ZIP content using content-length header (more reliable for binary data)
+            const contentLength = parseInt(zipResponse.headers['content-length']);
+            expect(contentLength).to.be.greaterThan(0);
             }
 
             // Verify all sessions are still accessible
@@ -508,7 +521,8 @@ console.log('Template playground app loaded');
                     .get(`/api/session/${sessionId}/templates`)
                     .expect(200);
 
-                expect(response.body).to.be.an('array');
+                expect(response.body).to.have.property('templates');
+                expect(response.body.templates).to.be.an('array');
             }
         });
     });
