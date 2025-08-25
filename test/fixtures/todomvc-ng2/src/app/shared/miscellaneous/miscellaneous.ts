@@ -81,6 +81,20 @@ function getQuestionAndAnswer(): { question: string; answer: number } {
 }
 
 /**
+ * Returns user configuration data
+ */
+function getUserConfig(): { name: string; age: number; active: boolean } {
+    return { name: 'John Doe', age: 30, active: true };
+}
+
+/**
+ * Returns API configuration
+ */
+function getApiConfig(): { baseUrl: string; timeout: number; retries: number } {
+    return { baseUrl: 'https://api.example.com', timeout: 5000, retries: 3 };
+}
+
+/**
  * Question extracted from object destructuring
  */
 export const { question } = getQuestionAndAnswer();
@@ -89,5 +103,25 @@ export const { question } = getQuestionAndAnswer();
  * Answer extracted from object destructuring
  */
 export const { answer } = getQuestionAndAnswer();
+
+/**
+ * User name extracted from configuration
+ */
+export const { name } = getUserConfig();
+
+/**
+ * User age from configuration
+ */
+export const { age } = getUserConfig();
+
+/**
+ * Multiple properties destructured from API config
+ */
+export const { baseUrl, timeout, retries } = getApiConfig();
+
+/**
+ * Destructuring with renamed variables
+ */
+export const { baseUrl: serverUrl, timeout: requestTimeout } = getApiConfig();
 
 var [first, second, third] = ['Laide', 'Gabriel', 'Jets'];

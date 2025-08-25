@@ -876,6 +876,79 @@ describe('CLI simple generation - big app', () => {
         expect(file).not.to.contain('literal type');
     });
 
+    it('should properly handle object destructuring with multiple variables', () => {
+        const file = read(distFolder + '/miscellaneous/variables.html');
+        // Check that both question and answer variables are documented separately
+        expect(file).to.contain('question</b>');
+        expect(file).to.contain('answer</b>');
+        // Check that each has its correct type
+        expect(file).to.contain('Question extracted from object destructuring');
+        expect(file).to.contain('Answer extracted from object destructuring');
+    });
+
+    it('should properly handle object destructuring variable names', () => {
+        const file = read(distFolder + '/miscellaneous/variables.html');
+        // Verify that the original property names from destructuring are preserved
+        expect(file).to.contain('<a name="question"');
+        expect(file).to.contain('<a name="answer"');
+        // Ensure the variables are not shown with generic destructuring names
+        expect(file).not.to.contain('destructured_0');
+        expect(file).not.to.contain('destructured_1');
+    });
+
+    it('should display correct default values for object destructuring', () => {
+        const file = read(distFolder + '/miscellaneous/variables.html');
+        // Both destructured variables should show the function call as default value
+        expect(file).to.contain('<i>Default value : </i><code>getQuestionAndAnswer()</code>');
+        // Should appear twice, once for each destructured variable
+        const matches = (file.match(/getQuestionAndAnswer\(\)/g) || []).length;
+        expect(matches).to.be.at.least(2);
+    });
+
+    it('should support complex object destructuring patterns', () => {
+        const file = read(distFolder + '/miscellaneous/variables.html');
+        // Should handle the object destructuring pattern correctly
+        expect(file).to.contain('extracted from object destructuring');
+        // Should show proper types for each destructured property
+        expect(file).to.contain('string" target="_blank"');
+        expect(file).to.contain('number" target="_blank"');
+    });
+
+    it('should handle multiple object destructuring from same function', () => {
+        const file = read(distFolder + '/miscellaneous/variables.html');
+        // Should document both name and age from getUserConfig
+        expect(file).to.contain('name</b>');
+        expect(file).to.contain('age</b>');
+        expect(file).to.contain('User name extracted from configuration');
+        expect(file).to.contain('User age from configuration');
+    });
+
+    it('should handle multiple properties destructured in single statement', () => {
+        const file = read(distFolder + '/miscellaneous/variables.html');
+        // Should document all three properties from getApiConfig
+        expect(file).to.contain('baseUrl</b>');
+        expect(file).to.contain('timeout</b>');
+        expect(file).to.contain('retries</b>');
+        expect(file).to.contain('Multiple properties destructured from API config');
+    });
+
+    it('should handle destructuring with renamed variables', () => {
+        const file = read(distFolder + '/miscellaneous/variables.html');
+        // Should show the renamed variable names
+        expect(file).to.contain('serverUrl</b>');
+        expect(file).to.contain('requestTimeout</b>');
+        expect(file).to.contain('Destructuring with renamed variables');
+    });
+
+    it('should preserve JSDoc comments for destructured variables', () => {
+        const file = read(distFolder + '/miscellaneous/variables.html');
+        // Each destructured variable should have its individual JSDoc
+        expect(file).to.contain('Question extracted from object destructuring');
+        expect(file).to.contain('Answer extracted from object destructuring');
+        expect(file).to.contain('User name extracted from configuration');
+        expect(file).to.contain('Multiple properties destructured from API config');
+    });
+
     it('should support JSDoc @link in JSDoc @param tag', () => {
         let file = read(distFolder + '/injectables/TodoStore.html');
         expect(file).to.contain(
