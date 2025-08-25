@@ -185,6 +185,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 'Do not add the properties list',
                 COMPODOC_DEFAULTS.disableProperties
             )
+            .option('--disableFilePath', 'Do not add the file path', false)
             .option('--disableOverview', 'Do not add the overview page', false)
             .option(
                 '--minimal',
@@ -547,6 +548,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             Configuration.mainData.disableProperties = programOptions.disableProperties;
         }
 
+        if (configFile.disableFilePath) {
+            Configuration.mainData.disableFilePath = configFile.disableFilePath;
+        }
+        if (programOptions.disableFilePath) {
+            Configuration.mainData.disableFilePath = programOptions.disableFilePath;
+        }
+      
         if (configFile.disableOverview) {
             Configuration.mainData.disableOverview = configFile.disableOverview;
         }

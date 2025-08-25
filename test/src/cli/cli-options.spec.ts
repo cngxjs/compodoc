@@ -212,6 +212,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`
             );
         });
 
+        it(`--disableFilePath`, () => {
+            expect(runHelp.stdout.toString()).to.contain('--disableFilePath');
+            expect(runHelp.stdout.toString()).to.contain('Do not add the file path');
+        });
+
         it(`--customFavicon`, () => {
             expect(runHelp.stdout.toString()).to.contain('--customFavicon [path]');
             expect(runHelp.stdout.toString()).to.contain('Use a custom favicon');
