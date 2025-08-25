@@ -9,6 +9,7 @@ on:
 env:
     SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
     SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 jobs:
     build-and-test:
