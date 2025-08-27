@@ -329,19 +329,30 @@ export class Application {
                 if (i < numberOfMarkdowns) {
                     MarkdownEngine.getTraditionalMarkdown(markdowns[i].toUpperCase()).then(
                         (readmeData: markdownReadedDatas) => {
+                            logger.info(`${markdowns[i].toUpperCase()}.md file found`);
                             if (markdowns[i] === 'readme') {
                                 Configuration.mainData.readme = true;
-                                // Create readme page with content
+                                // Always create index.html as main page with README content
                                 Configuration.addPage({
-                                    name: 'readme',
+                                    name: 'index',
                                     context: 'readme',
-                                    id: 'readme',
+                                    id: 'index',
                                     markdown: readmeData.markdown,
                                     data: readmeData.rawData,
                                     depth: 0,
                                     pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
                                 });
-                                // Don't create index page here - it will be created in the overview generation phase
+                                
+                                // If overview is not disabled, also create separate overview page
+                                if (!Configuration.mainData.disableOverview) {
+                                    Configuration.addPage({
+                                        name: 'overview',
+                                        context: 'overview',
+                                        id: 'overview',
+                                        depth: 0,
+                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                    });
+                                }
                             } else {
                                 // For other markdown files (changelog, contributing, etc.)
                                 Configuration.addPage({
@@ -356,43 +367,8 @@ export class Application {
                             }
                             i++;
                             loop();
-                        },
-                        (errorMessage: string) => {
-                            if (markdowns[i] === 'readme') {
-                                if (!Configuration.mainData.disableOverview) {
-                                    Configuration.addPage({
-                                        name: 'index',
-                                        id: 'index',
-                                        context: 'overview',
-                                        depth: 0,
-                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                    });
-                                } else {
-                                    // When README doesn't exist and overview is disabled,
-                                    // generate overview page anyway but show warning
-                                    logger.warn('No README.md found and --disableOverview is enabled.');
-                                    logger.warn('Generating overview page as landing page. Consider adding a README.md file.');
-                                    Configuration.addPage({
-                                        name: 'index',
-                                        id: 'index',
-                                        context: 'overview',
-                                        depth: 0,
-                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                    });
-                                }
-                            } else {
-                                Configuration.mainData.markdowns.push({
-                                    name: markdowns[i],
-                                    uppername: markdowns[i].toUpperCase(),
-                                    depth: 0,
-                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                });
-                            }
-                            logger.info(`${markdowns[i].toUpperCase()}.md file found`);
-                            i++;
-                            loop();
-                        },
-                        errorMessage => {
+                        }
+                    ).catch(errorMessage => {
                             logger.warn(errorMessage);
                             logger.warn(`Continuing without ${markdowns[i].toUpperCase()}.md file`);
                             if (markdowns[i] === 'readme') {

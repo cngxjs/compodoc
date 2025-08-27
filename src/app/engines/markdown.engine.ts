@@ -76,7 +76,7 @@ export class MarkdownEngine {
 
     public getTraditionalMarkdown(filepath: string): Promise<markdownReadedDatas> {
         return FileEngine.get(process.cwd() + path.sep + filepath + '.md')
-            .catch(err => FileEngine.get(process.cwd() + path.sep + filepath).then())
+            .catch(err => FileEngine.get(process.cwd() + path.sep + filepath))
             .then(data => {
                 const returnedData: markdownReadedDatas = {
                     markdown: this.markedInstance(data),
