@@ -26,7 +26,6 @@ export class HtmlEngine {
     public init(templatePath: string): Promise<void> {
         const partials = [
             'overview',
-            'redirect',
             'markdown',
             'modules',
             'module',
