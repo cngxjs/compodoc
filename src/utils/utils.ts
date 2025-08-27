@@ -11,7 +11,6 @@ import { AngularLifecycleHooks } from './angular-lifecycles-hooks';
 import { kindToType } from './kind-to-type';
 import { JsdocParserUtil } from './jsdoc-parser.util';
 import { markedAcl } from './marked.acl';
-import exp = require('node:constants');
 
 const getCurrentDirectory = ts.sys.getCurrentDirectory;
 const useCaseSensitiveFileNames = ts.sys.useCaseSensitiveFileNames;
