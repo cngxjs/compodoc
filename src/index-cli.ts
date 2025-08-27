@@ -64,19 +64,19 @@ export class CliApplication extends Application {
             .option(
                 '-t, --silent',
                 "In silent mode, log messages aren't logged in the console",
-                false
+                COMPODOC_DEFAULTS.silent
             )
             .option(
                 '-s, --serve',
                 'Serve generated documentation (default http://localhost:8080/)',
-                false
+                COMPODOC_DEFAULTS.serve
             )
             .option('--host [host]', 'Change default host address')
             .option('-r, --port [port]', 'Change default serving port', COMPODOC_DEFAULTS.port)
             .option(
                 '-w, --watch',
                 'Watch source files after serve and force documentation rebuild',
-                false
+                COMPODOC_DEFAULTS.watch
             )
             .option(
                 '-e, --exportFormat [format]',
@@ -96,12 +96,12 @@ export class CliApplication extends Application {
             .option(
                 '--hideGenerator',
                 'Do not print the Compodoc link at the bottom of the page',
-                false
+                COMPODOC_DEFAULTS.hideGenerator
             )
             .option(
                 '--hideDarkModeToggle',
                 'Do not show dark mode toggle button at the top right position of the page',
-                false
+                COMPODOC_DEFAULTS.hideDarkModeToggle
             )
             .option(
                 '--toggleMenuItems <items>',
@@ -149,32 +149,32 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             .option(
                 '--disableSourceCode',
                 'Do not add source code tab and links to source code',
-                false
+                COMPODOC_DEFAULTS.disableSourceCode
             )
-            .option('--disableDomTree', 'Do not add dom tree tab', false)
-            .option('--disableTemplateTab', 'Do not add template tab', false)
-            .option('--disableStyleTab', 'Do not add style tab', false)
-            .option('--disableGraph', 'Do not add the dependency graph', false)
-            .option('--disableCoverage', 'Do not add the documentation coverage report', false)
-            .option('--disablePrivate', 'Do not show private in generated documentation', false)
-            .option('--disableProtected', 'Do not show protected in generated documentation', false)
-            .option('--disableInternal', 'Do not show @internal in generated documentation', false)
+            .option('--disableDomTree', 'Do not add dom tree tab', COMPODOC_DEFAULTS.disableDomTree)
+            .option('--disableTemplateTab', 'Do not add template tab', COMPODOC_DEFAULTS.disableTemplateTab)
+            .option('--disableStyleTab', 'Do not add style tab', COMPODOC_DEFAULTS.disableStyleTab)
+            .option('--disableGraph', 'Do not add the dependency graph', COMPODOC_DEFAULTS.disableGraph)
+            .option('--disableCoverage', 'Do not add the documentation coverage report', COMPODOC_DEFAULTS.disableCoverage)
+            .option('--disablePrivate', 'Do not show private in generated documentation', COMPODOC_DEFAULTS.disablePrivate)
+            .option('--disableProtected', 'Do not show protected in generated documentation', COMPODOC_DEFAULTS.disableProtected)
+            .option('--disableInternal', 'Do not show @internal in generated documentation', COMPODOC_DEFAULTS.disableInternal)
             .option(
                 '--disableLifeCycleHooks',
                 'Do not show Angular lifecycle hooks in generated documentation',
-                false
+                COMPODOC_DEFAULTS.disableLifeCycleHooks
             )
             .option(
                 '--disableConstructors',
                 'Do not show constructors in generated documentation',
-                false
+                COMPODOC_DEFAULTS.disableConstructors
             )
             .option(
                 '--disableRoutesGraph',
                 'Do not add the routes graph',
                 COMPODOC_DEFAULTS.disableRoutesGraph
             )
-            .option('--disableSearch', 'Do not add the search input', false)
+            .option('--disableSearch', 'Do not add the search input', COMPODOC_DEFAULTS.disableSearch)
             .option(
                 '--disableDependencies',
                 'Do not add the dependencies list',
@@ -185,13 +185,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 'Do not add the properties list',
                 COMPODOC_DEFAULTS.disableProperties
             )
-            .option('--disableFilePath', 'Do not add the file path', false)
-            .option('--disableOverview', 'Do not add the overview page', false)
+            .option('--disableFilePath', 'Do not add the file path', COMPODOC_DEFAULTS.disableFilePath)
+            .option('--disableOverview', 'Do not add the overview page', COMPODOC_DEFAULTS.disableOverview)
             .option('--templatePlayground', 'Generate template playground page for customizing templates', false)
             .option(
                 '--minimal',
                 'Minimal mode with only documentation. No search, no graph, no coverage.',
-                false
+                COMPODOC_DEFAULTS.minimal
             )
             .option('--customFavicon [path]', 'Use a custom favicon')
             .option('--customLogo [path]', 'Use a custom logo')

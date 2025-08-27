@@ -14,6 +14,7 @@ export const COMPODOC_DEFAULTS = {
     coverageTestThresholdFail: true,
     toggleMenuItems: ['all'],
     navTabConfig: [],
+    disableSearch: false,
     disableSourceCode: false,
     disableDomTree: false,
     disableTemplateTab: false,
@@ -31,6 +32,12 @@ export const COMPODOC_DEFAULTS = {
     disableProperties: false,
     disableFilePath: false,
     disableOverview: false,
+    hideGenerator: false,
+    hideDarkModeToggle: false,
+    minimal: false,
+    silent: false,
+    serve: false,
+    watch: false,
     PAGE_TYPES: {
         ROOT: 'root',
         INTERNAL: 'internal'
