@@ -78,7 +78,7 @@ export function mergeTagsAndArgs(args: Array<any>, jsdoctags?: Array<any>): Arra
                 jsdoctag.tagName &&
                 (jsdoctag.tagName.text === 'returns' || jsdoctag.tagName.text === 'return')
             ) {
-                let ret = {
+                const ret: { tagName: string; comment: string; returnType?: string } = {
                     tagName: jsdoctag.tagName,
                     comment: jsdoctag.comment
                 };

@@ -108,6 +108,22 @@
                         {{~> markdown data ~}}
                    {{/compare}}
 
+                   {{#compare data.context "===" 'readme'}}
+                        {{~> markdown data ~}}
+                   {{/compare}}
+
+                   {{#compare data.context "===" 'changelog'}}
+                        {{~> markdown data ~}}
+                   {{/compare}}
+
+                   {{#compare data.context "===" 'contributing'}}
+                        {{~> markdown data ~}}
+                   {{/compare}}
+
+                   {{#compare data.context "===" 'license'}}
+                        {{~> markdown data ~}}
+                   {{/compare}}
+
                    {{#compare data.context "===" 'overview'}}
                         {{~> overview data ~}}
                    {{/compare}}
