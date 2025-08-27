@@ -373,6 +373,16 @@ export class Application {
                                         depth: 0,
                                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
                                     });
+                                } else {
+                                    // When README doesn't exist and overview is disabled,
+                                    // create a redirect page to the first available page
+                                    Configuration.addPage({
+                                        name: 'index',
+                                        id: 'index',
+                                        context: 'redirect',
+                                        depth: 0,
+                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                    });
                                 }
                             }
                             i++;

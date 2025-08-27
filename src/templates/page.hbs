@@ -124,6 +124,10 @@
                         {{~> markdown data ~}}
                    {{/compare}}
 
+                   {{#compare data.context "===" 'redirect'}}
+                        {{~> redirect data ~}}
+                   {{/compare}}
+
                    {{#compare data.context "===" 'overview'}}
                         {{~> overview data ~}}
                    {{/compare}}
