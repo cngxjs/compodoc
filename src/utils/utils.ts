@@ -11,7 +11,6 @@ import { AngularLifecycleHooks } from './angular-lifecycles-hooks';
 import { kindToType } from './kind-to-type';
 import { JsdocParserUtil } from './jsdoc-parser.util';
 import { markedAcl } from './marked.acl';
-import exp = require('node:constants');
 
 const getCurrentDirectory = ts.sys.getCurrentDirectory;
 const useCaseSensitiveFileNames = ts.sys.useCaseSensitiveFileNames;
@@ -78,7 +77,7 @@ export function mergeTagsAndArgs(args: Array<any>, jsdoctags?: Array<any>): Arra
                 jsdoctag.tagName &&
                 (jsdoctag.tagName.text === 'returns' || jsdoctag.tagName.text === 'return')
             ) {
-                let ret = {
+                const ret: { tagName: string; comment: string; returnType?: string } = {
                     tagName: jsdoctag.tagName,
                     comment: jsdoctag.comment
                 };

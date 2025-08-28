@@ -539,4 +539,289 @@ describe('CLI disable flags', () => {
             expect(componentFile).to.contain('bar.component.ts');
         });
     });
+
+    describe('disabling overview with --disableOverview', () => {
+        let menuFile;
+        before(function (done) {
+            tmp.create(distFolder);
+            let ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/sample-files/tsconfig.simple.json',
+                '--disableOverview',
+                '-d',
+                distFolder
+            ]);
+
+            if (ls.stderr.toString() !== '') {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                done('error');
+            }
+            done();
+        });
+        after(() => tmp.clean(distFolder));
+
+        it('should not generate overview.html when README exists', () => {
+            const overviewExists = exists(`${distFolder}/overview.html`);
+            expect(overviewExists).to.be.false;
+        });
+
+        it('should not display overview link in menu', () => {
+            menuFile = read(`${distFolder}/js/menu-wc.js`);
+            expect(menuFile).not.to.contain('href="overview.html"');
+            expect(menuFile).not.to.contain('ion-ios-keypad');
+        });
+
+        it('should still generate other main pages', () => {
+            const isIndexExists = exists(`${distFolder}/index.html`);
+            expect(isIndexExists).to.be.true;
+            const isModulesExists = exists(`${distFolder}/modules.html`);
+            expect(isModulesExists).to.be.true;
+        });
+
+        it('should still display other menu items', () => {
+            menuFile = read(`${distFolder}/js/menu-wc.js`);
+            expect(menuFile).to.contain('href="modules.html"');
+            expect(menuFile).to.contain('ion-ios-archive');
+        });
+
+        it('should properly handle menu structure without overview', () => {
+            menuFile = read(`${distFolder}/js/menu-wc.js`);
+            // Should not contain the overview section in the getting-started chapter
+            expect(menuFile).not.to.contain('<span class="icon ion-ios-keypad"></span>{{t "overview"}}');
+        });
+    });
+
+    describe('disabling overview with --disableOverview without README', () => {
+        let menuFile;
+        before(function (done) {
+            tmp.create(distFolder);
+            let ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/todomvc-ng2-ignore/src/tsconfig.json',
+                '--disableOverview',
+                '-d',
+                distFolder
+            ]);
+
+            if (ls.stderr.toString() !== '') {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                done('error');
+            }
+            done();
+        });
+        after(() => tmp.clean(distFolder));
+
+        it('should not generate additional overview page when no README', () => {
+            const overviewExists = exists(`${distFolder}/overview.html`);
+            expect(overviewExists).to.be.false;
+        });
+
+        it('should still generate index.html as main page', () => {
+            const isIndexExists = exists(`${distFolder}/index.html`);
+            expect(isIndexExists).to.be.true;
+        });
+
+        it('should not display overview link in menu without README', () => {
+            menuFile = read(`${distFolder}/js/menu-wc.js`);
+            expect(menuFile).not.to.contain('<span class="icon ion-ios-keypad"></span>{{t "overview"}}');
+        });
+    });
+
+    describe('disabling overview with --disableOverview and additional documentation', () => {
+        let menuFile;
+        const additionalTestFolder = tmp.name + '-disable-overview-additional';
+        
+        before(function (done) {
+            tmp.create(additionalTestFolder);
+            const ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/todomvc-ng2/src/tsconfig.json',
+                '-d',
+                additionalTestFolder,
+                '--disableOverview',
+                '--includes',
+                './test/fixtures/todomvc-ng2/additional-doc',
+                '--includesName',
+                'Additional Documentation'
+            ]);
+
+            if (ls.stderr.toString() !== '') {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                done('error');
+            }
+            done();
+        });
+        after(() => tmp.clean(additionalTestFolder));
+
+        it('should not generate overview.html when using additional documentation', () => {
+            const overviewExists = exists(`${additionalTestFolder}/overview.html`);
+            expect(overviewExists).to.be.false;
+        });
+
+        it('should still generate additional documentation pages', () => {
+            const bigIntroExists = exists(`${additionalTestFolder}/additional-documentation/big-introduction.html`);
+            expect(bigIntroExists).to.be.true;
+            
+            const editionExists = exists(`${additionalTestFolder}/additional-documentation/edition.html`);
+            expect(editionExists).to.be.true;
+            
+            const nestedEditionExists = exists(`${additionalTestFolder}/additional-documentation/edition/edition-of-a-todo.html`);
+            expect(nestedEditionExists).to.be.true;
+        });
+
+        it('should not display overview link in menu but show additional documentation', () => {
+            menuFile = read(`${additionalTestFolder}/js/menu-wc.js`);
+            expect(menuFile).to.not.contain('href="overview.html"');
+            expect(menuFile).to.contain('Additional Documentation');
+            expect(menuFile).to.contain('href="additional-documentation/big-introduction.html"');
+        });
+
+        it('should render additional documentation content correctly', () => {
+            const bigIntroFile = read(`${additionalTestFolder}/additional-documentation/big-introduction.html`);
+            expect(bigIntroFile).to.contain('<h1>Introduction</h1>');
+            expect(bigIntroFile).to.contain('COMPODOC_CURRENT_PAGE_CONTEXT = \'additional-page\'');
+        });
+
+        it('should maintain nested additional documentation structure', () => {
+            menuFile = read(`${additionalTestFolder}/js/menu-wc.js`);
+            expect(menuFile).to.contain('href="additional-documentation/edition/edition-of-a-todo.html"');
+            expect(menuFile).to.contain('Edition of a todo');
+            
+            const nestedFile = read(`${additionalTestFolder}/additional-documentation/edition/edition-of-a-todo.html`);
+            expect(nestedFile).to.contain('screenshots/actions/edition.png');
+        });
+
+        it('should handle deep nesting levels correctly without overview', () => {
+            menuFile = read(`${additionalTestFolder}/js/menu-wc.js`);
+            // Should contain up to level 5 but not level 6
+            expect(menuFile).to.contain('for-chapter2');
+            expect(menuFile).to.contain('for-chapter3');
+            expect(menuFile).to.contain('for-chapter4');
+            expect(menuFile).to.contain('for-chapter5');
+            expect(menuFile).to.not.contain('for-chapter6');
+        });
+
+        it('should generate correct additional documentation links without overview interference', () => {
+            menuFile = read(`${additionalTestFolder}/js/menu-wc.js`);
+            [
+                'href="additional-documentation/edition/edition-of-a-todo/edit-level3.html',
+                'href="additional-documentation/edition/edition-of-a-todo/edit-level3/edit-level4.html',
+                'href="additional-documentation/edition/edition-of-a-todo/edit-level3/edit-level4/edit-level5.html'
+            ].forEach(linkRef => {
+                expect(menuFile).to.contain(linkRef);
+            });
+        });
+
+        it('should still generate other standard pages alongside additional documentation', () => {
+            const modulesExists = exists(`${additionalTestFolder}/modules.html`);
+            expect(modulesExists).to.be.true;
+            
+            const indexExists = exists(`${additionalTestFolder}/index.html`);
+            expect(indexExists).to.be.true;
+            
+            // Verify the standard pages don't contain overview links
+            const indexFile = read(`${additionalTestFolder}/index.html`);
+            expect(indexFile).to.not.contain('href="overview.html"');
+        });
+    });
+
+    describe('comparing overview vs no-overview with additional documentation', () => {
+        let withOverviewMenuFile;
+        let withoutOverviewMenuFile;
+        const withOverviewFolder = tmp.name + '-with-overview-additional';
+        const withoutOverviewFolder = tmp.name + '-without-overview-additional';
+        
+        before(function (done) {
+            // Generate with overview
+            tmp.create(withOverviewFolder);
+            let ls1 = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/todomvc-ng2/src/tsconfig.json',
+                '-d',
+                withOverviewFolder,
+                '--includes',
+                './test/fixtures/todomvc-ng2/additional-doc',
+                '--includesName',
+                'Additional Documentation'
+            ]);
+
+            if (ls1.stderr.toString() !== '') {
+                console.error(`shell error with overview: ${ls1.stderr.toString()}`);
+                done('error');
+                return;
+            }
+
+            // Generate without overview
+            tmp.create(withoutOverviewFolder);
+            let ls2 = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/todomvc-ng2/src/tsconfig.json',
+                '-d',
+                withoutOverviewFolder,
+                '--disableOverview',
+                '--includes',
+                './test/fixtures/todomvc-ng2/additional-doc',
+                '--includesName',
+                'Additional Documentation'
+            ]);
+
+            if (ls2.stderr.toString() !== '') {
+                console.error(`shell error without overview: ${ls2.stderr.toString()}`);
+                done('error');
+                return;
+            }
+
+            withOverviewMenuFile = read(`${withOverviewFolder}/js/menu-wc.js`);
+            withoutOverviewMenuFile = read(`${withoutOverviewFolder}/js/menu-wc.js`);
+            done();
+        });
+        
+        after(() => {
+            tmp.clean(withOverviewFolder);
+            tmp.clean(withoutOverviewFolder);
+        });
+
+        it('should have identical additional documentation in both modes', () => {
+            // Both should have the same additional documentation structure
+            expect(withOverviewMenuFile).to.contain('Additional Documentation');
+            expect(withoutOverviewMenuFile).to.contain('Additional Documentation');
+            
+            expect(withOverviewMenuFile).to.contain('href="additional-documentation/big-introduction.html"');
+            expect(withoutOverviewMenuFile).to.contain('href="additional-documentation/big-introduction.html"');
+        });
+
+        it('should only differ in overview link presence', () => {
+            // With overview should have overview link
+            expect(withOverviewMenuFile).to.contain('href="overview.html"');
+            
+            // Without overview should not have overview link
+            expect(withoutOverviewMenuFile).to.not.contain('href="overview.html"');
+        });
+
+        it('should generate identical additional documentation files', () => {
+            const withOverviewIntroFile = read(`${withOverviewFolder}/additional-documentation/big-introduction.html`);
+            const withoutOverviewIntroFile = read(`${withoutOverviewFolder}/additional-documentation/big-introduction.html`);
+            
+            // Content should be identical (excluding any timestamps or generation metadata)
+            expect(withOverviewIntroFile).to.contain('<h1>Introduction</h1>');
+            expect(withoutOverviewIntroFile).to.contain('<h1>Introduction</h1>');
+            
+            // Both should have correct context
+            expect(withOverviewIntroFile).to.contain('COMPODOC_CURRENT_PAGE_CONTEXT = \'additional-page\'');
+            expect(withoutOverviewIntroFile).to.contain('COMPODOC_CURRENT_PAGE_CONTEXT = \'additional-page\'');
+        });
+
+        it('should have overview.html only in with-overview mode', () => {
+            const withOverviewExists = exists(`${withOverviewFolder}/overview.html`);
+            const withoutOverviewExists = exists(`${withoutOverviewFolder}/overview.html`);
+            
+            expect(withOverviewExists).to.be.true;
+            expect(withoutOverviewExists).to.be.false;
+        });
+    });
 });

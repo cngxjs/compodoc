@@ -329,43 +329,62 @@ export class Application {
                 if (i < numberOfMarkdowns) {
                     MarkdownEngine.getTraditionalMarkdown(markdowns[i].toUpperCase()).then(
                         (readmeData: markdownReadedDatas) => {
-                            Configuration.addPage({
-                                name: markdowns[i] === 'readme' ? 'index' : markdowns[i],
-                                context: 'overview',
-                                id: 'overview',
-                                markdown: readmeData.markdown,
-                                data: readmeData.rawData,
-                                depth: 0,
-                                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                            });
+                            logger.info(`${markdowns[i].toUpperCase()}.md file found`);
                             if (markdowns[i] === 'readme') {
                                 Configuration.mainData.readme = true;
+                                // Always create index.html as main page with README content
+                                Configuration.addPage({
+                                    name: 'index',
+                                    context: 'readme',
+                                    id: 'index',
+                                    markdown: readmeData.markdown,
+                                    data: readmeData.rawData,
+                                    depth: 0,
+                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                });
+                                
+                                // If overview is not disabled, also create separate overview page
                                 if (!Configuration.mainData.disableOverview) {
                                     Configuration.addPage({
                                         name: 'overview',
-                                        id: 'overview',
                                         context: 'overview',
+                                        id: 'overview',
                                         depth: 0,
                                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
                                     });
                                 }
                             } else {
-                                Configuration.mainData.markdowns.push({
+                                // For other markdown files (changelog, contributing, etc.)
+                                Configuration.addPage({
                                     name: markdowns[i],
-                                    uppername: markdowns[i].toUpperCase(),
+                                    context: markdowns[i],
+                                    id: markdowns[i],
+                                    markdown: readmeData.markdown,
+                                    data: readmeData.rawData,
                                     depth: 0,
                                     pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
                                 });
                             }
-                            logger.info(`${markdowns[i].toUpperCase()}.md file found`);
                             i++;
                             loop();
-                        },
-                        errorMessage => {
+                        }
+                    ).catch(errorMessage => {
                             logger.warn(errorMessage);
                             logger.warn(`Continuing without ${markdowns[i].toUpperCase()}.md file`);
                             if (markdowns[i] === 'readme') {
                                 if (!Configuration.mainData.disableOverview) {
+                                    Configuration.addPage({
+                                        name: 'index',
+                                        id: 'index',
+                                        context: 'overview',
+                                        depth: 0,
+                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                    });
+                                } else {
+                                    // When README doesn't exist and overview is disabled,
+                                    // generate overview page anyway but show warning
+                                    logger.warn('No README.md found and --disableOverview is enabled.');
+                                    logger.warn('Generating overview page as landing page. Consider adding a README.md file.');
                                     Configuration.addPage({
                                         name: 'index',
                                         id: 'index',
@@ -1366,7 +1385,7 @@ export class Application {
             if (!FileEngine.existsSync(stylePath)) {
                 const err = `Cannot read style url ${stylePath} for ${component.name}`;
                 logger.error(err);
-                return new Promise((resolve, reject) => {});
+                return Promise.resolve(null);
             }
 
             return new Promise((resolve, reject) => {
@@ -1380,7 +1399,7 @@ export class Application {
         });
 
         return Promise.all(styleDataPromise).then(
-            data => (component.styleUrlsData = data),
+            data => (component.styleUrlsData = data.filter(item => item !== null)),
             err => {
                 logger.error(err);
                 return Promise.reject('');
