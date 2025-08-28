@@ -70,17 +70,40 @@ export class RouterParserUtil {
     }
 
     public cleanRawRouteParsed(route: string): object {
-        return JSON5.parse(this.cleanRawRoute(route));
+        try {
+            return JSON5.parse(this.cleanRawRoute(route));
+        } catch (parseError) {
+            logger.error(
+                `Failed to parse route data. This may be caused by special characters in file paths or route configurations.`
+            );
+            logger.debug(`Raw route data: ${route}`);
+            logger.debug(`Cleaned route data: ${this.cleanRawRoute(route)}`);
+            logger.debug(`Parse error: ${parseError.message}`);
+            throw parseError;
+        }
     }
 
     public cleanRawRoute(route: string): string {
-        return route
+        let cleaned = route
             .replace(/\s/g, '')
             .replace(this.trailingComma, '$1')
             .replace(this.transformAngular8ImportSyntax, '$1"$4#$6"')
             .replace(this.transformAngular8ImportSyntaxAsyncAwait, '$1"$4#$6"')
             .replace(this.transformAngular8ImportSyntaxComponent, '$1"$4#$6"')
             .replace(this.transformAngular8ImportSyntaxComponentAsyncAwait, '$1"$4#$6"');
+
+        // Additional cleaning for special characters that cause JSON5 parsing issues
+        // Handle unescaped characters in string literals
+        cleaned = cleaned
+            // Fix malformed string concatenations
+            .replace(/([^"])"([^"]*?)\.([^"]*?)"([^"])/g, '$1"$2\\.$3"$4')
+            // Fix unescaped plus signs in string literals
+            .replace(/([^"])"([^"]*?)\+([^"]*?)"([^"])/g, '$1"$2\\+$3"$4')
+            // Fix unescaped parentheses in string literals
+            .replace(/([^"])"([^"]*?)\(([^"]*?)"([^"])/g, '$1"$2\\($3"$4')
+            .replace(/([^"])"([^"]*?)\)([^"]*?)"([^"])/g, '$1"$2\\)$3"$4');
+
+        return cleaned;
     }
 
     public setRootModule(module: string): void {
@@ -247,6 +270,8 @@ export class RouterParserUtil {
                             logger.error(
                                 'Error during generation of routes JSON file, maybe a trailing comma or an external variable inside one route.'
                             );
+                            logger.debug(`Route data for "${node.children[i].name}": ${route.data}`);
+                            logger.debug(`Parse error: ${e.message}`);
                         }
                         delete route.data;
                         route.kind = 'module';
@@ -261,7 +286,18 @@ export class RouterParserUtil {
                 const rawRoutes = this.foundRouteWithModuleName(node.name);
 
                 if (rawRoutes) {
-                    const routes = JSON5.parse(rawRoutes.data);
+                    let routes;
+                    try {
+                        routes = JSON5.parse(rawRoutes.data);
+                    } catch (parseError) {
+                        logger.error(
+                            `Failed to parse route data for module "${node.name}". ` +
+                            `This may be caused by special characters in file paths or route configurations.`
+                        );
+                        logger.debug(`Route data: ${rawRoutes.data}`);
+                        logger.debug(`Parse error: ${parseError.message}`);
+                        return; // Skip this module's route processing
+                    }
                     if (routes) {
                         let i = 0;
                         const len = routes.length;
@@ -309,10 +345,20 @@ export class RouterParserUtil {
                     const route = this.foundRouteWithModuleName(mod.children[z].name);
                     if (typeof route !== 'undefined') {
                         if (route.data) {
-                            route.children = JSON5.parse(route.data);
-                            delete route.data;
-                            route.kind = 'module';
-                            _rawModule.children.push(route);
+                            try {
+                                route.children = JSON5.parse(route.data);
+                                delete route.data;
+                                route.kind = 'module';
+                                _rawModule.children.push(route);
+                            } catch (parseError) {
+                                logger.warn(
+                                    `Failed to parse route data for module "${mod.children[z].name}". ` +
+                                    `Skipping route parsing for this module.`
+                                );
+                                logger.debug(`Route data: ${route.data}`);
+                                logger.debug(`Parse error: ${parseError.message}`);
+                                // Skip this route but continue processing others
+                            }
                         }
                     }
                 }
@@ -320,10 +366,20 @@ export class RouterParserUtil {
                 const route = this.foundRouteWithModuleName(mod.name);
                 if (typeof route !== 'undefined') {
                     if (route.data) {
-                        route.children = JSON5.parse(route.data);
-                        delete route.data;
-                        route.kind = 'module';
-                        _rawModule.children.push(route);
+                        try {
+                            route.children = JSON5.parse(route.data);
+                            delete route.data;
+                            route.kind = 'module';
+                            _rawModule.children.push(route);
+                        } catch (parseError) {
+                            logger.warn(
+                                `Failed to parse route data for module "${mod.name}". ` +
+                                `Skipping route parsing for this module.`
+                            );
+                            logger.debug(`Route data: ${route.data}`);
+                            logger.debug(`Parse error: ${parseError.message}`);
+                            // Skip this route but continue processing others
+                        }
                     }
                 }
             }
