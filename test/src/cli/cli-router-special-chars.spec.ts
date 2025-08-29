@@ -35,11 +35,17 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { TestComponent } from './test.component';
 
+const USER = 'user';
+const CREATE = 'create';
+const EDIT = 'edit';
+
 const routes: Routes = [
   { path: 'admin.config', component: TestComponent },           // Issue #1581 - dots
   { path: 'route+with+plus', component: TestComponent },        // Issue #1610 - plus
   { path: 'user(profile)', component: TestComponent },          // Issue #1594 - parentheses
-  { path: 'complex.path(with)+special/chars', component: TestComponent }
+  { path: 'complex.path(with)+special/chars', component: TestComponent },
+  { path: \`\${USER}/\${CREATE}\`, component: TestComponent },     // New issue - template literals
+  { path: \`\${USER}/\${EDIT}/:id\`, component: TestComponent }    // New issue - template literals with params
 ];
 
 @NgModule({
@@ -94,6 +100,7 @@ export class AppModule { }`;
         expect(stderr).to.not.contain('JSON5: invalid character \'+\'');   // Issue #1610
         expect(stderr).to.not.contain('JSON5: invalid character \'(\'');   // Issue #1594  
         expect(stderr).to.not.contain('JSON5: invalid character \'.\'');   // Issue #1581
+        expect(stderr).to.not.contain('JSON5: invalid character \'"\'');   // New issue - template literals
         expect(stderr).to.not.contain('Unhandled Rejection');              // All issues
         
         // Should complete successfully despite special characters in routes
@@ -105,10 +112,10 @@ export class AppModule { }`;
         done();
     });
 
-    it('should handle routes with all special character combinations gracefully', function (done) {
+    it('should handle template literal routes and complex character combinations', function (done) {
         this.timeout(30000);
         
-        // Test that our fix handles all the reported special character issues
+        // Test that our fix handles template literals and all reported special character issues
         const ls = shell('node', [
             './bin/index-cli.js',
             '-p', path.join(distFolder, 'tsconfig.json'),
@@ -120,8 +127,10 @@ export class AppModule { }`;
         const stdout = ls.stdout.toString();
         const stderr = ls.stderr.toString();
         
-        // Should not crash with any of the problematic character combinations
-        expect(stderr).to.not.contain('JSON5: invalid character');
+        // Should not crash with template literals or any of the problematic character combinations
+        expect(stderr).to.not.contain('JSON5: invalid character \'"\'');   // Template literals
+        expect(stderr).to.not.contain('JSON5: invalid character \'(\'');   // Parentheses
+        expect(stderr).to.not.contain('JSON5: invalid character');          // Any other chars
         expect(stderr).to.not.contain('Unhandled Rejection');
         
         // Should still generate documentation successfully

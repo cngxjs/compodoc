@@ -95,6 +95,15 @@ export class RouterParserUtil {
         // Additional cleaning for special characters that cause JSON5 parsing issues
         // Handle unescaped characters in string literals
         cleaned = cleaned
+            // Fix template literal expressions that get converted incorrectly
+            // Convert ${VAR}/something patterns to "VAR/something" format
+            .replace(/\$\{([^}]+)\}\/([^"',}\s]+)/g, '"$1/$2"')
+            .replace(/\$\{([^}]+)\}/g, '"$1"')
+            // Fix malformed string concatenations from template literals
+            .replace(/"([^"]*?)"\/"([^"]*?)"/g, '"$1/$2"')
+            .replace(/"([^"]*?)"\+([^"]*?)\+"([^"]*?)"/g, '"$1+$2+$3"')
+            // Fix double quotes issues in path strings
+            .replace(/""([^"]*?)""/g, '"$1"')
             // Fix malformed string concatenations
             .replace(/([^"])"([^"]*?)\.([^"]*?)"([^"])/g, '$1"$2\\.$3"$4')
             // Fix unescaped plus signs in string literals
