@@ -1394,4 +1394,50 @@ describe('CLI simple generation', () => {
             expect(stdoutString).to.contain('Documentation generated');
         });
     });
+
+    describe('router parser coverage tests', () => {
+        const distFolder = tmp.name + '-router-parser-coverage';
+        let stdoutString = undefined;
+
+        before(function (done) {
+            tmp.create(distFolder);
+            let ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/router-parser-coverage/tsconfig.json',
+                '-d',
+                distFolder
+            ]);
+
+            if (ls.stderr.toString() !== '') {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                done('error');
+            }
+            stdoutString = ls.stdout.toString();
+            done();
+        });
+        after(() => tmp.clean(distFolder));
+
+        it('should process router parser test fixture without errors', () => {
+            expect(stdoutString).to.contain('Documentation generated');
+        });
+
+        it('should process identifiers in route arrays (cleanFileIdentifiers)', () => {
+            expect(stdoutString).to.contain('found          : DYNAMIC_ROUTE_ID');
+            expect(stdoutString).to.contain('found          : FALLBACK_COMPONENT');
+        });
+
+        it('should analyze routes definitions for spread elements (cleanFileSpreads)', () => {
+            expect(stdoutString).to.contain('Analysing routes definitions and clean them if necessary');
+        });
+
+        it('should process property access expressions and call expressions', () => {
+            expect(stdoutString).to.contain('found          : RouterUtils');
+            expect(stdoutString).to.contain('found          : RoutePaths');
+        });
+
+        it('should generate documentation for routing module', () => {
+            expect(stdoutString).to.contain('found          : AppRoutingModule');
+        });
+    });
 });

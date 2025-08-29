@@ -749,7 +749,6 @@ export class Application {
 
         if (
             DependenciesEngine.routes &&
-            DependenciesEngine.routes.children.length > 0 &&
             !Configuration.mainData.disableRoutesGraph
         ) {
             actions.push(() => {

@@ -228,6 +228,7 @@ export class AngularDependencies extends FrameworkDependencies {
             RouterParserUtil.constructModulesTree();
 
             deps.routesTree = RouterParserUtil.constructRoutesTree();
+
         }
 
         return deps;
@@ -409,6 +410,8 @@ export class AngularDependencies extends FrameworkDependencies {
                             variableDeclarations[i].compilerNode.type.typeName.text === 'Routes'
                         ) {
                             hasRoutesStatements = true;
+                            
+
                         }
                     }
                 }
@@ -422,7 +425,7 @@ export class AngularDependencies extends FrameworkDependencies {
             // scannedFile = RouterParserUtil.cleanFileIdentifiers(astFile).compilerNode;
             RouterParserUtil.cleanFileSpreads(astFile);
 
-            scannedFile = RouterParserUtil.cleanCallExpressions(astFile).compilerNode;
+            astFile = RouterParserUtil.cleanCallExpressions(astFile);
             scannedFile = RouterParserUtil.cleanFileDynamics(astFile).compilerNode;
 
             scannedFile.kind = SyntaxKind.SourceFile;
@@ -868,8 +871,11 @@ export class AngularDependencies extends FrameworkDependencies {
                             }
                         }
                     }
-                    if (ts.isVariableStatement(node) && !RouterParserUtil.isVariableRoutes(node)) {
-                        let isDestructured = false;
+                    if (ts.isVariableStatement(node)) {
+                        const isRoutesVariable = RouterParserUtil.isVariableRoutes(node);
+                        // Process all variables, including exported routes variables for miscellaneous
+                        if (!isRoutesVariable || this.isExportedVariable(node)) {
+                            let isDestructured = false;
                         // Check for destructuring array
                         const nodeVariableDeclarations = node.declarationList.declarations;
                         if (nodeVariableDeclarations) {
@@ -969,6 +975,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         } else {
                             visitVariableNode(node);
                         }
+                        } // End of new if condition for isRoutesVariable || isExportedVariable
                     }
                     if (ts.isTypeAliasDeclaration(node)) {
                         const infos = this.visitTypeDeclaration(node);
@@ -1650,5 +1657,15 @@ export class AngularDependencies extends FrameworkDependencies {
         }, []);
 
         return res[0] || {};
+    }
+
+    /**
+     * Check if a variable statement is exported
+     */
+    private isExportedVariable(node: any): boolean {
+        // Check if the node has export modifiers
+        return !!(node.modifiers && node.modifiers.some(modifier => 
+            modifier.kind === SyntaxKind.ExportKeyword
+        ));
     }
 }
