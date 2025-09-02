@@ -28,7 +28,7 @@ class JsdocCodeExampleHelper {
             .replace(/"/g, '&quot;');
     }
     parseCodeFences(comment) {
-        const codeFenceRegex = /```(\w+)?\s*\n([\s\S]*?)```/g;
+        const codeFenceRegex = /```(\w+)?[ \t]*\n([\s\S]*?)```/g;
         const blocks = [];
         let match;
         let hasCodeFences = false;
