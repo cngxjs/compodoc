@@ -31,6 +31,11 @@ coverage.*
 # Build-output
 dist/
 
+# Compiled TypeScript files in src/ (keep legitimate JS assets)
+src/**/*.js
+!src/resources/**/*.js
+!src/playground-demo/**/*.js
+
 # Miscellaneous
 tmp/
 .tmp/

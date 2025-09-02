@@ -1,5 +1,5 @@
 const process = require('process'),
-    helpers = require('../test/dist/helpers.js'),
+    helpers = require('../test/dist/test/src/helpers.js'),
     rimraf = require('rimraf'),
     exec = helpers.exec,
     fs = helpers.fs,

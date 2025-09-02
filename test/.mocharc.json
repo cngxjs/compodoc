@@ -1,8 +1,7 @@
 {
     "reporter": "spec",
-    "extension": ["ts"],
+    "extension": ["js"],
     "ui": "bdd",
     "timeout": 120000,
-    "spec": "test/src/**/*.spec.ts",
-    "require": "ts-node/esm"
+    "spec": "test/dist/**/*.spec.js"
 }
