@@ -254,7 +254,7 @@ console.log('Template playground app loaded');
             this.timeout(20000);
 
             // 1. Create session via API
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
@@ -262,7 +262,7 @@ console.log('Template playground app loaded');
             expect(sessionId).to.be.a('string');
 
             // 2. Get templates list
-            const templatesResponse = await request(server['app'])
+            const templatesResponse = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
@@ -271,7 +271,7 @@ console.log('Template playground app loaded');
             expect(templatesResponse.body.templates.length).to.be.greaterThan(0);
 
             // 3. Get template content
-            const templateResponse = await request(server['app'])
+            const templateResponse = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/template/partials/component.hbs`)
                 .expect(200);
 
@@ -280,27 +280,27 @@ console.log('Template playground app loaded');
 
             // 4. Modify template
             const modifiedContent = originalContent + '\n<!-- Modified for integration testing -->';
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .post(`/api/session/${sessionId}/template/partials/component.hbs`)
                 .send({ content: modifiedContent })
                 .expect(200);
 
             // 5. Verify modification was saved
-            const verifyResponse = await request(server['app'])
+            const verifyResponse = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/template/partials/component.hbs`)
                 .expect(200);
 
             expect(verifyResponse.body.content).to.include('Modified for integration testing');
 
             // 6. Generate documentation
-            const docsResponse = await request(server['app'])
+            const docsResponse = await request(server.getHttpServer())
                 .post(`/api/session/${sessionId}/generate`)
                 .expect(200);
 
             expect(docsResponse.body).to.have.property('success', true);
 
             // 7. Download ZIP package
-            const zipResponse = await request(server['app'])
+            const zipResponse = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/download/all`)
                 .expect(200);
 
@@ -320,7 +320,7 @@ console.log('Template playground app loaded');
             // Create multiple sessions
             const sessions = [];
             for (let i = 0; i < 3; i++) {
-                const response = await request(server['app'])
+                const response = await request(server.getHttpServer())
                     .post('/api/session?forceNew=true')
                     .expect(200);
                 sessions.push(response.body.sessionId);
@@ -331,7 +331,7 @@ console.log('Template playground app loaded');
                 const sessionId = sessions[i];
                 const content = `<html>Session ${i + 1} Content</html>`;
 
-                await request(server['app'])
+                await request(server.getHttpServer())
                     .post(`/api/session/${sessionId}/template/page.hbs`)
                     .send({ content })
                     .expect(200);
@@ -340,7 +340,7 @@ console.log('Template playground app loaded');
             // Verify isolation - each session should have its own content
             for (let i = 0; i < sessions.length; i++) {
                 const sessionId = sessions[i];
-                const response = await request(server['app'])
+                const response = await request(server.getHttpServer())
                     .get(`/api/session/${sessionId}/template/page.hbs`)
                     .expect(200);
 
@@ -352,7 +352,7 @@ console.log('Template playground app loaded');
             this.timeout(15000);
 
             // Create session
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
@@ -367,14 +367,14 @@ console.log('Template playground app loaded');
 
             // Apply modifications
             for (const mod of modifications) {
-                await request(server['app'])
+                await request(server.getHttpServer())
                     .post(`/api/session/${sessionId}/template/${mod.path}`)
                     .send({ content: mod.content })
                     .expect(200);
             }
 
             // Generate documentation
-            const docsResponse = await request(server['app'])
+            const docsResponse = await request(server.getHttpServer())
                 .post(`/api/session/${sessionId}/generate`)
                 .expect(200);
 
@@ -382,7 +382,7 @@ console.log('Template playground app loaded');
 
             // Verify modifications are still intact after generation
             for (const mod of modifications) {
-                const response = await request(server['app'])
+                const response = await request(server.getHttpServer())
                     .get(`/api/session/${sessionId}/template/${mod.path}`)
                     .expect(200);
 
@@ -390,7 +390,7 @@ console.log('Template playground app loaded');
             }
 
             // Download ZIP
-            const zipResponse = await request(server['app'])
+            const zipResponse = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/download/all`)
                 .expect(200);
 
@@ -400,7 +400,7 @@ console.log('Template playground app loaded');
 
             // Verify modifications are still intact after ZIP creation
             for (const mod of modifications) {
-                const response = await request(server['app'])
+                const response = await request(server.getHttpServer())
                     .get(`/api/session/${sessionId}/template/${mod.path}`)
                     .expect(200);
 
@@ -414,24 +414,24 @@ console.log('Template playground app loaded');
             this.timeout(10000);
 
             // Try to access non-existent session
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .get('/api/session/invalid-session/templates')
                 .expect(404);
 
             // Create valid session
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
             const sessionId = sessionResponse.body.sessionId;
 
             // Try to access non-existent template
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/template/non-existent.hbs`)
                 .expect(404);
 
             // Verify session is still functional
-            const templatesResponse = await request(server['app'])
+            const templatesResponse = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
@@ -444,26 +444,26 @@ console.log('Template playground app loaded');
             this.timeout(10000);
 
             // Create session
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
             const sessionId = sessionResponse.body.sessionId;
 
             // Try to save template without content
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .post(`/api/session/${sessionId}/template/page.hbs`)
                 .send({}) // Missing content
                 .expect(400);
 
             // Try to save template with invalid content type
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .post(`/api/session/${sessionId}/template/page.hbs`)
                 .send({ content: null })
                 .expect(400);
 
             // Verify session is still functional
-            const templatesResponse = await request(server['app'])
+            const templatesResponse = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
@@ -481,7 +481,7 @@ console.log('Template playground app loaded');
 
             // Create multiple sessions
             for (let i = 0; i < numSessions; i++) {
-                const response = await request(server['app'])
+                const response = await request(server.getHttpServer())
                     .post('/api/session?forceNew=true')
                     .expect(200);
 
@@ -493,20 +493,20 @@ console.log('Template playground app loaded');
                 const sessionId = sessions[i];
 
                 // Modify templates
-                await request(server['app'])
+                await request(server.getHttpServer())
                     .post(`/api/session/${sessionId}/template/page.hbs`)
                     .send({ content: `<html>Session ${i}</html>` })
                     .expect(200);
 
                 // Generate documentation (this may take time)
-                const docsResponse = await request(server['app'])
+                const docsResponse = await request(server.getHttpServer())
                     .post(`/api/session/${sessionId}/generate`)
                     .expect(200);
 
                 expect(docsResponse.body).to.have.property('success', true);
 
                 // Download ZIP
-                const zipResponse = await request(server['app'])
+                const zipResponse = await request(server.getHttpServer())
                     .get(`/api/session/${sessionId}/download/all`)
                     .expect(200);
 
@@ -517,7 +517,7 @@ console.log('Template playground app loaded');
 
             // Verify all sessions are still accessible
             for (const sessionId of sessions) {
-                const response = await request(server['app'])
+                const response = await request(server.getHttpServer())
                     .get(`/api/session/${sessionId}/templates`)
                     .expect(200);
 

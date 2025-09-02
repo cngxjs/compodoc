@@ -93,7 +93,7 @@ export class AppComponent {
 
     describe('Server HTTP API', () => {
         it('should serve the playground index page', async () => {
-            const response = await request(server['app'])
+            const response = await request(server.getHttpServer())
                 .get('/')
                 .expect(200);
 
@@ -101,7 +101,7 @@ export class AppComponent {
         });
 
         it('should create session and return session ID', async () => {
-            const response = await request(server['app'])
+            const response = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
@@ -112,14 +112,14 @@ export class AppComponent {
 
         it('should list available templates for session', async () => {
             // Create session first
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
             const sessionId = sessionResponse.body.sessionId;
 
             // Get templates list
-            const templatesResponse = await request(server['app'])
+            const templatesResponse = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
@@ -131,14 +131,14 @@ export class AppComponent {
 
         it('should get template content', async () => {
             // Create session
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
             const sessionId = sessionResponse.body.sessionId;
 
             // Get template content
-            const templateResponse = await request(server['app'])
+            const templateResponse = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/template/page.hbs`)
                 .expect(200);
 
@@ -148,7 +148,7 @@ export class AppComponent {
 
         it('should save template content', async () => {
             // Create session
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
@@ -156,13 +156,13 @@ export class AppComponent {
             const newContent = '<html><body><h1>Modified</h1>{{content}}</body></html>';
 
             // Save template content
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .post(`/api/session/${sessionId}/template/page.hbs`)
                 .send({ content: newContent })
                 .expect(200);
 
             // Verify content was saved
-            const templateResponse = await request(server['app'])
+            const templateResponse = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/template/page.hbs`)
                 .expect(200);
 
@@ -173,14 +173,14 @@ export class AppComponent {
             this.timeout(15000);
 
             // Create session
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
             const sessionId = sessionResponse.body.sessionId;
 
             // Generate documentation
-            const docsResponse = await request(server['app'])
+            const docsResponse = await request(server.getHttpServer())
                 .post(`/api/session/${sessionId}/generate`)
                 .expect(200);
 
@@ -191,14 +191,14 @@ export class AppComponent {
             this.timeout(10000);
 
             // Create session
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
             const sessionId = sessionResponse.body.sessionId;
 
             // Download templates
-            const zipResponse = await request(server['app'])
+            const zipResponse = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/download/all`)
                 .expect(200);
 
@@ -219,7 +219,7 @@ export class AppComponent {
 
             // Create multiple sessions with explicit forceNew parameter
             for (let i = 0; i < 3; i++) {
-                const response = await request(server['app'])
+                const response = await request(server.getHttpServer())
                     .post('/api/session?forceNew=true')
                     .expect(200);
 
@@ -232,7 +232,7 @@ export class AppComponent {
 
             // Verify each session can access templates independently
             for (const sessionId of sessions) {
-                const templatesResponse = await request(server['app'])
+                const templatesResponse = await request(server.getHttpServer())
                     .get(`/api/session/${sessionId}/templates`)
                     .expect(200);
 
@@ -244,11 +244,11 @@ export class AppComponent {
 
         it('should isolate template modifications between sessions', async () => {
             // Create two sessions with explicit forceNew parameter
-            const session1Response = await request(server['app'])
+            const session1Response = await request(server.getHttpServer())
                 .post('/api/session?forceNew=true')
                 .expect(200);
 
-            const session2Response = await request(server['app'])
+            const session2Response = await request(server.getHttpServer())
                 .post('/api/session?forceNew=true')
                 .expect(200);
 
@@ -257,24 +257,24 @@ export class AppComponent {
 
             // Modify template in session 1
             const content1 = '<html>Session 1 Content</html>';
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .post(`/api/session/${session1Id}/template/page.hbs`)
                 .send({ content: content1 })
                 .expect(200);
 
             // Modify template in session 2
             const content2 = '<html>Session 2 Content</html>';
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .post(`/api/session/${session2Id}/template/page.hbs`)
                 .send({ content: content2 })
                 .expect(200);
 
             // Verify isolation
-            const template1Response = await request(server['app'])
+            const template1Response = await request(server.getHttpServer())
                 .get(`/api/session/${session1Id}/template/page.hbs`)
                 .expect(200);
 
-            const template2Response = await request(server['app'])
+            const template2Response = await request(server.getHttpServer())
                 .get(`/api/session/${session2Id}/template/page.hbs`)
                 .expect(200);
 
@@ -285,35 +285,35 @@ export class AppComponent {
 
     describe('Error Handling', () => {
         it('should handle invalid session ID', async () => {
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .get('/api/session/invalid-session-id/templates')
                 .expect(404);
         });
 
         it('should handle invalid template path', async () => {
             // Create session
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
             const sessionId = sessionResponse.body.sessionId;
 
             // Try to get non-existent template
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/template/non-existent.hbs`)
                 .expect(404);
         });
 
         it('should handle malformed requests', async () => {
             // Create session
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
             const sessionId = sessionResponse.body.sessionId;
 
             // Try to save template without content
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .post(`/api/session/${sessionId}/template/page.hbs`)
                 .send({}) // No content field
                 .expect(400);
@@ -323,25 +323,25 @@ export class AppComponent {
     describe('Template Features', () => {
         it('should preserve template structure during modifications', async () => {
             // Create session
-            const sessionResponse = await request(server['app'])
+            const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
                 .expect(200);
 
             const sessionId = sessionResponse.body.sessionId;
 
             // Get initial templates list
-            const initialTemplates = await request(server['app'])
+            const initialTemplates = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
             // Modify a template
-            await request(server['app'])
+            await request(server.getHttpServer())
                 .post(`/api/session/${sessionId}/template/page.hbs`)
                 .send({ content: '<html>Modified</html>' })
                 .expect(200);
 
             // Verify templates list is unchanged
-            const finalTemplates = await request(server['app'])
+            const finalTemplates = await request(server.getHttpServer())
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
