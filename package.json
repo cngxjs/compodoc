@@ -29,7 +29,7 @@
         "dev:playground": "node scripts/start-playground.js",
         "playground:simple": "node scripts/start-playground-simple.js",
         "*********TEST********": "*******************",
-        "pretest": "tsc -p tsconfig.test.json && node test/dist/test/src/cli-clean-root-folder.js && git checkout README.md CHANGELOG.md CONTRIBUTING.md",
+        "pretest": "npm run build && tsc -p tsconfig.test.json && node test/dist/test/src/cli-clean-root-folder.js && git checkout README.md CHANGELOG.md CONTRIBUTING.md",
         "test": "cross-env TS_NODE_PROJECT=tsconfig.test.json TS_NODE_DISABLE_WARNINGS=1 nyc --reporter=lcov mocha --config test/.mocharc.json && node test/dist/test/src/cli-revert-root-folder.js",
         "posttest": "rimraf test/dist",
         "test:watch": "npm-watch build",
