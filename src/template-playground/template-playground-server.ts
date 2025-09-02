@@ -223,11 +223,11 @@ export class TemplatePlaygroundServer {
         }
     }
 
-    private getClientIP(req: Request): string {
+    private getClientIP(req: IncomingMessage): string {
         // Get IP address from various headers (handles proxies, load balancers, etc.)
         const forwarded = req.headers['x-forwarded-for'] as string;
         const realIP = req.headers['x-real-ip'] as string;
-        const remoteAddr = (req as any).socket?.remoteAddress || 'unknown';
+        const remoteAddr = (req as IncomingMessage & { socket?: { remoteAddress?: string } }).socket?.remoteAddress || 'unknown';
 
         let ip = forwarded?.split(',')[0] || realIP || remoteAddr || 'unknown';
 
