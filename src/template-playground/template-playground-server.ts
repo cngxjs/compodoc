@@ -537,14 +537,14 @@ export class TemplatePlaygroundServer {
 
     private setupMiddleware(): void {
         // Add request logging for debugging
-        this.app.use((req: IncomingMessage, res: ServerResponse, next) => {
+        this.app.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
             const headers = req.headers;
             logger.info(`🔍 REQUEST: ${req.method} ${req.url} - User-Agent: ${headers['user-agent'] || 'unknown'}`);
             next();
         });
 
         // Enable CORS for development
-        this.app.use((req: IncomingMessage, res: ServerResponse, next) => {
+        this.app.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
             res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
