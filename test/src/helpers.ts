@@ -6,7 +6,7 @@ export const exec = require('child_process').exec;
 export const shellAsync = require('child_process').spawn;
 export const fs = require('fs-extra');
 export const path = require('path');
-export const pkg = require('../../package.json');
+export const pkg = require('../../../../package.json');
 
 export function read(file: string, encoding = null): string {
     return fs.readFileSync(file, encoding).toString();

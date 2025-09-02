@@ -1,5 +1,9 @@
-const express = require('express');
-import { Request, Response, NextFunction, Application } from 'express';
+const polka = require('polka');
+const sirv = require('sirv');
+const { json, urlencoded } = require('body-parser');
+const send = require('@polka/send-type');
+import { IncomingMessage, ServerResponse } from 'http';
+import { Polka } from 'polka';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as http from 'http';
@@ -93,8 +97,8 @@ interface CompoDocConfig {
 }
 
 export class TemplatePlaygroundServer {
-    private app: Application;
-    private server: http.Server;
+    private app: Polka;
+    private server: any;
     private port: number;
     private handlebars: any;
     private sessions: Map<string, PlaygroundSession> = new Map();
@@ -107,7 +111,7 @@ export class TemplatePlaygroundServer {
 
     constructor(port?: number) {
         this.port = port || parseInt(process.env.PLAYGROUND_PORT || process.env.PORT || '3001', 10);
-        this.app = express();
+        this.app = polka();
         this.setupPaths();
         this.initializeHandlebars();
         this.setupMiddleware();
@@ -116,10 +120,19 @@ export class TemplatePlaygroundServer {
         this.setupSignalHandlers();
     }
 
+    /**
+     * Get the underlying HTTP server instance for testing purposes
+     * @returns HTTP server instance or null if not started
+     */
+    public getHttpServer(): any {
+        // Polka stores the actual HTTP server in the .server property
+        // This is needed for Supertest compatibility which expects a Node.js HTTP server
+        return this.server?.server || null;
+    }
+
     private setupSignalHandlers(): void {
-        // Only set up signal handlers if we're not in a test environment
-        // or if this is the first instance (prevent memory leaks in tests)
-        if (process.env.NODE_ENV === 'test' && process.listenerCount('SIGINT') > 0) {
+        // Skip signal handlers entirely in test environment to prevent memory leaks
+        if (process.env.NODE_ENV === 'test') {
             return;
         }
 
@@ -212,7 +225,7 @@ export class TemplatePlaygroundServer {
         // Get IP address from various headers (handles proxies, load balancers, etc.)
         const forwarded = req.headers['x-forwarded-for'] as string;
         const realIP = req.headers['x-real-ip'] as string;
-        const remoteAddr = req.socket.remoteAddress;
+        const remoteAddr = (req as any).socket?.remoteAddress || 'unknown';
 
         let ip = forwarded?.split(',')[0] || realIP || remoteAddr || 'unknown';
 
@@ -520,18 +533,20 @@ export class TemplatePlaygroundServer {
 
     private setupMiddleware(): void {
         // Add request logging for debugging
-        this.app.use((req, res, next) => {
-            logger.info(`🔍 REQUEST: ${req.method} ${req.url} - User-Agent: ${req.get('User-Agent') || 'unknown'}`);
+        this.app.use((req: IncomingMessage, res: ServerResponse, next) => {
+            const headers = req.headers;
+            logger.info(`🔍 REQUEST: ${req.method} ${req.url} - User-Agent: ${headers['user-agent'] || 'unknown'}`);
             next();
         });
 
         // Enable CORS for development
-        this.app.use((req, res, next) => {
-            res.header('Access-Control-Allow-Origin', '*');
-            res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+        this.app.use((req: IncomingMessage, res: ServerResponse, next) => {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
             if (req.method === 'OPTIONS') {
-                res.sendStatus(200);
+                res.statusCode = 200;
+                res.end();
             } else {
                 next();
             }
@@ -546,14 +561,14 @@ export class TemplatePlaygroundServer {
         logger.info(`📁 Setting up root-level static files from: ${compodocResourcesPath}`);
         logger.info(`📁 Compodoc resources path exists: ${fs.existsSync(compodocResourcesPath)}`);
 
-        // Serve styles, js, images, and other resources at root level
-        this.app.use('/styles', express.static(path.join(compodocResourcesPath, 'styles')));
-        this.app.use('/js', express.static(path.join(compodocResourcesPath, 'js')));
-        this.app.use('/images', express.static(path.join(compodocResourcesPath, 'images')));
-        this.app.use('/fonts', express.static(path.join(compodocResourcesPath, 'fonts')));
+        // Serve styles, js, images, and other resources at root level using sirv
+        this.app.use('/styles', sirv(path.join(compodocResourcesPath, 'styles'), { dev: true }));
+        this.app.use('/js', sirv(path.join(compodocResourcesPath, 'js'), { dev: true }));
+        this.app.use('/images', sirv(path.join(compodocResourcesPath, 'images'), { dev: true }));
+        this.app.use('/fonts', sirv(path.join(compodocResourcesPath, 'fonts'), { dev: true }));
 
         // Serve Compodoc resources under /resources path as well (for backward compatibility)
-        this.app.use('/resources', express.static(compodocResourcesPath));
+        this.app.use('/resources', sirv(compodocResourcesPath, { dev: true }));
 
         // Serve static files from template playground directory (index.html, app.js)
         // Try dist/resources first (production), then src/resources (development/testing)
@@ -563,11 +578,11 @@ export class TemplatePlaygroundServer {
         const playgroundStaticPath = fs.existsSync(playgroundStaticPathDist) ? playgroundStaticPathDist : playgroundStaticPathSrc;
         logger.info(`📁 Setting up playground static files from: ${playgroundStaticPath}`);
         logger.info(`📁 Playground static path exists: ${fs.existsSync(playgroundStaticPath)}`);
-        this.app.use(express.static(playgroundStaticPath));
+        this.app.use(sirv(playgroundStaticPath, { dev: true }));
 
-        // Parse JSON bodies and form data
-        this.app.use(express.json());
-        this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+        // Parse JSON bodies and form data using body-parser
+        this.app.use(json({ limit: '10mb' }));
+        this.app.use(urlencoded({ extended: true, limit: '10mb' }));
     }
 
     private setupRoutes(): void {
@@ -610,18 +625,18 @@ export class TemplatePlaygroundServer {
         this.app.post('/api/session/:sessionId/config', this.updateSessionConfig.bind(this));
 
         // Serve session-specific generated documentation
-        this.app.use('/api/session/:sessionId/docs', this.serveSessionDocs.bind(this));
+        this.app.get('/api/session/:sessionId/docs/*', this.serveSessionDocs.bind(this));
 
         // Serve session-specific generated documentation at the expected URL pattern
         // These routes MUST come before the catch-all route
-        this.app.get('/docs/:sessionId/index.html', (req: Request, res: Response) => {
+        this.app.get('/docs/:sessionId/index.html', (req: any, res: ServerResponse) => {
             logger.info(`🔍 Docs index route hit: /docs/${req.params.sessionId}/index.html`);
             const sessionId = req.params.sessionId;
             const session = this.sessions.get(sessionId);
 
             if (!session) {
                 logger.error(`❌ Session not found: ${sessionId}`);
-                res.status(404).json({ success: false, message: 'Session not found' });
+                send(res, 404, { success: false, message: 'Session not found' });
                 return;
             }
 
@@ -632,50 +647,64 @@ export class TemplatePlaygroundServer {
 
             if (fs.existsSync(fullPath)) {
                 logger.info(`✅ Serving file: ${fullPath}`);
-                res.sendFile(fullPath);
+                const content = fs.readFileSync(fullPath);
+                res.setHeader('Content-Type', 'text/html');
+                res.end(content);
             } else {
                 logger.error(`❌ File not found: ${fullPath}`);
-                res.status(404).send('Documentation file not found');
+                res.statusCode = 404;
+                res.end('Documentation file not found');
             }
         });
 
-        // Serve any file within session documentation
-        this.app.get('/docs/:sessionId/*', (req: Request, res: Response) => {
-            logger.info(`🔍 Docs wildcard route hit: /docs/${req.params.sessionId}/* - File: ${req.params[0]}`);
+        // Serve any file within session documentation using dynamic sirv middleware
+        this.app.get('/docs/:sessionId/*', (req: any, res: ServerResponse) => {
             const sessionId = req.params.sessionId;
             const session = this.sessions.get(sessionId);
 
             if (!session) {
                 logger.error(`❌ Session not found: ${sessionId}`);
-                res.status(404).json({ success: false, message: 'Session not found' });
+                send(res, 404, { success: false, message: 'Session not found' });
                 return;
             }
 
             this.updateSessionActivity(sessionId);
 
-            // Get the file path after /docs/{sessionId}/
-            const filePath = req.params[0] || 'index.html';
-            const fullPath = path.join(session.documentationDir, filePath);
-            logger.info(`📂 Looking for file: ${fullPath}`);
+            // Use sirv to serve files from the session documentation directory
+            const sessionSirv = sirv(session.documentationDir, { 
+                dev: true,
+                single: false,
+                setHeaders: (res, pathname) => {
+                    logger.info(`✅ Serving file via sirv: ${pathname}`);
+                }
+            });
 
-            if (fs.existsSync(fullPath)) {
-                logger.info(`✅ Serving file: ${fullPath}`);
-                res.sendFile(fullPath);
-            } else {
-                logger.error(`❌ File not found: ${fullPath}`);
-                res.status(404).send('Documentation file not found');
+            // Remove the session prefix from the URL for sirv
+            const originalUrl = req.url;
+            const sessionPrefix = `/docs/${sessionId}`;
+            if (originalUrl && originalUrl.startsWith(sessionPrefix)) {
+                req.url = originalUrl.substring(sessionPrefix.length) || '/';
+                logger.info(`🔍 Sirv serving: ${req.url} from ${session.documentationDir}`);
             }
+
+            sessionSirv(req, res, () => {
+                // If sirv doesn't handle it, restore original URL and return 404
+                req.url = originalUrl;
+                logger.error(`❌ File not found in session docs: ${req.url}`);
+                res.statusCode = 404;
+                res.end('Documentation file not found');
+            });
         });
 
         // Handle direct access to session documentation root (index.html)
-        this.app.get('/docs/:sessionId', (req: Request, res: Response) => {
+        this.app.get('/docs/:sessionId', (req: any, res: ServerResponse) => {
             logger.info(`🔍 Docs root route hit: /docs/${req.params.sessionId}`);
             const sessionId = req.params.sessionId;
             const session = this.sessions.get(sessionId);
 
             if (!session) {
                 logger.error(`❌ Session not found: ${sessionId}`);
-                res.status(404).json({ success: false, message: 'Session not found' });
+                send(res, 404, { success: false, message: 'Session not found' });
                 return;
             }
 
@@ -686,10 +715,13 @@ export class TemplatePlaygroundServer {
 
             if (fs.existsSync(fullPath)) {
                 logger.info(`✅ Serving file: ${fullPath}`);
-                res.sendFile(fullPath);
+                const content = fs.readFileSync(fullPath);
+                res.setHeader('Content-Type', 'text/html');
+                res.end(content);
             } else {
                 logger.error(`❌ File not found: ${fullPath}`);
-                res.status(404).send('Documentation file not found');
+                res.statusCode = 404;
+                res.end('Documentation file not found');
             }
         });
 
@@ -705,14 +737,24 @@ export class TemplatePlaygroundServer {
             
             const indexPath = fs.existsSync(indexPathDist) ? indexPathDist : indexPathSrc;
             if (fs.existsSync(indexPath)) {
-                res.sendFile(indexPath);
+                const content = fs.readFileSync(indexPath);
+                res.setHeader('Content-Type', 'text/html');
+                res.end(content);
             } else {
-                res.status(404).send('Template Playground not built. Please run the build process.');
+                res.statusCode = 404;
+                res.end('Template Playground not built. Please run the build process.');
             }
         });
 
         // Handle any remaining non-API routes by serving the main app (for SPA routing)
-        this.app.get(/^(?!\/api|\/resources|\/docs).*/, (req, res) => {
+        // Note: This catch-all route should be last and will handle all unmatched routes
+        this.app.get('*', (req, res) => {
+            // Skip API, resources, and docs routes as they are handled above
+            if (req.url.startsWith('/api') || req.url.startsWith('/resources') || req.url.startsWith('/docs')) {
+                res.statusCode = 404;
+                res.end('Not Found');
+                return;
+            }
             logger.warn(`⚠️ CATCH-ALL ROUTE HIT: ${req.method} ${req.url}`);
             // Try dist/resources first (production), then src/resources (development/testing)
             const indexPathDist = path.join(process.cwd(), 'dist/resources/template-playground-app/index.html');
@@ -720,14 +762,17 @@ export class TemplatePlaygroundServer {
             
             const indexPath = fs.existsSync(indexPathDist) ? indexPathDist : indexPathSrc;
             if (fs.existsSync(indexPath)) {
-                res.sendFile(indexPath);
+                const content = fs.readFileSync(indexPath);
+                res.setHeader('Content-Type', 'text/html');
+                res.end(content);
             } else {
-                res.status(404).send('Template Playground not built. Please run the build process.');
+                res.statusCode = 404;
+                res.end('Template Playground not built. Please run the build process.');
             }
         });
     }
 
-    private async getTemplates(req: Request, res: Response): Promise<void> {
+    private async getTemplates(req: any, res: ServerResponse): Promise<void> {
         try {
             const templatesDir = path.join(process.cwd(), 'dist/templates/partials');
             const files = await fs.readdir(templatesDir);
@@ -739,36 +784,36 @@ export class TemplatePlaygroundServer {
                     path: path.join(templatesDir, file)
                 }));
 
-            res.json(templates);
+            send(res, 200, templates);
         } catch (error) {
             logger.error('Error reading templates:', error);
-            res.status(500).json({ error: 'Failed to read templates' });
+            send(res, 500, { error: 'Failed to read templates' });
         }
     }
 
-    private async getTemplate(req: Request, res: Response): Promise<void> {
+    private async getTemplate(req: any, res: ServerResponse): Promise<void> {
         try {
             const templateName = req.params.templateName;
             const templatePath = path.join(process.cwd(), 'dist/templates/partials', `${templateName}.hbs`);
 
             if (!await fs.pathExists(templatePath)) {
-                res.status(404).json({ error: 'Template not found' });
+                send(res, 404, { error: 'Template not found' });
                 return;
             }
 
             const content = await fs.readFile(templatePath, 'utf-8');
-            res.json({
+            send(res, 200, {
                 name: templateName,
                 content: content,
                 path: templatePath
             });
         } catch (error) {
             logger.error('Error reading template:', error);
-            res.status(500).json({ error: 'Failed to read template' });
+            send(res, 500, { error: 'Failed to read template' });
         }
     }
 
-    private async getExampleData(req: Request, res: Response): Promise<void> {
+    private async getExampleData(req: any, res: ServerResponse): Promise<void> {
         try {
             const dataType = req.params.dataType;
 
@@ -776,7 +821,7 @@ export class TemplatePlaygroundServer {
             const { EXAMPLE_DATA, TEMPLATE_CONTEXT } = await import('./example-data');
 
             if (!EXAMPLE_DATA[dataType]) {
-                res.status(404).json({ error: 'Example data type not found' });
+                send(res, 404, { error: 'Example data type not found' });
                 return;
             }
 
@@ -787,22 +832,22 @@ export class TemplatePlaygroundServer {
                 { [dataType]: EXAMPLE_DATA[dataType], ...EXAMPLE_DATA[dataType] } :
                 EXAMPLE_DATA[dataType];
 
-            res.json({
+            send(res, 200, {
                 data: wrappedData,
                 context: TEMPLATE_CONTEXT
             });
         } catch (error) {
             logger.error('Error getting example data:', error);
-            res.status(500).json({ error: 'Failed to get example data' });
+            send(res, 500, { error: 'Failed to get example data' });
         }
     }
 
-    private async renderTemplate(req: Request, res: Response): Promise<void> {
+    private async renderTemplate(req: any, res: ServerResponse): Promise<void> {
         try {
             const { templateContent, templateData, templateContext } = req.body;
 
             if (!templateContent) {
-                res.status(400).json({ error: 'Template content is required' });
+                send(res, 400, { error: 'Template content is required' });
                 return;
             }
 
@@ -810,17 +855,17 @@ export class TemplatePlaygroundServer {
             const template = this.handlebars.compile(templateContent);
             const rendered = template(templateData || {});
 
-            res.json({ rendered });
+            send(res, 200, { rendered });
         } catch (error) {
             logger.error('Error rendering template:', error);
-            res.status(500).json({
+            send(res, 500, {
                 error: 'Failed to render template',
                 details: error.message
             });
         }
     }
 
-    private async renderCompletePage(req: Request, res: Response): Promise<void> {
+    private async renderCompletePage(req: any, res: ServerResponse): Promise<void> {
         try {
             let { templateContent, templateData, templateContext } = req.body;
 
@@ -842,7 +887,7 @@ export class TemplatePlaygroundServer {
             }
 
             if (!templateContent) {
-                res.status(400).json({ error: 'Template content is required' });
+                send(res, 400, { error: 'Template content is required' });
                 return;
             }
 
@@ -905,17 +950,17 @@ export class TemplatePlaygroundServer {
 </html>`;
 
             res.setHeader('Content-Type', 'text/html');
-            res.send(completePage);
+            res.end(completePage);
         } catch (error) {
             logger.error('Error rendering complete page:', error);
-            res.status(500).json({
+            send(res, 500, {
                 error: 'Failed to render complete page',
                 details: error.message
             });
         }
     }
 
-    private async generateDocs(req: Request, res: Response): Promise<void> {
+    private async generateDocs(req: any, res: ServerResponse): Promise<void> {
         try {
             const { customTemplateContent, mockData } = req.body;
 
@@ -940,10 +985,10 @@ export class TemplatePlaygroundServer {
             // Generate documentation for the new session
             this.generateDocumentation(sessionId, true); // Use debounce
 
-            res.json({ success: true, message: 'Documentation generation initiated for a new session', sessionId: sessionId });
+            send(res, 200, { success: true, message: 'Documentation generation initiated for a new session', sessionId: sessionId });
         } catch (error) {
             logger.error('Error generating documentation:', error);
-            res.status(500).json({
+            send(res, 500, {
                 error: 'Failed to generate documentation',
                 details: error.message
             });
@@ -1419,12 +1464,12 @@ ${tabsHtml}
 ${tabContentHtml}</div>`;
     }
 
-    private async downloadTemplatePackage(req: Request, res: Response): Promise<void> {
+    private async downloadTemplatePackage(req: any, res: ServerResponse): Promise<void> {
         try {
             const { templateType, templateContent, templateData } = req.body;
 
             if (!templateType || !templateContent) {
-                res.status(400).json({ error: 'Template type and content are required' });
+                send(res, 400, { error: 'Template type and content are required' });
                 return;
             }
 
@@ -1497,7 +1542,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
                 'example-data.json': JSON.stringify(exampleData, null, 2)
             };
 
-            res.json({
+            send(res, 200, {
                 success: true,
                 filename: `compodoc-${templateType}-template.zip`,
                 files: zipStructure
@@ -1505,26 +1550,26 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
 
         } catch (error) {
             logger.error('Error creating template package:', error);
-            res.status(500).json({
+            send(res, 500, {
                 error: 'Failed to create template package',
                 details: error.message
             });
         }
     }
 
-    private async downloadSessionTemplateZip(req: Request, res: Response): Promise<void> {
+    private async downloadSessionTemplateZip(req: any, res: ServerResponse): Promise<void> {
         try {
             const { sessionId } = req.params;
             const { templatePath, templateContent } = req.body;
 
             if (!templatePath || !templateContent) {
-                res.status(400).json({ error: 'Template path and content are required' });
+                send(res, 400, { error: 'Template path and content are required' });
                 return;
             }
 
             const session = this.sessions.get(sessionId);
             if (!session) {
-                res.status(404).json({ success: false, message: 'Session not found' });
+                send(res, 404, { success: false, message: 'Session not found' });
                 return;
             }
 
@@ -1647,7 +1692,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
         } catch (error) {
             logger.error('Error creating session template ZIP:', error);
             if (!res.headersSent) {
-                res.status(500).json({
+                send(res, 500, {
                     error: 'Failed to create template ZIP',
                     details: error.message
                 });
@@ -1655,13 +1700,13 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
         }
     }
 
-    private async downloadAllSessionTemplates(req: Request, res: Response): Promise<void> {
+    private async downloadAllSessionTemplates(req: any, res: ServerResponse): Promise<void> {
         try {
             const { sessionId } = req.params;
 
             const session = this.sessions.get(sessionId);
             if (!session) {
-                res.status(404).json({ success: false, message: 'Session not found' });
+                send(res, 404, { success: false, message: 'Session not found' });
                 return;
             }
 
@@ -1774,7 +1819,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
         } catch (error) {
             logger.error('Error creating all templates ZIP:', error);
             if (!res.headersSent) {
-                res.status(500).json({
+                send(res, 500, {
                     error: 'Failed to create all templates ZIP',
                     details: error.message
                 });
@@ -1831,7 +1876,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
     }
 
     // Session management API methods
-    private async createSessionAPI(req: Request, res: Response): Promise<void> {
+    private async createSessionAPI(req: any, res: ServerResponse): Promise<void> {
         try {
             const clientIP = this.getClientIP(req);
             
@@ -1840,7 +1885,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             const forceNew = process.env.NODE_ENV === 'test' || req.query.forceNew === 'true';
             const session = forceNew ? this.createNewSession(clientIP) : this.createOrGetSessionByIP(clientIP);
             
-            res.json({
+            send(res, 200, {
                 sessionId: session.id,
                 success: true,
                 message: 'Session created successfully',
@@ -1848,7 +1893,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             });
         } catch (error) {
             logger.error('Error creating session:', error);
-            res.status(500).json({
+            send(res, 500, {
                 success: false,
                 message: 'Failed to create session',
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -1856,13 +1901,13 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
         }
     }
 
-    private async getSessionTemplates(req: Request, res: Response): Promise<void> {
+    private async getSessionTemplates(req: any, res: ServerResponse): Promise<void> {
         try {
             const sessionId = req.params.sessionId;
             const session = this.sessions.get(sessionId);
 
             if (!session) {
-                res.status(404).json({ success: false, message: 'Session not found' });
+                send(res, 404, { success: false, message: 'Session not found' });
                 return;
             }
 
@@ -1893,10 +1938,10 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
                 });
             }
 
-            res.json({ templates, success: true });
+            send(res, 200, { templates, success: true });
         } catch (error) {
             logger.error('Error getting session templates:', error);
-            res.status(500).json({
+            send(res, 500, {
                 success: false,
                 message: 'Failed to get templates',
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -1904,14 +1949,27 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
         }
     }
 
-    private async getSessionTemplate(req: Request, res: Response): Promise<void> {
+    private async getSessionTemplate(req: any, res: ServerResponse): Promise<void> {
         try {
             const { sessionId } = req.params;
-            const templateName = req.params[0];
+            
+            // Extract template name from URL (more reliable than Polka's wildcard parameter handling)
+            let templateName = req.params["*"];
+            const urlParts = req.url.split('/');
+            const templateIndex = urlParts.findIndex(part => part === 'template');
+            if (templateIndex !== -1 && templateIndex < urlParts.length - 1) {
+                // Get everything after 'template/' in the URL and decode it
+                templateName = decodeURIComponent(urlParts.slice(templateIndex + 1).join('/'));
+            }
+            
+            // Template name extracted from URL for reliable path handling
+            
             const session = this.sessions.get(sessionId);
+            
+            // Removed debug logging - path extraction now working correctly
 
             if (!session) {
-                res.status(404).json({ success: false, message: 'Session not found' });
+                send(res, 404, { success: false, message: 'Session not found' });
                 return;
             }
 
@@ -1920,12 +1978,12 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             const templatePath = path.join(session.templateDir, templateName);
 
             if (!fs.existsSync(templatePath)) {
-                res.status(404).json({ success: false, message: 'Template not found' });
+                send(res, 404, { success: false, message: 'Template not found' });
                 return;
             }
 
             const content = fs.readFileSync(templatePath, 'utf8');
-            res.json({
+            send(res, 200, {
                 content,
                 success: true,
                 templateName,
@@ -1933,7 +1991,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             });
         } catch (error) {
             logger.error('Error getting session template:', error);
-            res.status(500).json({
+            send(res, 500, {
                 success: false,
                 message: 'Failed to get template',
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -1941,16 +1999,28 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
         }
     }
 
-    private async saveSessionTemplate(req: Request, res: Response): Promise<void> {
+    private async saveSessionTemplate(req: any, res: ServerResponse): Promise<void> {
         try {
             const { sessionId } = req.params;
-            const templateName = req.params[0];
+            
+            // Extract template name from URL (more reliable than Polka's wildcard parameter handling)
+            let templateName = req.params["*"];
+            const urlParts = req.url.split('/');
+            const templateIndex = urlParts.findIndex(part => part === 'template');
+            if (templateIndex !== -1 && templateIndex < urlParts.length - 1) {
+                // Get everything after 'template/' in the URL and decode it
+                templateName = decodeURIComponent(urlParts.slice(templateIndex + 1).join('/'));
+            }
+            
+            // Template name extracted from URL for reliable path handling
+            
             const { content } = req.body;
+            
             const session = this.sessions.get(sessionId);
 
             // Validate required parameters
             if (!content || typeof content !== 'string') {
-                res.status(400).json({ 
+                send(res, 400, { 
                     success: false, 
                     message: 'Content is required and must be a string' 
                 });
@@ -1958,7 +2028,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             }
 
             if (!templateName) {
-                res.status(400).json({ 
+                send(res, 400, { 
                     success: false, 
                     message: 'Template name is required' 
                 });
@@ -1966,7 +2036,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             }
 
             if (!session) {
-                res.status(404).json({ success: false, message: 'Session not found' });
+                send(res, 404, { success: false, message: 'Session not found' });
                 return;
             }
 
@@ -1983,14 +2053,14 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             // Trigger debounced documentation regeneration
             this.generateDocumentation(sessionId, true);
 
-            res.json({
+            send(res, 200, {
                 success: true,
                 message: 'Template saved successfully',
                 templateName
             });
         } catch (error) {
             logger.error('Error saving session template:', error);
-            res.status(500).json({
+            send(res, 500, {
                 success: false,
                 message: 'Failed to save template',
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -1998,13 +2068,23 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
         }
     }
 
-    private async getSessionTemplateData(req: Request, res: Response): Promise<void> {
+    private async getSessionTemplateData(req: any, res: ServerResponse): Promise<void> {
         try {
             const { sessionId } = req.params;
-            const templatePath = req.params[0];
+            let templatePath = req.params["*"];
+            
+            // FALLBACK: If Polka doesn't capture the full path, extract it from the URL
+            if (!templatePath || !templatePath.includes('/')) {
+                const urlParts = req.url.split('/');
+                const templateIndex = urlParts.findIndex(part => part === 'template-data');
+                if (templateIndex !== -1 && templateIndex < urlParts.length - 1) {
+                    // Get everything after 'template-data/' in the URL and decode it
+                    templatePath = decodeURIComponent(urlParts.slice(templateIndex + 1).join('/'));
+                }
+            }
 
             if (!this.sessions.has(sessionId)) {
-                res.status(404).json({
+                send(res, 404, {
                     success: false,
                     message: 'Session not found'
                 });
@@ -2481,7 +2561,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             };
 
             // Return only the Compodoc configuration options
-            res.json({
+            send(res, 200, {
                 success: true,
                 categories: {
                     compodocConfig: {
@@ -2498,7 +2578,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
 
         } catch (error) {
             logger.error('Error getting session template data:', error);
-            res.status(500).json({
+            send(res, 500, {
                 success: false,
                 message: 'Failed to get template data',
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -2506,13 +2586,15 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
         }
     }
 
-    private async generateSessionDocs(req: Request, res: Response): Promise<void> {
+    private async generateSessionDocs(req: any, res: ServerResponse): Promise<void> {
         try {
             const { sessionId } = req.params;
-            const { customTemplateContent, mockData } = req.body;
+            
+            // Safely destructure from req.body, handling cases where it might be undefined (Polka behavior)
+            const { customTemplateContent, mockData } = req.body || {};
 
             if (!this.sessions.has(sessionId)) {
-                res.status(404).json({
+                send(res, 404, {
                     success: false,
                     message: 'Session not found'
                 });
@@ -2531,7 +2613,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             // Generate documentation for this session
             this.generateDocumentation(sessionId, false); // No debounce for manual generation
 
-            res.json({
+            send(res, 200, {
                 success: true,
                 message: 'Documentation generation started',
                 sessionId: sessionId
@@ -2539,7 +2621,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
 
         } catch (error) {
             logger.error('Error generating session documentation:', error);
-            res.status(500).json({
+            send(res, 500, {
                 success: false,
                 message: 'Failed to generate documentation',
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -2547,13 +2629,13 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
         }
     }
 
-    private async getSessionConfig(req: Request, res: Response): Promise<void> {
+    private async getSessionConfig(req: any, res: ServerResponse): Promise<void> {
         try {
             const sessionId = req.params.sessionId;
             const session = this.sessions.get(sessionId);
 
             if (!session) {
-                res.status(404).json({ success: false, message: 'Session not found' });
+                send(res, 404, { success: false, message: 'Session not found' });
                 return;
             }
 
@@ -2634,13 +2716,13 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
                 navTabConfig: JSON.stringify(session.config?.navTabConfig || [])
             };
 
-            res.json({
+            send(res, 200, {
                 config: fullConfig,
                 success: true
             });
         } catch (error) {
             logger.error('Error getting session config:', error);
-            res.status(500).json({
+            send(res, 500, {
                 success: false,
                 message: 'Failed to get config',
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -2648,14 +2730,14 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
         }
     }
 
-    private async updateSessionConfig(req: Request, res: Response): Promise<void> {
+    private async updateSessionConfig(req: any, res: ServerResponse): Promise<void> {
         try {
             const sessionId = req.params.sessionId;
             const { config } = req.body;
             const session = this.sessions.get(sessionId);
 
             if (!session) {
-                res.status(404).json({ success: false, message: 'Session not found' });
+                send(res, 404, { success: false, message: 'Session not found' });
                 return;
             }
 
@@ -2667,14 +2749,14 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             // Trigger debounced documentation regeneration with new config
             this.generateDocumentation(sessionId, true);
 
-            res.json({
+            send(res, 200, {
                 success: true,
                 message: 'Configuration updated successfully',
                 config: session.config
             });
         } catch (error) {
             logger.error('Error updating session config:', error);
-            res.status(500).json({
+            send(res, 500, {
                 success: false,
                 message: 'Failed to update config',
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -2682,13 +2764,13 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
         }
     }
 
-    private serveSessionDocs(req: Request, res: Response, next: NextFunction): void {
+    private serveSessionDocs(req: any, res: ServerResponse): void {
         try {
             const sessionId = req.params.sessionId;
             const session = this.sessions.get(sessionId);
 
             if (!session) {
-                res.status(404).json({ success: false, message: 'Session not found' });
+                send(res, 404, { success: false, message: 'Session not found' });
                 return;
             }
 
@@ -2699,13 +2781,23 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
             const fullPath = path.join(session.documentationDir, filePath || 'index.html');
 
             if (fs.existsSync(fullPath)) {
-                res.sendFile(fullPath);
+                const content = fs.readFileSync(fullPath);
+                const ext = path.extname(fullPath).toLowerCase();
+                const contentType = ext === '.html' ? 'text/html' : 
+                                  ext === '.css' ? 'text/css' :
+                                  ext === '.js' ? 'application/javascript' :
+                                  ext === '.json' ? 'application/json' :
+                                  'text/plain';
+                res.setHeader('Content-Type', contentType);
+                res.end(content);
             } else {
-                res.status(404).send('Documentation file not found');
+                res.statusCode = 404;
+                res.end('Documentation file not found');
             }
         } catch (error) {
             logger.error('Error serving session docs:', error);
-            res.status(500).send('Error serving documentation');
+            res.statusCode = 500;
+            res.end('Error serving documentation');
         }
     }
 
@@ -2786,10 +2878,13 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
                 this.cleanupSession(sessionId);
             }
 
-            if (this.server) {
+            // Get the actual HTTP server from Polka instance
+            const httpServer = this.server?.server;
+            
+            if (httpServer && typeof httpServer.close === 'function') {
                 let resolved = false;
                 
-                this.server.close((error) => {
+                httpServer.close((error) => {
                     if (!resolved) {
                         resolved = true;
                         if (error) {
@@ -2801,16 +2896,16 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
                     }
                 });
                 
-                // Force close connections if server doesn't close within 2 seconds
+                // Force close after 1 second if it hasn't closed naturally
                 setTimeout(() => {
-                    if (!resolved && this.server) {
+                    if (!resolved) {
                         resolved = true;
-                        logger.warn('Force closing server connections');
-                        this.server.closeAllConnections?.();
+                        logger.info('Server close timeout - resolving anyway');
                         resolve();
                     }
-                }, 2000);
+                }, 1000);
             } else {
+                logger.info('No HTTP server to close or close method not available');
                 resolve();
             }
 
