@@ -1,5 +1,5 @@
 {
     "ignoreDeps": ["os-name", "pdfjs-dist", "marked", "chai", "eslint"],
     "includePaths": ["package.json"],
-    "ignorePaths": ["src/playground-demo/package.json"]
+    "ignorePaths": ["**/*/package.json"]
 }
