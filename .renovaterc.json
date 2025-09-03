@@ -1,5 +1,0 @@
-{
-    "ignoreDeps": ["os-name", "pdfjs-dist", "marked", "chai", "eslint"],
-    "includePaths": ["package.json"],
-    "ignorePaths": ["**/*/package.json"]
-}

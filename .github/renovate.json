@@ -1,14 +1,6 @@
 {
     "extends": ["config:base"],
-    "ignoreDeps": [
-        "os-name",
-        "marked",
-        "chai",
-        "eslint",
-        "@typescript-eslint/eslint-plugin",
-        "@typescript-eslint/parser",
-        "cheerio"
-    ],
+    "ignoreDeps": ["os-name", "marked", "chai", "eslint", "pdfjs-dist"],
     "packageRules": [
         {
             "updateTypes": ["major", "minor", "patch"],
@@ -26,5 +18,7 @@
     "lockFileMaintenance": {
         "enabled": false
     },
-    "rangeStrategy": "bump"
+    "rangeStrategy": "bump",
+    "includePaths": ["package.json"],
+    "ignorePaths": ["**/*/package.json"]
 }
