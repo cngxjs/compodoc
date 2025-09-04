@@ -18,7 +18,9 @@
 
 - commit all changes (`git commit -am "chore(release): <new version>"`)
 
-- push to github (`git push origin main && git push --tags`)
+- add a tag for the new version (`git tag <new version>`)
+
+- push to github (`git push origin develop && git push --tags`)
 
 - publish to npm (`npm publish --access public`)
 
