@@ -112,7 +112,7 @@ Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs][homep
 
 Everything in this repository is [licensed under the MIT License][license] unless otherwise specified.
 
-Copyright (c) 2016 – 2019 [Vincent Ogloblinsky]
+Copyright (c) 2016 – 2025 [Vincent Ogloblinsky]
 
 [license]: https://github.com/compodoc/compodoc/blob/master/LICENSE
 [vincent ogloblinsky]: https://www.vincentogloblinsky.com
