@@ -22,7 +22,7 @@
 
 - push to github (`git push origin develop && git push --tags`)
 
-- publish to npm (`npm publish --access public`)
+- publish to npm (`npm publish --access public`) and run `npm adduser` if not already done
 
 - create a new release on github with the new version tag and copy/paste the content of CHANGELOG.md for this version in the description
 
