@@ -4,6 +4,7 @@ rollup/
 test/
 src-refactored/
 coverage
+coverage-refactoring
 .nyc_output
 .tmp-compodoc-test/
 tools
