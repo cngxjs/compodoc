@@ -91,7 +91,7 @@
     "homepage": "https://github.com/compodoc/compodoc#readme",
     "dependencies": {
         "@angular-devkit/schematics": "20.2.2",
-        "@babel/core": "7.28.3",
+        "@babel/core": "7.28.4",
         "@babel/plugin-transform-private-methods": "7.27.1",
         "@babel/preset-env": "7.28.3",
         "@compodoc/live-server": "^1.2.3",
@@ -112,7 +112,7 @@
         "glob": "^11.0.3",
         "handlebars": "^4.7.8",
         "html-entities": "^2.6.0",
-        "i18next": "^25.5.2",
+        "i18next": "25.5.2",
         "json5": "^2.2.3",
         "lodash": "^4.17.21",
         "loglevel": "^1.9.2",
