@@ -1,3 +1,11 @@
+<a name="1.1.30"></a>
+
+## [v1.1.30](https://github.com/compodoc/compodoc/compare/1.1.29...v1.1.30)
+
+### Commits
+
+- feat(app): unpin i18next + upgrade @babel/core [a02cc90](https://github.com/compodoc/compodoc/commit/a02cc90dbb3738ccb30fa4a36e19eeb7f92fbe1c)
+
 <a name="1.1.29"></a>
 
 ## [v1.1.29](https://github.com/compodoc/compodoc/compare/1.1.28...v1.1.29)
