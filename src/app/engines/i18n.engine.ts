@@ -1,4 +1,5 @@
-import i18next from 'i18next';
+// https://github.com/i18next/i18next/blob/master/CHANGELOG.md#1700
+const i18next = require('i18next').default;
 
 import {
     TRANSLATION_BG_BG,
@@ -60,6 +61,7 @@ class I18nEngine {
                 skipOnVariables: false
             }
         });
+        i18next.addResources('bg-BG', 'translation', TRANSLATION_BG_BG);
         i18next.addResources('de-DE', 'translation', TRANSLATION_DE_DE);
         i18next.addResources('en-US', 'translation', TRANSLATION_EN_US);
         i18next.addResources('es-ES', 'translation', TRANSLATION_ES_ES);
