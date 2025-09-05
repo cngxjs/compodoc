@@ -1,5 +1,5 @@
 // https://github.com/i18next/i18next/blob/master/CHANGELOG.md#1700
-const i18next = require('i18next').default;
+const i18next = require('i18next');
 
 import {
     TRANSLATION_BG_BG,
