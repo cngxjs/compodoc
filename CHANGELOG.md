@@ -1,3 +1,11 @@
+<a name="1.1.29"></a>
+
+## [v1.1.29](https://github.com/compodoc/compodoc/compare/1.1.28...v1.1.29)
+
+### Bug fixes
+
+- fix(app): i18next default namespace and init ([b7a5865](https://github.com/compodoc/compodoc/commit/b7a5865)), closes [#1643](https://github.com/compodoc/compodoc/issues/1643) [#1645](https://github.com/compodoc/compodoc/issues/1645)
+
 <a name="1.1.28"></a>
 
 ## [v1.1.28](https://github.com/compodoc/compodoc/compare/1.1.27...v1.1.28)
