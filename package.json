@@ -130,8 +130,8 @@
         "sirv": "^3.0.2",
         "svg-pan-zoom": "^3.6.2",
         "tablesort": "^5.6.0",
-        "ts-morph": "^26.0.0",
-        "uuid": "^11.1.0",
+        "ts-morph": "^27.0.0",
+        "uuid": "^13.0.0",
         "vis": "^4.21.0-EOL"
     },
     "devDependencies": {
