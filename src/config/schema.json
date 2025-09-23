@@ -298,6 +298,13 @@
             "default": false,
             "examples": [false]
         },
+        "disableFilePath": {
+            "$id": "/properties/disableFilePath",
+            "type": "boolean",
+            "title": "Do not add the file path",
+            "default": false,
+            "examples": [false]
+        },
         "disableOverview": {
             "$id": "/properties/disableOverview",
             "type": "boolean",
