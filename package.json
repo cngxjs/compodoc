@@ -132,7 +132,7 @@
         "tablesort": "^5.6.0",
         "ts-morph": "^27.0.0",
         "uuid": "^13.0.0",
-        "vis": "^4.21.0-EOL"
+        "vis-network": "^10.0.2"
     },
     "devDependencies": {
         "@istanbuljs/nyc-config-typescript": "1.0.2",

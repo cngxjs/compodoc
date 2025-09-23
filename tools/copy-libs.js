@@ -10,7 +10,9 @@ cpx.copySync(
     NODE_MODULES + '/tablesort/dist/sorts/tablesort.number.min.js',
     './src/resources/js/libs/'
 );
-cpx.copySync(NODE_MODULES + '/vis/dist/vis.min.js', './src/resources/js/libs/');
+
+cpx.copySync(NODE_MODULES + '/vis-network/dist/vis-network.min.js', './src/resources/js/libs/');
+
 cpx.copySync(NODE_MODULES + '/svg-pan-zoom/dist/svg-pan-zoom.min.js', './src/resources/js/libs/');
 cpx.copySync(NODE_MODULES + '/es6-shim/es6-shim.min.js', './src/resources/js/libs/');
 cpx.copySync(
