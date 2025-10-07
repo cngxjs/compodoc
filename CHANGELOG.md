@@ -1,3 +1,26 @@
+<a name="1.1.31"></a>
+
+## [v1.1.31](https://github-personal/compodoc/compodoc/compare/1.1.30...1.1.31)
+
+### Merged
+
+- fix: Fix issue with regular Markdown files not being added to the menu [#1664](https://github-personal/compodoc/compodoc/pull/1664)
+- fix: add missing disableFilePath property to schema.json [#1656](https://github-personal/compodoc/compodoc/pull/1656)
+- chore(deps): update dev dependencies [#1655](https://github-personal/compodoc/compodoc/pull/1655)
+- fix(deps): update dependencies [#1653](https://github-personal/compodoc/compodoc/pull/1653)
+- fix(deps): update dependencies (major) [#1650](https://github-personal/compodoc/compodoc/pull/1650)
+- fix(deps): update dependency bootstrap.native to ^5.1.6 [#1647](https://github-personal/compodoc/compodoc/pull/1647)
+- chore(deps): update dependency rollup to v4.50.1 [#1651](https://github-personal/compodoc/compodoc/pull/1651)
+
+### Bug fixes
+
+- Fix #1663 ([2501b4f](https://github.com/compodoc/compodoc/commit/2501b4f)), closes [#1663](https://github-personal/compodoc/compodoc/issues/1663)
+- fix(app): remove old vis dependency ([09f772e](https://github.com/compodoc/compodoc/commit/09f772e)), closes [#1447](https://github-personal/compodoc/compodoc/issues/1447)
+
+### Commits
+
+- feat(app): bump dev|dependencies [8f661ce](https://github-personal/compodoc/compodoc/commit/8f661ce4cd4c05d16623c3acaa74598da152c27a)
+
 <a name="1.1.30"></a>
 
 ## [v1.1.30](https://github.com/compodoc/compodoc/compare/1.1.29...v1.1.30)

@@ -364,6 +364,12 @@ export class Application {
                                     depth: 0,
                                     pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
                                 });
+                                Configuration.mainData.markdowns.push({
+                                    name: markdowns[i],
+                                    uppername: markdowns[i].toUpperCase(),
+                                    depth: 0,
+                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                });
                             }
                             i++;
                             loop();
