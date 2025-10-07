@@ -1,7 +1,7 @@
 import { SyntaxKind } from 'ts-morph';
 
 export enum KindType {
-    UNKNOWN = '',
+    UNKNOWN = 'unknown',
     STRING = 'string',
     NUMBER = 'number',
     ARRAY = '[]',
@@ -111,6 +111,9 @@ export function kindToType(kind: number): KindType {
             break;
         case SyntaxKind.NeverKeyword:
             _type = KindType.NEVER;
+            break;
+        case SyntaxKind.UnknownKeyword:
+            _type = KindType.UNKNOWN;
             break;
         case SyntaxKind.UndefinedKeyword:
             _type = KindType.UNDEFINED;

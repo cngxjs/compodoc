@@ -1775,4 +1775,9 @@ describe('CLI simple generation - big app', () => {
             );
         });
     });
+
+    it('should support type <unknown>', () => {
+        const file = read(distFolder + '/components/AboutComponent.html');
+        expect(file).to.contain(`<code>TemplateRef&lt;unknown&gt;</code>`);
+    });
 });
