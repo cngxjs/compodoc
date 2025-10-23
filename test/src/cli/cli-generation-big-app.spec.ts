@@ -367,7 +367,7 @@ describe('CLI simple generation - big app', () => {
     });
 
     it('should support return multiple with null & TypeLiteral', () => {
-        expect(tidiClassFile).to.contain('<code>literal type | null');
+        expect(tidiClassFile).to.contain('<code>{passwordMismatch: boolean} | null</code>');
     });
 
     it('should support @HostBindings', () => {

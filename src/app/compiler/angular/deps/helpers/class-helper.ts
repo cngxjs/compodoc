@@ -893,6 +893,20 @@ export class ClassHelper {
             return _return;
         }
 
+        // Handle tuple types at the top level
+        if (ts.isTupleTypeNode(node)) {
+            let _return = '[';
+            let elements = node.elements;
+            for (let i = 0; i < elements.length; i++) {
+                _return += this.visitType(elements[i]);
+                if (i < elements.length - 1) {
+                    _return += ', ';
+                }
+            }
+            _return += ']';
+            return _return;
+        }
+
         if (node.typeName) {
             _return = this.visitTypeName(node.typeName);
         } else if (node.type) {
@@ -1029,29 +1043,82 @@ export class ClassHelper {
             if (node.elementType.typeName) {
                 _return = this.visitTypeName(node.elementType.typeName) + kindToType(node.kind);
             }
-        } else if (node.types && ts.isUnionTypeNode(node)) {
+        } else if (ts.isUnionTypeNode(node)) {
             _return = '';
+            let unionTypes = node.types;
+            // If ts-morph doesn't provide types, use compilerNode
+            if (!unionTypes || unionTypes.length === 0) {
+                unionTypes = node.compilerNode.types || [];
+            }
             let i = 0;
-            let len = node.types.length;
+            let len = unionTypes.length;
             for (i; i < len; i++) {
-                let type = node.types[i];
-                _return += kindToType(type.kind);
-                if (ts.isLiteralTypeNode(type) && type.literal) {
+                let type = unionTypes[i];
+                // Special handling for null literals
+                if (type.kind === ts.SyntaxKind.LiteralType && type.literal && type.literal.kind === ts.SyntaxKind.NullKeyword) {
+                    _return += 'null';
+                } else if (ts.isLiteralTypeNode(type) && type.literal) {
                     if (type.literal.text) {
                         _return += '"' + type.literal.text + '"';
                     } else {
                         _return += kindToType(type.literal.kind);
                     }
-                }
-                if (type.typeName) {
+                } else if (ts.isTypeReferenceNode(type) && type.typeName && type.typeName.text === 'Array' && type.typeArguments && type.typeArguments.length === 1) {
+                    // Handle Array<T> syntax
+                    const argResult = this.visitType(type.typeArguments[0]);
+                    _return += 'Array<' + argResult + '>';
+                } else if (ts.isArrayTypeNode(type)) {
+                    // Handle array types: recursively process element type
+                    const elementResult = this.visitType(type.elementType);
+                    _return += elementResult + '[]';
+                } else if (ts.isTypeReferenceNode(type) && type.typeName) {
+                    // Handle type references: use type name
                     _return += this.visitTypeName(type.typeName);
+                } else if (type.kind === ts.SyntaxKind.TypeLiteral) {
+                    // Handle TypeLiteral types: recursively process the type
+                    _return += this.visitType(type);
+                } else {
+                    // Fallback for other types
+                    _return += kindToType(type.kind);
+                    if (type.typeName) {
+                        _return += this.visitTypeName(type.typeName);
+                    }
                 }
                 if (i < len - 1) {
                     _return += ' | ';
                 }
             }
+        } else if (node.kind === SyntaxKind.RestType && node.type) {
+            _return = '...' + this.visitType(node.type);
         } else if (node.dotDotDotToken) {
             _return = 'any[]';
+        } else if (node.kind === SyntaxKind.TypeLiteral) {
+            // Handle TypeLiteral types (object types with properties)
+            if (node.members && node.members.length > 0) {
+                _return = '{';
+                for (let i = 0; i < node.members.length; i++) {
+                    const member = node.members[i];
+                    if (ts.isPropertySignature(member) && member.name) {
+                        if (member.name.text) {
+                            _return += member.name.text;
+                        } else if (member.name.kind === SyntaxKind.StringLiteral) {
+                            _return += '"' + member.name.text + '"';
+                        }
+                        if (member.type) {
+                            _return += ': ' + this.visitType(member.type);
+                        }
+                        if (member.questionToken) {
+                            _return += '?';
+                        }
+                    }
+                    if (i < node.members.length - 1) {
+                        _return += ', ';
+                    }
+                }
+                _return += '}';
+            } else {
+                _return = kindToType(node.kind);
+            }
         } else {
             _return = kindToType(node.kind);
             if (
@@ -1202,7 +1269,7 @@ export class ClassHelper {
                 : undefined,
             deprecated: false,
             deprecationMessage: '',
-            type: this.visitType(property),
+            type: property.type ? this.visitType(property.type) : 'any',
             indexKey: this.visitTypeIndex(property),
             optional: typeof property.questionToken !== 'undefined',
             description: '',
@@ -1455,7 +1522,7 @@ export class ClassHelper {
         _return.line = this.getPosition(property, sourceFile).line + 1;
 
         if (property.type) {
-            _return.type = this.visitType(property);
+            _return.type = this.visitType(property.type);
         } else {
             // handle NewExpression
             if (property.initializer) {
@@ -1571,7 +1638,7 @@ export class ClassHelper {
         }
         _return.line = this.getPosition(property, sourceFile).line + 1;
         if (property.type) {
-            _return.type = this.visitType(property);
+            _return.type = this.visitType(property.type);
         } else {
             // handle NewExpression
             if (property.initializer) {
