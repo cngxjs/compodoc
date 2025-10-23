@@ -106,6 +106,9 @@ export class AboutComponent {
         return '';
     }
 
+    @ViewChild('tabGroup', { static: true })
+    tabGroup: TemplateRef<unknown>;
+
     /**
      * This is for testing
      * @returns '', if this {@link AboutComponent.fullName} does not crash

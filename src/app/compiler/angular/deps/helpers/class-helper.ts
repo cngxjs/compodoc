@@ -896,7 +896,11 @@ export class ClassHelper {
         if (node.typeName) {
             _return = this.visitTypeName(node.typeName);
         } else if (node.type) {
-            if (node.type.kind) {
+            if (
+                node.type.kind &&
+                !ts.isUnionTypeNode(node.type) &&
+                !ts.isTupleTypeNode(node.type)
+            ) {
                 _return = kindToType(node.type.kind);
             }
             if (node.type.typeName) {
@@ -939,14 +943,12 @@ export class ClassHelper {
                             } else {
                                 _return += kindToType(type.literal.kind);
                             }
+                        } else if ((type as any).typeName) {
+                            _return += this.visitTypeName((type as any).typeName);
+                        } else if (type.kind === SyntaxKind.RestType && type.type) {
+                            _return += '...' + this.visitType(type.type);
                         } else {
                             _return += kindToType(type.kind);
-                        }
-                        if (type.typeName) {
-                            _return += this.visitTypeName(type.typeName);
-                        }
-                        if (type.kind === SyntaxKind.RestType && type.type) {
-                            _return += '...' + this.visitType(type.type);
                         }
                         if (type.typeArguments) {
                             _return += '<';
@@ -965,11 +967,12 @@ export class ClassHelper {
             };
 
             if (node.type.elements && ts.isTupleTypeNode(node.type)) {
-                _return += '[';
+                _return = '[';
                 parseTypesOrElements(node.type.elements, ', ');
                 _return += ']';
             }
             if (node.type.types && ts.isUnionTypeNode(node.type)) {
+                _return = '';
                 parseTypesOrElements(node.type.types, ' | ');
             }
             if (node.type.elementTypes) {
@@ -984,6 +987,9 @@ export class ClassHelper {
                         if (type.kind === SyntaxKind.ArrayType && type.elementType) {
                             _return += kindToType(type.elementType.kind);
                             _return += kindToType(type.kind);
+                        } else if ((type as any).typeName) {
+                            // For type references, use the type name directly instead of kindToType + typeName
+                            _return += this.visitTypeName((type as any).typeName);
                         } else {
                             _return += kindToType(type.kind);
                         }
@@ -993,9 +999,6 @@ export class ClassHelper {
                             } else {
                                 _return += kindToType(type.literal.kind);
                             }
-                        }
-                        if (type.typeName) {
-                            _return += this.visitTypeName(type.typeName);
                         }
                         if (type.kind === SyntaxKind.RestType && type.type) {
                             _return += '...' + this.visitType(type.type);
@@ -1035,16 +1038,16 @@ export class ClassHelper {
             let len = node.types.length;
             for (i; i < len; i++) {
                 let type = node.types[i];
-                _return += kindToType(type.kind);
                 if (ts.isLiteralTypeNode(type) && type.literal) {
                     if (type.literal.text) {
                         _return += '"' + type.literal.text + '"';
                     } else {
                         _return += kindToType(type.literal.kind);
                     }
-                }
-                if (type.typeName) {
-                    _return += this.visitTypeName(type.typeName);
+                } else if ((type as any).typeName) {
+                    _return += this.visitTypeName((type as any).typeName);
+                } else {
+                    _return += kindToType(type.kind);
                 }
                 if (i < len - 1) {
                     _return += ' | ';
@@ -1055,7 +1058,7 @@ export class ClassHelper {
         } else {
             _return = kindToType(node.kind);
             if (
-                _return === '' &&
+                (_return === '' || _return === 'unknown') &&
                 node.initializer &&
                 node.initializer.kind &&
                 (node.kind === SyntaxKind.PropertyDeclaration || node.kind === SyntaxKind.Parameter)

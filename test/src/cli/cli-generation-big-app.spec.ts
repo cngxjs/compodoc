@@ -747,7 +747,7 @@ describe('CLI simple generation - big app', () => {
     });
 
     it('correct support function with empty typed arguments', () => {
-        expect(appComponentFile).to.contain('<code>openSomeDialog(model,');
+        expect(appComponentFile).to.contain('<code>openSomeDialog(model: unknown,');
     });
 
     it('correct support unnamed function', () => {
@@ -847,7 +847,7 @@ describe('CLI simple generation - big app', () => {
 
     it('should support destructuring for functions', () => {
         const file = read(distFolder + '/miscellaneous/functions.html');
-        expect(file).to.contain('<code>sumFunction(trackId, __namedParameters: {a');
+        expect(file).to.contain('<code>sumFunction(trackId: unknown, __namedParameters: {a');
         expect(file).to.contain('<code>2</code>');
     });
 
