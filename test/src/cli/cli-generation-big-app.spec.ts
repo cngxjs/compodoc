@@ -639,7 +639,7 @@ describe('CLI simple generation - big app', () => {
         expect(todoComponentFile).to.contain('<code>(string | number)[]</code>');
     });
 
-    it('should support multiple union types with array again', () => {
+    it('should support multiple union types with complex array', () => {
         expect(typeAliasesFile).to.contain('<code>number | string | (number | string)[]</code>');
     });
 
@@ -651,7 +651,7 @@ describe('CLI simple generation - big app', () => {
 
     it('should support literal type', () => {
         expect(typeAliasesFile).to.contain(
-            '<code>Pick&lt;NavigationExtras | replaceUrl&gt;</code>'
+            '<code>Pick&lt;NavigationExtras, replaceUrl&gt;</code>'
         );
     });
 
