@@ -40,7 +40,7 @@ export class FunctionSignatureHelper implements IHtmlEngineHelper {
                     arg
                 )}: <a href="${path}" target="_blank">${argu.type}</a>`;
             } else {
-                if (argu.name && argu.type) {
+                if (argu.name && argu.type && argu.type !== 'unknown') {
                     return `${argu.name}${this.getOptionalString(arg)}: ${argu.type}`;
                 } else {
                     if (argu.name) {
@@ -100,7 +100,11 @@ export class FunctionSignatureHelper implements IHtmlEngineHelper {
                         )}</a>`;
                     }
                 } else if (arg.dotDotDotToken) {
-                    args += `...${arg.name}: ${arg.type}`;
+                    if (arg.type && arg.type !== 'unknown') {
+                        args += `...${arg.name}: ${arg.type}`;
+                    } else {
+                        args += `...${arg.name}`;
+                    }
                 } else if (arg.function) {
                     args += this.handleFunction(arg);
                 } else if (BasicTypeUtil.isKnownType(arg.type)) {
@@ -111,7 +115,7 @@ export class FunctionSignatureHelper implements IHtmlEngineHelper {
                         arg.type
                     )}</a>`;
                 } else {
-                    if (arg.type) {
+                    if (arg.type && arg.type !== 'unknown') {
                         args += `${arg.name}${this.getOptionalString(arg)}: ${arg.type}`;
                     } else {
                         args += `${arg.name}${this.getOptionalString(arg)}`;

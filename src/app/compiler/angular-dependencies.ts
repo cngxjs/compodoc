@@ -1362,6 +1362,10 @@ export class AngularDependencies extends FrameworkDependencies {
                         result.type = arg.type.typeName.text;
                     }
                 }
+                // Don't include the type if it's inferred as 'unknown'
+                if (result.type === 'unknown') {
+                    delete result.type;
+                }
             }
             const jsdoctags = this.jsdocParserUtil.getJSDocs(arg);
 

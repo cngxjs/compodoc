@@ -1568,10 +1568,15 @@ export class ClassHelper {
     private visitArgument(arg: ts.ParameterDeclaration) {
         let _result: any = {
             name: arg.name.text,
-            type: this.visitType(arg),
             deprecated: false,
             deprecationMessage: ''
         };
+
+        // Only set type if it's not 'unknown' (inferred type)
+        const argType = this.visitType(arg);
+        if (argType && argType !== 'unknown') {
+            _result.type = argType;
+        }
         if (arg.dotDotDotToken) {
             _result.dotDotDotToken = true;
         }
