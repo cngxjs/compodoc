@@ -750,7 +750,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             name,
                             ctype: 'miscellaneous',
                             subtype: 'typealias',
-                            rawtype: this.classHelper.visitType(node),
+                            rawtype: this.classHelper.visitType(node.type),
                             file: file,
                             deprecated,
                             deprecationMessage,
@@ -759,7 +759,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         if (node.type) {
                             typeAliasDeps.kind = node.type.kind;
                             if (typeAliasDeps.rawtype === '') {
-                                typeAliasDeps.rawtype = this.classHelper.visitType(node);
+                                typeAliasDeps.rawtype = this.classHelper.visitType(node.type);
                             }
                         }
 
@@ -986,7 +986,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             name,
                             ctype: 'miscellaneous',
                             subtype: 'typealias',
-                            rawtype: this.classHelper.visitType(node),
+                            rawtype: this.classHelper.visitType(node.type),
                             file: file,
                             deprecated,
                             deprecationMessage,
