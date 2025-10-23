@@ -149,6 +149,27 @@ export class ClassHelper {
         return arg.optional ? '?' : '';
     }
 
+    private inferTypeFromInitializer(initializer: ts.Node): string {
+        const kind = initializer.kind;
+        switch (kind) {
+            case SyntaxKind.StringLiteral:
+                return 'string';
+            case SyntaxKind.NumericLiteral:
+                return 'number';
+            case SyntaxKind.TrueKeyword:
+            case SyntaxKind.FalseKeyword:
+                return 'boolean';
+            case SyntaxKind.ArrayLiteralExpression:
+                return 'array';
+            case SyntaxKind.ObjectLiteralExpression:
+                return 'object';
+            case SyntaxKind.NullKeyword:
+                return 'null';
+            default:
+                return 'any';
+        }
+    }
+
     private stringifyArguments(args) {
         let stringifyArgs = [];
 
@@ -1275,6 +1296,14 @@ export class ClassHelper {
             description: '',
             line: this.getPosition(property, sourceFile).line + 1
         };
+
+        // If no explicit type and there's an initializer, try to infer the type from the initializer
+        if (!property.type && property.initializer) {
+            const inferredType = this.inferTypeFromInitializer(property.initializer);
+            if (inferredType !== 'any') {
+                result.type = inferredType;
+            }
+        }
         let jsdoctags;
 
         if (property.initializer && property.initializer.kind === SyntaxKind.ArrowFunction) {

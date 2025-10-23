@@ -571,6 +571,12 @@ describe('CLI simple generation - big app', () => {
         );
     });
 
+    it('should support default type on - component - default value', () => {
+        expect(todoComponentFile).to.contain(
+            'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string"'
+        );
+    });
+
     it('should support default type on default value', () => {
         const file = read(distFolder + '/classes/TODO_STATUS.html');
         expect(file).to.contain(
