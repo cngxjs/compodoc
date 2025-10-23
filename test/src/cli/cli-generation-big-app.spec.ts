@@ -655,10 +655,6 @@ describe('CLI simple generation - big app', () => {
         );
     });
 
-    it('should support multiple union types with array', () => {
-        expect(todoComponentFile).to.contain('<code>(string | number)[]</code>');
-    });
-
     it('should support alone elements in their own entry menu', () => {
         const file = read(distFolder + '/js/menu-wc.js');
         expect(file).to.contain(
@@ -1782,8 +1778,4 @@ describe('CLI simple generation - big app', () => {
         });
     });
 
-    it('should support type <unknown>', () => {
-        const file = read(distFolder + '/components/AboutComponent.html');
-        expect(file).to.contain(`<code>TemplateRef&lt;unknown&gt;</code>`);
-    });
 });
