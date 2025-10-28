@@ -192,16 +192,6 @@
                                     {{/jsdoc-params}}
                                 </div>
                                 {{/jsdoc-params-valid}}
-                                <div>
-                                    {{#jsdoc-code-example this.setSignature.jsdoctags}}
-                                        <b>{{t "example" }} :</b>
-                                        {{#each tags}}
-                                            <div>
-                                                {{{comment}}}
-                                            </div>
-                                        {{/each}}
-                                    {{/jsdoc-code-example}}
-                                </div>
                             {{/if}}
                             {{#if this.setSignature.returnType}}
                                 <div class="io-description">
