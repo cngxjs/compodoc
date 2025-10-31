@@ -1,3 +1,21 @@
+<a name="1.1.32"></a>
+
+## [v1.1.32](https://github-personal/compodoc/compodoc/compare/1.1.31...1.1.32)
+
+### Merged
+
+- chore(deps): update dev dependencies [#1672](https://github.com/compodoc/compodoc/pull/1672)
+- fix: duplicated example code block in accessors #1657 [#1667](https://github.com/compodoc/compodoc/pull/1667)
+- fix(deps): update dependencies [#1659](https://github.com/compodoc/compodoc/pull/1659)
+- chore(deps): update dev dependencies [#1658](https://github.com/compodoc/compodoc/pull/1658)
+
+### Bug fixes
+
+- fix(app): uuid lock to 11.1.0 due to CJS config, closes [#1668](https://github.com/compodoc/compodoc/issues/1668)
+- fix(app): uuid lock to 11.1.0 due to CJS config ([dabb09f](https://github.com/compodoc/compodoc/commit/dabb09f)), closes [#1668](https://github.com/compodoc/compodoc/issues/1668)
+- fix(app): support type &lt;unknown&gt;, closes [#1662](https://github.com/compodoc/compodoc/issues/1662)
+- fix(app): support type &lt;unknown&gt;, closes [#1662](https://github.com/compodoc/compodoc/issues/1662)
+
 <a name="1.1.31"></a>
 
 ## [v1.1.31](https://github-personal/compodoc/compodoc/compare/1.1.30...1.1.31)
