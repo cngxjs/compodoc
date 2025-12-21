@@ -36,7 +36,7 @@ export class AngularApiUtil {
         return {
             source: 'external',
             data: foundedApi,
-            score: 1
+            score: foundedApi ? 1 : 0
         };
     }
 }

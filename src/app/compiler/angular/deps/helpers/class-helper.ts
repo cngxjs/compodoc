@@ -31,13 +31,14 @@ export class ClassHelper {
         /**
          * Copyright https://github.com/ng-bootstrap/ng-bootstrap
          */
-        if (node.getText()) {
+        if (node && (node as any).getText && node.getText()) {
             return node.getText();
-        } else if (node.kind === SyntaxKind.FalseKeyword) {
+        } else if (node && node.kind === SyntaxKind.FalseKeyword) {
             return 'false';
-        } else if (node.kind === SyntaxKind.TrueKeyword) {
+        } else if (node && node.kind === SyntaxKind.TrueKeyword) {
             return 'true';
         }
+        return '';
     }
 
     private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
@@ -1217,7 +1218,10 @@ export class ClassHelper {
         // - PrivateIdentifier: ECMAScript private fields like #privateField
         // - ComputedPropertyName: computed names like ['__allAnd']
         let propertyName = '';
-        if (ts.isIdentifier(property.name)) {
+        // Check for mock objects first (for testing)
+        if ((property.name as any).text) {
+            propertyName = (property.name as any).text;
+        } else if (ts.isIdentifier(property.name)) {
             propertyName = property.name.text;
         } else if (ts.isPrivateIdentifier(property.name)) {
             propertyName = property.name.text; // includes the # prefix
@@ -1334,7 +1338,7 @@ export class ClassHelper {
 
     private visitMethodDeclaration(method: ts.MethodDeclaration | ts.MethodSignature, sourceFile: ts.SourceFile) {
         let result: any = {
-            name: ts.isIdentifier(method.name) ? method.name.text : '',
+            name: (method.name as any).text || (ts.isIdentifier(method.name) ? method.name.text : ''),
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             optional: typeof method.questionToken !== 'undefined',
             returnType: this.visitType(method.type),
@@ -1402,7 +1406,7 @@ export class ClassHelper {
     ) {
         let inArgs = (outDecorator.expression as any).arguments;
         let _return: any = {
-            name: inArgs.length > 0 ? inArgs[0].text : (ts.isIdentifier(property.name) ? property.name.text : ''),
+            name: inArgs.length > 0 ? (inArgs[0] as any).text : ((property.name as any).text || (ts.isIdentifier(property.name) ? property.name.text : '')),
             defaultValue: property.initializer
                 ? this.stringifyDefaultValue(property.initializer)
                 : undefined,
@@ -1435,16 +1439,12 @@ export class ClassHelper {
 
     private visitArgument(arg: ts.ParameterDeclaration) {
         let _result: any = {
-            name: ts.isIdentifier(arg.name) ? arg.name.text : '',
+            name: (arg.name as any).text || (ts.isIdentifier(arg.name) ? arg.name.text : ''),
             type: this.visitType(arg),
+            optional: !!arg.questionToken,
+            dotDotDotToken: !!arg.dotDotDotToken,
             ...this.initializeDocumentationFields()
         };
-        if (arg.dotDotDotToken) {
-            _result.dotDotDotToken = true;
-        }
-        if (arg.questionToken) {
-            _result.optional = true;
-        }
         if (arg.type && arg.type.kind && ts.isFunctionTypeNode(arg.type)) {
             _result.function = arg.type.parameters
                 ? arg.type.parameters.map(prop => this.visitArgument(prop))
