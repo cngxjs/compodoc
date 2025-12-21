@@ -49,6 +49,56 @@ export class ClassHelper {
         });
     }
 
+    /**
+     * Process JSDoc tags and apply them to a result object
+     */
+    private processJSDocTags(
+        jsdoctags: any,
+        result: any,
+        includeTagsArray: boolean = true
+    ): void {
+        if (jsdoctags && jsdoctags.length >= 1) {
+            const jsdoc = jsdoctags[0];
+            if (jsdoc && jsdoc.tags) {
+                this.checkForDeprecation(jsdoc.tags as unknown as any[], result);
+                if (includeTagsArray) {
+                    result.jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Extract and process JSDoc comment for a node
+     */
+    private extractAndProcessJSDocComment(
+        node: any,
+        sourceFile: ts.SourceFile,
+        result: any
+    ): void {
+        if (node.jsDoc) {
+            const comment = this.jsdocParserUtil.getMainCommentOfNode(node, sourceFile);
+            if (typeof comment !== 'undefined') {
+                const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
+                result.rawdescription = cleanedDescription;
+                result.description = markedAcl(cleanedDescription);
+            }
+        }
+    }
+
+    /**
+     * Initialize common fields for documented items
+     */
+    private initializeDocumentationFields(): {
+        deprecated: boolean;
+        deprecationMessage: string;
+    } {
+        return {
+            deprecated: false,
+            deprecationMessage: ''
+        };
+    }
+
     private getDecoratorOfType(node, decoratorType) {
         let decorators = getNodeDecorators(node) || [];
         let result = [];
@@ -350,21 +400,20 @@ export class ClassHelper {
         }
     }
 
-    private isDirectiveDecorator(decorator: ts.Decorator): boolean {
+    private hasDecoratorType(decorator: ts.Decorator, ...types: string[]): boolean {
         if ((decorator.expression as any).expression) {
-            let decoratorIdentifierText = (decorator.expression as any).expression.text;
-            return (
-                decoratorIdentifierText === 'Directive' || decoratorIdentifierText === 'Component'
-            );
-        } else {
-            return false;
+            const decoratorText = (decorator.expression as any).expression.text;
+            return types.includes(decoratorText);
         }
+        return false;
+    }
+
+    private isDirectiveDecorator(decorator: ts.Decorator): boolean {
+        return this.hasDecoratorType(decorator, 'Directive', 'Component');
     }
 
     private isServiceDecorator(decorator) {
-        return decorator.expression.expression
-            ? decorator.expression.expression.text === 'Injectable'
-            : false;
+        return this.hasDecoratorType(decorator, 'Injectable');
     }
 
     private isPrivate(member): boolean {
@@ -452,22 +501,15 @@ export class ClassHelper {
     }
 
     private isPipeDecorator(decorator) {
-        return decorator.expression.expression
-            ? decorator.expression.expression.text === 'Pipe'
-            : false;
+        return this.hasDecoratorType(decorator, 'Pipe');
     }
 
     private isControllerDecorator(decorator) {
-        return decorator.expression.expression
-            ? decorator.expression.expression.text === 'Controller'
-            : false;
+        return this.hasDecoratorType(decorator, 'Controller');
     }
 
     private isModuleDecorator(decorator) {
-        return decorator.expression.expression
-            ? decorator.expression.expression.text === 'NgModule' ||
-                  decorator.expression.expression.text === 'Module'
-            : false;
+        return this.hasDecoratorType(decorator, 'NgModule', 'Module');
     }
 
     /**
@@ -482,10 +524,10 @@ export class ClassHelper {
     ): any {
         let symbol = this.typeChecker.getSymbolAtLocation(classDeclaration.name);
         let rawdescription = '';
-        let deprecated = false;
-        let deprecationMessage = '';
+        let deprecation = this.initializeDocumentationFields();
         let description = '';
         let jsdoctags: any[] = [];
+        
         if (symbol) {
             const comment = this.jsdocParserUtil.getMainCommentOfNode(classDeclaration, sourceFile);
             rawdescription = this.jsdocParserUtil.parseComment(comment);
@@ -495,18 +537,7 @@ export class ClassHelper {
             }
             if (symbol.declarations && symbol.declarations.length > 0) {
                 let declarationsjsdoctags = this.jsdocParserUtil.getJSDocs(symbol.declarations[0]);
-                if (
-                    declarationsjsdoctags &&
-                    declarationsjsdoctags.length >= 1
-                ) {
-                    const jsdoc = declarationsjsdoctags[0] as ts.JSDoc;
-                    if (jsdoc.tags) {
-                        const deprecation = { deprecated: false, deprecationMessage: '' };
-                        this.checkForDeprecation(jsdoc.tags as unknown as any[], deprecation);
-                        deprecated = deprecation.deprecated;
-                        deprecationMessage = deprecation.deprecationMessage;
-                    }
-                }
+                this.processJSDocTags(declarationsjsdoctags, deprecation, false);
                 if (isIgnore(symbol.declarations[0])) {
                     return [{ ignore: true }];
                 }
@@ -514,14 +545,14 @@ export class ClassHelper {
             if (symbol.valueDeclaration) {
                 jsdoctags = this.jsdocParserUtil.getJSDocs(symbol.valueDeclaration) as unknown as any[];
                 if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-                    const deprecation = { deprecated: false, deprecationMessage: '' };
-                    this.checkForDeprecation(jsdoctags[0].tags, deprecation);
-                    deprecated = deprecation.deprecated;
-                    deprecationMessage = deprecation.deprecationMessage;
+                    const tempDeprecation = this.initializeDocumentationFields();
+                    this.checkForDeprecation(jsdoctags[0].tags, tempDeprecation);
+                    deprecation = tempDeprecation;
                     jsdoctags = markedtags(jsdoctags[0].tags);
                 }
             }
         }
+        
         let className = classDeclaration.name.text;
         let members;
         let implementsElements = [];
@@ -602,8 +633,8 @@ export class ClassHelper {
             }
             if (isDirective) {
                 return {
-                    deprecated,
-                    deprecationMessage,
+                    deprecated: deprecation.deprecated,
+                    deprecationMessage: deprecation.deprecationMessage,
                     description,
                     rawdescription: rawdescription,
                     inputs: members.inputs,
@@ -625,8 +656,8 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated,
-                        deprecationMessage,
+                        deprecated: deprecation.deprecated,
+                        deprecationMessage: deprecation.deprecationMessage,
                         description,
                         rawdescription: rawdescription,
                         methods: members.methods,
@@ -645,8 +676,8 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated,
-                        deprecationMessage,
+                        deprecated: deprecation.deprecated,
+                        deprecationMessage: deprecation.deprecationMessage,
                         description,
                         rawdescription: rawdescription,
                         jsdoctags: jsdoctags,
@@ -659,8 +690,8 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated,
-                        deprecationMessage,
+                        deprecated: deprecation.deprecated,
+                        deprecationMessage: deprecation.deprecationMessage,
                         description,
                         rawdescription: rawdescription,
                         jsdoctags: jsdoctags,
@@ -670,8 +701,8 @@ export class ClassHelper {
             } else {
                 return [
                     {
-                        deprecated,
-                        deprecationMessage,
+                        deprecated: deprecation.deprecated,
+                        deprecationMessage: deprecation.deprecationMessage,
                         description,
                         rawdescription: rawdescription,
                         methods: members.methods,
@@ -690,8 +721,8 @@ export class ClassHelper {
         if (description) {
             return [
                 {
-                    deprecated,
-                    deprecationMessage,
+                    deprecated: deprecation.deprecated,
+                    deprecationMessage: deprecation.deprecationMessage,
                     description,
                     rawdescription: rawdescription,
                     inputs: members.inputs,
@@ -712,8 +743,8 @@ export class ClassHelper {
         } else {
             return [
                 {
-                    deprecated,
-                    deprecationMessage,
+                    deprecated: deprecation.deprecated,
+                    deprecationMessage: deprecation.deprecationMessage,
                     methods: members.methods,
                     inputs: members.inputs,
                     outputs: members.outputs,
@@ -730,8 +761,6 @@ export class ClassHelper {
                 }
             ];
         }
-
-        return members;
     }
 
     private visitMembers(members: any, sourceFile: any) {
@@ -1109,23 +1138,11 @@ export class ClassHelper {
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             returnType: this.visitType(method.type),
             line: this.getPosition(method, sourceFile).line + 1,
-            deprecated: false,
-            deprecationMessage: ''
+            ...this.initializeDocumentationFields()
         };
-        if ((method as any).jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(method, sourceFile);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            result.rawdescription = cleanedDescription;
-            result.description = markedAcl(cleanedDescription);
-        }
-        let jsdoctags = this.jsdocParserUtil.getJSDocs(method);
-        if (jsdoctags && jsdoctags.length >= 1) {
-            const jsdoc = jsdoctags[0] as ts.JSDoc;
-            if (jsdoc.tags) {
-                this.checkForDeprecation(jsdoc.tags as unknown as any[], result);
-                (result as any).jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
-            }
-        }
+        this.extractAndProcessJSDocComment(method, sourceFile, result);
+        const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
+        this.processJSDocTags(jsdoctags, result);
         return result;
     }
 
@@ -1140,27 +1157,11 @@ export class ClassHelper {
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             returnType: this.visitType(method.type),
             line: this.getPosition(method, sourceFile).line + 1,
-            deprecated: false,
-            deprecationMessage: ''
+            ...this.initializeDocumentationFields()
         };
+        this.extractAndProcessJSDocComment(method, sourceFile, result);
         const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
-        if ((method as any).jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(method, sourceFile);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            (result as any).rawdescription = cleanedDescription;
-            (result as any).description = markedAcl(cleanedDescription);
-        }
-
-        if (jsdoctags && jsdoctags.length >= 1) {
-            const jsdoc = jsdoctags[0] as ts.JSDoc;
-            if (jsdoc.tags) {
-                this.checkForDeprecation(jsdoc.tags as unknown as any[], result);
-                if ((method as any).jsDoc) {
-                    (result as any).jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
-                }
-            }
-        }
-
+        this.processJSDocTags(jsdoctags, result);
         return result;
     }
 
@@ -1174,19 +1175,11 @@ export class ClassHelper {
         let result: any = {
             name: 'constructor',
             description: '',
-            deprecated: false,
-            deprecationMessage: '',
+            ...this.initializeDocumentationFields(),
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             line: this.getPosition(method, sourceFile).line + 1
         };
-        let jsdoctags = this.jsdocParserUtil.getJSDocs(method);
-
-        if ((method as any).jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(method, sourceFile);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            result.rawdescription = cleanedDescription;
-            result.description = markedAcl(cleanedDescription);
-        }
+        this.extractAndProcessJSDocComment(method, sourceFile, result);
 
         if (method.modifiers) {
             if (method.modifiers.length > 0) {
@@ -1202,13 +1195,10 @@ export class ClassHelper {
                 result.modifierKind = kinds;
             }
         }
-        if (jsdoctags && jsdoctags.length >= 1) {
-            const jsdoc = jsdoctags[0] as ts.JSDoc;
-            if (jsdoc.tags) {
-                this.checkForDeprecation(jsdoc.tags as unknown as any[], result);
-                result.jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
-            }
-        }
+        
+        const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
+        this.processJSDocTags(jsdoctags, result);
+        
         if (result.jsdoctags && result.jsdoctags.length > 0) {
             result.jsdoctags = mergeTagsAndArgs(result.args, result.jsdoctags);
         } else if (result.args.length > 0) {
@@ -1244,15 +1234,13 @@ export class ClassHelper {
             defaultValue: initializer
                 ? this.stringifyDefaultValue(initializer)
                 : undefined,
-            deprecated: false,
-            deprecationMessage: '',
+            ...this.initializeDocumentationFields(),
             type: this.visitType(property),
             indexKey: this.visitTypeIndex(property),
             optional: typeof property.questionToken !== 'undefined',
             description: '',
             line: this.getPosition(property, sourceFile).line + 1
         };
-        let jsdoctags;
 
         if (initializer && initializer.kind === SyntaxKind.ArrowFunction) {
             result.defaultValue = '() => {...}';
@@ -1262,14 +1250,7 @@ export class ClassHelper {
             result.name = (property.name as any).expression.text;
         }
 
-        jsdoctags = this.jsdocParserUtil.getJSDocs(property);
-
-        if ((property as any).jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(property, sourceFile);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            result.rawdescription = cleanedDescription;
-            result.description = markedAcl(cleanedDescription);
-        }
+        this.extractAndProcessJSDocComment(property, sourceFile, result);
 
         if (nodeHasDecorator(property)) {
             const propertyDecorators = getNodeDecorators(property);
@@ -1305,6 +1286,8 @@ export class ClassHelper {
                 result.modifierKind.push(SyntaxKind.PrivateKeyword);
             }
         }
+        
+        const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
         if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
             this.checkForDeprecation(jsdoctags[0].tags, result);
             if ((property as any).jsDoc) {
@@ -1376,10 +1359,8 @@ export class ClassHelper {
             returnType: this.visitType(method.type),
             typeParameters: [],
             line: this.getPosition(method, sourceFile).line + 1,
-            deprecated: false,
-            deprecationMessage: ''
+            ...this.initializeDocumentationFields()
         };
-        let jsdoctags = this.jsdocParserUtil.getJSDocs(method);
 
         if (typeof method.type === 'undefined') {
             // Try to get inferred type
@@ -1408,12 +1389,7 @@ export class ClassHelper {
             );
         }
 
-        if ((method as any).jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(method, sourceFile);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            result.rawdescription = cleanedDescription;
-            result.description = markedAcl(cleanedDescription);
-        }
+        this.extractAndProcessJSDocComment(method, sourceFile, result);
 
         if (nodeHasDecorator(method)) {
             const methodDecorators = getNodeDecorators(method);
@@ -1449,13 +1425,10 @@ export class ClassHelper {
                 result.modifierKind.push(SyntaxKind.PrivateKeyword);
             }
         }
-        if (jsdoctags && jsdoctags.length >= 1) {
-            const jsdoc = jsdoctags[0] as ts.JSDoc;
-            if (jsdoc.tags) {
-                this.checkForDeprecation(jsdoc.tags as unknown as any[], result);
-                result.jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
-            }
-        }
+        
+        const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
+        this.processJSDocTags(jsdoctags, result);
+        
         if (result.jsdoctags && result.jsdoctags.length > 0) {
             result.jsdoctags = mergeTagsAndArgs(result.args, result.jsdoctags);
         } else if (result.args.length > 0) {
@@ -1475,24 +1448,15 @@ export class ClassHelper {
             defaultValue: property.initializer
                 ? this.stringifyDefaultValue(property.initializer)
                 : undefined,
-            deprecated: false,
-            deprecationMessage: ''
+            ...this.initializeDocumentationFields()
         };
+        
         if ((property as any).jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(property, sourceFile);
+            this.extractAndProcessJSDocComment(property, sourceFile, _return);
             const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            _return.rawdescription = cleanedDescription;
-            _return.description = markedAcl(cleanedDescription);
-
-            if (jsdoctags && jsdoctags.length >= 1) {
-                const jsdoc = jsdoctags[0] as ts.JSDoc;
-                if (jsdoc.tags) {
-                    this.checkForDeprecation(jsdoc.tags as unknown as any[], _return);
-                    _return.jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
-                }
-            }
+            this.processJSDocTags(jsdoctags, _return);
         }
+        
         if (!_return.description) {
             if ((property as any).jsDoc && (property as any).jsDoc.length > 0) {
                 if (typeof (property as any).jsDoc[0].comment !== 'undefined') {
@@ -1594,8 +1558,7 @@ export class ClassHelper {
         _return.defaultValue = property.initializer
             ? this.stringifyDefaultValue(property.initializer)
             : undefined;
-        _return.deprecated = false;
-        _return.deprecationMessage = '';
+        Object.assign(_return, this.initializeDocumentationFields());
 
         if (inArgs.length > 0 && inArgs[0].properties && hasRequiredField) {
             _return.optional = getRequiredField().initializer.kind !== SyntaxKind.TrueKeyword;
@@ -1605,14 +1568,8 @@ export class ClassHelper {
             if (property.jsDoc) {
                 if (property.jsDoc.length > 0) {
                     const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
+                    this.processJSDocTags(jsdoctags, _return);
 
-                    if (jsdoctags && jsdoctags.length >= 1) {
-                        const jsdoc = jsdoctags[0] as ts.JSDoc;
-                        if (jsdoc.tags) {
-                            this.checkForDeprecation(jsdoc.tags as unknown as any[], _return);
-                            _return.jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
-                        }
-                    }
                     if (typeof property.jsDoc[0].comment !== 'undefined') {
                         const comment = this.jsdocParserUtil.getMainCommentOfNode(
                             property,
@@ -1682,23 +1639,14 @@ export class ClassHelper {
                       return prop.text;
                   })
                 : [];
-        _return.deprecated = false;
-        _return.deprecationMessage = '';
+        Object.assign(_return, this.initializeDocumentationFields());
+        
         if (property.jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(property, sourceFile);
+            this.extractAndProcessJSDocComment(property, sourceFile, _return);
             const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            _return.rawdescription = cleanedDescription;
-            _return.description = markedAcl(cleanedDescription);
-
-            if (jsdoctags && jsdoctags.length >= 1) {
-                const jsdoc = jsdoctags[0] as ts.JSDoc;
-                if (jsdoc.tags) {
-                    this.checkForDeprecation(jsdoc.tags as unknown as any[], _return);
-                    _return.jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
-                }
-            }
+            this.processJSDocTags(jsdoctags, _return);
         }
+        
         if (!_return.description) {
             if (property.jsDoc) {
                 if (property.jsDoc.length > 0) {
