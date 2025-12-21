@@ -9,6 +9,40 @@ import Configuration from '../../configuration';
 export class FunctionSignatureHelper implements IHtmlEngineHelper {
     constructor() {}
 
+    /**
+     * Generates the correct href for internal type links
+     * Handles both regular types and miscellaneous types (typealias, enum, function, variable)
+     */
+    private buildHrefForInternalType(resultData: any): string {
+        if (
+            resultData.type === 'miscellaneous' ||
+            (resultData.ctype && resultData.ctype === 'miscellaneous')
+        ) {
+            let mainpage = '';
+            switch (resultData.subtype) {
+                case 'enum':
+                    mainpage = 'enumerations';
+                    break;
+                case 'function':
+                    mainpage = 'functions';
+                    break;
+                case 'typealias':
+                    mainpage = 'typealiases';
+                    break;
+                case 'variable':
+                    mainpage = 'variables';
+                    break;
+            }
+            return `../miscellaneous/${mainpage}.html#${resultData.name}`;
+        } else {
+            let path = resultData.type;
+            if (resultData.type === 'class') {
+                path = 'classe';
+            }
+            return `../${path}s/${resultData.name}.html`;
+        }
+    }
+
     private handleFunction(arg): string {
         if (arg.function.length === 0) {
             return `${arg.name}${this.getOptionalString(arg)}: () => void`;
@@ -18,37 +52,7 @@ export class FunctionSignatureHelper implements IHtmlEngineHelper {
             const _result = DependenciesEngine.find(argu.type);
             if (_result) {
                 if (_result.source === 'internal') {
-                    let path = _result.data.type;
-                    let href = '';
-
-                    // Handle miscellaneous types (typealias, enum, function, variable)
-                    if (
-                        _result.data.type === 'miscellaneous' ||
-                        (_result.data.ctype && _result.data.ctype === 'miscellaneous')
-                    ) {
-                        let mainpage = '';
-                        switch (_result.data.subtype) {
-                            case 'enum':
-                                mainpage = 'enumerations';
-                                break;
-                            case 'function':
-                                mainpage = 'functions';
-                                break;
-                            case 'typealias':
-                                mainpage = 'typealiases';
-                                break;
-                            case 'variable':
-                                mainpage = 'variables';
-                                break;
-                        }
-                        href = `../miscellaneous/${mainpage}.html#${_result.data.name}`;
-                    } else {
-                        if (_result.data.type === 'class') {
-                            path = 'classe';
-                        }
-                        href = `../${path}s/${_result.data.name}.html`;
-                    }
-
+                    const href = this.buildHrefForInternalType(_result.data);
                     return `${argu.name}${this.getOptionalString(arg)}: <a href="${href}">${argu.type}</a>`;
                 } else {
                     const path = AngularVersionUtil.getApiLink(
@@ -106,37 +110,7 @@ export class FunctionSignatureHelper implements IHtmlEngineHelper {
                 }
                 if (_result) {
                     if (_result.source === 'internal') {
-                        let path = _result.data.type;
-                        let href = '';
-
-                        // Handle miscellaneous types (typealias, enum, function, variable)
-                        if (
-                            _result.data.type === 'miscellaneous' ||
-                            (_result.data.ctype && _result.data.ctype === 'miscellaneous')
-                        ) {
-                            let mainpage = '';
-                            switch (_result.data.subtype) {
-                                case 'enum':
-                                    mainpage = 'enumerations';
-                                    break;
-                                case 'function':
-                                    mainpage = 'functions';
-                                    break;
-                                case 'typealias':
-                                    mainpage = 'typealiases';
-                                    break;
-                                case 'variable':
-                                    mainpage = 'variables';
-                                    break;
-                            }
-                            href = `../miscellaneous/${mainpage}.html#${_result.data.name}`;
-                        } else {
-                            if (_result.data.type === 'class') {
-                                path = 'classe';
-                            }
-                            href = `../${path}s/${_result.data.name}.html`;
-                        }
-
+                        const href = this.buildHrefForInternalType(_result.data);
                         args += `${arg.name}${this.getOptionalString(arg)}: <a href="${href}" target="_self">${Handlebars.escapeExpression(arg.type)}</a>`;
                     } else {
                         let path = AngularVersionUtil.getApiLink(
