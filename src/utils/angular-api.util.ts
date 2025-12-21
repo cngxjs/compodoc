@@ -1,7 +1,18 @@
 import * as _ from 'lodash';
 import { IApiSourceResult } from './api-source-result.interface';
+import * as path from 'path';
 
-const AngularAPIs: Array<IAngularMainApi> = require('../src/data/api-list.json');
+// Try multiple paths to find api-list.json - supports both source and bundled contexts
+let apiListPath = '../src/data/api-list.json';
+try {
+    // First try relative path (works from source)
+    require.resolve(apiListPath);
+} catch (e) {
+    // Fallback to absolute path from cwd (works from bundled/test contexts)
+    apiListPath = path.join(process.cwd(), 'src/data/api-list.json');
+}
+
+const AngularAPIs: Array<IAngularMainApi> = require(apiListPath);
 
 export class AngularApiUtil {
     private static instance: AngularApiUtil;
@@ -24,7 +35,8 @@ export class AngularApiUtil {
         });
         return {
             source: 'external',
-            data: foundedApi
+            data: foundedApi,
+            score: 1
         };
     }
 }

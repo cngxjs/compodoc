@@ -3,8 +3,6 @@ import { ts, SyntaxKind } from 'ts-morph';
 
 import * as _ts from './ts-internal';
 
-import { JSDocParameterTagExt } from '../app/nodes/jsdoc-parameter-tag.node';
-
 export class JsdocParserUtil {
     public isVariableLike(node: ts.Node): node is ts.VariableLikeDeclaration {
         if (node) {
@@ -24,8 +22,8 @@ export class JsdocParserUtil {
     }
 
     isTopmostModuleDeclaration(node: ts.ModuleDeclaration): boolean {
-        if (node.nextContainer && node.nextContainer.kind === ts.SyntaxKind.ModuleDeclaration) {
-            let next = <ts.ModuleDeclaration>node.nextContainer;
+        if ((node as any).nextContainer && (node as any).nextContainer.kind === ts.SyntaxKind.ModuleDeclaration) {
+            const next = <ts.ModuleDeclaration>(node as any).nextContainer;
             if (node.name.end + 1 === next.name.pos) {
                 return false;
             }
@@ -123,7 +121,7 @@ export class JsdocParserUtil {
                     }
                     break; // Only check the first non-empty line
                 }
-                
+
                 if (!exampleHasCodeFence) {
                     line = '```html';
                 } else {
@@ -211,7 +209,7 @@ export class JsdocParserUtil {
         const parent = node.parent;
         const isInitializerOfVariableDeclarationInStatement =
             this.isVariableLike(parent) &&
-            parent.initializer === node &&
+            (parent as any).initializer === node &&
             ts.isVariableStatement(parent.parent.parent);
         const isVariableOfVariableDeclarationStatement =
             this.isVariableLike(node) && ts.isVariableStatement(parent.parent);
@@ -247,11 +245,17 @@ export class JsdocParserUtil {
             cache = _.concat(cache, this.getJSDocParameterTags(node));
         }
 
-        if (this.isVariableLike(node) && node.initializer) {
-            cache = _.concat(cache, node.initializer.jsDoc);
+        if (this.isVariableLike(node) && (node as any).initializer) {
+            const initializerJsDoc = ((node as any).initializer as any).jsDoc;
+            if (initializerJsDoc) {
+                cache = _.concat(cache, initializerJsDoc);
+            }
         }
 
-        cache = _.concat(cache, node.jsDoc);
+        const nodeJsDoc = (node as any).jsDoc;
+        if (nodeJsDoc) {
+            cache = _.concat(cache, nodeJsDoc);
+        }
 
         return cache;
     }
@@ -277,7 +281,7 @@ export class JsdocParserUtil {
             const name = param.name.text;
             return _.filter(tags, tag => {
                 if (ts && ts.isJSDocParameterTag(tag)) {
-                    let t: JSDocParameterTagExt = tag;
+                    const t = tag as any;
                     if (typeof t.parameterName !== 'undefined') {
                         return t.parameterName.text === name;
                     } else if (typeof t.name !== 'undefined') {

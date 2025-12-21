@@ -80,7 +80,7 @@ export class FunctionSignatureHelper implements IHtmlEngineHelper {
                 }
             }
         });
-        return `${arg.name}${this.getOptionalString(arg)}: (${argums}) => void`;
+        return `${arg.name}${this.getOptionalString(arg)}: (${argums.join(', ')}) => void`;
     }
 
     private getOptionalString(arg): string {

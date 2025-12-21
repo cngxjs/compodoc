@@ -28,8 +28,8 @@ export class ControllerDepFactory {
             deprecationMessage: IO.deprecationMessage
         };
         if (properties && properties.length === 1) {
-            if (properties[0].text) {
-                infos.prefix = properties[0].text;
+            if ((properties[0] as any).text) {
+                infos.prefix = (properties[0] as any).text;
             }
         }
         if (IO.extends) {

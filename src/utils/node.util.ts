@@ -1,33 +1,13 @@
 import { ts } from 'ts-morph';
 
 export function nodeHasDecorator(node: ts.Node) {
-    let result = false;
-
-    const nodeModifiers = node.modifiers; // ts.getModifiers(node);
-
-    if (nodeModifiers && nodeModifiers.length > 0) {
-        nodeModifiers.forEach(nodeModifier => {
-            if (nodeModifier.kind === ts.SyntaxKind.Decorator) {
-                result = true;
-            }
-        });
-    }
-
-    return result;
+    // In TypeScript 5.x, decorators are accessed via ts.getDecorators(), not ts.getModifiers()
+    const decorators = ts.getDecorators(node as ts.HasDecorators);
+    return decorators !== undefined && decorators.length > 0;
 }
 
-export function getNodeDecorators(node: ts.Node) {
-    let result = [];
-
-    const nodeModifiers = node.modifiers; // ts.getModifiers(node);
-
-    if (nodeModifiers && nodeModifiers.length > 0) {
-        nodeModifiers.forEach(nodeModifier => {
-            if (nodeModifier.kind === ts.SyntaxKind.Decorator) {
-                result.push(nodeModifier);
-            }
-        });
-    }
-
-    return result;
+export function getNodeDecorators(node: ts.Node): ts.Decorator[] {
+    // In TypeScript 5.x, decorators are accessed via ts.getDecorators(), not ts.getModifiers()
+    const decorators = ts.getDecorators(node as ts.HasDecorators);
+    return decorators ? [...decorators] : [];
 }
