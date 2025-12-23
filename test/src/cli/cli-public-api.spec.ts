@@ -180,6 +180,22 @@ describe('CLI public-api-only option', () => {
                 expect(functionsFileExists).to.be.false;
             }
         });
+
+        it('should NOT document variables not in public API', () => {
+            // When --publicApiOnly is set, variables like API_ROOT and DATA_CONFIG should not be documented
+            // because they are not exported in the *.api.md or index.d.ts files
+            const variablesFileExists = exists(distFolder + '/miscellaneous/variables.html');
+            
+            if (variablesFileExists) {
+                // If the file exists, it should not contain the non-exported variables
+                const variablesFile = read(distFolder + '/miscellaneous/variables.html');
+                expect(variablesFile).to.not.contain('API_ROOT');
+                expect(variablesFile).to.not.contain('DATA_CONFIG');
+            } else {
+                // If the file doesn't exist, that's also correct (no public variables to document)
+                expect(variablesFileExists).to.be.false;
+            }
+        });
     });
 });
 

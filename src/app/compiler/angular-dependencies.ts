@@ -1037,6 +1037,11 @@ export class AngularDependencies extends FrameworkDependencies {
                                     RouterParserUtil.addModule(name, [routingInitializer]);
                                 }
                                 if (!isIgnore(variableNode)) {
+                                    // Check if variable is allowed by public API filter
+                                    if (!this.isSymbolAllowed(name, file)) {
+                                        logger.debug(`Skipping variable ${name} (not in public API)`);
+                                        return;
+                                    }
                                     this.debug(deps);
                                     outputSymbols.miscellaneous.variables.push(deps);
                                 }
@@ -1072,6 +1077,11 @@ export class AngularDependencies extends FrameworkDependencies {
                                     }
 
                                     if (!isIgnore(destructuredVariables[i])) {
+                                        // Check if variable is allowed by public API filter
+                                        if (!this.isSymbolAllowed(name, file)) {
+                                            logger.debug(`Skipping destructured variable ${name} (not in public API)`);
+                                            continue;
+                                        }
                                         this.debug(deps);
                                         outputSymbols.miscellaneous.variables.push(deps);
                                     }
