@@ -15,6 +15,7 @@ import { logger } from './utils/logger';
 
 import { readConfig, EXCLUDE_PATTERNS, INCLUDE_PATTERNS } from './utils/utils';
 import { parsePublicApi } from './utils/public-api-parser.util';
+import { parseApiMarkdownExports } from './utils/api-markdown-parser.util';
 import { createSourcePathMapper } from './utils/source-path-mapper.util';
 
 import { cosmiconfigSync } from 'cosmiconfig';
@@ -856,53 +857,130 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
     }
 
     /**
-     * Process public API exports from dist folder
+     * Process public API exports from dist folder or API markdown files
      */
     private async processPublicApi(distPath: string, sourceRoot: string): Promise<void> {
-        logger.info('Processing public API exports from dist folder');
+        logger.info('Processing public API exports');
 
         try {
-            // Parse the public API exports
-            const publicApiExports = await parsePublicApi(distPath);
+            // First, try to parse API markdown files from the source root
+            logger.info('Checking for *.api.md files in source root');
+            const apiMarkdownExports = await parseApiMarkdownExports(sourceRoot);
 
-            if (publicApiExports.symbolToFiles.size === 0) {
-                logger.warn('No public API exports found in dist folder. Documentation will be empty.');
-                return;
-            }
+            if (apiMarkdownExports.apiMdFiles.size > 0 && apiMarkdownExports.symbolToFiles.size > 0) {
+                logger.info(`Found ${apiMarkdownExports.apiMdFiles.size} relevant *.api.md file(s) with ${apiMarkdownExports.symbolToFiles.size} symbol(s)`);
+                
+                // Map symbols from API markdown files directly to source files
+                const symbolToSourceFiles = new Map<string, Set<string>>();
 
-            // Create source path mapper
-            const mapper = createSourcePathMapper(distPath, sourceRoot);
+                for (const [symbolName] of apiMarkdownExports.symbolToFiles) {
+                    const sourceFiles = new Set<string>();
 
-            // Map symbols to source files and build the allowed exports map
-            const symbolToSourceFiles = new Map<string, Set<string>>();
-
-            for (const [symbolName, declFiles] of publicApiExports.symbolToFiles) {
-                const sourceFiles = new Set<string>();
-
-                for (const declFile of declFiles) {
-                    const sourceFile = mapper.mapDistToSource(declFile);
+                    // Find the corresponding source file for this symbol
+                    const sourceFile = this.findSourceFileForSymbol(symbolName, sourceRoot);
                     if (sourceFile) {
                         sourceFiles.add(sourceFile);
                     }
+
+                    if (sourceFiles.size > 0) {
+                        symbolToSourceFiles.set(symbolName, sourceFiles);
+                        logger.debug(
+                            `Public API symbol: ${symbolName} -> ${Array.from(sourceFiles).join(', ')}`
+                        );
+                    }
                 }
 
-                if (sourceFiles.size > 0) {
-                    symbolToSourceFiles.set(symbolName, sourceFiles);
-                    logger.debug(
-                        `Public API symbol: ${symbolName} -> ${Array.from(sourceFiles).join(', ')}`
-                    );
+                // Store in configuration
+                Configuration.mainData.publicApiExports = symbolToSourceFiles;
+
+                logger.info(
+                    `Loaded ${symbolToSourceFiles.size} public API symbol(s) from ${apiMarkdownExports.apiMdFiles.size} *.api.md file(s) (using API Markdown parser)`
+                );
+            } else {
+                // Fall back to index.d.ts parsing
+                logger.info('No relevant *.api.md files found, falling back to index.d.ts parsing');
+                
+                const publicApiExports = await parsePublicApi(distPath);
+
+                if (publicApiExports.symbolToFiles.size === 0) {
+                    logger.warn('No public API exports found in dist folder. Documentation will be empty.');
+                    return;
                 }
+
+                // Create source path mapper
+                const mapper = createSourcePathMapper(distPath, sourceRoot);
+
+                // Map symbols to source files and build the allowed exports map
+                const symbolToSourceFiles = new Map<string, Set<string>>();
+
+                for (const [symbolName, declFiles] of publicApiExports.symbolToFiles) {
+                    const sourceFiles = new Set<string>();
+
+                    for (const declFile of declFiles) {
+                        const sourceFile = mapper.mapDistToSource(declFile);
+                        if (sourceFile) {
+                            sourceFiles.add(sourceFile);
+                        }
+                    }
+
+                    if (sourceFiles.size > 0) {
+                        symbolToSourceFiles.set(symbolName, sourceFiles);
+                        logger.debug(
+                            `Public API symbol: ${symbolName} -> ${Array.from(sourceFiles).join(', ')}`
+                        );
+                    }
+                }
+
+                // Store in configuration
+                Configuration.mainData.publicApiExports = symbolToSourceFiles;
+
+                logger.info(
+                    `Loaded ${symbolToSourceFiles.size} public API symbol(s) from ${publicApiExports.indexFiles.size} index.d.ts file(s) (using index.d.ts parser)`
+                );
             }
-
-            // Store in configuration
-            Configuration.mainData.publicApiExports = symbolToSourceFiles;
-
-            logger.info(
-                `Loaded ${symbolToSourceFiles.size} public API symbol(s) from ${publicApiExports.indexFiles.size} index.d.ts file(s)`
-            );
         } catch (error) {
             logger.error('Error processing public API:', error);
             throw error;
         }
+    }
+
+    /**
+     * Find the source file for a given symbol by searching through the source files
+     */
+    private findSourceFileForSymbol(symbolName: string, sourceRoot: string): string | null {
+        // Try to find the symbol in source files
+        // This is a simplified approach - look for files that contain the symbol export
+        const sourceFolder = sourceRoot;
+        
+        try {
+            const files = fg.sync(path.join(sourceFolder, '**/*.ts'), {
+                ignore: ['**/node_modules/**', '**/*.spec.ts', '**/*.d.ts']
+            });
+
+            for (const file of files) {
+                const content = fs.readFileSync(file, 'utf-8');
+                // Look for export patterns that match the symbol name
+                const patterns = [
+                    `export class ${symbolName}`,
+                    `export interface ${symbolName}`,
+                    `export const ${symbolName}`,
+                    `export function ${symbolName}`,
+                    `export type ${symbolName}`,
+                    `export enum ${symbolName}`,
+                    `export { ${symbolName}`,
+                    `export default ${symbolName}`
+                ];
+
+                for (const pattern of patterns) {
+                    if (content.includes(pattern)) {
+                        return file;
+                    }
+                }
+            }
+        } catch (error) {
+            logger.debug(`Error searching for symbol ${symbolName}: ${error}`);
+        }
+
+        return null;
     }
 }

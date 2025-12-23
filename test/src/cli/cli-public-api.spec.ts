@@ -110,12 +110,13 @@ describe('CLI public-api-only option', () => {
 
         it('should document getDefaultApiRoot from core utils', () => {
             const functionsFile = read(distFolder + '/miscellaneous/functions.html');
+            expect(functionsFile).to.contain('libs/my-lib/core/src/utils');
             expect(functionsFile).to.contain('getDefaultApiRoot');
         });
 
         it('should document getDefaultApiRoot from data utils', () => {
             const functionsFile = read(distFolder + '/miscellaneous/functions.html');
-            // Verify that the function is documented
+            expect(functionsFile).to.contain('libs/my-lib/data/src/utils');
             expect(functionsFile).to.contain('getDefaultApiRoot');
         });
     });
