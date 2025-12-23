@@ -14,6 +14,8 @@ import { COMPODOC_DEFAULTS } from './utils/defaults';
 import { logger } from './utils/logger';
 
 import { readConfig, EXCLUDE_PATTERNS, INCLUDE_PATTERNS } from './utils/utils';
+import { parsePublicApi } from './utils/public-api-parser.util';
+import { createSourcePathMapper } from './utils/source-path-mapper.util';
 
 import { cosmiconfigSync } from 'cosmiconfig';
 
@@ -36,7 +38,7 @@ export class CliApplication extends Application {
     /**
      * Run compodoc from the command line.
      */
-    protected start(): any {
+    protected async start(): Promise<any> {
         function list(val) {
             return val.split(',');
         }
@@ -197,6 +199,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             .option('--customLogo [path]', 'Use a custom logo')
             .option('--gaID [id]', 'Google Analytics tracking ID')
             .option('--gaSite [site]', 'Google Analytics site name', COMPODOC_DEFAULTS.gaSite)
+            .option('--publicApiOnly [path]', 'Document only symbols exported from index.d.ts files in the specified dist folder')
             .option(
                 '--maxSearchResults [maxSearchResults]',
                 'Max search results on the results page. To show all results, set to 0',
@@ -611,6 +614,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             Configuration.mainData.gaSite = programOptions.gaSite;
         }
 
+        if (configFile.publicApiOnly) {
+            Configuration.mainData.publicApiOnly = configFile.publicApiOnly;
+        }
+        if (programOptions.publicApiOnly) {
+            Configuration.mainData.publicApiOnly = programOptions.publicApiOnly;
+        }
+
         if (!this.isWatching) {
             if (!logger.silent) {
                 console.log(`Compodoc v${pkg.version}`);
@@ -808,6 +818,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                         includeFiles = INCLUDE_PATTERNS;
                     }
 
+                    // If publicApiOnly is set, parse the public API exports first
+                    if (Configuration.mainData.publicApiOnly) {
+                        await this.processPublicApi(Configuration.mainData.publicApiOnly, cwd);
+                    }
+
                     const stream = fg.stream(includeFiles, {
                         cwd: sourceFolder || cwd,
                         ignore: excludeFiles,
@@ -837,6 +852,57 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 logger.error('tsconfig.json file was not found, please use -p flag');
                 outputHelp();
             }
+        }
+    }
+
+    /**
+     * Process public API exports from dist folder
+     */
+    private async processPublicApi(distPath: string, sourceRoot: string): Promise<void> {
+        logger.info('Processing public API exports from dist folder');
+
+        try {
+            // Parse the public API exports
+            const publicApiExports = await parsePublicApi(distPath);
+
+            if (publicApiExports.symbolToFiles.size === 0) {
+                logger.warn('No public API exports found in dist folder. Documentation will be empty.');
+                return;
+            }
+
+            // Create source path mapper
+            const mapper = createSourcePathMapper(distPath, sourceRoot);
+
+            // Map symbols to source files and build the allowed exports map
+            const symbolToSourceFiles = new Map<string, Set<string>>();
+
+            for (const [symbolName, declFiles] of publicApiExports.symbolToFiles) {
+                const sourceFiles = new Set<string>();
+
+                for (const declFile of declFiles) {
+                    const sourceFile = mapper.mapDistToSource(declFile);
+                    if (sourceFile) {
+                        sourceFiles.add(sourceFile);
+                    }
+                }
+
+                if (sourceFiles.size > 0) {
+                    symbolToSourceFiles.set(symbolName, sourceFiles);
+                    logger.debug(
+                        `Public API symbol: ${symbolName} -> ${Array.from(sourceFiles).join(', ')}`
+                    );
+                }
+            }
+
+            // Store in configuration
+            Configuration.mainData.publicApiExports = symbolToSourceFiles;
+
+            logger.info(
+                `Loaded ${symbolToSourceFiles.size} public API symbol(s) from ${publicApiExports.indexFiles.size} index.d.ts file(s)`
+            );
+        } catch (error) {
+            logger.error('Error processing public API:', error);
+            throw error;
         }
     }
 }

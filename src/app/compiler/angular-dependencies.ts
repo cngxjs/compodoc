@@ -63,9 +63,73 @@ export class AngularDependencies extends FrameworkDependencies {
     private jsDocHelper = new JsDocHelper();
     private symbolHelper = new SymbolHelper();
     private jsdocParserUtil = new JsdocParserUtil();
+    private allowedSymbols: Set<string> = new Set<string>();
+    private allowedFiles: Set<string> = new Set<string>();
 
     constructor(files: string[], options: any) {
         super(files, options);
+        this.initializePublicApiFiltering();
+    }
+
+    /**
+     * Initialize public API filtering if enabled
+     */
+    private initializePublicApiFiltering(): void {
+        if (Configuration.mainData.publicApiOnly && Configuration.mainData.publicApiExports.size > 0) {
+            logger.info('Public API filtering enabled');
+            
+            // Build set of allowed symbols and files
+            for (const [symbolName, sourceFiles] of Configuration.mainData.publicApiExports) {
+                this.allowedSymbols.add(symbolName);
+                for (const sourceFile of sourceFiles) {
+                    this.allowedFiles.add(path.resolve(sourceFile));
+                }
+            }
+
+            logger.info(`Allowed ${this.allowedSymbols.size} public API symbol(s) from ${this.allowedFiles.size} file(s)`);
+        }
+    }
+
+    /**
+     * Check if a symbol is part of the public API
+     */
+    private isSymbolAllowed(symbolName: string, fileName: string): boolean {
+        // If public API filtering is not enabled, allow all symbols
+        if (!Configuration.mainData.publicApiOnly) {
+            return true;
+        }
+
+        // If no symbols are defined, allow all (fallback)
+        if (this.allowedSymbols.size === 0) {
+            return true;
+        }
+
+        const resolvedFileName = path.resolve(fileName);
+
+        // Check if the symbol is explicitly allowed
+        if (this.allowedSymbols.has(symbolName)) {
+            // Verify the symbol is from an allowed file
+            const allowedSourceFiles = Configuration.mainData.publicApiExports.get(symbolName);
+            if (allowedSourceFiles && allowedSourceFiles.has(resolvedFileName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if dependencies of an allowed symbol should be included
+     */
+    private isDependencyOfAllowedSymbol(symbolName: string, fileName: string): boolean {
+        // If public API filtering is not enabled, allow all
+        if (!Configuration.mainData.publicApiOnly) {
+            return true;
+        }
+
+        // Check if the file contains any allowed symbols
+        const resolvedFileName = path.resolve(fileName);
+        return this.allowedFiles.has(resolvedFileName);
     }
 
     public getDependencies() {
@@ -449,6 +513,13 @@ export class AngularDependencies extends FrameworkDependencies {
                         let deps: IDep;
 
                         const name = this.getSymboleName(node);
+                        
+                        // Check if this decorated class is allowed by public API filter
+                        if (!this.isSymbolAllowed(name, file)) {
+                            logger.debug(`Skipping decorated class ${name} (not in public API)`);
+                            return;
+                        }
+                        
                         const props = this.findProperties(visitedDecorator, srcFile);
                         const IO = this.componentHelper.getComponentIO(
                             file,
@@ -648,9 +719,22 @@ export class AngularDependencies extends FrameworkDependencies {
                     nodeDecorators.filter(filterByDecorators).forEach(visitDecorator);
                 } else if (node.symbol) {
                     if (node.symbol.flags === ts.SymbolFlags.Class) {
+                        // Check if class is allowed by public API filter
+                        const className = this.getSymboleName(node);
+                        if (!this.isSymbolAllowed(className, file)) {
+                            logger.debug(`Skipping class ${className} (not in public API)`);
+                            return;
+                        }
                         this.processClass(node, file, srcFile, outputSymbols, fileBody, astFile);
                     } else if (node.symbol.flags === ts.SymbolFlags.Interface) {
                         const name = this.getSymboleName(node);
+                        
+                        // Check if interface is allowed by public API filter
+                        if (!this.isSymbolAllowed(name, file)) {
+                            logger.debug(`Skipping interface ${name} (not in public API)`);
+                            return;
+                        }
+                        
                         const IO = this.getInterfaceIO(file, srcFile, node, fileBody, astFile);
                         const interfaceDeps: IInterfaceDep = {
                             name,
@@ -689,6 +773,13 @@ export class AngularDependencies extends FrameworkDependencies {
                     } else if (ts.isFunctionDeclaration(node)) {
                         const infos = this.visitFunctionDeclaration(node);
                         const name = infos.name;
+                        
+                        // Check if function is allowed by public API filter
+                        if (!this.isSymbolAllowed(name, file)) {
+                            logger.debug(`Skipping function ${name} (not in public API)`);
+                            return;
+                        }
+                        
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
                         const functionDep: IFunctionDecDep = {
@@ -723,6 +814,13 @@ export class AngularDependencies extends FrameworkDependencies {
                     } else if (ts.isEnumDeclaration(node)) {
                         const infos = this.visitEnumDeclaration(node);
                         const name = infos.name;
+                        
+                        // Check if enum is allowed by public API filter
+                        if (!this.isSymbolAllowed(name, file)) {
+                            logger.debug(`Skipping enum ${name} (not in public API)`);
+                            return;
+                        }
+                        
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
                         const enumDeps: IEnumDecDep = {
@@ -744,6 +842,13 @@ export class AngularDependencies extends FrameworkDependencies {
                     } else if (ts.isTypeAliasDeclaration(node)) {
                         const infos = this.visitTypeDeclaration(node);
                         const name = infos.name;
+                        
+                        // Check if type alias is allowed by public API filter
+                        if (!this.isSymbolAllowed(name, file)) {
+                            logger.debug(`Skipping type alias ${name} (not in public API)`);
+                            return;
+                        }
+                        
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
                         const typeAliasDeps: ITypeAliasDecDep = {
