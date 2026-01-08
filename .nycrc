@@ -1,18 +1,7 @@
 {
-    "exclude": [
-        "src/**/*.js"
-    ],
-    "include": [
-        "dist/index-cli.js",
-        "bin/*.js"
-    ],
-    "extension": [
-        ".js"
-    ],
-    "reporter": [
-        "json",
-        "html",
-        "text-summary"
-    ],
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "exclude": ["**/*.spec.ts", "test/**", "bin/**"],
+    "include": ["src/**/*.ts"],
+    "reporter": ["json", "html", "text-summary", "lcov"],
     "all": true
 }
