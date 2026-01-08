@@ -1,7 +1,10 @@
 {
     "extends": "@istanbuljs/nyc-config-typescript",
-    "exclude": ["**/*.spec.ts", "test/**", "bin/**"],
-    "include": ["src/**/*.ts"],
+    "exclude": ["**/*.spec.js", "test/**", "bin/**"],
+    "include": ["dist/**/*.js", "src/**/*.ts"],
     "reporter": ["json", "html", "text-summary", "lcov"],
-    "all": true
+    "all": false,
+    "sourceMap": true,
+    "instrument": true,
+    "produceSourceMap": true
 }
