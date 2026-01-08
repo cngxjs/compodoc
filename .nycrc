@@ -1,6 +1,6 @@
 {
     "extends": "@istanbuljs/nyc-config-typescript",
-    "exclude": ["**/*.spec.js", "test/**", "bin/**"],
+    "exclude": ["**/*.spec.js", "test/**", "bin/**", "src/playground-demo/**"],
     "include": ["dist/**/*.js", "src/**/*.ts"],
     "reporter": ["json", "html", "text-summary", "lcov"],
     "all": false,
