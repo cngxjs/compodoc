@@ -9,6 +9,40 @@ import Configuration from '../../configuration';
 export class FunctionSignatureHelper implements IHtmlEngineHelper {
     constructor() {}
 
+    /**
+     * Generates the correct href for internal type links
+     * Handles both regular types and miscellaneous types (typealias, enum, function, variable)
+     */
+    private buildHrefForInternalType(resultData: any): string {
+        if (
+            resultData.type === 'miscellaneous' ||
+            (resultData.ctype && resultData.ctype === 'miscellaneous')
+        ) {
+            let mainpage = '';
+            switch (resultData.subtype) {
+                case 'enum':
+                    mainpage = 'enumerations';
+                    break;
+                case 'function':
+                    mainpage = 'functions';
+                    break;
+                case 'typealias':
+                    mainpage = 'typealiases';
+                    break;
+                case 'variable':
+                    mainpage = 'variables';
+                    break;
+            }
+            return `../miscellaneous/${mainpage}.html#${resultData.name}`;
+        } else {
+            let path = resultData.type;
+            if (resultData.type === 'class') {
+                path = 'classe';
+            }
+            return `../${path}s/${resultData.name}.html`;
+        }
+    }
+
     private handleFunction(arg): string {
         if (arg.function.length === 0) {
             return `${arg.name}${this.getOptionalString(arg)}: () => void`;
@@ -18,13 +52,8 @@ export class FunctionSignatureHelper implements IHtmlEngineHelper {
             const _result = DependenciesEngine.find(argu.type);
             if (_result) {
                 if (_result.source === 'internal') {
-                    let path = _result.data.type;
-                    if (_result.data.type === 'class') {
-                        path = 'classe';
-                    }
-                    return `${argu.name}${this.getOptionalString(arg)}: <a href="../${path}s/${
-                        _result.data.name
-                    }.html">${argu.type}</a>`;
+                    const href = this.buildHrefForInternalType(_result.data);
+                    return `${argu.name}${this.getOptionalString(arg)}: <a href="${href}">${argu.type}</a>`;
                 } else {
                     const path = AngularVersionUtil.getApiLink(
                         _result.data,
@@ -51,7 +80,7 @@ export class FunctionSignatureHelper implements IHtmlEngineHelper {
                 }
             }
         });
-        return `${arg.name}${this.getOptionalString(arg)}: (${argums}) => void`;
+        return `${arg.name}${this.getOptionalString(arg)}: (${argums.join(', ')}) => void`;
     }
 
     private getOptionalString(arg): string {
@@ -81,13 +110,8 @@ export class FunctionSignatureHelper implements IHtmlEngineHelper {
                 }
                 if (_result) {
                     if (_result.source === 'internal') {
-                        let path = _result.data.type;
-                        if (_result.data.type === 'class') {
-                            path = 'classe';
-                        }
-                        args += `${arg.name}${this.getOptionalString(arg)}: <a href="../${path}s/${
-                            _result.data.name
-                        }.html" target="_self">${Handlebars.escapeExpression(arg.type)}</a>`;
+                        const href = this.buildHrefForInternalType(_result.data);
+                        args += `${arg.name}${this.getOptionalString(arg)}: <a href="${href}" target="_self">${Handlebars.escapeExpression(arg.type)}</a>`;
                     } else {
                         let path = AngularVersionUtil.getApiLink(
                             _result.data,

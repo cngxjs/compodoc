@@ -418,11 +418,12 @@ export class ComponentHelper {
         return this.symbolHelper.getSymbolDeps(props, 'selector', srcFile).pop();
     }
 
-    private parseProperties(node: ReadonlyArray<ts.ObjectLiteralElementLike>): Map<string, string> {
+    private parseProperties(node: ts.ObjectLiteralElementLike): Map<string, string> {
         let obj = new Map<string, string>();
-        let properties = node.initializer.properties || [];
-        properties.forEach(prop => {
-            obj.set(prop.name.text, prop.initializer.text);
+        const element = node as any;
+        let properties = element.initializer?.properties || [];
+        properties.forEach((prop: any) => {
+            obj.set(prop.name?.text, prop.initializer?.text);
         });
         return obj;
     }
@@ -437,7 +438,7 @@ export class ComponentHelper {
             filteredProps = [];
 
         for (i; i < len; i++) {
-            if (props[i].name && props[i].name.text === type) {
+            if (props[i].name && (props[i].name as any).text === type) {
                 filteredProps.push(props[i]);
             }
         }

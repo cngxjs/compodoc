@@ -31,13 +31,14 @@ export class ClassHelper {
         /**
          * Copyright https://github.com/ng-bootstrap/ng-bootstrap
          */
-        if (node.getText()) {
+        if (node && (node as any).getText && node.getText()) {
             return node.getText();
-        } else if (node.kind === SyntaxKind.FalseKeyword) {
+        } else if (node && node.kind === SyntaxKind.FalseKeyword) {
             return 'false';
-        } else if (node.kind === SyntaxKind.TrueKeyword) {
+        } else if (node && node.kind === SyntaxKind.TrueKeyword) {
             return 'true';
         }
+        return '';
     }
 
     private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
@@ -49,6 +50,101 @@ export class ClassHelper {
         });
     }
 
+    /**
+     * Process JSDoc tags and apply them to a result object
+     */
+    private processJSDocTags(
+        jsdoctags: any,
+        result: any,
+        includeTagsArray: boolean = true
+    ): void {
+        if (jsdoctags && jsdoctags.length >= 1) {
+            const jsdoc = jsdoctags[0];
+            if (jsdoc && jsdoc.tags) {
+                this.checkForDeprecation(jsdoc.tags as unknown as any[], result);
+                if (includeTagsArray) {
+                    result.jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Extract and process JSDoc comment for a node
+     */
+    private extractAndProcessJSDocComment(
+        node: any,
+        sourceFile: ts.SourceFile,
+        result: any
+    ): void {
+        if (node.jsDoc) {
+            const comment = this.jsdocParserUtil.getMainCommentOfNode(node, sourceFile);
+            if (typeof comment !== 'undefined') {
+                const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
+                result.rawdescription = cleanedDescription;
+                result.description = markedAcl(cleanedDescription);
+            }
+        }
+    }
+
+    /**
+     * Initialize common fields for documented items
+     */
+    private initializeDocumentationFields(): {
+        deprecated: boolean;
+        deprecationMessage: string;
+    } {
+        return {
+            deprecated: false,
+            deprecationMessage: ''
+        };
+    }
+
+    /**
+     * Extract and filter modifier kinds from a node
+     */
+    private extractModifierKinds(node: any): number[] | undefined {
+        if (!node.modifiers || node.modifiers.length === 0) {
+            return undefined;
+        }
+        let kinds = node.modifiers.map(modifier => modifier.kind);
+        if (
+            _.indexOf(kinds, SyntaxKind.PublicKeyword) !== -1 &&
+            _.indexOf(kinds, SyntaxKind.StaticKeyword) !== -1
+        ) {
+            kinds = kinds.filter(kind => kind !== SyntaxKind.PublicKeyword);
+        }
+        return kinds;
+    }
+
+    /**
+     * Ensure private keyword is added for ECMAScript private fields
+     */
+    private ensurePrivateKeyword(result: any, node: any): void {
+        if (this.isPrivate(node)) {
+            if (!result.modifierKind) {
+                result.modifierKind = [];
+            }
+            const hasAlreadyPrivateKeyword = result.modifierKind.includes(SyntaxKind.PrivateKeyword);
+            if (!hasAlreadyPrivateKeyword) {
+                result.modifierKind.push(SyntaxKind.PrivateKeyword);
+            }
+        }
+    }
+
+    /**
+     * Set fallback description from jsDoc[0].comment if no description exists
+     */
+    private setFallbackDescription(result: any, node: any): void {
+        if (!result.description && node.jsDoc && node.jsDoc.length > 0) {
+            if (typeof node.jsDoc[0].comment !== 'undefined') {
+                const rawDescription = node.jsDoc[0].comment;
+                result.rawdescription = rawDescription;
+                result.description = markedAcl(rawDescription);
+            }
+        }
+    }
+
     private getDecoratorOfType(node, decoratorType) {
         let decorators = getNodeDecorators(node) || [];
         let result = [];
@@ -56,8 +152,9 @@ export class ClassHelper {
 
         if (len > 1) {
             for (let i = 0; i < decorators.length; i++) {
-                if (decorators[i].expression.expression) {
-                    if (decorators[i].expression.expression.text === decoratorType) {
+                const expr = decorators[i].expression as any;
+                if (expr.expression) {
+                    if (expr.expression.text === decoratorType) {
                         result.push(decorators[i]);
                     }
                 }
@@ -66,10 +163,13 @@ export class ClassHelper {
                 return result;
             }
         } else {
-            if (len === 1 && decorators[0].expression && decorators[0].expression.expression) {
-                if (decorators[0].expression.expression.text === decoratorType) {
-                    result.push(decorators[0]);
-                    return result;
+            if (len === 1) {
+                const expr = decorators[0].expression as any;
+                if (expr && expr.expression) {
+                    if (expr.expression.text === decoratorType) {
+                        result.push(decorators[0]);
+                        return result;
+                    }
                 }
             }
         }
@@ -250,8 +350,8 @@ export class ClassHelper {
 
     private getPosition(node: ts.Node, sourceFile: ts.SourceFile): ts.LineAndCharacter {
         let position: ts.LineAndCharacter;
-        if (node.name && node.name.end) {
-            position = ts.getLineAndCharacterOfPosition(sourceFile, node.name.end);
+        if ((node as any).name && (node as any).name.end) {
+            position = ts.getLineAndCharacterOfPosition(sourceFile, (node as any).name.end);
         } else {
             position = ts.getLineAndCharacterOfPosition(sourceFile, node.pos);
         }
@@ -273,37 +373,20 @@ export class ClassHelper {
             }
 
             if (nodeAccessor.kind === SyntaxKind.SetAccessor) {
-                let setSignature = {
+                let setSignature: any = {
                     name: nodeName,
                     type: 'void',
-                    deprecated: false,
-                    deprecationMessage: '',
+                    ...this.initializeDocumentationFields(),
                     args: nodeAccessor.parameters.map(param => this.visitArgument(param)),
                     returnType: nodeAccessor.type ? this.visitType(nodeAccessor.type) : 'void',
                     line: this.getPosition(nodeAccessor, sourceFile).line + 1
                 };
 
-                if (nodeAccessor.jsDoc && nodeAccessor.jsDoc.length >= 1) {
-                    const comment = this.jsdocParserUtil.getMainCommentOfNode(
-                        nodeAccessor,
-                        sourceFile
-                    );
-                    if (typeof comment !== 'undefined') {
-                        const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-                        setSignature.rawdescription = cleanedDescription;
-                        setSignature.description = markedAcl(cleanedDescription);
-                    }
-                }
+                this.extractAndProcessJSDocComment(nodeAccessor, sourceFile, setSignature);
+                this.processJSDocTags(jsdoctags, setSignature);
 
-                if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-                    this.checkForDeprecation(jsdoctags[0].tags, setSignature);
-                    setSignature.jsdoctags = markedtags(jsdoctags[0].tags);
-                }
                 if (setSignature.jsdoctags && setSignature.jsdoctags.length > 0) {
-                    setSignature.jsdoctags = mergeTagsAndArgs(
-                        setSignature.args,
-                        setSignature.jsdoctags
-                    );
+                    setSignature.jsdoctags = mergeTagsAndArgs(setSignature.args, setSignature.jsdoctags);
                 } else if (setSignature.args && setSignature.args.length > 0) {
                     setSignature.jsdoctags = mergeTagsAndArgs(setSignature.args);
                 }
@@ -311,50 +394,35 @@ export class ClassHelper {
                 accessors[nodeName].setSignature = setSignature;
             }
             if (nodeAccessor.kind === SyntaxKind.GetAccessor) {
-                let getSignature = {
+                let getSignature: any = {
                     name: nodeName,
                     type: nodeAccessor.type ? kindToType(nodeAccessor.type.kind) : '',
                     returnType: nodeAccessor.type ? this.visitType(nodeAccessor.type) : '',
                     line: this.getPosition(nodeAccessor, sourceFile).line + 1
                 };
 
-                if (nodeAccessor.jsDoc && nodeAccessor.jsDoc.length >= 1) {
-                    const comment = this.jsdocParserUtil.getMainCommentOfNode(
-                        nodeAccessor,
-                        sourceFile
-                    );
-                    if (typeof comment !== 'undefined') {
-                        const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-                        getSignature.rawdescription = cleanedDescription;
-                        getSignature.description = markedAcl(cleanedDescription);
-                    }
-                }
-
-                if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-                    this.checkForDeprecation(jsdoctags[0].tags, getSignature);
-                    getSignature.jsdoctags = markedtags(jsdoctags[0].tags);
-                }
+                this.extractAndProcessJSDocComment(nodeAccessor, sourceFile, getSignature);
+                this.processJSDocTags(jsdoctags, getSignature);
 
                 accessors[nodeName].getSignature = getSignature;
             }
         }
     }
 
-    private isDirectiveDecorator(decorator: ts.Decorator): boolean {
-        if (decorator.expression.expression) {
-            let decoratorIdentifierText = decorator.expression.expression.text;
-            return (
-                decoratorIdentifierText === 'Directive' || decoratorIdentifierText === 'Component'
-            );
-        } else {
-            return false;
+    private hasDecoratorType(decorator: ts.Decorator, ...types: string[]): boolean {
+        if ((decorator.expression as any).expression) {
+            const decoratorText = (decorator.expression as any).expression.text;
+            return types.includes(decoratorText);
         }
+        return false;
+    }
+
+    private isDirectiveDecorator(decorator: ts.Decorator): boolean {
+        return this.hasDecoratorType(decorator, 'Directive', 'Component');
     }
 
     private isServiceDecorator(decorator) {
-        return decorator.expression.expression
-            ? decorator.expression.expression.text === 'Injectable'
-            : false;
+        return this.hasDecoratorType(decorator, 'Injectable');
     }
 
     private isPrivate(member): boolean {
@@ -442,22 +510,15 @@ export class ClassHelper {
     }
 
     private isPipeDecorator(decorator) {
-        return decorator.expression.expression
-            ? decorator.expression.expression.text === 'Pipe'
-            : false;
+        return this.hasDecoratorType(decorator, 'Pipe');
     }
 
     private isControllerDecorator(decorator) {
-        return decorator.expression.expression
-            ? decorator.expression.expression.text === 'Controller'
-            : false;
+        return this.hasDecoratorType(decorator, 'Controller');
     }
 
     private isModuleDecorator(decorator) {
-        return decorator.expression.expression
-            ? decorator.expression.expression.text === 'NgModule' ||
-                  decorator.expression.expression.text === 'Module'
-            : false;
+        return this.hasDecoratorType(decorator, 'NgModule', 'Module');
     }
 
     /**
@@ -472,10 +533,10 @@ export class ClassHelper {
     ): any {
         let symbol = this.typeChecker.getSymbolAtLocation(classDeclaration.name);
         let rawdescription = '';
-        let deprecated = false;
-        let deprecationMessage = '';
+        let deprecation = this.initializeDocumentationFields();
         let description = '';
-        let jsdoctags = [];
+        let jsdoctags: any[] = [];
+
         if (symbol) {
             const comment = this.jsdocParserUtil.getMainCommentOfNode(classDeclaration, sourceFile);
             rawdescription = this.jsdocParserUtil.parseComment(comment);
@@ -485,38 +546,32 @@ export class ClassHelper {
             }
             if (symbol.declarations && symbol.declarations.length > 0) {
                 let declarationsjsdoctags = this.jsdocParserUtil.getJSDocs(symbol.declarations[0]);
-                if (
-                    declarationsjsdoctags &&
-                    declarationsjsdoctags.length >= 1 &&
-                    declarationsjsdoctags[0].tags
-                ) {
-                    const deprecation = { deprecated: false, deprecationMessage: '' };
-                    this.checkForDeprecation(declarationsjsdoctags[0].tags, deprecation);
-                    deprecated = deprecation.deprecated;
-                    deprecationMessage = deprecation.deprecationMessage;
-                }
+                this.processJSDocTags(declarationsjsdoctags, deprecation, false);
                 if (isIgnore(symbol.declarations[0])) {
                     return [{ ignore: true }];
                 }
             }
             if (symbol.valueDeclaration) {
-                jsdoctags = this.jsdocParserUtil.getJSDocs(symbol.valueDeclaration);
-                if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-                    const deprecation = { deprecated: false, deprecationMessage: '' };
-                    this.checkForDeprecation(jsdoctags[0].tags, deprecation);
-                    deprecated = deprecation.deprecated;
-                    deprecationMessage = deprecation.deprecationMessage;
-                    jsdoctags = markedtags(jsdoctags[0].tags);
+                jsdoctags = this.jsdocParserUtil.getJSDocs(symbol.valueDeclaration) as unknown as any[];
+                if (jsdoctags && jsdoctags.length >= 1) {
+                    const jsdoc = jsdoctags[0] as any;
+                    if (jsdoc && jsdoc.tags) {
+                        const tempDeprecation = this.initializeDocumentationFields();
+                        this.checkForDeprecation(jsdoc.tags, tempDeprecation);
+                        deprecation = tempDeprecation;
+                        jsdoctags = markedtags(jsdoc.tags);
+                    }
                 }
             }
         }
+
         let className = classDeclaration.name.text;
         let members;
         let implementsElements = [];
         let extendsElements = [];
 
-        if (typeof ts.getEffectiveImplementsTypeNodes !== 'undefined') {
-            let implementedTypes = ts.getEffectiveImplementsTypeNodes(classDeclaration);
+        if (typeof (ts as any).getEffectiveImplementsTypeNodes !== 'undefined') {
+            let implementedTypes = (ts as any).getEffectiveImplementsTypeNodes(classDeclaration);
             if (implementedTypes) {
                 let i = 0;
                 let len = implementedTypes.length;
@@ -528,11 +583,11 @@ export class ClassHelper {
             }
         }
 
-        if (typeof ts.getClassExtendsHeritageElement !== 'undefined') {
+        if (typeof (ts as any).getClassExtendsHeritageElement !== 'undefined') {
             if (astFile) {
-                let interfaceOrClassNode = astFile.getInterface(className);
+                let interfaceOrClassNode = (astFile as any).getInterface(className);
                 if (!interfaceOrClassNode) {
-                    interfaceOrClassNode = astFile.getClass(className);
+                    interfaceOrClassNode = (astFile as any).getClass(className);
                 }
                 if (interfaceOrClassNode) {
                     const extendsListRaw = interfaceOrClassNode.getExtends();
@@ -590,8 +645,8 @@ export class ClassHelper {
             }
             if (isDirective) {
                 return {
-                    deprecated,
-                    deprecationMessage,
+                    deprecated: deprecation.deprecated,
+                    deprecationMessage: deprecation.deprecationMessage,
                     description,
                     rawdescription: rawdescription,
                     inputs: members.inputs,
@@ -613,8 +668,8 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated,
-                        deprecationMessage,
+                        deprecated: deprecation.deprecated,
+                        deprecationMessage: deprecation.deprecationMessage,
                         description,
                         rawdescription: rawdescription,
                         methods: members.methods,
@@ -633,8 +688,8 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated,
-                        deprecationMessage,
+                        deprecated: deprecation.deprecated,
+                        deprecationMessage: deprecation.deprecationMessage,
                         description,
                         rawdescription: rawdescription,
                         jsdoctags: jsdoctags,
@@ -647,8 +702,8 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated,
-                        deprecationMessage,
+                        deprecated: deprecation.deprecated,
+                        deprecationMessage: deprecation.deprecationMessage,
                         description,
                         rawdescription: rawdescription,
                         jsdoctags: jsdoctags,
@@ -658,8 +713,8 @@ export class ClassHelper {
             } else {
                 return [
                     {
-                        deprecated,
-                        deprecationMessage,
+                        deprecated: deprecation.deprecated,
+                        deprecationMessage: deprecation.deprecationMessage,
                         description,
                         rawdescription: rawdescription,
                         methods: members.methods,
@@ -674,11 +729,12 @@ export class ClassHelper {
                     }
                 ];
             }
-        } else if (description) {
+        }
+        if (description) {
             return [
                 {
-                    deprecated,
-                    deprecationMessage,
+                    deprecated: deprecation.deprecated,
+                    deprecationMessage: deprecation.deprecationMessage,
                     description,
                     rawdescription: rawdescription,
                     inputs: members.inputs,
@@ -699,8 +755,8 @@ export class ClassHelper {
         } else {
             return [
                 {
-                    deprecated,
-                    deprecationMessage,
+                    deprecated: deprecation.deprecated,
+                    deprecationMessage: deprecation.deprecationMessage,
                     methods: members.methods,
                     inputs: members.inputs,
                     outputs: members.outputs,
@@ -717,11 +773,9 @@ export class ClassHelper {
                 }
             ];
         }
-
-        return [];
     }
 
-    private visitMembers(members, sourceFile) {
+    private visitMembers(members: any, sourceFile: any) {
         /**
          * Copyright https://github.com/ng-bootstrap/ng-bootstrap
          */
@@ -861,8 +915,8 @@ export class ClassHelper {
         if (typeName.text) {
             return typeName.text;
         }
-        if (typeName.left && typeName.right) {
-            return this.visitTypeName(typeName.left) + '.' + this.visitTypeName(typeName.right);
+        if ((typeName as any).left && (typeName as any).right) {
+            return this.visitTypeName((typeName as any).left) + '.' + this.visitTypeName((typeName as any).right);
         }
         return '';
     }
@@ -938,8 +992,8 @@ export class ClassHelper {
                         }
                     } else {
                         if (ts.isLiteralTypeNode(type) && type.literal) {
-                            if (type.literal.text) {
-                                _return += '"' + type.literal.text + '"';
+                            if ((type.literal as any).text) {
+                                _return += '"' + (type.literal as any).text + '"';
                             } else {
                                 _return += kindToType(type.literal.kind);
                             }
@@ -994,8 +1048,8 @@ export class ClassHelper {
                             _return += kindToType(type.kind);
                         }
                         if (ts.isLiteralTypeNode(type) && type.literal) {
-                            if (type.literal.text) {
-                                _return += '"' + type.literal.text + '"';
+                            if ((type.literal as any).text) {
+                                _return += '"' + (type.literal as any).text + '"';
                             } else {
                                 _return += kindToType(type.literal.kind);
                             }
@@ -1039,8 +1093,8 @@ export class ClassHelper {
             for (i; i < len; i++) {
                 let type = node.types[i];
                 if (ts.isLiteralTypeNode(type) && type.literal) {
-                    if (type.literal.text) {
-                        _return += '"' + type.literal.text + '"';
+                    if ((type.literal as any).text) {
+                        _return += '"' + (type.literal as any).text + '"';
                     } else {
                         _return += kindToType(type.literal.kind);
                     }
@@ -1096,20 +1150,11 @@ export class ClassHelper {
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             returnType: this.visitType(method.type),
             line: this.getPosition(method, sourceFile).line + 1,
-            deprecated: false,
-            deprecationMessage: ''
+            ...this.initializeDocumentationFields()
         };
-        if (method.jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(method, sourceFile);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            result.rawdescription = cleanedDescription;
-            result.description = markedAcl(cleanedDescription);
-        }
-        let jsdoctags = this.jsdocParserUtil.getJSDocs(method);
-        if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-            this.checkForDeprecation(jsdoctags[0].tags, result);
-            result.jsdoctags = markedtags(jsdoctags[0].tags);
-        }
+        this.extractAndProcessJSDocComment(method, sourceFile, result);
+        const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
+        this.processJSDocTags(jsdoctags, result);
         return result;
     }
 
@@ -1124,26 +1169,11 @@ export class ClassHelper {
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             returnType: this.visitType(method.type),
             line: this.getPosition(method, sourceFile).line + 1,
-            deprecated: false,
-            deprecationMessage: ''
+            ...this.initializeDocumentationFields()
         };
+        this.extractAndProcessJSDocComment(method, sourceFile, result);
         const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
-        if (method.jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(method, sourceFile);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            result.rawdescription = cleanedDescription;
-            result.description = markedAcl(cleanedDescription);
-        }
-
-        if (jsdoctags && jsdoctags.length >= 1) {
-            if (jsdoctags[0].tags) {
-                this.checkForDeprecation(jsdoctags[0].tags, result);
-                if (method.jsDoc) {
-                    result.jsdoctags = markedtags(jsdoctags[0].tags);
-                }
-            }
-        }
-
+        this.processJSDocTags(jsdoctags, result);
         return result;
     }
 
@@ -1157,38 +1187,20 @@ export class ClassHelper {
         let result: any = {
             name: 'constructor',
             description: '',
-            deprecated: false,
-            deprecationMessage: '',
+            ...this.initializeDocumentationFields(),
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             line: this.getPosition(method, sourceFile).line + 1
         };
-        let jsdoctags = this.jsdocParserUtil.getJSDocs(method);
+        this.extractAndProcessJSDocComment(method, sourceFile, result);
 
-        if (method.jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(method, sourceFile);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            result.rawdescription = cleanedDescription;
-            result.description = markedAcl(cleanedDescription);
+        const kinds = this.extractModifierKinds(method);
+        if (kinds) {
+            result.modifierKind = kinds;
         }
 
-        if (method.modifiers) {
-            if (method.modifiers.length > 0) {
-                let kinds = method.modifiers.map(modifier => {
-                    return modifier.kind;
-                });
-                if (
-                    _.indexOf(kinds, SyntaxKind.PublicKeyword) !== -1 &&
-                    _.indexOf(kinds, SyntaxKind.StaticKeyword) !== -1
-                ) {
-                    kinds = kinds.filter(kind => kind !== SyntaxKind.PublicKeyword);
-                }
-                result.modifierKind = kinds;
-            }
-        }
-        if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-            this.checkForDeprecation(jsdoctags[0].tags, result);
-            result.jsdoctags = markedtags(jsdoctags[0].tags);
-        }
+        const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
+        this.processJSDocTags(jsdoctags, result);
+
         if (result.jsdoctags && result.jsdoctags.length > 0) {
             result.jsdoctags = mergeTagsAndArgs(result.args, result.jsdoctags);
         } else if (result.args.length > 0) {
@@ -1197,77 +1209,74 @@ export class ClassHelper {
         return result;
     }
 
-    private visitProperty(property: ts.PropertyDeclaration, sourceFile) {
+    private visitProperty(property: ts.PropertyDeclaration | ts.PropertySignature, sourceFile) {
+        // PropertySignature (interfaces) don't have initializer, PropertyDeclaration (classes) do
+        const initializer = ts.isPropertyDeclaration(property) ? property.initializer : undefined;
+
+        // Extract property name, handling different node types:
+        // - Identifier: regular property names
+        // - PrivateIdentifier: ECMAScript private fields like #privateField
+        // - ComputedPropertyName: computed names like ['__allAnd']
+        let propertyName = '';
+        // Check for mock objects first (for testing)
+        if ((property.name as any).text) {
+            propertyName = (property.name as any).text;
+        } else if (ts.isIdentifier(property.name)) {
+            propertyName = property.name.text;
+        } else if (ts.isPrivateIdentifier(property.name)) {
+            propertyName = property.name.text; // includes the # prefix
+        } else if (ts.isComputedPropertyName(property.name)) {
+            // Handle computed property names like ['__allAnd']
+            if (ts.isStringLiteral(property.name.expression)) {
+                propertyName = property.name.expression.text;
+            } else if (ts.isIdentifier(property.name.expression)) {
+                propertyName = property.name.expression.text;
+            }
+        }
+
         const result: any = {
-            name: property.name.text,
-            defaultValue: property.initializer
-                ? this.stringifyDefaultValue(property.initializer)
+            name: propertyName,
+            defaultValue: initializer
+                ? this.stringifyDefaultValue(initializer)
                 : undefined,
-            deprecated: false,
-            deprecationMessage: '',
+            ...this.initializeDocumentationFields(),
             type: this.visitType(property),
             indexKey: this.visitTypeIndex(property),
             optional: typeof property.questionToken !== 'undefined',
             description: '',
             line: this.getPosition(property, sourceFile).line + 1
         };
-        let jsdoctags;
 
-        if (property.initializer && property.initializer.kind === SyntaxKind.ArrowFunction) {
+        if (initializer && initializer.kind === SyntaxKind.ArrowFunction) {
             result.defaultValue = '() => {...}';
         }
 
-        if (typeof result.name === 'undefined' && typeof property.name.expression !== 'undefined') {
-            result.name = property.name.expression.text;
+        if (typeof result.name === 'undefined' && (property.name as any).expression) {
+            result.name = (property.name as any).expression.text;
         }
 
-        jsdoctags = this.jsdocParserUtil.getJSDocs(property);
-
-        if (property.jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(property, sourceFile);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            result.rawdescription = cleanedDescription;
-            result.description = markedAcl(cleanedDescription);
-        }
+        this.extractAndProcessJSDocComment(property, sourceFile, result);
 
         if (nodeHasDecorator(property)) {
             const propertyDecorators = getNodeDecorators(property);
             result.decorators = this.formatDecorators(propertyDecorators);
         }
 
-        if (property.modifiers) {
-            if (property.modifiers.length > 0) {
-                let kinds = property.modifiers.map(modifier => {
-                    return modifier.kind;
-                });
-                if (
-                    _.indexOf(kinds, SyntaxKind.PublicKeyword) !== -1 &&
-                    _.indexOf(kinds, SyntaxKind.StaticKeyword) !== -1
-                ) {
-                    kinds = kinds.filter(kind => kind !== SyntaxKind.PublicKeyword);
-                }
-                result.modifierKind = kinds;
-            }
+        const kinds = this.extractModifierKinds(property);
+        if (kinds) {
+            result.modifierKind = kinds;
         }
         // Check for ECMAScript Private Fields
-        if (this.isPrivate(property)) {
-            if (!result.modifierKind) {
-                result.modifierKind = [];
-            }
-            let hasAlreadyPrivateLeyword = false;
-            result.modifierKind.forEach(modifierKind => {
-                if (modifierKind === SyntaxKind.PrivateKeyword) {
-                    hasAlreadyPrivateLeyword = true;
+        this.ensurePrivateKeyword(result, property);
+
+        const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
+        if (jsdoctags && jsdoctags.length >= 1) {
+            const jsdoc = jsdoctags[0] as any;
+            if (jsdoc && jsdoc.tags) {
+                this.checkForDeprecation(jsdoc.tags, result);
+                if ((property as any).jsDoc) {
+                    result.jsdoctags = markedtags(jsdoc.tags);
                 }
-            });
-            if (!hasAlreadyPrivateLeyword) {
-                result.modifierKind.push(SyntaxKind.PrivateKeyword);
-            }
-        }
-        if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-            this.checkForDeprecation(jsdoctags[0].tags, result);
-            if (property.jsDoc) {
-                result.jsdoctags = markedtags(jsdoctags[0].tags);
             }
         }
 
@@ -1327,23 +1336,21 @@ export class ClassHelper {
         }
     }
 
-    private visitMethodDeclaration(method: ts.MethodDeclaration, sourceFile: ts.SourceFile) {
+    private visitMethodDeclaration(method: ts.MethodDeclaration | ts.MethodSignature, sourceFile: ts.SourceFile) {
         let result: any = {
-            name: method.name.text,
+            name: (method.name as any).text || (ts.isIdentifier(method.name) ? method.name.text : ''),
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             optional: typeof method.questionToken !== 'undefined',
             returnType: this.visitType(method.type),
             typeParameters: [],
             line: this.getPosition(method, sourceFile).line + 1,
-            deprecated: false,
-            deprecationMessage: ''
+            ...this.initializeDocumentationFields()
         };
-        let jsdoctags = this.jsdocParserUtil.getJSDocs(method);
 
         if (typeof method.type === 'undefined') {
             // Try to get inferred type
-            if (method.symbol) {
-                let symbol: ts.Symbol = method.symbol;
+            if ((method as any).symbol) {
+                let symbol: ts.Symbol = (method as any).symbol;
                 if (symbol.valueDeclaration) {
                     let symbolType = this.typeChecker.getTypeOfSymbolAtLocation(
                         symbol,
@@ -1367,51 +1374,23 @@ export class ClassHelper {
             );
         }
 
-        if (method.jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(method, sourceFile);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            result.rawdescription = cleanedDescription;
-            result.description = markedAcl(cleanedDescription);
-        }
+        this.extractAndProcessJSDocComment(method, sourceFile, result);
 
         if (nodeHasDecorator(method)) {
             const methodDecorators = getNodeDecorators(method);
             result.decorators = this.formatDecorators(methodDecorators);
         }
 
-        if (method.modifiers) {
-            if (method.modifiers.length > 0) {
-                let kinds = method.modifiers.map(modifier => {
-                    return modifier.kind;
-                });
-                if (
-                    _.indexOf(kinds, SyntaxKind.PublicKeyword) !== -1 &&
-                    _.indexOf(kinds, SyntaxKind.StaticKeyword) !== -1
-                ) {
-                    kinds = kinds.filter(kind => kind !== SyntaxKind.PublicKeyword);
-                }
-                result.modifierKind = kinds;
-            }
+        const kinds = this.extractModifierKinds(method);
+        if (kinds) {
+            result.modifierKind = kinds;
         }
         // Check for ECMAScript Private Fields
-        if (this.isPrivate(method)) {
-            if (!result.modifierKind) {
-                result.modifierKind = [];
-            }
-            let hasAlreadyPrivateLeyword = false;
-            result.modifierKind.forEach(modifierKind => {
-                if (modifierKind === SyntaxKind.PrivateKeyword) {
-                    hasAlreadyPrivateLeyword = true;
-                }
-            });
-            if (!hasAlreadyPrivateLeyword) {
-                result.modifierKind.push(SyntaxKind.PrivateKeyword);
-            }
-        }
-        if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-            this.checkForDeprecation(jsdoctags[0].tags, result);
-            result.jsdoctags = markedtags(jsdoctags[0].tags);
-        }
+        this.ensurePrivateKeyword(result, method);
+
+        const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
+        this.processJSDocTags(jsdoctags, result);
+
         if (result.jsdoctags && result.jsdoctags.length > 0) {
             result.jsdoctags = mergeTagsAndArgs(result.args, result.jsdoctags);
         } else if (result.args.length > 0) {
@@ -1425,36 +1404,22 @@ export class ClassHelper {
         outDecorator: ts.Decorator,
         sourceFile?: ts.SourceFile
     ) {
-        let inArgs = outDecorator.expression.arguments;
+        let inArgs = (outDecorator.expression as any).arguments;
         let _return: any = {
-            name: inArgs.length > 0 ? inArgs[0].text : property.name.text,
+            name: inArgs.length > 0 ? (inArgs[0] as any).text : ((property.name as any).text || (ts.isIdentifier(property.name) ? property.name.text : '')),
             defaultValue: property.initializer
                 ? this.stringifyDefaultValue(property.initializer)
                 : undefined,
-            deprecated: false,
-            deprecationMessage: ''
+            ...this.initializeDocumentationFields()
         };
-        if (property.jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(property, sourceFile);
-            const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            _return.rawdescription = cleanedDescription;
-            _return.description = markedAcl(cleanedDescription);
 
-            if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-                this.checkForDeprecation(jsdoctags[0].tags, _return);
-                _return.jsdoctags = markedtags(jsdoctags[0].tags);
-            }
+        if ((property as any).jsDoc) {
+            this.extractAndProcessJSDocComment(property, sourceFile, _return);
+            const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
+            this.processJSDocTags(jsdoctags, _return);
         }
-        if (!_return.description) {
-            if (property.jsDoc && property.jsDoc.length > 0) {
-                if (typeof property.jsDoc[0].comment !== 'undefined') {
-                    const rawDescription = property.jsDoc[0].comment;
-                    _return.rawdescription = rawDescription;
-                    _return.description = markedAcl(rawDescription);
-                }
-            }
-        }
+
+        this.setFallbackDescription(_return, property);
         _return.line = this.getPosition(property, sourceFile).line + 1;
 
         if (property.type) {
@@ -1464,7 +1429,7 @@ export class ClassHelper {
             if (property.initializer) {
                 if (ts.isNewExpression(property.initializer)) {
                     if (property.initializer.expression) {
-                        _return.type = property.initializer.expression.text;
+                        _return.type = (property.initializer.expression as any).text;
                     }
                 }
             }
@@ -1474,33 +1439,22 @@ export class ClassHelper {
 
     private visitArgument(arg: ts.ParameterDeclaration) {
         let _result: any = {
-            name: arg.name.text,
+            name: (arg.name as any).text || (ts.isIdentifier(arg.name) ? arg.name.text : ''),
             type: this.visitType(arg),
-            deprecated: false,
-            deprecationMessage: ''
+            optional: !!arg.questionToken,
+            dotDotDotToken: !!arg.dotDotDotToken,
+            ...this.initializeDocumentationFields()
         };
-        if (arg.dotDotDotToken) {
-            _result.dotDotDotToken = true;
-        }
-        if (arg.questionToken) {
-            _result.optional = true;
-        }
-        if (arg.type) {
-            if (arg.type.kind) {
-                if (ts.isFunctionTypeNode(arg.type)) {
-                    _result.function = arg.type.parameters
-                        ? arg.type.parameters.map(prop => this.visitArgument(prop))
-                        : [];
-                }
-            }
+        if (arg.type && arg.type.kind && ts.isFunctionTypeNode(arg.type)) {
+            _result.function = arg.type.parameters
+                ? arg.type.parameters.map(prop => this.visitArgument(prop))
+                : [];
         }
         if (arg.initializer) {
             _result.defaultValue = this.stringifyDefaultValue(arg.initializer);
         }
         const jsdoctags = this.jsdocParserUtil.getJSDocs(arg);
-        if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-            this.checkForDeprecation(jsdoctags[0].tags, _result);
-        }
+        this.processJSDocTags(jsdoctags, _result, false);
         return _result;
     }
 
@@ -1544,33 +1498,16 @@ export class ClassHelper {
         _return.defaultValue = property.initializer
             ? this.stringifyDefaultValue(property.initializer)
             : undefined;
-        _return.deprecated = false;
-        _return.deprecationMessage = '';
+        Object.assign(_return, this.initializeDocumentationFields());
 
         if (inArgs.length > 0 && inArgs[0].properties && hasRequiredField) {
             _return.optional = getRequiredField().initializer.kind !== SyntaxKind.TrueKeyword;
         }
 
-        if (!_return.description) {
-            if (property.jsDoc) {
-                if (property.jsDoc.length > 0) {
-                    const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
-
-                    if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-                        this.checkForDeprecation(jsdoctags[0].tags, _return);
-                        _return.jsdoctags = markedtags(jsdoctags[0].tags);
-                    }
-                    if (typeof property.jsDoc[0].comment !== 'undefined') {
-                        const comment = this.jsdocParserUtil.getMainCommentOfNode(
-                            property,
-                            sourceFile
-                        );
-                        const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-                        _return.rawdescription = cleanedDescription;
-                        _return.description = markedAcl(cleanedDescription);
-                    }
-                }
-            }
+        if (!_return.description && property.jsDoc && property.jsDoc.length > 0) {
+            const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
+            this.processJSDocTags(jsdoctags, _return);
+            this.extractAndProcessJSDocComment(property, sourceFile, _return);
         }
         _return.line = this.getPosition(property, sourceFile).line + 1;
         if (property.type) {
@@ -1629,31 +1566,15 @@ export class ClassHelper {
                       return prop.text;
                   })
                 : [];
-        _return.deprecated = false;
-        _return.deprecationMessage = '';
-        if (property.jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(property, sourceFile);
-            const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
-            const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-            _return.rawdescription = cleanedDescription;
-            _return.description = markedAcl(cleanedDescription);
+        Object.assign(_return, this.initializeDocumentationFields());
 
-            if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-                this.checkForDeprecation(jsdoctags[0].tags, _return);
-                _return.jsdoctags = markedtags(jsdoctags[0].tags);
-            }
+        if (property.jsDoc) {
+            this.extractAndProcessJSDocComment(property, sourceFile, _return);
+            const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
+            this.processJSDocTags(jsdoctags, _return);
         }
-        if (!_return.description) {
-            if (property.jsDoc) {
-                if (property.jsDoc.length > 0) {
-                    if (typeof property.jsDoc[0].comment !== 'undefined') {
-                        const rawDescription = property.jsDoc[0].comment;
-                        _return.rawdescription = rawDescription;
-                        _return.description = markedAcl(rawDescription);
-                    }
-                }
-            }
-        }
+
+        this.setFallbackDescription(_return, property);
         _return.line = this.getPosition(property, sourceFile).line + 1;
         return _return;
     }
