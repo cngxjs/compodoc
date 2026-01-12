@@ -227,6 +227,12 @@ export class PublicApiParser {
 
     /**
      * Resolve a re-exported symbol to its declaration file
+     * 
+     * Note: We intentionally do NOT parse the resolved file as an index file.
+     * Only symbols explicitly re-exported via `export { X } from './module'` in an
+     * index.d.ts should be considered part of the public API. Direct exports from
+     * module files (like `export const API_ROOT`) should not be included unless
+     * they are explicitly re-exported.
      */
     private async resolveReExport(
         symbolName: string,
@@ -238,11 +244,7 @@ export class PublicApiParser {
         if (resolvedPath && fs.existsSync(resolvedPath)) {
             // The symbol is exported from the resolved declaration file
             this.addSymbol(symbolName, resolvedPath);
-
-            // Also parse the file to handle transitive exports
-            if (!this.processedFiles.has(resolvedPath)) {
-                await this.parseIndexFile(resolvedPath);
-            }
+            // Do NOT parse the resolved file - only track the specific symbol being re-exported
         } else {
             // Could not resolve, assume it's from the current file
             this.addSymbol(symbolName, sourceFilePath);

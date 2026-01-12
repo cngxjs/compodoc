@@ -214,14 +214,45 @@ export class ApiMarkdownParser {
     /**
      * Extract the TypeScript code block from a markdown file
      * API Extractor markdown files have TypeScript code in a ```ts block
+     *
+     * Note: Uses string-based parsing instead of regex to avoid ReDoS vulnerabilities
+     * that can occur with patterns like /```ts\s*\n([\s\S]*?)\n```/ on malformed input.
      */
     private extractTypeScriptCodeBlock(content: string): string | null {
-        // Find the TypeScript code block
-        const match = content.match(/```ts\s*\n([\s\S]*?)\n```/);
-        if (match && match[1]) {
-            return match[1];
+        // Find the opening marker (```ts or ```typescript)
+        const openMarkers = ['```ts\n', '```ts\r\n', '```typescript\n', '```typescript\r\n'];
+        let startIndex = -1;
+        let markerLength = 0;
+
+        for (const marker of openMarkers) {
+            const idx = content.indexOf(marker);
+            if (idx !== -1 && (startIndex === -1 || idx < startIndex)) {
+                startIndex = idx;
+                markerLength = marker.length;
+            }
         }
-        return null;
+
+        if (startIndex === -1) {
+            return null;
+        }
+
+        // Find the closing marker (``` at the start of a line)
+        const contentStart = startIndex + markerLength;
+        const closeMarker = '\n```';
+        const endIndex = content.indexOf(closeMarker, contentStart);
+
+        if (endIndex === -1) {
+            return null;
+        }
+
+        const codeBlock = content.slice(contentStart, endIndex);
+
+        // Return null for empty code blocks
+        if (!codeBlock.trim()) {
+            return null;
+        }
+
+        return codeBlock;
     }
 
     /**
