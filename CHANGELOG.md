@@ -1,3 +1,13 @@
+<a name="1.2.0"></a>
+## [v1.2.0](https://github-personal/compodoc/compodoc/compare/1.1.32...1.2.0)
+
+### Merged
+
+- fix(#1542): Fix link to type alias of method parameter undefined in signature. [#1685](https://github-personal/compodoc/compodoc/pull/1685)
+- feat: support only document public api [#1686](https://github-personal/compodoc/compodoc/pull/1686)
+- [Snyk] Security upgrade glob from 11.0.3 to 11.1.0 [#1680](https://github-personal/compodoc/compodoc/pull/1680)
+- [Snyk] Security upgrade body-parser from 2.2.0 to 2.2.1 [#1684](https://github-personal/compodoc/compodoc/pull/1684)
+
 <a name="1.1.32"></a>
 
 ## [v1.1.32](https://github-personal/compodoc/compodoc/compare/1.1.31...1.1.32)
