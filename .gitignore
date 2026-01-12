@@ -44,3 +44,5 @@ tmp/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+.angular/

@@ -87,4 +87,6 @@ export interface MainDataInterface {
     angularJSProject: boolean;
     language: string;
     maxSearchResults: number;
+    publicApiOnly: string;
+    publicApiExports: Map<string, Set<string>>;
 }
