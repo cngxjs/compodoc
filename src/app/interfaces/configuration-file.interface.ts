@@ -51,4 +51,5 @@ export interface ConfigurationFileInterface {
     files;
     exclude;
     include;
+    publicApiOnly: string;
 }

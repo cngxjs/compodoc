@@ -7,4 +7,6 @@ export * from './imports.util';
 export * from './is-module-with-providers';
 export * from './get-module-with-providers';
 export * from './has-spread-element-in-array';
+export * from './public-api-parser.util';
+export * from './source-path-mapper.util';
 export * from './utils';
