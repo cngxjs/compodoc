@@ -1,18 +1,10 @@
 {
-    "exclude": [
-        "src/**/*.js"
-    ],
-    "include": [
-        "dist/index-cli.js",
-        "bin/*.js"
-    ],
-    "extension": [
-        ".js"
-    ],
-    "reporter": [
-        "json",
-        "html",
-        "text-summary"
-    ],
-    "all": true
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "exclude": ["**/*.spec.js", "test/**", "bin/**", "src/playground-demo/**"],
+    "include": ["dist/**/*.js", "src/**/*.ts"],
+    "reporter": ["json", "html", "text-summary", "lcov"],
+    "all": false,
+    "sourceMap": true,
+    "instrument": true,
+    "produceSourceMap": true
 }
