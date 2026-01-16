@@ -1,4 +1,13 @@
+<a name="1.2.1"></a>
+
+## [v1.2.1](https://github-personal/compodoc/compodoc/compare/1.2.0...1.2.1)
+
+### Merged
+
+- fix: expand .npmignore to optimize bundle size [#1696](https://github.com/compodoc/compodoc/pull/1696)
+
 <a name="1.2.0"></a>
+
 ## [v1.2.0](https://github-personal/compodoc/compodoc/compare/1.1.32...1.2.0)
 
 ### Merged
