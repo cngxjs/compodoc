@@ -38,3 +38,10 @@ test-results/.last-run.json
 test-typedoc/coverage.html
 testCoverage/coverage.html
 tsconfig.test.json
+.cursor
+.specstory
+.tmp-compodoc-test-cli-coverage-*
+angularexpo-tests
+schematics
+test-public-api-*
+.cursorindexingignore
