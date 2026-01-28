@@ -114,7 +114,7 @@
         "html-entities": "^2.6.0",
         "i18next": "25.7.4",
         "json5": "^2.2.3",
-        "lodash": "^4.17.21",
+        "lodash": "^4.17.23",
         "loglevel": "^1.9.2",
         "loglevel-plugin-prefix": "^0.8.4",
         "lunr": "^2.3.9",
