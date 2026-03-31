@@ -1,4 +1,4 @@
-import { cleanLifecycleHooksFromMethods } from '.';
+import { cleanLifecycleHooksFromMethods, deepClone } from '.';
 import Configuration from '../app/configuration';
 
 export class ExtendsMerger {
@@ -33,14 +33,14 @@ export class ExtendsMerger {
                     const recursiveScanWithInheritance = cls => {
                         // From class to component
                         if (typeof cls.methods !== 'undefined' && cls.methods.length > 0) {
-                            let newMethods = structuredClone(cls.methods);
+                            let newMethods = deepClone(cls.methods);
                             newMethods = this.markInheritance(newMethods, cls);
                             if (typeof component.methodsClass !== 'undefined') {
                                 this.mergeInheritance(component, 'methodsClass', newMethods);
                             }
                         }
                         if (typeof cls.properties !== 'undefined' && cls.properties.length > 0) {
-                            let newProperties = structuredClone(cls.properties);
+                            let newProperties = deepClone(cls.properties);
                             newProperties = this.markInheritance(newProperties, cls);
                             if (typeof component.propertiesClass !== 'undefined') {
                                 this.mergeInheritance(component, 'propertiesClass', newProperties);
@@ -48,7 +48,7 @@ export class ExtendsMerger {
                         }
                         // From component to component or directive to component
                         if (typeof cls.inputsClass !== 'undefined' && cls.inputsClass.length > 0) {
-                            let newInputs = structuredClone(cls.inputsClass);
+                            let newInputs = deepClone(cls.inputsClass);
                             newInputs = this.markInheritance(newInputs, cls);
                             if (typeof component.inputsClass !== 'undefined') {
                                 this.mergeInheritance(component, 'inputsClass', newInputs);
@@ -58,7 +58,7 @@ export class ExtendsMerger {
                             typeof cls.outputsClass !== 'undefined' &&
                             cls.outputsClass.length > 0
                         ) {
-                            let newOutputs = structuredClone(cls.outputsClass);
+                            let newOutputs = deepClone(cls.outputsClass);
                             newOutputs = this.markInheritance(newOutputs, cls);
                             if (typeof component.outputsClass !== 'undefined') {
                                 this.mergeInheritance(component, 'outputsClass', newOutputs);
@@ -68,7 +68,7 @@ export class ExtendsMerger {
                             typeof cls.methodsClass !== 'undefined' &&
                             cls.methodsClass.length > 0
                         ) {
-                            let newMethods = structuredClone(cls.methodsClass);
+                            let newMethods = deepClone(cls.methodsClass);
                             newMethods = this.markInheritance(newMethods, cls);
                             if (typeof component.methodsClass !== 'undefined') {
                                 this.mergeInheritance(component, 'methodsClass', newMethods);
@@ -78,7 +78,7 @@ export class ExtendsMerger {
                             typeof cls.propertiesClass !== 'undefined' &&
                             cls.propertiesClass.length > 0
                         ) {
-                            let newProperties = structuredClone(cls.propertiesClass);
+                            let newProperties = deepClone(cls.propertiesClass);
                             newProperties = this.markInheritance(newProperties, cls);
                             if (typeof component.propertiesClass !== 'undefined') {
                                 this.mergeInheritance(component, 'propertiesClass', newProperties);
@@ -88,7 +88,7 @@ export class ExtendsMerger {
                             typeof cls.hostBindings !== 'undefined' &&
                             cls.hostBindings.length > 0
                         ) {
-                            let newHostBindings = structuredClone(cls.hostBindings);
+                            let newHostBindings = deepClone(cls.hostBindings);
                             newHostBindings = this.markInheritance(newHostBindings, cls);
                             if (typeof component.hostBindings !== 'undefined') {
                                 this.mergeInheritance(component, 'hostBindings', newHostBindings);
@@ -98,7 +98,7 @@ export class ExtendsMerger {
                             typeof cls.hostListeners !== 'undefined' &&
                             cls.hostListeners.length > 0
                         ) {
-                            let newHostListeners = structuredClone(cls.hostListeners);
+                            let newHostListeners = deepClone(cls.hostListeners);
                             newHostListeners = this.markInheritance(newHostListeners, cls);
                             if (typeof component.hostListeners !== 'undefined') {
                                 this.mergeInheritance(component, 'hostListeners', newHostListeners);
@@ -128,14 +128,14 @@ export class ExtendsMerger {
                 if (ext) {
                     const recursiveScanWithInheritance = cls => {
                         if (typeof cls.methods !== 'undefined' && cls.methods.length > 0) {
-                            let newMethods = structuredClone(cls.methods);
+                            let newMethods = deepClone(cls.methods);
                             newMethods = this.markInheritance(newMethods, cls);
                             if (typeof el.methods !== 'undefined') {
                                 this.mergeInheritance(el, 'methods', newMethods);
                             }
                         }
                         if (typeof cls.properties !== 'undefined' && cls.properties.length > 0) {
-                            let newProperties = structuredClone(cls.properties);
+                            let newProperties = deepClone(cls.properties);
                             newProperties = this.markInheritance(newProperties, cls);
                             if (typeof el.properties !== 'undefined') {
                                 this.mergeInheritance(el, 'properties', newProperties);

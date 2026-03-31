@@ -13,6 +13,16 @@ export const shell = spawnSync;
 export const shellAsync = spawn;
 export { spawn, exec, fs, path, pkg };
 
+/**
+ * Checks if stderr contains a real error (not just ANSI codes/whitespace from fancy-log).
+ * fancy-log writes all output to stderr, so normal info/debug messages appear there.
+ */
+export function hasStderrError(stderr: string): boolean {
+    // Strip ANSI escape codes and check if anything meaningful remains
+    const stripped = stderr.replace(/\x1b\[[0-9;]*m/g, '').trim();
+    return stripped.length > 0;
+}
+
 export function read(file: string, encoding = null): string {
     return fs.readFileSync(file, encoding).toString();
 }

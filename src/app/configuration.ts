@@ -41,7 +41,7 @@ export class Configuration implements ConfigurationInterface {
         injectables: [],
         interceptors: [],
         guards: [],
-        miscellaneous: [],
+        miscellaneous: { variables: [], functions: [], typealiases: [], enumerations: [] },
         routes: [],
         tsconfig: '',
         toggleMenuItems: COMPODOC_DEFAULTS.toggleMenuItems,

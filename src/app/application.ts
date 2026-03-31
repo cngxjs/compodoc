@@ -1,5 +1,4 @@
 import babel from '@babel/core';
-import chokidar from 'chokidar';
 import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as LiveServer from '@compodoc/live-server';
@@ -3039,7 +3038,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         }
     }
 
-    public runWatch() {
+    public async runWatch() {
         let sources = [findMainSourceFolder(this.files)];
         let watcherReady = false;
 
@@ -3058,6 +3057,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         // Check all elements of sources list exist
         sources = cleanSourcesForWatch(sources);
 
+        const { default: chokidar } = await import('chokidar');
         const watcher = chokidar.watch(sources, {
             awaitWriteFinish: true,
             ignoreInitial: true,

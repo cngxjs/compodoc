@@ -10,7 +10,8 @@ export default {
     output: {
         sourcemap: 'inline',
         format: 'cjs',
-        dir: 'dist'
+        dir: 'dist',
+        dynamicImportInCjs: false
     },
     plugins: [
         json(),

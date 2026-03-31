@@ -241,7 +241,7 @@ export class JsdocParserUtil {
 
         // Pull parameter comments from declaring function as well
         if (ts.isParameter(node)) {
-            cache = [...cache, ...this.getJSDocParameterTags(node)];
+            cache = [...cache, ...(this.getJSDocParameterTags(node) ?? [])];
         }
 
         if (this.isVariableLike(node) && (node as any).initializer) {
