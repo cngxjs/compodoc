@@ -9,8 +9,6 @@ export const TRANSLATION_RU_RU = {
     component: 'Компонент',
     components: 'Компоненты',
     constructor: 'Конструктор',
-    controllers: 'Контроллеры',
-    controller: 'Контроллер',
     'coverage-page-title': 'Покрытие документацией',
     declarations: 'Декларации',
     decorators: 'Декораторы',

@@ -1,7 +1,5 @@
 const Handlebars = require('handlebars');
 
-import * as _ from 'lodash';
-
 import { BreakCommaHelper } from './html-engine-helpers/break-comma.helper';
 import { BreakLinesHelper } from './html-engine-helpers/break-lines.helper';
 import { CapitalizeHelper } from './html-engine-helpers/capitalize.helper';
@@ -87,7 +85,7 @@ export class HtmlEngineHelpers {
     private registerHelper(bars, key: string, helper: IHtmlEngineHelper) {
         Handlebars.registerHelper(key, function () {
             // tslint:disable-next-line:no-invalid-this
-            return helper.helperFunc.apply(helper, [this, ..._.slice(arguments as any)]);
+            return helper.helperFunc.apply(helper, [this, ...Array.from(arguments as any)]);
         });
     }
 }

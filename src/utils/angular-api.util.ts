@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { IApiSourceResult } from './api-source-result.interface';
 import * as path from 'path';
 
@@ -26,8 +25,8 @@ export class AngularApiUtil {
 
     public findApi(type: string): IApiSourceResult<IAngularMainApi> {
         let foundedApi;
-        _.forEach(AngularAPIs, mainApi => {
-            _.forEach(mainApi.items, api => {
+        AngularAPIs.forEach(mainApi => {
+            mainApi.items.forEach(api => {
                 if (api.title === type) {
                     foundedApi = api;
                 }

@@ -1,6 +1,5 @@
 import * as path from 'path';
 
-import * as _ from 'lodash';
 import { Project, ts, SyntaxKind } from 'ts-morph';
 
 import { IsKindType, kindToType } from '../../utils/kind-to-type';
@@ -248,7 +247,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             // Add variable
                             newVar.forEach(newEle => {
                                 if (
-                                    typeof _.find(initialArray, { name: newEle.name }) ===
+                                    typeof initialArray.find(el => el.name === newEle.name) ===
                                     'undefined'
                                 ) {
                                     initialArray.push(newEle);
@@ -608,7 +607,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             }
                             deps = injectableDeps;
                             if (typeof IO.ignore === 'undefined') {
-                                if (_.includes(IO.implements, 'HttpInterceptor')) {
+                                if (IO.implements.includes('HttpInterceptor')) {
                                     injectableDeps.type = 'interceptor';
                                     outputSymbols.interceptors.push(injectableDeps);
                                 } else if (this.isGuard(IO.implements)) {
@@ -956,7 +955,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             }
                             if (resultNode) {
                                 if (resultNode.arguments.length > 0) {
-                                    _.forEach(resultNode.arguments, (argument: any) => {
+                                    resultNode.arguments.forEach((argument: any) => {
                                         if (argument.text) {
                                             rootModule = argument.text;
                                         }
@@ -1192,11 +1191,9 @@ export class AngularDependencies extends FrameworkDependencies {
      * @param store Store
      */
     private addNewEntityInStore(entity, store) {
-        const findSameEntityInStore = _.filter(store, {
-            name: entity.name,
-            id: entity.id,
-            file: entity.file
-        });
+        const findSameEntityInStore = store.filter(el =>
+            el.name === entity.name && el.id === entity.id && el.file === entity.file
+        );
         if (findSameEntityInStore.length === 0) {
             store.push(entity);
         }
@@ -1229,7 +1226,7 @@ export class AngularDependencies extends FrameworkDependencies {
     }
 
     private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
-        _.forEach(tags, tag => {
+        tags.forEach(tag => {
             if (tag.tagName && tag.tagName.text) {
                 if (tag.tagName.text.indexOf('deprecated') > -1) {
                     result.deprecated = true;
@@ -1287,7 +1284,7 @@ export class AngularDependencies extends FrameworkDependencies {
     private parseDecorators(decorators, type: string): boolean {
         let result = false;
         if (decorators.length > 1) {
-            _.forEach(decorators, function (decorator: any) {
+            decorators.forEach(function (decorator: any) {
                 if (decorator.expression.expression) {
                     if (decorator.expression.expression.text === type) {
                         result = true;
@@ -1335,7 +1332,7 @@ export class AngularDependencies extends FrameworkDependencies {
     }
 
     private isModule(metadata) {
-        return this.parseDecorator(metadata, 'NgModule') || this.parseDecorator(metadata, 'Module');
+        return this.parseDecorator(metadata, 'NgModule');
     }
 
     private hasInternalDecorator(metadatas) {
@@ -1344,18 +1341,17 @@ export class AngularDependencies extends FrameworkDependencies {
             this.parseDecorators(metadatas, 'Pipe') ||
             this.parseDecorators(metadatas, 'Directive') ||
             this.parseDecorators(metadatas, 'Injectable') ||
-            this.parseDecorators(metadatas, 'NgModule') ||
-            this.parseDecorators(metadatas, 'Module')
+            this.parseDecorators(metadatas, 'NgModule')
         );
     }
 
     private isGuard(ioImplements: string[]): boolean {
         return (
-            _.includes(ioImplements, 'CanActivate') ||
-            _.includes(ioImplements, 'CanActivateChild') ||
-            _.includes(ioImplements, 'CanDeactivate') ||
-            _.includes(ioImplements, 'Resolve') ||
-            _.includes(ioImplements, 'CanLoad')
+            ioImplements.includes('CanActivate') ||
+            ioImplements.includes('CanActivateChild') ||
+            ioImplements.includes('CanDeactivate') ||
+            ioImplements.includes('Resolve') ||
+            ioImplements.includes('CanLoad')
         );
     }
 
@@ -1561,8 +1557,8 @@ export class AngularDependencies extends FrameworkDependencies {
                     })
                     .reverse();
                 if (
-                    _.indexOf(kinds, SyntaxKind.PublicKeyword) !== -1 &&
-                    _.indexOf(kinds, SyntaxKind.StaticKeyword) !== -1
+                    kinds.indexOf(SyntaxKind.PublicKeyword) !== -1 &&
+                    kinds.indexOf(SyntaxKind.StaticKeyword) !== -1
                 ) {
                     kinds = kinds.filter(kind => kind !== SyntaxKind.PublicKeyword);
                 }
@@ -1571,7 +1567,7 @@ export class AngularDependencies extends FrameworkDependencies {
         if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
             this.checkForDeprecation(jsdoctags[0].tags, result);
             result.jsdoctags = markedtags(jsdoctags[0].tags);
-            _.forEach(jsdoctags[0].tags, tag => {
+            jsdoctags[0].tags.forEach(tag => {
                 if (tag.tagName) {
                     if (tag.tagName.text) {
                         if (tag.tagName.text.indexOf('ignore') > -1) {

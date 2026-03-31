@@ -1,6 +1,5 @@
 // @ts-nocheck
 
-import * as _ from 'lodash';
 
 import { ts, SyntaxKind } from 'ts-morph';
 

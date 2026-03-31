@@ -9,8 +9,6 @@ export const TRANSLATION_HU_HU = {
     component: 'Komponens',
     components: 'Komponensek',
     constructor: 'Konstruktor',
-    controllers: 'Kontrollerek',
-    controller: 'Kontroller',
     'coverage-page-title': 'Dokumentáció lefedettség',
     declarations: 'Deklarációk',
     decorators: 'Dekorátorok',

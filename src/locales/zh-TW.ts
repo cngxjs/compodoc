@@ -9,8 +9,6 @@ export const TRANSLATION_ZH_TW = {
     component: '元件',
     components: '元件列表',
     constructor: '建構式方法',
-    controllers: 'Controllers',
-    controller: 'Controller',
     'coverage-page-title': '覆蓋率頁面標題',
     declarations: 'Declarations',
     decorators: '裝飾器列表',

@@ -17,7 +17,7 @@ export class EntityDepFactory {
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
         const infos: IEntityDep = {
             name,
-            id: 'controller-' + name + '-' + hash,
+            id: 'entity-' + name + '-' + hash,
             file: file,
             type: 'entity',
             description: IO.description,

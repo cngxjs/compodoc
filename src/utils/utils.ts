@@ -1,5 +1,4 @@
 import * as fs from 'fs-extra';
-import * as _ from 'lodash';
 import * as path from 'path';
 import { ts } from 'ts-morph';
 
@@ -37,7 +36,7 @@ export const formatDiagnosticsHost: ts.FormatDiagnosticsHost = {
 export function markedtags(tags: Array<any>) {
     const jsdocParserUtil = new JsdocParserUtil();
     let mtags = tags;
-    _.forEach(mtags, tag => {
+    mtags.forEach(tag => {
         const rawComment = jsdocParserUtil.parseJSDocNode(tag);
         tag.comment = markedAcl(LinkParser.resolveLinks(rawComment));
     });
@@ -45,13 +44,13 @@ export function markedtags(tags: Array<any>) {
 }
 
 export function mergeTagsAndArgs(args: Array<any>, jsdoctags?: Array<any>): Array<any> {
-    let margs = _.cloneDeep(args);
-    _.forEach(margs, arg => {
+    let margs = structuredClone(args);
+    margs.forEach(arg => {
         arg.tagName = {
             text: 'param'
         };
         if (jsdoctags) {
-            _.forEach(jsdoctags, jsdoctag => {
+            jsdoctags.forEach(jsdoctag => {
                 if (jsdoctag.name && jsdoctag.name.text === arg.name) {
                     arg.tagName = jsdoctag.tagName;
                     arg.name = jsdoctag.name;
@@ -63,7 +62,7 @@ export function mergeTagsAndArgs(args: Array<any>, jsdoctags?: Array<any>): Arra
     });
     // Add example & returns & private
     if (jsdoctags) {
-        _.forEach(jsdoctags, jsdoctag => {
+        jsdoctags.forEach(jsdoctag => {
             if (
                 jsdoctag.tagName &&
                 (jsdoctag.tagName.text === 'example' || jsdoctag.tagName.text === 'private')
@@ -239,7 +238,7 @@ export function findMainSourceFolder(files: string[]) {
         return path.dirname(shortPath);
     });
     let folders = {};
-    rawFolders = _.uniq(rawFolders);
+    rawFolders = [...new Set(rawFolders)];
 
     for (let i = 0; i < rawFolders.length; i++) {
         let sep = rawFolders[i].split(path.sep);

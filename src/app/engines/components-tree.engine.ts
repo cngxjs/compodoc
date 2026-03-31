@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import * as path from 'path';
 
 import { logger } from '../../utils/logger';
@@ -62,9 +61,9 @@ class ComponentsTreeEngine {
 
     private findChildrenAndParents() {
         return new Promise((resolve, reject) => {
-            _.forEach(this.componentsForTree, component => {
+            this.componentsForTree.forEach(component => {
                 let $component = cheerio(component.templateData);
-                _.forEach(this.componentsForTree, componentToFind => {
+                this.componentsForTree.forEach(componentToFind => {
                     if ($component.find(componentToFind.selector).length > 0) {
                         console.log(componentToFind.name + ' found in ' + component.name);
                         component.children.push(componentToFind.name);
@@ -77,7 +76,7 @@ class ComponentsTreeEngine {
 
     private createTreesForComponents() {
         return new Promise((resolve, reject) => {
-            _.forEach(this.components, component => {
+            this.components.forEach(component => {
                 let _component = {
                     name: component.name,
                     file: component.file,

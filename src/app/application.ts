@@ -1,6 +1,5 @@
 import * as fs from 'fs-extra';
 import * as LiveServer from '@compodoc/live-server';
-import * as _ from 'lodash';
 import * as path from 'path';
 
 import { SyntaxKind } from 'ts-morph';
@@ -173,7 +172,7 @@ export class Application {
     public hasWatchedFilesTSFiles(): boolean {
         let result = false;
 
-        _.forEach(this.updatedFiles, file => {
+        this.updatedFiles.forEach(file => {
             if (path.extname(file) === '.ts') {
                 result = true;
             }
@@ -189,7 +188,7 @@ export class Application {
     public hasWatchedFilesRootMarkdownFiles(): boolean {
         let result = false;
 
-        _.forEach(this.updatedFiles, file => {
+        this.updatedFiles.forEach(file => {
             if (path.extname(file) === '.md' && path.dirname(file) === cwd) {
                 result = true;
             }
@@ -1062,7 +1061,7 @@ export class Application {
                     );
                 });
                 // Try fixing type undefined for each providers
-                _.forEach(ngModule.providers, provider => {
+                ngModule.providers.forEach(provider => {
                     if (
                         DependenciesEngine.getInjectables().find(
                             injectable => (injectable as any).name === provider.name
@@ -1079,22 +1078,16 @@ export class Application {
                     }
                 });
                 // Order things
-                ngModule.compodocLinks.components = _.sortBy(ngModule.compodocLinks.components, [
-                    'name'
-                ]);
-                ngModule.compodocLinks.directives = _.sortBy(ngModule.compodocLinks.directives, [
-                    'name'
-                ]);
-                ngModule.compodocLinks.injectables = _.sortBy(ngModule.compodocLinks.injectables, [
-                    'name'
-                ]);
-                ngModule.compodocLinks.pipes = _.sortBy(ngModule.compodocLinks.pipes, ['name']);
+                ngModule.compodocLinks.components = [...ngModule.compodocLinks.components].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.compodocLinks.directives = [...ngModule.compodocLinks.directives].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.compodocLinks.injectables = [...ngModule.compodocLinks.injectables].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.compodocLinks.pipes = [...ngModule.compodocLinks.pipes].sort((a, b) => a.name.localeCompare(b.name));
 
-                ngModule.declarations = _.sortBy(ngModule.declarations, ['name']);
-                ngModule.entryComponents = _.sortBy(ngModule.entryComponents, ['name']);
-                ngModule.providers = _.sortBy(ngModule.providers, ['name']);
-                ngModule.imports = _.sortBy(ngModule.imports, ['name']);
-                ngModule.exports = _.sortBy(ngModule.exports, ['name']);
+                ngModule.declarations = [...ngModule.declarations].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.entryComponents = [...ngModule.entryComponents].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.providers = [...ngModule.providers].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.imports = [...ngModule.imports].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.exports = [...ngModule.exports].sort((a, b) => a.name.localeCompare(b.name));
 
                 return ngModule;
             });
@@ -1382,15 +1375,15 @@ export class Application {
         const hasCustomNavTabConfig = navTabConfig.length !== 0;
         navTabConfig =
             navTabConfig.length === 0
-                ? _.cloneDeep(COMPODOC_CONSTANTS.navTabDefinitions)
+                ? structuredClone(COMPODOC_CONSTANTS.navTabDefinitions)
                 : navTabConfig;
         const matchDepType = (depType: string) => {
             return depType === 'all' || depType === dependency.type;
         };
 
         let navTabs = [];
-        _.forEach(navTabConfig, customTab => {
-            const navTab = _.find(COMPODOC_CONSTANTS.navTabDefinitions, { id: customTab.id });
+        navTabConfig.forEach(customTab => {
+            const navTab = COMPODOC_CONSTANTS.navTabDefinitions.find(t => t.id === customTab.id);
             if (!navTab) {
                 throw new Error(`Invalid tab ID '${customTab.id}' specified in tab configuration`);
             }
@@ -1402,7 +1395,7 @@ export class Application {
             }
 
             // is tab applicable to target dependency?
-            if (-1 === _.findIndex(navTab.depTypes, matchDepType)) {
+            if (-1 === navTab.depTypes.findIndex(matchDepType)) {
                 return;
             }
 
@@ -1814,7 +1807,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 return status;
             };
             const processComponentsAndDirectivesAndControllersAndEntities = list => {
-                _.forEach(list, (el: any) => {
+                list.forEach((el: any) => {
                     const element = (Object as any).assign({}, el);
                     if (!element.propertiesClass) {
                         element.propertiesClass = [];
@@ -1864,7 +1857,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         totalStatementDocumented += 1;
                     }
 
-                    _.forEach(element.propertiesClass, (property: any) => {
+                    element.propertiesClass.forEach((property: any) => {
                         if (property.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -1877,7 +1870,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.methodsClass, (method: any) => {
+                    element.methodsClass.forEach((method: any) => {
                         if (method.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -1890,7 +1883,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.hostBindings, (property: any) => {
+                    element.hostBindings.forEach((property: any) => {
                         if (property.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -1903,7 +1896,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.hostListeners, (method: any) => {
+                    element.hostListeners.forEach((method: any) => {
                         if (method.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -1916,7 +1909,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.inputsClass, (input: any) => {
+                    element.inputsClass.forEach((input: any) => {
                         if (input.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -1929,7 +1922,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.outputsClass, (output: any) => {
+                    element.outputsClass.forEach((output: any) => {
                         if (output.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -1987,7 +1980,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 };
             };
             let processFunctionsAndVariables = (id, type) => {
-                _.forEach(id, (el: any) => {
+                id.forEach((el: any) => {
                     let cl: any = {
                         filePath: el.file,
                         type: type,
@@ -2024,7 +2017,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             };
 
             let processClasses = (list, type, linktype) => {
-                _.forEach(list, (cl: any) => {
+                list.forEach((cl: any) => {
                     let element = (Object as any).assign({}, cl);
                     if (!element.properties) {
                         element.properties = [];
@@ -2055,7 +2048,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         totalStatementDocumented += 1;
                     }
 
-                    _.forEach(element.properties, (property: any) => {
+                    element.properties.forEach((property: any) => {
                         if (property.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -2068,7 +2061,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.methods, (method: any) => {
+                    element.methods.forEach((method: any) => {
                         if (method.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -2111,7 +2104,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             processClasses(Configuration.mainData.guards, 'guard', 'guard');
             processClasses(Configuration.mainData.interceptors, 'interceptor', 'interceptor');
 
-            _.forEach(Configuration.mainData.pipes, (pipe: any) => {
+            Configuration.mainData.pipes.forEach((pipe: any) => {
                 let cl: any = {
                     filePath: pipe.file,
                     type: pipe.type,
@@ -2144,7 +2137,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 'type alias'
             );
 
-            files = _.sortBy(files, ['filePath']);
+            files = [...files].sort((a, b) => a.filePath.localeCompare(b.filePath));
 
             let coverageData = {
                 count:
@@ -2173,7 +2166,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     coverageData
                 );
             }
-            files = _.sortBy(files, ['coveragePercent']);
+            files = [...files].sort((a, b) => a.coveragePercent - b.coveragePercent);
 
             let coverageTestPerFileResults;
             if (
@@ -2302,7 +2295,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 logger.warn('Missing documentation coverage data');
             } else {
                 covDat = {};
-                covFileNames = _.map(coverageData.files, el => {
+                covFileNames = coverageData.files.map(el => {
                     let fileName = path.normalize(el.filePath);
                     covDat[fileName] = {
                         type: el.type,
@@ -2343,18 +2336,18 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         // need a name to include in output but this isn't visible
                         out = { name: fileName, filePath: fileName };
                     } else {
-                        const findMatch = _.filter(covFileNames, el => {
+                        const findMatch = covFileNames.filter(el => {
                             const normalizedFilename = path.normalize(fileName).replace(/\\/g, '/');
                             return el.includes(fileName) || normalizedFilename.includes(el);
                         });
                         if (findMatch.length > 0) {
-                            out = _.clone(covDat[findMatch[0]]);
+                            out = { ...covDat[findMatch[0]] };
                             out['filePath'] = fileName;
                         }
                     }
                 }
                 let keysToGet = ['statements', 'branches', 'functions', 'lines'];
-                _.forEach(keysToGet, key => {
+                keysToGet.forEach(key => {
                     if (data[key]) {
                         let t = data[key];
                         out[key] = {
@@ -2392,7 +2385,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
             if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
                 let keysToGet = ['statements', 'branches', 'functions', 'lines'];
-                _.forEach(keysToGet, key => {
+                keysToGet.forEach(key => {
                     if (unitTestData['total'][key]) {
                         HtmlEngine.generateCoverageBadge(Configuration.mainData.output, key, {
                             count: unitTestData['total'][key]['coveragePercent'],
@@ -2592,7 +2585,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
     }
 
     public processPages() {
-        let pages = _.sortBy(Configuration.pages, ['name']);
+        let pages = [...Configuration.pages].sort((a, b) => a.name.localeCompare(b.name));
 
         logger.info('Process pages');
         Promise.all(pages.map(page => this.processPage(page)))

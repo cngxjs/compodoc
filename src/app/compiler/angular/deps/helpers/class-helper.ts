@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 import { ts, SyntaxKind } from 'ts-morph';
 
 import { getNamesCompareFn, mergeTagsAndArgs, markedtags } from '../../../../../utils/utils';
@@ -42,7 +40,7 @@ export class ClassHelper {
     }
 
     private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
-        _.forEach(tags, tag => {
+        tags.forEach(tag => {
             if (tag.tagName && tag.tagName.text) {
                 if (tag.tagName.text.indexOf('deprecated') > -1) {
                     result.deprecated = true;
@@ -118,8 +116,8 @@ export class ClassHelper {
         }
         let kinds = node.modifiers.map(modifier => modifier.kind);
         if (
-            _.indexOf(kinds, SyntaxKind.PublicKeyword) !== -1 &&
-            _.indexOf(kinds, SyntaxKind.StaticKeyword) !== -1
+            kinds.indexOf(SyntaxKind.PublicKeyword) !== -1 &&
+            kinds.indexOf(SyntaxKind.StaticKeyword) !== -1
         ) {
             kinds = kinds.filter(kind => kind !== SyntaxKind.PublicKeyword);
         }
@@ -189,7 +187,7 @@ export class ClassHelper {
     private formatDecorators(decorators) {
         let _decorators = [];
 
-        _.forEach(decorators, (decorator: any) => {
+        decorators.forEach((decorator: any) => {
             if (decorator.expression) {
                 if (decorator.expression.text) {
                     _decorators.push({ name: decorator.expression.text });
@@ -523,7 +521,7 @@ export class ClassHelper {
     }
 
     private isModuleDecorator(decorator) {
-        return this.hasDecoratorType(decorator, 'NgModule', 'Module');
+        return this.hasDecoratorType(decorator, 'NgModule');
     }
 
     /**

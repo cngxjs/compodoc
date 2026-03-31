@@ -9,8 +9,6 @@ export const TRANSLATION_BG_BG = {
     component: 'Компонент',
     components: 'Компоненти',
     constructor: 'Конструктор',
-    controllers: 'Контролери',
-    controller: 'Контролер',
     'coverage-page-title': 'Coverage на документацията',
     declarations: 'Декларации',
     decorators: 'Декоратори',

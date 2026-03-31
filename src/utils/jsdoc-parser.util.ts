@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { ts, SyntaxKind } from 'ts-morph';
 
 import * as _ts from './ts-internal';
@@ -179,7 +178,7 @@ export class JsdocParserUtil {
                         result.push(doc);
                     }
                 } else if (ts.isJSDoc(doc)) {
-                    result.push(..._.filter(doc.tags, tag => tag.kind === kind));
+                    result.push(...doc.tags.filter(tag => tag.kind === kind));
                 } else {
                     throw new Error('Unexpected type');
                 }
@@ -242,19 +241,19 @@ export class JsdocParserUtil {
 
         // Pull parameter comments from declaring function as well
         if (ts.isParameter(node)) {
-            cache = _.concat(cache, this.getJSDocParameterTags(node));
+            cache = [...cache, ...this.getJSDocParameterTags(node)];
         }
 
         if (this.isVariableLike(node) && (node as any).initializer) {
             const initializerJsDoc = ((node as any).initializer as any).jsDoc;
             if (initializerJsDoc) {
-                cache = _.concat(cache, initializerJsDoc);
+                cache = [...cache, ...initializerJsDoc];
             }
         }
 
         const nodeJsDoc = (node as any).jsDoc;
         if (nodeJsDoc) {
-            cache = _.concat(cache, nodeJsDoc);
+            cache = [...cache, ...nodeJsDoc];
         }
 
         return cache;
@@ -272,14 +271,14 @@ export class JsdocParserUtil {
         if (!param.name) {
             // this is an anonymous jsdoc param from a `function(type1, type2): type3` specification
             const i = func.parameters.indexOf(param);
-            const paramTags = _.filter(tags, tag => ts.isJSDocParameterTag(tag));
+            const paramTags = tags.filter(tag => ts.isJSDocParameterTag(tag));
 
             if (paramTags && 0 <= i && i < paramTags.length) {
                 return [paramTags[i]];
             }
         } else if (ts.isIdentifier(param.name)) {
             const name = param.name.text;
-            return _.filter(tags, tag => {
+            return tags.filter(tag => {
                 if (ts && ts.isJSDocParameterTag(tag)) {
                     const t = tag as any;
                     if (typeof t.parameterName !== 'undefined') {

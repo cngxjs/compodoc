@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 import { MiscellaneousData } from '../interfaces/miscellaneous-data.interface';
 import { ParsedData } from '../interfaces/parsed-data.interface';
 import { RouteInterface } from '../interfaces/routes.interface';
@@ -123,18 +121,18 @@ export class DependenciesEngine {
             }
         });
         this.rawData = data;
-        this.modules = _.sortBy(this.rawData.modules, [el => el.name.toLowerCase()]);
-        this.rawModulesForOverview = _.sortBy(data.modulesForGraph, [el => el.name.toLowerCase()]);
-        this.rawModules = _.sortBy(data.modulesForGraph, [el => el.name.toLowerCase()]);
-        this.components = _.sortBy(this.rawData.components, [el => el.name.toLowerCase()]);
-        this.entities = _.sortBy(this.rawData.entities, [el => el.name.toLowerCase()]);
-        this.directives = _.sortBy(this.rawData.directives, [el => el.name.toLowerCase()]);
-        this.injectables = _.sortBy(this.rawData.injectables, [el => el.name.toLowerCase()]);
-        this.interceptors = _.sortBy(this.rawData.interceptors, [el => el.name.toLowerCase()]);
-        this.guards = _.sortBy(this.rawData.guards, [el => el.name.toLowerCase()]);
-        this.interfaces = _.sortBy(this.rawData.interfaces, [el => el.name.toLowerCase()]);
-        this.pipes = _.sortBy(this.rawData.pipes, [el => el.name.toLowerCase()]);
-        this.classes = _.sortBy(this.rawData.classes, [el => el.name.toLowerCase()]);
+        this.modules = [...this.rawData.modules].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.rawModulesForOverview = [...data.modulesForGraph].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.rawModules = [...data.modulesForGraph].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.components = [...this.rawData.components].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.entities = [...this.rawData.entities].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.directives = [...this.rawData.directives].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.injectables = [...this.rawData.injectables].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.interceptors = [...this.rawData.interceptors].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.guards = [...this.rawData.guards].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.interfaces = [...this.rawData.interfaces].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.pipes = [...this.rawData.pipes].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.classes = [...this.rawData.classes].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
         this.miscellaneous = this.rawData.miscellaneous;
         this.prepareMiscellaneous();
         this.updateModulesDeclarationsExportsTypes();
@@ -225,7 +223,7 @@ export class DependenciesEngine {
 
     private manageDuplicatesName() {
         const processDuplicates = (element, index, array) => {
-            const elementsWithSameName = _.filter(array, { name: element.name });
+            const elementsWithSameName = array.filter(el => (el as any).name === (element as any).name);
             if (elementsWithSameName.length > 1) {
                 // First element is the reference for duplicates
                 for (let i = 1; i < elementsWithSameName.length; i++) {
@@ -288,62 +286,62 @@ export class DependenciesEngine {
 
     public update(updatedData): void {
         if (updatedData.modules.length > 0) {
-            _.forEach(updatedData.modules, (module: IModuleDep) => {
-                const _index = _.findIndex(this.modules, { name: module.name } as any);
+            updatedData.modules.forEach((module: IModuleDep) => {
+                const _index = this.modules.findIndex(m => (m as any).name === module.name);
                 this.modules[_index] = module;
             });
         }
         if (updatedData.components.length > 0) {
-            _.forEach(updatedData.components, (component: IComponentDep) => {
-                const _index = _.findIndex(this.components, { name: component.name } as any);
+            updatedData.components.forEach((component: IComponentDep) => {
+                const _index = this.components.findIndex(c => (c as any).name === component.name);
                 this.components[_index] = component;
             });
         }
         if (updatedData.entities.length > 0) {
-            _.forEach(updatedData.entities, (entity: any) => {
-                const _index = _.findIndex(this.entities, { name: entity.name } as any);
+            updatedData.entities.forEach((entity: any) => {
+                const _index = this.entities.findIndex(e => (e as any).name === entity.name);
                 this.entities[_index] = entity;
             });
         }
         if (updatedData.directives.length > 0) {
-            _.forEach(updatedData.directives, (directive: IDirectiveDep) => {
-                const _index = _.findIndex(this.directives, { name: directive.name } as any);
+            updatedData.directives.forEach((directive: IDirectiveDep) => {
+                const _index = this.directives.findIndex(d => (d as any).name === directive.name);
                 this.directives[_index] = directive;
             });
         }
         if (updatedData.injectables.length > 0) {
-            _.forEach(updatedData.injectables, (injectable: IInjectableDep) => {
-                const _index = _.findIndex(this.injectables, { name: injectable.name } as any);
+            updatedData.injectables.forEach((injectable: IInjectableDep) => {
+                const _index = this.injectables.findIndex(i => (i as any).name === injectable.name);
                 this.injectables[_index] = injectable;
             });
         }
         if (updatedData.interceptors.length > 0) {
-            _.forEach(updatedData.interceptors, (interceptor: IInterceptorDep) => {
-                const _index = _.findIndex(this.interceptors, { name: interceptor.name } as any);
+            updatedData.interceptors.forEach((interceptor: IInterceptorDep) => {
+                const _index = this.interceptors.findIndex(i => (i as any).name === interceptor.name);
                 this.interceptors[_index] = interceptor;
             });
         }
         if (updatedData.guards.length > 0) {
-            _.forEach(updatedData.guards, (guard: IGuardDep) => {
-                const _index = _.findIndex(this.guards, { name: guard.name } as any);
+            updatedData.guards.forEach((guard: IGuardDep) => {
+                const _index = this.guards.findIndex(g => (g as any).name === guard.name);
                 this.guards[_index] = guard;
             });
         }
         if (updatedData.interfaces.length > 0) {
-            _.forEach(updatedData.interfaces, (int: IInterfaceDep) => {
-                const _index = _.findIndex(this.interfaces, { name: int.name } as any);
+            updatedData.interfaces.forEach((int: IInterfaceDep) => {
+                const _index = this.interfaces.findIndex(i => (i as any).name === int.name);
                 this.interfaces[_index] = int;
             });
         }
         if (updatedData.pipes.length > 0) {
-            _.forEach(updatedData.pipes, (pipe: IPipeDep) => {
-                const _index = _.findIndex(this.pipes, { name: pipe.name } as any);
+            updatedData.pipes.forEach((pipe: IPipeDep) => {
+                const _index = this.pipes.findIndex(p => (p as any).name === pipe.name);
                 this.pipes[_index] = pipe;
             });
         }
         if (updatedData.classes.length > 0) {
-            _.forEach(updatedData.classes, (classe: any) => {
-                const _index = _.findIndex(this.classes, { name: classe.name } as any);
+            updatedData.classes.forEach((classe: any) => {
+                const _index = this.classes.findIndex(c => (c as any).name === classe.name);
                 this.classes[_index] = classe;
             });
         }
@@ -351,38 +349,34 @@ export class DependenciesEngine {
          * Miscellaneous update
          */
         if (updatedData.miscellaneous.variables.length > 0) {
-            _.forEach(updatedData.miscellaneous.variables, (variable: any) => {
-                const _index = _.findIndex(this.miscellaneous.variables, {
-                    name: variable.name,
-                    file: variable.file
-                });
+            updatedData.miscellaneous.variables.forEach((variable: any) => {
+                const _index = this.miscellaneous.variables.findIndex(v =>
+                    v.name === variable.name && v.file === variable.file
+                );
                 this.miscellaneous.variables[_index] = variable;
             });
         }
         if (updatedData.miscellaneous.functions.length > 0) {
-            _.forEach(updatedData.miscellaneous.functions, (func: IFunctionDecDep) => {
-                const _index = _.findIndex(this.miscellaneous.functions, {
-                    name: func.name,
-                    file: func.file
-                });
+            updatedData.miscellaneous.functions.forEach((func: IFunctionDecDep) => {
+                const _index = this.miscellaneous.functions.findIndex(f =>
+                    f.name === func.name && f.file === func.file
+                );
                 this.miscellaneous.functions[_index] = func;
             });
         }
         if (updatedData.miscellaneous.typealiases.length > 0) {
-            _.forEach(updatedData.miscellaneous.typealiases, (typealias: ITypeAliasDecDep) => {
-                const _index = _.findIndex(this.miscellaneous.typealiases, {
-                    name: typealias.name,
-                    file: typealias.file
-                });
+            updatedData.miscellaneous.typealiases.forEach((typealias: ITypeAliasDecDep) => {
+                const _index = this.miscellaneous.typealiases.findIndex(t =>
+                    t.name === typealias.name && t.file === typealias.file
+                );
                 this.miscellaneous.typealiases[_index] = typealias;
             });
         }
         if (updatedData.miscellaneous.enumerations.length > 0) {
-            _.forEach(updatedData.miscellaneous.enumerations, (enumeration: IEnumDecDep) => {
-                const _index = _.findIndex(this.miscellaneous.enumerations, {
-                    name: enumeration.name,
-                    file: enumeration.file
-                });
+            updatedData.miscellaneous.enumerations.forEach((enumeration: IEnumDecDep) => {
+                const _index = this.miscellaneous.enumerations.findIndex(e =>
+                    e.name === enumeration.name && e.file === enumeration.file
+                );
                 this.miscellaneous.enumerations[_index] = enumeration;
             });
         }
@@ -390,24 +384,23 @@ export class DependenciesEngine {
     }
 
     public findInCompodoc(name: string) {
-        const mergedData = _.concat(
-            [],
-            this.modules,
-            this.components,
-            this.entities,
-            this.directives,
-            this.injectables,
-            this.interceptors,
-            this.guards,
-            this.interfaces,
-            this.pipes,
-            this.classes,
-            this.miscellaneous.enumerations,
-            this.miscellaneous.typealiases,
-            this.miscellaneous.variables,
-            this.miscellaneous.functions
-        );
-        const result = _.find(mergedData, { name: name } as any);
+        const mergedData = [
+            ...this.modules,
+            ...this.components,
+            ...this.entities,
+            ...this.directives,
+            ...this.injectables,
+            ...this.interceptors,
+            ...this.guards,
+            ...this.interfaces,
+            ...this.pipes,
+            ...this.classes,
+            ...this.miscellaneous.enumerations,
+            ...this.miscellaneous.typealiases,
+            ...this.miscellaneous.variables,
+            ...this.miscellaneous.functions
+        ];
+        const result = mergedData.find(el => (el as any).name === name);
         return result || false;
     }
 
@@ -417,10 +410,10 @@ export class DependenciesEngine {
         this.miscellaneous.enumerations.sort(getNamesCompareFn());
         this.miscellaneous.typealiases.sort(getNamesCompareFn());
         // group each subgoup by file
-        this.miscellaneous.groupedVariables = _.groupBy(this.miscellaneous.variables, 'file');
-        this.miscellaneous.groupedFunctions = _.groupBy(this.miscellaneous.functions, 'file');
-        this.miscellaneous.groupedEnumerations = _.groupBy(this.miscellaneous.enumerations, 'file');
-        this.miscellaneous.groupedTypeAliases = _.groupBy(this.miscellaneous.typealiases, 'file');
+        this.miscellaneous.groupedVariables = this.miscellaneous.variables.reduce((groups, item) => { (groups[item.file] ??= []).push(item); return groups; }, {});
+        this.miscellaneous.groupedFunctions = this.miscellaneous.functions.reduce((groups, item) => { (groups[item.file] ??= []).push(item); return groups; }, {});
+        this.miscellaneous.groupedEnumerations = this.miscellaneous.enumerations.reduce((groups, item) => { (groups[item.file] ??= []).push(item); return groups; }, {});
+        this.miscellaneous.groupedTypeAliases = this.miscellaneous.typealiases.reduce((groups, item) => { (groups[item.file] ??= []).push(item); return groups; }, {});
     }
 
     private groupByCategory(items: any[]): { [category: string]: any[] } {
@@ -428,7 +421,7 @@ export class DependenciesEngine {
         if (!hasAnyCategory) {
             return {};
         }
-        return _.groupBy(items, item => item.category || '');
+        return items.reduce((groups, item) => { const k = item.category || ''; (groups[k] ??= []).push(item); return groups; }, {});
     }
 
     private prepareCategoryGroups() {
@@ -444,11 +437,11 @@ export class DependenciesEngine {
     }
 
     public getModule(name: string) {
-        return _.find(this.modules, ['name', name]);
+        return this.modules.find(m => (m as any).name === name);
     }
 
     public getRawModule(name: string): any {
-        return _.find(this.rawModules, ['name', name]);
+        return this.rawModules.find(m => (m as any).name === name);
     }
 
     public getModules() {

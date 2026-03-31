@@ -1016,7 +1016,6 @@ export class TemplatePlaygroundServer {
                 'guards': 'Guards',
                 'interceptors': 'Interceptors',
                 'entities': 'Entities',
-                'controllers': 'Controllers',
                 'info': 'Info',
                 'readme': 'Readme',
                 'source': 'Source',

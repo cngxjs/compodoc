@@ -9,8 +9,6 @@ export const TRANSLATION_SK_SK = {
     component: 'Komponent',
     components: 'Komponenty',
     constructor: 'Konštruktor',
-    controllers: 'Controllers',
-    controller: 'Controller',
     'coverage-page-title': 'Pokrytie dokumentáciou',
     declarations: 'Deklarácie',
     decorators: 'Dekorátory',

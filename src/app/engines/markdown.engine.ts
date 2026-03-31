@@ -1,5 +1,4 @@
 import * as fs from 'fs-extra';
-import * as _ from 'lodash';
 import * as path from 'path';
 
 import FileEngine from './file.engine';
@@ -154,7 +153,7 @@ export class MarkdownEngine {
      * ['README'] => ['README', 'README.md']
      */
     private addEndings(files: Array<string>): Array<string> {
-        return _.flatMap(files, x => [x, x + '.md']);
+        return files.flatMap(x => [x, x + '.md']);
     }
 }
 
