@@ -252,7 +252,7 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                         <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                         <span class="icon ion-ios-arrow-down"></span>
                                     </div>
-                                    <ul class="links collapse" ${ isNormalMode ? 'id="components-category-{{@key}}"' : 'id="xs-components-category-{{@key}}"' }>
+                                    <ul class="links collapse in" ${ isNormalMode ? 'id="components-category-{{@key}}"' : 'id="xs-components-category-{{@key}}"' }>
                                         {{#each this}}
                                         <li class="link">
                                             <a href="components/{{#if duplicateName}}{{duplicateName}}{{else}}{{name}}{{/if}}.html" data-type="entity-link" {{#if deprecated}}class="deprecated-name"{{/if}}>{{ name }}</a>
@@ -328,7 +328,7 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                             <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                             <span class="icon ion-ios-arrow-down"></span>
                                         </div>
-                                        <ul class="links collapse" ${ isNormalMode ? 'id="directives-category-{{@key}}"' : 'id="xs-directives-category-{{@key}}"' }>
+                                        <ul class="links collapse in" ${ isNormalMode ? 'id="directives-category-{{@key}}"' : 'id="xs-directives-category-{{@key}}"' }>
                                             {{#each this}}
                                             <li class="link">
                                                 <a href="directives/{{#if duplicateName}}{{duplicateName}}{{else}}{{name}}{{/if}}.html" data-type="entity-link" {{#if deprecated}}class="deprecated-name"{{/if}}>{{ name }}</a>
@@ -365,7 +365,7 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                         <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                         <span class="icon ion-ios-arrow-down"></span>
                                     </div>
-                                    <ul class="links collapse" ${ isNormalMode ? 'id="classes-category-{{@key}}"' : 'id="xs-classes-category-{{@key}}"' }>
+                                    <ul class="links collapse in" ${ isNormalMode ? 'id="classes-category-{{@key}}"' : 'id="xs-classes-category-{{@key}}"' }>
                                         {{#each this}}
                                         <li class="link">
                                             <a href="classes/{{#if duplicateName}}{{duplicateName}}{{else}}{{name}}{{/if}}.html" data-type="entity-link" {{#if deprecated}}class="deprecated-name"{{/if}}>{{ name }}</a>
@@ -402,7 +402,7 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                             <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                             <span class="icon ion-ios-arrow-down"></span>
                                         </div>
-                                        <ul class="links collapse" ${ isNormalMode ? 'id="injectables-category-{{@key}}"' : 'id="xs-injectables-category-{{@key}}"' }>
+                                        <ul class="links collapse in" ${ isNormalMode ? 'id="injectables-category-{{@key}}"' : 'id="xs-injectables-category-{{@key}}"' }>
                                             {{#each this}}
                                             <li class="link">
                                                 <a href="injectables/{{#if duplicateName}}{{duplicateName}}{{else}}{{name}}{{/if}}.html" data-type="entity-link" {{#if deprecated}}class="deprecated-name"{{/if}}>{{ name }}</a>
@@ -439,7 +439,7 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                         <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                         <span class="icon ion-ios-arrow-down"></span>
                                     </div>
-                                    <ul class="links collapse" ${ isNormalMode ? 'id="interceptors-category-{{@key}}"' : 'id="xs-interceptors-category-{{@key}}"' }>
+                                    <ul class="links collapse in" ${ isNormalMode ? 'id="interceptors-category-{{@key}}"' : 'id="xs-interceptors-category-{{@key}}"' }>
                                         {{#each this}}
                                         <li class="link">
                                             <a href="interceptors/{{#if duplicateName}}{{duplicateName}}{{else}}{{name}}{{/if}}.html" data-type="entity-link" {{#if deprecated}}class="deprecated-name"{{/if}}>{{ name }}</a>
@@ -475,7 +475,7 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                         <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                         <span class="icon ion-ios-arrow-down"></span>
                                     </div>
-                                    <ul class="links collapse" ${ isNormalMode ? 'id="guards-category-{{@key}}"' : 'id="xs-guards-category-{{@key}}"' }>
+                                    <ul class="links collapse in" ${ isNormalMode ? 'id="guards-category-{{@key}}"' : 'id="xs-guards-category-{{@key}}"' }>
                                         {{#each this}}
                                         <li class="link">
                                             <a href="guards/{{#if duplicateName}}{{duplicateName}}{{else}}{{name}}{{/if}}.html" data-type="entity-link" {{#if deprecated}}class="deprecated-name"{{/if}}>{{ name }}</a>
@@ -511,7 +511,7 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                         <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                         <span class="icon ion-ios-arrow-down"></span>
                                     </div>
-                                    <ul class="links collapse" ${ isNormalMode ? 'id="interfaces-category-{{@key}}"' : 'id="xs-interfaces-category-{{@key}}"' }>
+                                    <ul class="links collapse in" ${ isNormalMode ? 'id="interfaces-category-{{@key}}"' : 'id="xs-interfaces-category-{{@key}}"' }>
                                         {{#each this}}
                                         <li class="link">
                                             <a href="interfaces/{{#if duplicateName}}{{duplicateName}}{{else}}{{name}}{{/if}}.html" data-type="entity-link" {{#if deprecated}}class="deprecated-name"{{/if}}>{{ name }}</a>
@@ -548,7 +548,7 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                             <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                             <span class="icon ion-ios-arrow-down"></span>
                                         </div>
-                                        <ul class="links collapse" ${ isNormalMode ? 'id="pipes-category-{{@key}}"' : 'id="xs-pipes-category-{{@key}}"' }>
+                                        <ul class="links collapse in" ${ isNormalMode ? 'id="pipes-category-{{@key}}"' : 'id="xs-pipes-category-{{@key}}"' }>
                                             {{#each this}}
                                             <li class="link">
                                                 <a href="pipes/{{#if duplicateName}}{{duplicateName}}{{else}}{{name}}{{/if}}.html" data-type="entity-link" {{#if deprecated}}class="deprecated-name"{{/if}}>{{ name }}</a>
