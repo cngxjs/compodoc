@@ -1,7 +1,9 @@
-# Contributing to Compodoc
+# Contributing to compodocx
+
+> compodocx is a fork of [compodoc](https://github.com/compodoc/compodoc) by Vincent Ogloblinsky, maintained by CNGX Christian Weiss<CWOIDA>.
 
 [commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
-[github]: https://github.com/compodoc/compodoc
+[github]: https://github.com/cngxjs/compodocx
 [js-style-guide]: https://google.github.io/styleguide/jsguide.html
 
 Contributions are welcome and appreciated. As a contributor, here are the guidelines we would like you
@@ -30,7 +32,7 @@ See this folder for more details: [DOCS](./docs/README.md).
     npm run start
     ```
 
-1. Open another terminal with the source code of the [demo project](https://github.com/compodoc/compodoc-demo-todomvc-angular), and run: 
+1. Open another terminal with the source code of the [demo project](https://github.com/cngxjs/compodocx-demo-todomvc-angular), and run: 
 
     ```shell
     node ../compodoc/bin/index-cli.js -p tsconfig.json -a screenshots -n 'TodoMVC Angular documentation' --includes additional-doc --toggleMenuItems "'all'" -s
@@ -63,7 +65,7 @@ See this folder for more details: [DOCS](./docs/README.md).
 
 1. Add `debugger` statement where you want to debug your code.
 1. Open Chrome and this url: `chrome://inspect`.
-1. Open another terminal with the source code of the [demo project](https://github.com/compodoc/compodoc-demo-todomvc-angular), and run:
+1. Open another terminal with the source code of the [demo project](https://github.com/cngxjs/compodocx-demo-todomvc-angular), and run:
 
     ```shell
     node --inspect ../compodoc/bin/index-cli.js -p tsconfig.json -a screenshots -n 'TodoMVC Angular documentation' --includes additional-doc --toggleMenuItems "'all'" -s
@@ -100,14 +102,14 @@ We will be insisting on a minimal reproduce scenario in order to save maintainer
 
 Unfortunately, we are not able to investigate / fix bugs without a minimal reproduction, so if we don't hear back from you, we are going to close an issue that don't have enough info to be reproduced.
 
-You can file new issues by filling out our [new issue form](https://github.com/compodoc/compodoc/issues/new).
+You can file new issues by filling out our [new issue form](https://github.com/cngxjs/compodocx/issues/new).
 
 ### <a name="submit-pr"></a> Submitting a Pull Request (PR)
 
 Before you submit your Pull Request (PR) consider the following guidelines:
 
 -   I use [Git flow](http://danielkummer.github.io/git-flow-cheatsheet/) for the development.
--   Search [GitHub](https://github.com/compodoc/compodoc/pulls) for an open or closed Pull Request
+-   Search [GitHub](https://github.com/cngxjs/compodocx/pulls) for an open or closed Pull Request
     that relates to your submission.
 -   Make your changes in a new git branch
 
@@ -147,7 +149,7 @@ Before you submit your Pull Request (PR) consider the following guidelines:
     git push origin my-fix-branch
     ```
 
--   In GitHub, send a pull request to `compodoc/compodoc:develop`.
+-   In GitHub, send a pull request to `cngxjs/compodocx:develop`.
 -   If I suggest changes then
 
     -   Make the required updates.
@@ -192,7 +194,7 @@ from the `main (upstream)` repository:
 
 ### Fork the compodoc project
 
-Go to the [compodoc project](https://github.com/compodoc/compodoc) and click on the "fork" button. You can then clone your own fork of the project, and start working on it.
+Go to the [compodoc project](https://github.com/cngxjs/compodocx) and click on the "fork" button. You can then clone your own fork of the project, and start working on it.
 
 [Please read the Github forking documentation for more information](https://help.github.com/articles/fork-a-repo)
 
