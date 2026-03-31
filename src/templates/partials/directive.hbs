@@ -8,7 +8,7 @@
 <ul class="nav nav-tabs" role="tablist">
     {{#each navTabs}}
         <li class="nav-item">
-            <a href="{{this.href}}" 
+            <a href="{{this.href}}"
                 class="nav-link"
                 {{#compare @index "===" 0}}class="nav-link active"{{/compare}}
                 role="tab" id="{{this.id}}-tab" data-bs-toggle="tab" data-link="{{this.data-link}}">{{t this.label}}</a>
@@ -19,6 +19,7 @@
 <div class="tab-content">
     {{#isTabEnabled navTabs "info"}}
     <div class="tab-pane fade {{#isInitialTab navTabs "info"}}active in{{/isInitialTab}}" id="info">
+        {{#isInfoSection "file"}}
         {{#unless disableFilePath}}
         <p class="comment">
             <h3>{{t "file" }}</h3>
@@ -27,7 +28,9 @@
             <code>{{directive.file}}</code>
         </p>
         {{/unless}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "deprecated"}}
         {{#if directive.deprecated}}
             <p class="comment">
                 <h3 class="deprecated">{{t "deprecated" }}</h3>
@@ -36,7 +39,9 @@
                 {{{ directive.deprecationMessage }}}
             </p>
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "description"}}
         {{#if directive.description}}
             <p class="comment">
                 <h3>{{t "description" }}</h3>
@@ -45,7 +50,9 @@
                 {{{parseDescription directive.description depth}}}
             </p>
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "extends"}}
         {{#if directive.extends}}
             <p class="comment">
                 <h3>{{t "extends" }}</h3>
@@ -67,7 +74,9 @@
                 {{/each}}
             </p>
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "examples"}}
         {{#if directive.jsdoctags}}
             <p class="comment">
                 <h3>{{t "example" }}</h3>
@@ -82,7 +91,9 @@
                 {{/jsdoc-code-example}}
             </div>
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "metadata"}}
         {{#orLength directive.selector directive.providers directive.standalone directive.hostDirectives}}
         <section data-compodoc="block-metadata">
             <h3>{{t "metadata" }}</h3>
@@ -147,42 +158,61 @@
             </table>
         </section>
         {{/orLength}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "index"}}
         {{#orLength directive.propertiesClass directive.methodsClass directive.inputsClass directive.outputClass directive.hostBindings directive.hostListeners directive.accessors}}
             {{> index methods=directive.methodsClass properties=directive.propertiesClass inputs=directive.inputsClass outputs=directive.outputsClass hostBindings=directive.hostBindings hostListeners=directive.hostListeners accessors=directive.accessors }}
         {{/orLength}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "constructor"}}
         {{#if directive.constructorObj}}
             {{> block-constructor constructor=directive.constructorObj file=directive.file }}
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "inputs"}}
         {{#if directive.inputsClass}}
             {{> block-input element=directive file=directive.file }}
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "outputs"}}
         {{#if directive.outputsClass}}
             {{> block-output element=directive file=directive.file }}
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "hostBindings"}}
         {{#if directive.hostBindings}}
             {{> block-property properties=directive.hostBindings file=directive.file title="HostBindings" }}
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "hostListeners"}}
         {{#if directive.hostListeners}}
             {{> block-host-listener methods=directive.hostListeners file=directive.file title="HostListeners" }}
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "methods"}}
         {{#if directive.methodsClass}}
             {{> block-method methods=directive.methodsClass file=directive.file }}
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "properties"}}
         {{#if directive.propertiesClass}}
             {{> block-property properties=directive.propertiesClass file=directive.file }}
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "accessors"}}
         {{#if directive.accessors}}
             {{> block-accessors accessors=directive.accessors file=directive.file }}
         {{/if}}
+        {{/isInfoSection}}
 
     </div>
     {{/isTabEnabled}}

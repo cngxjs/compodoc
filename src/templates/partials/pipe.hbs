@@ -8,7 +8,7 @@
 <ul class="nav nav-tabs" role="tablist">
     {{#each navTabs}}
         <li class="nav-item">
-            <a href="{{this.href}}" 
+            <a href="{{this.href}}"
                 class="nav-link"
                 {{#compare @index "===" 0}}class="nav-link active"{{/compare}}
                 role="tab" id="{{this.id}}-tab" data-bs-toggle="tab" data-link="{{this.data-link}}">{{t this.label}}</a>
@@ -20,6 +20,7 @@
     {{#isTabEnabled navTabs "info"}}
     <div class="tab-pane fade {{#isInitialTab navTabs "info"}}active in{{/isInitialTab}}" id="info">
 
+        {{#isInfoSection "file"}}
         {{#unless disableFilePath}}
         <p class="comment">
             <h3>{{t "file" }}</h3>
@@ -28,7 +29,9 @@
             <code>{{pipe.file}}</code>
         </p>
         {{/unless}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "deprecated"}}
         {{#if pipe.deprecated}}
             <p class="comment">
                 <h3 class="deprecated">{{t "deprecated" }}</h3>
@@ -37,7 +40,9 @@
                 {{{ pipe.deprecationMessage }}}
             </p>
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "description"}}
         {{#if pipe.description}}
             <p class="comment">
                 <h3>{{t "description" }}</h3>
@@ -46,7 +51,9 @@
                 {{{parseDescription pipe.description depth}}}
             </p>
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "examples"}}
         {{#if pipe.jsdoctags}}
             <p class="comment">
                 <h3>{{t "example" }}</h3>
@@ -61,7 +68,9 @@
                 {{/jsdoc-code-example}}
             </div>
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "metadata"}}
         <section data-compodoc="block-metadata">
             <h3>{{t "metadata" }}</h3>
             <table class="table table-sm table-hover metadata">
@@ -87,14 +96,19 @@
                 </tbody>
             </table>
         </section>
+        {{/isInfoSection}}
 
+        {{#isInfoSection "methods"}}
         {{#if pipe.methods}}
             {{> block-method methods=pipe.methods file=pipe.file }}
         {{/if}}
+        {{/isInfoSection}}
 
+        {{#isInfoSection "properties"}}
         {{#if pipe.properties}}
             {{> block-property properties=pipe.properties file=pipe.file }}
         {{/if}}
+        {{/isInfoSection}}
 
     </div>
     {{/isTabEnabled}}
