@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import { tmpdir } from 'os';
 import * as path from 'path';
 
-import * as request from 'supertest';
+import request from 'supertest';
 import { TemplatePlaygroundServer } from '../../../src/template-playground/template-playground-server';
 
 describe('Template Playground Integration Tests', () => {
