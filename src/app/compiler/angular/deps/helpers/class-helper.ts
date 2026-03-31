@@ -43,9 +43,14 @@ export class ClassHelper {
 
     private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
         _.forEach(tags, tag => {
-            if (tag.tagName && tag.tagName.text && tag.tagName.text.indexOf('deprecated') > -1) {
-                result.deprecated = true;
-                result.deprecationMessage = tag.comment || '';
+            if (tag.tagName && tag.tagName.text) {
+                if (tag.tagName.text.indexOf('deprecated') > -1) {
+                    result.deprecated = true;
+                    result.deprecationMessage = tag.comment || '';
+                }
+                if (tag.tagName.text === 'category') {
+                    result.category = (tag.comment || '').trim();
+                }
             }
         });
     }
@@ -93,10 +98,12 @@ export class ClassHelper {
     private initializeDocumentationFields(): {
         deprecated: boolean;
         deprecationMessage: string;
+        category: string;
     } {
         return {
             deprecated: false,
-            deprecationMessage: ''
+            deprecationMessage: '',
+            category: ''
         };
     }
 
@@ -647,6 +654,7 @@ export class ClassHelper {
                 return {
                     deprecated: deprecation.deprecated,
                     deprecationMessage: deprecation.deprecationMessage,
+                    category: deprecation.category,
                     description,
                     rawdescription: rawdescription,
                     inputs: members.inputs,
@@ -735,6 +743,7 @@ export class ClassHelper {
                 {
                     deprecated: deprecation.deprecated,
                     deprecationMessage: deprecation.deprecationMessage,
+                    category: deprecation.category,
                     description,
                     rawdescription: rawdescription,
                     inputs: members.inputs,
@@ -757,6 +766,7 @@ export class ClassHelper {
                 {
                     deprecated: deprecation.deprecated,
                     deprecationMessage: deprecation.deprecationMessage,
+                    category: deprecation.category,
                     methods: members.methods,
                     inputs: members.inputs,
                     outputs: members.outputs,

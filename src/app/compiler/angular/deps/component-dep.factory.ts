@@ -42,6 +42,7 @@ export class ComponentDepFactory {
 
             deprecated: IO.deprecated,
             deprecationMessage: IO.deprecationMessage,
+            category: IO.category || '',
 
             hostBindings: IO.hostBindings,
             hostListeners: IO.hostListeners,
@@ -125,6 +126,7 @@ export interface IComponentDep extends IDep {
 
     deprecated: boolean;
     deprecationMessage: string;
+    category?: string;
 
     standalone: boolean;
     imports: Array<any>;
