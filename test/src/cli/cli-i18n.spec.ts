@@ -1,7 +1,7 @@
+import vm from 'vm';
 
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
-const vm = require('vm');
 
 describe('CLI i18n', () => {
     const distFolder = tmp.name + '-i18n';

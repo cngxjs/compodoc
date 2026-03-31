@@ -1,14 +1,12 @@
+import babel from '@babel/core';
+import chokidar from 'chokidar';
+import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as LiveServer from '@compodoc/live-server';
+import traverse from 'neotraverse/legacy';
 import * as path from 'path';
 
 import { SyntaxKind } from 'ts-morph';
-
-const chokidar = require('chokidar');
-
-const traverse = require('neotraverse/legacy');
-const crypto = require('crypto');
-const babel = require('@babel/core');
 
 import { logger } from '../utils/logger';
 

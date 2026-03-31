@@ -1,9 +1,8 @@
+import * as crypto from 'crypto';
 import { cleanLifecycleHooksFromMethods } from '../../../../utils';
 import Configuration from '../../../configuration';
 import { IDep } from '../dependencies.interfaces';
 import { ComponentHelper } from './helpers/component-helper';
-
-const crypto = require('crypto');
 
 export class ComponentDepFactory {
     constructor(private helper: ComponentHelper) {}

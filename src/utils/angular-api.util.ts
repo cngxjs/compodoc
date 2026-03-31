@@ -1,5 +1,9 @@
-import { IApiSourceResult } from './api-source-result.interface';
+import { createRequire } from 'module';
 import * as path from 'path';
+
+import { IApiSourceResult } from './api-source-result.interface';
+
+const require = createRequire(import.meta.url);
 
 // Try multiple paths to find api-list.json - supports both source and bundled contexts
 let apiListPath = '../src/data/api-list.json';

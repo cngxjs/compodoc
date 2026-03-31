@@ -1,7 +1,6 @@
+import ngdT from '@compodoc/ngd-transformer';
 import DependenciesEngine from './dependencies.engine';
 import FileEngine from './file.engine';
-
-const ngdT = require('@compodoc/ngd-transformer');
 
 export class NgdEngine {
     public engine;

@@ -1,4 +1,5 @@
 import * as fs from 'fs-extra';
+import { tmpdir } from 'os';
 import * as path from 'path';
 
 import * as request from 'supertest';
@@ -233,7 +234,7 @@ console.log('Template playground app loaded');
 
         // Clean up any session directories that might have been created in OS temp directory
         try {
-            const tempDir = require('os').tmpdir();
+            const tempDir = tmpdir();
             const files = await fs.readdir(tempDir);
             const sessionDirs = files.filter(file =>
                 file.startsWith('hbs-templates-copy-') ||

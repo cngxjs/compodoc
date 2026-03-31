@@ -1,9 +1,8 @@
+import * as crypto from 'crypto';
 import { ts } from 'ts-morph';
 
 import { IDep } from '../dependencies.interfaces';
 import { ModuleHelper } from './helpers/module-helper';
-
-const crypto = require('crypto');
 
 export class ModuleDepFactory {
     constructor(private moduleHelper: ModuleHelper) {}

@@ -1,11 +1,10 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import PdfPrinter from 'pdfmake';
 
 import Configuration from '../../configuration';
 import I18nEngine from '../i18n.engine';
 import MarkdownToPdfEngine from './markdown-to-pdf.engine';
-
-const PdfPrinter = require('pdfmake');
 
 export class ExportPdfEngine {
     private static instance: ExportPdfEngine;

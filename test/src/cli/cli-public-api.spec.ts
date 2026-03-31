@@ -1,3 +1,5 @@
+import fs from 'fs-extra';
+import path from 'path';
 
 import { temporaryDir, shell, exists, read } from '../helpers';
 
@@ -9,10 +11,6 @@ describe('CLI public-api-only option', () => {
 
         const fixtureDir = './test/fixtures/library';
         const distDir = './test/fixtures/library/dist/libs/my-lib';
-
-        // Check if dist folder already exists and has the necessary files
-        const fs = require('fs-extra');
-        const path = require('path');
 
         const distExists = fs.existsSync(distDir);
         const coreIndexExists = fs.existsSync(path.join(distDir, 'core/index.d.ts'));

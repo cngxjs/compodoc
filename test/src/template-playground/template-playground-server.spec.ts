@@ -1,4 +1,5 @@
 import * as fs from 'fs-extra';
+import { tmpdir } from 'os';
 import * as path from 'path';
 
 import * as request from 'supertest';
@@ -75,7 +76,7 @@ export class AppComponent {
 
         // Clean up any session directories from OS temp folder
         try {
-            const tempDir = require('os').tmpdir();
+            const tempDir = tmpdir();
             const files = await fs.readdir(tempDir);
             const sessionDirs = files.filter(file =>
                 file.startsWith('hbs-templates-copy-') ||

@@ -1,4 +1,5 @@
-const decache = require('decache');
+import decache from 'decache';
+import { marked } from 'marked';
 
 export class MarkdownToPDFEngine {
     private static instance: MarkdownToPDFEngine;
@@ -9,7 +10,6 @@ export class MarkdownToPDFEngine {
 
     private constructor() {
         decache('marked');
-        const { marked } = require('marked');
         this.markedInstance = marked;
 
         const renderer = new this.markedInstance.Renderer();

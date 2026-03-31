@@ -1,6 +1,6 @@
+import fs from 'fs-extra';
 
 import { exists, read, shell, temporaryDir } from '../helpers';
-const fs = require('fs-extra');
 const tmp = temporaryDir();
 
 describe('CLI Export', () => {

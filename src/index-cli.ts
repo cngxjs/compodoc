@@ -20,11 +20,12 @@ import { createSourcePathMapper } from './utils/source-path-mapper.util';
 
 import { cosmiconfigSync } from 'cosmiconfig';
 
-const fg = require('fast-glob');
-const os = require('os');
-const osName = require('os-name');
-const pkg = require('../package.json');
-const { program } = require('commander');
+import fg from 'fast-glob';
+import minimist from 'minimist';
+import os from 'os';
+import osName from 'os-name';
+import pkg from '../package.json';
+import { program } from 'commander';
 
 const cosmiconfigModuleName = 'compodoc';
 
@@ -704,7 +705,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         /**
          * Check --files argument call
          */
-        const argv = require('minimist')(process.argv.slice(2));
+        const argv = minimist(process.argv.slice(2));
         if (argv && argv.files) {
             Configuration.mainData.hasFilesToCoverage = true;
             if (typeof argv.files === 'string') {

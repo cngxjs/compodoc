@@ -1,5 +1,6 @@
-const Handlebars = require('handlebars');
+import Handlebars from 'handlebars';
 import * as JSON5 from 'json5';
+import traverse from 'neotraverse/legacy';
 import * as path from 'path';
 import { Project, ts, SourceFile, SyntaxKind, Node } from 'ts-morph';
 
@@ -8,8 +9,6 @@ import { RoutingGraphNode } from '../app/nodes/routing-graph-node';
 
 import ImportsUtil from './imports.util';
 import { logger } from './logger';
-
-const traverse = require('neotraverse/legacy');
 
 const ast = new Project();
 

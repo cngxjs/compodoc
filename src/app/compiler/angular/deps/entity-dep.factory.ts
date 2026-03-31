@@ -1,7 +1,6 @@
+import * as crypto from 'crypto';
 import { IDep } from '../dependencies.interfaces';
 import { ts } from 'ts-morph';
-
-const crypto = require('crypto');
 
 export class EntityDepFactory {
     constructor() {}

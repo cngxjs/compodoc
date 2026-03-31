@@ -1,18 +1,18 @@
+import fs from 'fs-extra';
+import * as path from 'path';
 
 import { temporaryDir, shell, exists, read } from '../helpers';
-import * as path from 'path';
 
 const tmp = temporaryDir();
 
 describe('CLI Router Parser Special Characters Fix', () => {
     const distFolder = tmp.name + '-router-special-chars';
-    
+
     beforeAll(() => {
         tmp.create(distFolder);
-        
+
         // Create test project with problematic special characters
         const srcDir = path.join(distFolder, 'src');
-        const fs = require('fs-extra');
         fs.ensureDirSync(srcDir);
         
         // Component with inline template to avoid file path issues

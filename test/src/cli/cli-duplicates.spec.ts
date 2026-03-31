@@ -1,5 +1,4 @@
-const eol = require('os').EOL;
-
+import { EOL as eol } from 'os';
 
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 

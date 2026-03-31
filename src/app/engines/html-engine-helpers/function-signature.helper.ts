@@ -1,5 +1,5 @@
+import Handlebars from 'handlebars';
 import { IHtmlEngineHelper } from './html-engine-helper.interface';
-const Handlebars = require('handlebars');
 
 import DependenciesEngine from '../dependencies.engine';
 import AngularVersionUtil from '../../../utils/angular-version.util';

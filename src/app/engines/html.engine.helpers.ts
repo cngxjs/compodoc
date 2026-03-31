@@ -1,4 +1,4 @@
-const Handlebars = require('handlebars');
+import Handlebars from 'handlebars';
 
 import { BreakCommaHelper } from './html-engine-helpers/break-comma.helper';
 import { BreakLinesHelper } from './html-engine-helpers/break-lines.helper';

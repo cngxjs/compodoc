@@ -45,11 +45,10 @@ import {
     ITypeAliasDecDep
 } from './angular/dependencies.interfaces';
 
+import * as crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { getNodeDecorators, nodeHasDecorator } from '../../utils/node.util';
 import { markedAcl } from '../../utils/marked.acl';
-
-const crypto = require('crypto');
 const project = new Project();
 
 // TypeScript reference : https://github.com/Microsoft/TypeScript/blob/master/lib/typescript.d.ts

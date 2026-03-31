@@ -1,7 +1,7 @@
+import path from 'path';
 
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
-const path = require('path'),
-    tmp = temporaryDir();
+const tmp = temporaryDir();
 
 describe('CLI simple generation', () => {
     const distFolder = tmp.name + '-simple-generation';

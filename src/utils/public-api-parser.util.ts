@@ -1,9 +1,9 @@
 import * as fs from 'fs-extra';
-import * as path from 'path';
+import * as path from 'node:path';
 import { ts } from 'ts-morph';
 import { logger } from './logger';
 
-const fg = require('fast-glob');
+import fg from 'fast-glob';
 
 /**
  * Result of parsing public API exports
@@ -191,10 +191,7 @@ export class PublicApiParser {
     /**
      * Process export assignments: export default Foo
      */
-    private processExportAssignment(
-        statement: ts.ExportAssignment,
-        sourceFilePath: string
-    ): void {
+    private processExportAssignment(statement: ts.ExportAssignment, sourceFilePath: string): void {
         // Track default exports with a special marker
         this.addSymbol('default', sourceFilePath);
 
@@ -227,7 +224,7 @@ export class PublicApiParser {
 
     /**
      * Resolve a re-exported symbol to its declaration file
-     * 
+     *
      * Note: We intentionally do NOT parse the resolved file as an index file.
      * Only symbols explicitly re-exported via `export { X } from './module'` in an
      * index.d.ts should be considered part of the public API. Direct exports from
@@ -312,4 +309,3 @@ export async function parsePublicApi(distPath: string): Promise<PublicApiExports
     const parser = new PublicApiParser(distPath);
     return await parser.parseIndexFiles();
 }
-

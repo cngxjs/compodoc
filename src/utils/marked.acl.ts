@@ -1,4 +1,4 @@
-const { marked } = require('marked');
+import { marked } from 'marked';
 
 marked.use({
     mangle: false,

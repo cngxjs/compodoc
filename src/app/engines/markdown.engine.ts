@@ -1,11 +1,10 @@
+import decache from 'decache';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
 import FileEngine from './file.engine';
 import I18nEngine from './i18n.engine';
 import { markedAcl } from '../../utils/marked.acl';
-
-const decache = require('decache');
 
 export interface markdownReadedDatas {
     markdown: string;

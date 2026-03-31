@@ -1,4 +1,5 @@
-const Handlebars = require('handlebars');
+import Handlebars from 'handlebars';
+import lunr from 'lunr';
 import * as path from 'path';
 
 import { decode } from 'html-entities';
@@ -10,8 +11,6 @@ import Configuration from '../configuration';
 import FileEngine from './file.engine';
 
 import * as cheerio from 'cheerio';
-
-const lunr: any = require('lunr');
 
 export class SearchEngine {
     public searchIndex: any;

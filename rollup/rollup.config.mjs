@@ -1,5 +1,5 @@
-// rollup.config.js
 import typescript from '@rollup/plugin-typescript';
+import json from '@rollup/plugin-json';
 
 export default {
     input: {
@@ -13,14 +13,12 @@ export default {
         dir: 'dist'
     },
     plugins: [
-        typescript({
-            typescript: require('typescript')
-        })
+        json(),
+        typescript()
     ],
     external: [
         'handlebars',
         'marked',
-        'lodash',
         'path',
         'util',
         'fs-extra',
@@ -36,7 +34,6 @@ export default {
         'cosmiconfig',
         'html-entities',
         'uuid',
-        'express',
         'crypto',
         'child_process',
         'os',

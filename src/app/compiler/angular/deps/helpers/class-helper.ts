@@ -11,10 +11,9 @@ import { StringifyObjectLiteralExpression } from '../../../../../utils/object-li
 import DependenciesEngine from '../../../../engines/dependencies.engine';
 import Configuration from '../../../../configuration';
 import { StringifyArrowFunction } from '../../../../../utils/arrow-function.util';
+import * as crypto from 'crypto';
 import { getNodeDecorators, nodeHasDecorator } from '../../../../../utils/node.util';
 import { markedAcl } from '../../../../../utils/marked.acl';
-
-const crypto = require('crypto');
 
 export class ClassHelper {
     private jsdocParserUtil = new JsdocParserUtil();
