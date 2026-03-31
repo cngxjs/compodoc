@@ -3,7 +3,11 @@
 import { spawnSync, spawn, exec } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
-import pkg from '../../../../package.json';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+
+// JSON import with correct path from test/src/ (not test/dist/test/src/)
+const pkg = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf-8'));
 
 export const shell = spawnSync;
 export const shellAsync = spawn;
