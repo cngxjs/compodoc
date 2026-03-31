@@ -42,6 +42,16 @@ export class DependenciesEngine {
     public routes: RouteInterface;
     public pipes: Object[];
     public classes: Object[];
+    public categorizedComponents: { [category: string]: Object[] } = {};
+    public categorizedDirectives: { [category: string]: Object[] } = {};
+    public categorizedInjectables: { [category: string]: Object[] } = {};
+    public categorizedPipes: { [category: string]: Object[] } = {};
+    public categorizedClasses: { [category: string]: Object[] } = {};
+    public categorizedInterfaces: { [category: string]: Object[] } = {};
+    public categorizedGuards: { [category: string]: Object[] } = {};
+    public categorizedInterceptors: { [category: string]: Object[] } = {};
+    public categorizedControllers: { [category: string]: Object[] } = {};
+    public categorizedEntities: { [category: string]: Object[] } = {};
     public miscellaneous: MiscellaneousData = {
         variables: [],
         functions: [],
@@ -135,6 +145,7 @@ export class DependenciesEngine {
         this.routes = this.rawData.routesTree;
         this.manageDuplicatesName();
         this.cleanRawModulesNames();
+        this.prepareCategoryGroups();
     }
 
     private cleanRawModulesNames() {
@@ -423,6 +434,27 @@ export class DependenciesEngine {
         this.miscellaneous.groupedFunctions = _.groupBy(this.miscellaneous.functions, 'file');
         this.miscellaneous.groupedEnumerations = _.groupBy(this.miscellaneous.enumerations, 'file');
         this.miscellaneous.groupedTypeAliases = _.groupBy(this.miscellaneous.typealiases, 'file');
+    }
+
+    private groupByCategory(items: any[]): { [category: string]: any[] } {
+        const hasAnyCategory = items.some(item => item.category && item.category !== '');
+        if (!hasAnyCategory) {
+            return {};
+        }
+        return _.groupBy(items, item => item.category || '');
+    }
+
+    private prepareCategoryGroups() {
+        this.categorizedComponents = this.groupByCategory(this.components as any[]);
+        this.categorizedDirectives = this.groupByCategory(this.directives as any[]);
+        this.categorizedInjectables = this.groupByCategory(this.injectables as any[]);
+        this.categorizedPipes = this.groupByCategory(this.pipes as any[]);
+        this.categorizedClasses = this.groupByCategory(this.classes as any[]);
+        this.categorizedInterfaces = this.groupByCategory(this.interfaces as any[]);
+        this.categorizedGuards = this.groupByCategory(this.guards as any[]);
+        this.categorizedInterceptors = this.groupByCategory(this.interceptors as any[]);
+        this.categorizedControllers = this.groupByCategory(this.controllers as any[]);
+        this.categorizedEntities = this.groupByCategory(this.entities as any[]);
     }
 
     public getModule(name: string) {

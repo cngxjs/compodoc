@@ -2735,6 +2735,18 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
     private processMenu(mainData): Promise<void> {
         logger.info('Process menu...');
 
+        // Inject category groupings for sidebar navigation
+        mainData.categorizedComponents = DependenciesEngine.categorizedComponents;
+        mainData.categorizedDirectives = DependenciesEngine.categorizedDirectives;
+        mainData.categorizedInjectables = DependenciesEngine.categorizedInjectables;
+        mainData.categorizedPipes = DependenciesEngine.categorizedPipes;
+        mainData.categorizedClasses = DependenciesEngine.categorizedClasses;
+        mainData.categorizedInterfaces = DependenciesEngine.categorizedInterfaces;
+        mainData.categorizedGuards = DependenciesEngine.categorizedGuards;
+        mainData.categorizedInterceptors = DependenciesEngine.categorizedInterceptors;
+        mainData.categorizedControllers = DependenciesEngine.categorizedControllers;
+        mainData.categorizedEntities = DependenciesEngine.categorizedEntities;
+
         return new Promise((resolveProcessMenu, rejectProcessMenu) => {
             let output = mainData.output.slice();
             const outputLastCharacter = output.lastIndexOf('/');

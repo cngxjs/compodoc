@@ -31,6 +31,7 @@ export class DirectiveDepFactory {
 
             deprecated: IO.deprecated,
             deprecationMessage: IO.deprecationMessage,
+            category: IO.category || '',
 
             hostBindings: IO.hostBindings,
             hostListeners: IO.hostListeners,
@@ -86,6 +87,7 @@ export interface IDirectiveDep extends IDep {
 
     deprecated: boolean;
     deprecationMessage: string;
+    category?: string;
 
     hostBindings: any;
     hostDirectives: any;

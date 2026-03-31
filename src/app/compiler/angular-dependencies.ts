@@ -309,6 +309,7 @@ export class AngularDependencies extends FrameworkDependencies {
             file: file,
             deprecated: IO.deprecated,
             deprecationMessage: IO.deprecationMessage,
+            category: IO.category || '',
             type: 'class',
             sourceCode: srcFile.getText()
         };
@@ -782,6 +783,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
+                        const category = infos.category || '';
                         const functionDep: IFunctionDecDep = {
                             name,
                             file: file,
@@ -789,6 +791,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             subtype: 'function',
                             deprecated,
                             deprecationMessage,
+                            category,
                             description: this.visitEnumTypeAliasFunctionDeclarationDescription(node)
                         };
                         if (infos.args) {
@@ -823,6 +826,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
+                        const category = infos.category || '';
                         const enumDeps: IEnumDecDep = {
                             name,
                             childs: infos.members,
@@ -830,6 +834,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             subtype: 'enum',
                             deprecated,
                             deprecationMessage,
+                            category,
                             description:
                                 this.visitEnumTypeAliasFunctionDeclarationDescription(node),
                             file: file
@@ -851,6 +856,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
+                        const category = infos.category || '';
                         const typeAliasDeps: ITypeAliasDecDep = {
                             name,
                             ctype: 'miscellaneous',
@@ -859,6 +865,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             file: file,
                             deprecated,
                             deprecationMessage,
+                            category,
                             description: this.visitEnumTypeAliasFunctionDeclarationDescription(node)
                         };
                         if (node.type) {
@@ -1001,13 +1008,15 @@ export class AngularDependencies extends FrameworkDependencies {
                                 const name = infos.name;
                                 const deprecated = infos.deprecated;
                                 const deprecationMessage = infos.deprecationMessage;
+                                const category = infos.category || '';
                                 const deps: any = {
                                     name,
                                     ctype: 'miscellaneous',
                                     subtype: 'variable',
                                     file: file,
                                     deprecated,
-                                    deprecationMessage
+                                    deprecationMessage,
+                                    category
                                 };
                                 deps.type = infos.type ? infos.type : '';
                                 if (infos.defaultValue) {
@@ -1097,6 +1106,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         const name = infos.name;
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
+                        const category = infos.category || '';
                         const deps: ITypeAliasDecDep = {
                             name,
                             ctype: 'miscellaneous',
@@ -1105,6 +1115,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             file: file,
                             deprecated,
                             deprecationMessage,
+                            category,
                             description: this.visitEnumTypeAliasFunctionDeclarationDescription(node)
                         };
                         if (node.type) {
@@ -1127,6 +1138,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         const name = infos.name;
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
+                        const category = infos.category || '';
                         const functionDep: IFunctionDecDep = {
                             name,
                             ctype: 'miscellaneous',
@@ -1134,6 +1146,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             file: file,
                             deprecated,
                             deprecationMessage,
+                            category,
                             description: this.visitEnumTypeAliasFunctionDeclarationDescription(node)
                         };
                         if (infos.args) {
@@ -1162,6 +1175,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         const name = infos.name;
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
+                        const category = infos.category || '';
                         const enumDeps: IEnumDecDep = {
                             name,
                             childs: infos.members,
@@ -1169,6 +1183,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             subtype: 'enum',
                             deprecated,
                             deprecationMessage,
+                            category,
                             description:
                                 this.visitEnumTypeAliasFunctionDeclarationDescription(node),
                             file: file
@@ -1230,9 +1245,14 @@ export class AngularDependencies extends FrameworkDependencies {
 
     private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
         _.forEach(tags, tag => {
-            if (tag.tagName && tag.tagName.text && tag.tagName.text.indexOf('deprecated') > -1) {
-                result.deprecated = true;
-                result.deprecationMessage = tag.comment || '';
+            if (tag.tagName && tag.tagName.text) {
+                if (tag.tagName.text.indexOf('deprecated') > -1) {
+                    result.deprecated = true;
+                    result.deprecationMessage = tag.comment || '';
+                }
+                if (tag.tagName.text === 'category') {
+                    result.category = (tag.comment || '').trim();
+                }
             }
         });
     }
