@@ -628,9 +628,8 @@ export class ClassHelper {
 
         if (nodeHasDecorator(classDeclaration)) {
             const classDecorators = getNodeDecorators(classDeclaration);
-            // Loop and search for official decorators at top-level :
-            // Angular : @NgModule, @Component, @Directive, @Injectable, @Pipe
-            // Stencil : @Component
+            // Loop and search for Angular decorators:
+            // @NgModule, @Component, @Directive, @Injectable, @Pipe
             let isDirective = false;
             let isService = false;
             let isPipe = false;
