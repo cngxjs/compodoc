@@ -26,7 +26,6 @@ import RouterParserUtil from '../../utils/router-parser.util';
 import { CodeGenerator } from './angular/code-generator';
 
 import { ComponentDepFactory } from './angular/deps/component-dep.factory';
-import { ControllerDepFactory } from './angular/deps/controller-dep.factory';
 import { DirectiveDepFactory } from './angular/deps/directive-dep.factory';
 import { ComponentCache } from './angular/deps/helpers/component-helper';
 import { JsDocHelper } from './angular/deps/helpers/js-doc-helper';
@@ -138,7 +137,6 @@ export class AngularDependencies extends FrameworkDependencies {
             modules: [],
             modulesForGraph: [],
             components: [],
-            controllers: [],
             entities: [],
             injectables: [],
             interceptors: [],
@@ -260,7 +258,6 @@ export class AngularDependencies extends FrameworkDependencies {
                     };
                     process(mod.imports, _variable);
                     process(mod.exports, _variable);
-                    process(mod.controllers, _variable);
                     process(mod.declarations, _variable);
                     process(mod.providers, _variable);
                 };
@@ -562,18 +559,6 @@ export class AngularDependencies extends FrameworkDependencies {
                             if (typeof IO.ignore === 'undefined') {
                                 ComponentsTreeEngine.addComponent(componentDep);
                                 outputSymbols.components.push(componentDep);
-                            }
-                        } else if (this.isController(visitedDecorator)) {
-                            const controllerDep = new ControllerDepFactory().create(
-                                file,
-                                srcFile,
-                                name,
-                                props,
-                                IO
-                            );
-                            deps = controllerDep;
-                            if (typeof IO.ignore === 'undefined') {
-                                outputSymbols.controllers.push(controllerDep);
                             }
                         } else if (this.isEntity(visitedDecorator)) {
                             const entityDep = new EntityDepFactory().create(
@@ -1329,10 +1314,6 @@ export class AngularDependencies extends FrameworkDependencies {
         return result;
     }
 
-    private isController(metadata) {
-        return this.parseDecorator(metadata, 'Controller');
-    }
-
     private isEntity(metadata) {
         return this.parseDecorator(metadata, 'Entity');
     }
@@ -1359,7 +1340,6 @@ export class AngularDependencies extends FrameworkDependencies {
 
     private hasInternalDecorator(metadatas) {
         return (
-            this.parseDecorators(metadatas, 'Controller') ||
             this.parseDecorators(metadatas, 'Component') ||
             this.parseDecorators(metadatas, 'Pipe') ||
             this.parseDecorators(metadatas, 'Directive') ||

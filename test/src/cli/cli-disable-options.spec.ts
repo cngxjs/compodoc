@@ -464,7 +464,6 @@ describe('CLI disable flags', () => {
             serviceFile,
             classFile,
             interfaceFile,
-            controllerFile,
             entityFile,
             interceptorFile,
             guardFile;

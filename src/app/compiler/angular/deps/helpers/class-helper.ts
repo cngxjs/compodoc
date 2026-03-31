@@ -522,10 +522,6 @@ export class ClassHelper {
         return this.hasDecoratorType(decorator, 'Pipe');
     }
 
-    private isControllerDecorator(decorator) {
-        return this.hasDecoratorType(decorator, 'Controller');
-    }
-
     private isModuleDecorator(decorator) {
         return this.hasDecoratorType(decorator, 'NgModule', 'Module');
     }
@@ -634,13 +630,11 @@ export class ClassHelper {
             const classDecorators = getNodeDecorators(classDeclaration);
             // Loop and search for official decorators at top-level :
             // Angular : @NgModule, @Component, @Directive, @Injectable, @Pipe
-            // Nestjs : @Controller, @Module, @Injectable
             // Stencil : @Component
             let isDirective = false;
             let isService = false;
             let isPipe = false;
             let isModule = false;
-            let isController = false;
             for (let a = 0; a < classDecorators.length; a++) {
                 //console.log(classDeclaration.decorators[i].expression);
 
@@ -650,7 +644,6 @@ export class ClassHelper {
                 isService = isService || this.isServiceDecorator(classDecorators[a]);
                 isPipe = isPipe || this.isPipeDecorator(classDecorators[a]);
                 isModule = isModule || this.isModuleDecorator(classDecorators[a]);
-                isController = isController || this.isControllerDecorator(classDecorators[a]);
             }
             if (isDirective) {
                 return {

@@ -37,7 +37,7 @@ process.setMaxListeners(0);
 
 export class CliApplication extends Application {
     /**
-     * Run compodoc from the command line.
+     * Run compodocx from the command line.
      */
     protected async start(): Promise<any> {
         function list(val) {
@@ -49,7 +49,7 @@ export class CliApplication extends Application {
             .usage('<src> [options]')
             .option(
                 '-c, --config [config]',
-                'A configuration file : .compodocrc, .compodocrc.json, .compodocrc.yaml or compodoc property in package.json'
+                'A configuration file : .compodocrc, .compodocrc.json, .compodocrc.yaml, or compodoc/compodocx property in package.json'
             )
             .option('-p, --tsconfig [config]', 'A tsconfig.json file')
             .option(
@@ -94,11 +94,11 @@ export class CliApplication extends Application {
             )
             .option(
                 '--theme [theme]',
-                "Choose one of available themes, default is 'gitbook' (laravel, original, material, postmark, readthedocs, stripe, vagrant)"
+                "Choose a theme: 'light' (default), 'dark', 'material', or a path to a custom CSS file"
             )
             .option(
                 '--hideGenerator',
-                'Do not print the Compodoc link at the bottom of the page',
+                'Do not print the compodocx link at the bottom of the page',
                 COMPODOC_DEFAULTS.hideGenerator
             )
             .option(
@@ -108,7 +108,7 @@ export class CliApplication extends Application {
             )
             .option(
                 '--toggleMenuItems <items>',
-                "Close by default items in the menu values : ['all'] or one of these ['modules','components','directives','controllers','entities','classes','injectables','guards','interfaces','interceptors','pipes','miscellaneous','additionalPages']",
+                "Close by default items in the menu values : ['all'] or one of these ['modules','components','directives','entities','classes','injectables','guards','interfaces','interceptors','pipes','miscellaneous','additionalPages']",
                 list,
                 COMPODOC_DEFAULTS.toggleMenuItems
             )

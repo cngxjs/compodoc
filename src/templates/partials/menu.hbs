@@ -157,24 +157,6 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                                         </ul>
                                     </li>
                                 {{/compare}}
-                                {{#compare compodocLinks.controllers.length ">" 0}}
-                                    <li class="chapter inner">
-                                        <div class="simple menu-toggler" data-bs-toggle="collapse" ${ isNormalMode ?
-                                            'data-bs-target="#controllers-links-{{id}}"' : 'data-bs-target="#xs-controllers-links-{{id}}"' }>
-                                            <span class="icon ion-md-swap"></span>
-                                            <span>{{t "controllers" }}</span>
-                                            <span class="icon {{#isNotToggle 'controllers'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
-                                        </div>
-                                        <ul class="links collapse" ${ isNormalMode ? 'id="controllers-links-{{id}}"' :
-                                            'id="xs-controllers-links-{{id}}"' }>
-                                            {{#each compodocLinks.controllers}}
-                                            <li class="link">
-                                                <a href="controllers/{{#if duplicateName}}{{duplicateName}}{{else}}{{name}}{{/if}}.html" data-type="entity-link" data-context="sub-entity" data-context-id="modules" {{#if deprecated}}class="deprecated-name"{{/if}}>{{ name }}</a>
-                                            </li>
-                                            {{/each}}
-                                        </ul>
-                                    </li>
-                                {{/compare}}
                                 {{#compare compodocLinks.directives.length ">" 0}}
                                 <li class="chapter inner">
                                     <div class="simple menu-toggler" data-bs-toggle="collapse" ${ isNormalMode ?
@@ -270,25 +252,6 @@ customElements.define('compodoc-menu', class extends HTMLElement {
                             {{/objectLength}}
                         </ul>
                     </li>
-                    {{/element-alone}}
-                {{/if}}
-                {{#if controllers}}
-                    {{#element-alone controllers 'controller'}}
-                        <li class="chapter">
-                            <div class="simple menu-toggler" data-bs-toggle="collapse" ${ isNormalMode ? 'data-bs-target="#controllers-links"' :
-                                'data-bs-target="#xs-controllers-links"' }>
-                                <span class="icon ion-md-swap"></span>
-                                <span>{{t "controllers" }}</span>
-                                <span class="icon {{#isNotToggle 'controllers'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
-                            </div>
-                            <ul class="links collapse {{#isNotToggle 'controllers'}}in{{/isNotToggle}}" ${ isNormalMode ? 'id="controllers-links"' : 'id="xs-controllers-links"' }>
-                                {{#each controllers}}
-                                <li class="link">
-                                    <a href="controllers/{{#if duplicateName}}{{duplicateName}}{{else}}{{name}}{{/if}}.html" data-type="entity-link" {{#if deprecated}}class="deprecated-name"{{/if}}>{{ name }}</a>
-                                </li>
-                                {{/each}}
-                            </ul>
-                        </li>
                     {{/element-alone}}
                 {{/if}}
                 {{#if entities}}

@@ -20,7 +20,6 @@ import {
 } from '../compiler/angular/dependencies.interfaces';
 
 import { IComponentDep } from '../compiler/angular/deps/component-dep.factory';
-import { IControllerDep } from '../compiler/angular/deps/controller-dep.factory';
 import { IDirectiveDep } from '../compiler/angular/deps/directive-dep.factory';
 import { IModuleDep } from '../compiler/angular/deps/module-dep.factory';
 
@@ -32,7 +31,6 @@ export class DependenciesEngine {
     public rawModules: Object[];
     public rawModulesForOverview: Object[];
     public components: Object[];
-    public controllers: Object[];
     public entities: Object[];
     public directives: Object[];
     public injectables: Object[];
@@ -50,7 +48,6 @@ export class DependenciesEngine {
     public categorizedInterfaces: { [category: string]: Object[] } = {};
     public categorizedGuards: { [category: string]: Object[] } = {};
     public categorizedInterceptors: { [category: string]: Object[] } = {};
-    public categorizedControllers: { [category: string]: Object[] } = {};
     public categorizedEntities: { [category: string]: Object[] } = {};
     public miscellaneous: MiscellaneousData = {
         variables: [],
@@ -130,7 +127,6 @@ export class DependenciesEngine {
         this.rawModulesForOverview = _.sortBy(data.modulesForGraph, [el => el.name.toLowerCase()]);
         this.rawModules = _.sortBy(data.modulesForGraph, [el => el.name.toLowerCase()]);
         this.components = _.sortBy(this.rawData.components, [el => el.name.toLowerCase()]);
-        this.controllers = _.sortBy(this.rawData.controllers, [el => el.name.toLowerCase()]);
         this.entities = _.sortBy(this.rawData.entities, [el => el.name.toLowerCase()]);
         this.directives = _.sortBy(this.rawData.directives, [el => el.name.toLowerCase()]);
         this.injectables = _.sortBy(this.rawData.injectables, [el => el.name.toLowerCase()]);
@@ -253,7 +249,6 @@ export class DependenciesEngine {
         this.guards = this.guards.map(processDuplicates);
         this.modules = this.modules.map(processDuplicates);
         this.components = this.components.map(processDuplicates);
-        this.controllers = this.controllers.map(processDuplicates);
         this.entities = this.entities.map(processDuplicates);
         this.directives = this.directives.map(processDuplicates);
     }
@@ -267,7 +262,6 @@ export class DependenciesEngine {
             () => this.findInCompodocDependencies(name, this.interfaces),
             () => this.findInCompodocDependencies(name, this.classes),
             () => this.findInCompodocDependencies(name, this.components),
-            () => this.findInCompodocDependencies(name, this.controllers),
             () => this.findInCompodocDependencies(name, this.entities),
             () => this.findInCompodocDependencies(name, this.directives),
             () => this.findInCompodocDependencies(name, this.miscellaneous.variables),
@@ -305,14 +299,8 @@ export class DependenciesEngine {
                 this.components[_index] = component;
             });
         }
-        if (updatedData.controllers.length > 0) {
-            _.forEach(updatedData.controllers, (controller: IControllerDep) => {
-                const _index = _.findIndex(this.controllers, { name: controller.name } as any);
-                this.controllers[_index] = controller;
-            });
-        }
         if (updatedData.entities.length > 0) {
-            _.forEach(updatedData.entities, (entity: IControllerDep) => {
+            _.forEach(updatedData.entities, (entity: any) => {
                 const _index = _.findIndex(this.entities, { name: entity.name } as any);
                 this.entities[_index] = entity;
             });
@@ -406,7 +394,6 @@ export class DependenciesEngine {
             [],
             this.modules,
             this.components,
-            this.controllers,
             this.entities,
             this.directives,
             this.injectables,
@@ -453,7 +440,6 @@ export class DependenciesEngine {
         this.categorizedInterfaces = this.groupByCategory(this.interfaces as any[]);
         this.categorizedGuards = this.groupByCategory(this.guards as any[]);
         this.categorizedInterceptors = this.groupByCategory(this.interceptors as any[]);
-        this.categorizedControllers = this.groupByCategory(this.controllers as any[]);
         this.categorizedEntities = this.groupByCategory(this.entities as any[]);
     }
 
@@ -471,10 +457,6 @@ export class DependenciesEngine {
 
     public getComponents() {
         return this.components;
-    }
-
-    public getControllers() {
-        return this.controllers;
     }
 
     public getEntities() {

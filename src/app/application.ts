@@ -564,9 +564,6 @@ export class Application {
         if (diffCrawledData.components.length > 0) {
             actions.push(() => this.prepareComponents());
         }
-        if (diffCrawledData.controllers.length > 0) {
-            actions.push(() => this.prepareControllers());
-        }
         if (diffCrawledData.entities.length > 0) {
             actions.push(() => this.prepareEntities());
         }
@@ -671,9 +668,6 @@ export class Application {
         if (DependenciesEngine.components.length > 0) {
             logger.info(`- component    : ${DependenciesEngine.components.length}`);
         }
-        if (DependenciesEngine.controllers.length > 0) {
-            logger.info(`- controller   : ${DependenciesEngine.controllers.length}`);
-        }
         if (DependenciesEngine.entities.length > 0) {
             logger.info(`- entity       : ${DependenciesEngine.entities.length}`);
         }
@@ -720,12 +714,6 @@ export class Application {
         if (DependenciesEngine.directives.length > 0) {
             actions.push(() => {
                 return this.prepareDirectives();
-            });
-        }
-
-        if (DependenciesEngine.controllers.length > 0) {
-            actions.push(() => {
-                return this.prepareControllers();
             });
         }
 
@@ -974,12 +962,11 @@ export class Application {
             Configuration.mainData.modules = _modules.map(ngModule => {
                 ngModule.compodocLinks = {
                     components: [],
-                    controllers: [],
                     directives: [],
                     injectables: [],
                     pipes: []
                 };
-                ['declarations', 'bootstrap', 'imports', 'exports', 'controllers'].forEach(
+                ['declarations', 'bootstrap', 'imports', 'exports'].forEach(
                     metadataType => {
                         ngModule[metadataType] = ngModule[metadataType].filter(metaDataItem => {
                             switch (metaDataItem.type) {
@@ -1028,25 +1015,6 @@ export class Application {
                                             return selectedComponent;
                                         }
                                     );
-
-                                case 'controller':
-                                    return DependenciesEngine.getControllers().some(controller => {
-                                        let selectedController;
-                                        if (typeof metaDataItem.id !== 'undefined') {
-                                            selectedController =
-                                                (controller as any).id === metaDataItem.id;
-                                        } else {
-                                            selectedController =
-                                                (controller as any).name === metaDataItem.name;
-                                        }
-                                        if (
-                                            selectedController &&
-                                            !ngModule.compodocLinks.controllers.includes(controller)
-                                        ) {
-                                            ngModule.compodocLinks.controllers.push(controller);
-                                        }
-                                        return selectedController;
-                                    });
 
                                 case 'module':
                                     return DependenciesEngine.getModules().some(
@@ -1112,9 +1080,6 @@ export class Application {
                 });
                 // Order things
                 ngModule.compodocLinks.components = _.sortBy(ngModule.compodocLinks.components, [
-                    'name'
-                ]);
-                ngModule.compodocLinks.controllers = _.sortBy(ngModule.compodocLinks.controllers, [
                     'name'
                 ]);
                 ngModule.compodocLinks.directives = _.sortBy(ngModule.compodocLinks.directives, [
@@ -1487,42 +1452,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         return navTabs;
     }
 
-    public prepareControllers(someControllers?) {
-        logger.info('Prepare controllers');
-        Configuration.mainData.controllers = someControllers
-            ? someControllers
-            : DependenciesEngine.getControllers();
-
-        return new Promise((resolve, reject) => {
-            let i = 0;
-            const len = Configuration.mainData.controllers.length;
-            const loop = () => {
-                if (i < len) {
-                    const controller = Configuration.mainData.controllers[i];
-                    const page = {
-                        path: 'controllers',
-                        name: controller.name,
-                        id: controller.id,
-                        navTabs: this.getNavTabs(controller),
-                        context: 'controller',
-                        controller: controller,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (controller.isDuplicate) {
-                        page.name += '-' + controller.duplicateId;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
     public prepareEntities(someEntities?) {
         logger.info('Prepare entities');
         Configuration.mainData.entities = someEntities
@@ -1867,7 +1796,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
         return new Promise((resolve, reject) => {
             /*
-             * loop with components, directives, controllers, entities, classes, injectables, interfaces, pipes, guards, misc functions variables
+             * loop with components, directives, entities, classes, injectables, interfaces, pipes, guards, misc functions variables
              */
             let files = [];
             let totalProjectStatementDocumented = 0;
@@ -2171,9 +2100,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             );
             processComponentsAndDirectivesAndControllersAndEntities(
                 Configuration.mainData.directives
-            );
-            processComponentsAndDirectivesAndControllersAndEntities(
-                Configuration.mainData.controllers
             );
             processComponentsAndDirectivesAndControllersAndEntities(
                 Configuration.mainData.entities
@@ -2744,7 +2670,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         mainData.categorizedInterfaces = DependenciesEngine.categorizedInterfaces;
         mainData.categorizedGuards = DependenciesEngine.categorizedGuards;
         mainData.categorizedInterceptors = DependenciesEngine.categorizedInterceptors;
-        mainData.categorizedControllers = DependenciesEngine.categorizedControllers;
         mainData.categorizedEntities = DependenciesEngine.categorizedEntities;
 
         return new Promise((resolveProcessMenu, rejectProcessMenu) => {

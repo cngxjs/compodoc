@@ -27,14 +27,6 @@ export class ElementAloneHelper implements IHtmlEngineHelper {
                         foundInOneModule = true;
                     }
                 });
-                module.controllers.forEach(controller => {
-                    if (controller.id === element.id) {
-                        foundInOneModule = true;
-                    }
-                    if (controller.file === element.file) {
-                        foundInOneModule = true;
-                    }
-                });
                 module.providers.forEach(provider => {
                     if (provider.id === element.id) {
                         foundInOneModule = true;
@@ -56,9 +48,6 @@ export class ElementAloneHelper implements IHtmlEngineHelper {
                     break;
                 case 'directive':
                     context.directives = alones;
-                    break;
-                case 'controller':
-                    context.controllers = alones;
                     break;
                 case 'injectable':
                     context.injectables = alones;

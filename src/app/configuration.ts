@@ -38,7 +38,6 @@ export class Configuration implements ConfigurationInterface {
         classes: [],
         interfaces: [],
         components: [],
-        controllers: [],
         entities: [],
         directives: [],
         injectables: [],

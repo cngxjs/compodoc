@@ -18,15 +18,6 @@ export class ModuleHelper {
             .map(providerName => this.symbolHelper.parseDeepIndentifier(providerName, srcFile));
     }
 
-    public getModuleControllers(
-        props: ReadonlyArray<ts.ObjectLiteralElementLike>,
-        srcFile: ts.SourceFile
-    ): Array<IParseDeepIdentifierResult> {
-        return this.symbolHelper
-            .getSymbolDeps(props, 'controllers', srcFile)
-            .map(providerName => this.symbolHelper.parseDeepIndentifier(providerName, srcFile));
-    }
-
     public getModuleDeclarations(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
         srcFile: ts.SourceFile

@@ -29,7 +29,7 @@
                var darkModeState = useDark.matches;
                var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
                var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
-               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+               var darkModeStateLocal = localStorage.getItem('compodocx_darkmode-state');
 
                function checkToggle(check) {
                     for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
@@ -39,7 +39,7 @@
 
                function toggleDarkMode(state) {
                     if (window.localStorage) {
-                         localStorage.setItem('compodoc_darkmode-state', state);
+                         localStorage.setItem('compodocx_darkmode-state', state);
                     }
 
                     checkToggle(state);
@@ -145,10 +145,6 @@
                    {{/compare}}
                    {{#compare data.context "===" 'component'}}
                         {{~> component data ~}}
-                   {{/compare}}
-
-                   {{#compare data.context "===" 'controller'}}
-                        {{~> controller data ~}}
                    {{/compare}}
 
                    {{#compare data.context "===" 'entity'}}

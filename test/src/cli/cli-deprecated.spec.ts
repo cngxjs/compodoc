@@ -126,33 +126,4 @@ describe('CLI Deprecated', () => {
         });
     });
 
-    describe('Nestjs app', () => {
-        before(function (done) {
-            tmp.clean(tmpFolder);
-            tmp.copy('./test/fixtures/nest-app/', tmpFolder);
-            let ls = shell(
-                'node',
-                ['../bin/index-cli.js', '-p', './tsconfig.json', '-d', 'documentation'],
-                { cwd: tmpFolder }
-            );
-
-            if (ls.stderr.toString() !== '') {
-                console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
-            }
-
-            menuFile = read(`${distFolder}/js/menu-wc.js`);
-
-            done();
-        });
-        after(() => tmp.clean(tmpFolder));
-
-        it('it should contain controller deprecated', () => {
-            const file = read(`${distFolder}/controllers/AuthDeprecatedController.html`);
-            expect(file).to.contain('<h3 class="deprecated">Deprecated');
-            expect(menuFile).to.contain(
-                'data-type="entity-link" class="deprecated-name">AuthDeprecatedController'
-            );
-        });
-    });
 });
