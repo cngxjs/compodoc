@@ -210,7 +210,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             .allowExcessArguments()
             .parse(process.argv);
 
-        let outputHelp = () => {
+        const outputHelp = () => {
             program.outputHelp();
             process.exit(1);
         };
@@ -225,7 +225,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
 
         if (programOptions.config) {
             let configFilePath = programOptions.config;
-            let testConfigFilePath = configFilePath.match(process.cwd());
+            const testConfigFilePath = configFilePath.match(process.cwd());
             if (testConfigFilePath && testConfigFilePath.length > 0) {
                 configFilePath = configFilePath.replace(process.cwd() + path.sep, '');
             }

@@ -1,4 +1,3 @@
-import Handlebars from 'handlebars';
 import { IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class CapitalizeHelper implements IHtmlEngineHelper {

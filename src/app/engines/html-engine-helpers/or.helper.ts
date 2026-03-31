@@ -1,13 +1,13 @@
 import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
 
 export class OrHelper implements IHtmlEngineHelper {
-    public helperFunc(context: any /* any, any, ..., options */) {
-        let len = arguments.length - 1;
-        let options: IHandlebarsOptions = arguments[len];
+    public helperFunc(context: any, ...args: any[]) {
+        const len = args.length;
+        const options: IHandlebarsOptions = args[len - 1];
 
-        // We start at 1 because of options
-        for (let i = 1; i < len; i++) {
-            if (arguments[i]) {
+        // We start at 0 because args excludes context
+        for (let i = 0; i < len - 1; i++) {
+            if (args[i]) {
                 return options.fn(context);
             }
         }

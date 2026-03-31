@@ -1,6 +1,5 @@
-import Handlebars from 'handlebars';
 
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
+import { IHtmlEngineHelper } from './html-engine-helper.interface';
 
 import I18nEngine from '../i18n.engine';
 

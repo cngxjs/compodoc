@@ -4,8 +4,8 @@ import { JsdocTagInterface } from '../../interfaces/jsdoc-tag.interface';
 export class JsdocParamsValidHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, jsdocTags: JsdocTagInterface[], options: IHandlebarsOptions) {
         let i = 0;
-        let len = jsdocTags.length;
-        let tags = [];
+        const len = jsdocTags.length;
+        const tags = [];
         let valid = false;
 
         for (i; i < len; i++) {

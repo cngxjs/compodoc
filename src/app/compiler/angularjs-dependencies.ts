@@ -16,7 +16,7 @@ export class AngularJSDependencies extends FrameworkDependencies {
     }
 
     public getDependencies() {
-        let deps = {
+        const deps = {
             modules: [],
             modulesForGraph: [],
             components: [],

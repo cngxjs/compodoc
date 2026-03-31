@@ -1,7 +1,6 @@
 import Configuration from '../configuration';
 
 import ExportJsonEngine from './export-json.engine';
-import ExportPdfEngine from './pdf-engine/export-pdf.engine';
 
 export class ExportEngine {
     private static instance: ExportEngine;

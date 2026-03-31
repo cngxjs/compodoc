@@ -8,7 +8,7 @@ export class FilterAngular2ModulesHelper implements IHtmlEngineHelper {
             'HttpModule',
             'RouterModule'
         ];
-        let len = NG2_MODULES.length;
+        const len = NG2_MODULES.length;
         let i = 0;
         let result = false;
         for (i; i < len; i++) {

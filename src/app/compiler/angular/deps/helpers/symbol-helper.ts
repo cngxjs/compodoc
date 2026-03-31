@@ -18,7 +18,7 @@ export class SymbolHelper {
     private readonly unknown = '???';
 
     public parseDeepIndentifier(name: string, srcFile?: ts.SourceFile): IParseDeepIdentifierResult {
-        let result = {
+        const result = {
             name: '',
             type: ''
         };
@@ -26,8 +26,8 @@ export class SymbolHelper {
         if (typeof name === 'undefined') {
             return result;
         }
-        let nsModule = name.split('.');
-        let type = this.getType(name);
+        const nsModule = name.split('.');
+        const type = this.getType(name);
 
         if (nsModule.length > 1) {
             result.ns = nsModule[0];
@@ -144,14 +144,14 @@ export class SymbolHelper {
             (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) ||
             (ts.isNewExpression(node) && ts.isElementAccessExpression(node.expression))
         ) {
-            let className = this.buildIdentifierName(node.expression);
+            const className = this.buildIdentifierName(node.expression);
 
             // function arguments could be really complex. There are so
             // many use cases that we can't handle. Just print "args" to indicate
             // that we have arguments.
 
-            let functionArgs = node.arguments.length > 0 ? 'args' : '';
-            let text = `${className}(${functionArgs})`;
+            const functionArgs = node.arguments.length > 0 ? 'args' : '';
+            const text = `${className}(${functionArgs})`;
             return text;
         } else if (ts.isPropertyAccessExpression(node)) {
             // parse expressions such as: Shared.Module
@@ -222,7 +222,7 @@ export class SymbolHelper {
         ) {
             return [localNode.initializer.kind === SyntaxKind.TrueKeyword ? true : false];
         } else if (localNode.initializer && ts.isPropertyAccessExpression(localNode.initializer)) {
-            let identifier = this.parseSymbolElements(localNode.initializer);
+            const identifier = this.parseSymbolElements(localNode.initializer);
             return [identifier];
         } else if (
             localNode.initializer &&

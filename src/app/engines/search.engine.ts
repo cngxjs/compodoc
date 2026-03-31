@@ -32,10 +32,10 @@ export class SearchEngine {
         let text;
         this.amountOfMemory += page.rawData.length;
         if (this.amountOfMemory < MAX_SIZE_FILE_CHEERIO_PARSING) {
-            let indexStartContent = page.rawData.indexOf('<!-- START CONTENT -->');
-            let indexEndContent = page.rawData.indexOf('<!-- END CONTENT -->');
+            const indexStartContent = page.rawData.indexOf('<!-- START CONTENT -->');
+            const indexEndContent = page.rawData.indexOf('<!-- END CONTENT -->');
 
-            let $ = cheerio.load(page.rawData.substring(indexStartContent + 1, indexEndContent));
+            const $ = cheerio.load(page.rawData.substring(indexStartContent + 1, indexEndContent));
 
             text = $('.content').html();
             text = decode(text);
@@ -43,7 +43,7 @@ export class SearchEngine {
 
             page.url = page.url.replace(Configuration.mainData.output, '');
 
-            let doc = {
+            const doc = {
                 url: page.url,
                 title: page.infos.context + ' - ' + page.infos.name,
                 body: text
@@ -60,8 +60,8 @@ export class SearchEngine {
     }
 
     public generateSearchIndexJson(outputFolder: string): Promise {
-        let that = this;
-        let searchIndex = lunr(function () {
+        const that = this;
+        const searchIndex = lunr(function () {
             /* tslint:disable:no-invalid-this */
             this.ref('url');
             this.field('title');
@@ -69,19 +69,19 @@ export class SearchEngine {
             this.pipeline.remove(lunr.stemmer);
 
             let i = 0;
-            let len = that.searchDocuments.length;
+            const len = that.searchDocuments.length;
             for (i; i < len; i++) {
                 this.add(that.searchDocuments[i]);
             }
         });
         return FileEngine.get(__dirname + '/../src/templates/partials/search-index.hbs').then(
             data => {
-                let template: any = Handlebars.compile(data);
-                let result = template({
+                const template: any = Handlebars.compile(data);
+                const result = template({
                     index: JSON.stringify(searchIndex),
                     store: JSON.stringify(this.documentsStore)
                 });
-                let testOutputDir = outputFolder.match(process.cwd());
+                const testOutputDir = outputFolder.match(process.cwd());
                 if (testOutputDir && testOutputDir.length > 0) {
                     outputFolder = outputFolder.replace(process.cwd() + path.sep, '');
                 }

@@ -108,14 +108,14 @@ export class Configuration implements ConfigurationInterface {
     }
 
     public addPage(page: PageInterface) {
-        let indexPage = this._pages.findIndex(p => p.name === page.name);
+        const indexPage = this._pages.findIndex(p => p.name === page.name);
         if (indexPage === -1) {
             this._pages.push(page);
         }
     }
 
     public hasPage(name: string): boolean {
-        let indexPage = this._pages.findIndex(p => p.name === name);
+        const indexPage = this._pages.findIndex(p => p.name === name);
         return indexPage !== -1;
     }
 

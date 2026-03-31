@@ -95,21 +95,21 @@ export class MarkdownEngine {
     }
 
     public readNeighbourReadmeFile(file: string): string {
-        let dirname = path.dirname(file);
-        let readmeFile = dirname + path.sep + path.basename(file, '.ts') + '.md';
+        const dirname = path.dirname(file);
+        const readmeFile = dirname + path.sep + path.basename(file, '.ts') + '.md';
         return fs.readFileSync(readmeFile, 'utf8');
     }
 
     public hasNeighbourReadmeFile(file: string): boolean {
-        let dirname = path.dirname(file);
-        let readmeFile = dirname + path.sep + path.basename(file, '.ts') + '.md';
+        const dirname = path.dirname(file);
+        const readmeFile = dirname + path.sep + path.basename(file, '.ts') + '.md';
         return FileEngine.existsSync(readmeFile);
     }
 
     private componentReadmeFile(file: string): string {
-        let dirname = path.dirname(file);
-        let readmeFile = dirname + path.sep + 'README.md';
-        let readmeAlternativeFile = dirname + path.sep + path.basename(file, '.ts') + '.md';
+        const dirname = path.dirname(file);
+        const readmeFile = dirname + path.sep + 'README.md';
+        const readmeAlternativeFile = dirname + path.sep + path.basename(file, '.ts') + '.md';
         let finalPath = '';
         if (FileEngine.existsSync(readmeFile)) {
             finalPath = readmeFile;
@@ -129,7 +129,7 @@ export class MarkdownEngine {
     }
 
     public listRootMarkdowns(): string[] {
-        let foundFiles = this.markdownFiles.filter(
+        const foundFiles = this.markdownFiles.filter(
             x =>
                 FileEngine.existsSync(process.cwd() + path.sep + x + '.md') ||
                 FileEngine.existsSync(process.cwd() + path.sep + x)

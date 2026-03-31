@@ -5,8 +5,8 @@ export class JsdocDefaultHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, jsdocTags: JsdocTagInterface[], options: IHandlebarsOptions) {
         if (jsdocTags) {
             let i = 0;
-            let len = jsdocTags.length;
-            let tag = {} as JsdocTagInterface;
+            const len = jsdocTags.length;
+            const tag = {} as JsdocTagInterface;
             let defaultValue = false;
 
             for (i; i < len; i++) {

@@ -5,8 +5,8 @@ export class ElementAloneHelper implements IHtmlEngineHelper {
     constructor() {}
 
     public helperFunc(context: any, elements, elementType: string, options: IHandlebarsOptions) {
-        let alones = [];
-        let modules = DependenciesEngine.modules;
+        const alones = [];
+        const modules = DependenciesEngine.modules;
 
         elements.forEach(element => {
             let foundInOneModule = false;

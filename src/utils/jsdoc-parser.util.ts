@@ -33,7 +33,7 @@ export class JsdocParserUtil {
 
     getRootModuleDeclaration(node: ts.ModuleDeclaration): ts.Node {
         while (node.parent && node.parent.kind === ts.SyntaxKind.ModuleDeclaration) {
-            let parent = <ts.ModuleDeclaration>node.parent;
+            const parent = <ts.ModuleDeclaration>node.parent;
             if (node.name.pos === parent.name.end + 1) {
                 node = parent;
             } else {

@@ -186,7 +186,7 @@ export class AngularDependencies extends FrameworkDependencies {
 
         if (deps.miscellaneous.variables.length > 0) {
             deps.miscellaneous.variables.forEach(_variable => {
-                let newVar = [];
+                const newVar = [];
 
                 // link ...VAR to VAR values, recursively
                 ((_var, _newVar) => {
@@ -461,7 +461,7 @@ export class AngularDependencies extends FrameworkDependencies {
             // Clean file for spread and dynamics inside routes definitions
             variableRoutesStatements.forEach(s => {
                 const variableDeclarations = s.getDeclarations();
-                let len = variableDeclarations.length;
+                const len = variableDeclarations.length;
                 let i = 0;
                 for (i; i < len; i++) {
                     if (variableDeclarations[i].compilerNode.type) {
@@ -933,7 +933,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                     node.thenStatement.statements &&
                                     node.thenStatement.statements.length > 0
                                 ) {
-                                    let firstStatement = node.thenStatement.statements[0];
+                                    const firstStatement = node.thenStatement.statements[0];
                                     resultNode = this.findExpressionByNameInExpressions(
                                         firstStatement.expression,
                                         'bootstrapModule'
@@ -1262,7 +1262,7 @@ export class AngularDependencies extends FrameworkDependencies {
         let result;
         const that = this;
         let i = 0;
-        let len = arg.length;
+        const len = arg.length;
         const loop = function (node, z) {
             if (node.body) {
                 if (node.body.statements && node.body.statements.length > 0) {
@@ -1643,7 +1643,7 @@ export class AngularDependencies extends FrameworkDependencies {
         };
         if (node.members) {
             let i = 0;
-            let len = node.members.length;
+            const len = node.members.length;
             let memberjsdoctags = [];
             for (i; i < len; i++) {
                 const member: any = {
@@ -1674,7 +1674,7 @@ export class AngularDependencies extends FrameworkDependencies {
     private visitEnumDeclarationForRoutes(fileName, node) {
         if (node.declarationList.declarations) {
             let i = 0;
-            let len = node.declarationList.declarations.length;
+            const len = node.declarationList.declarations.length;
             for (i; i < len; i++) {
                 const routesInitializer = node.declarationList.declarations[i].initializer;
                 const data = new CodeGenerator().generate(routesInitializer);
