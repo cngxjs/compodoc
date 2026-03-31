@@ -42,12 +42,12 @@ export class RouterParserUtil {
 
     public addRoute(route): void {
         this.routes.push(route);
-        this.routes = [...this.routes.filter((item, i, self) => i === self.findIndex(other => JSON.stringify(other) === JSON.stringify(item)))].sort((a, b) => a.name.localeCompare(b.name));
+        this.routes = [...this.routes.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public addIncompleteRoute(route): void {
         this.incompleteRoutes.push(route);
-        this.incompleteRoutes = [...this.incompleteRoutes.filter((item, i, self) => i === self.findIndex(other => JSON.stringify(other) === JSON.stringify(item)))].sort((a, b) => a.name.localeCompare(b.name));
+        this.incompleteRoutes = [...this.incompleteRoutes.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public addModuleWithRoutes(moduleName, moduleImports, filename): void {
@@ -56,7 +56,7 @@ export class RouterParserUtil {
             importsNode: moduleImports,
             filename: filename
         });
-        this.modulesWithRoutes = [...this.modulesWithRoutes.filter((item, i, self) => i === self.findIndex(other => JSON.stringify(other) === JSON.stringify(item)))].sort((a, b) => a.name.localeCompare(b.name));
+        this.modulesWithRoutes = [...this.modulesWithRoutes.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public addModule(moduleName: string, moduleImports): void {
@@ -64,7 +64,7 @@ export class RouterParserUtil {
             name: moduleName,
             importsNode: moduleImports
         });
-        this.modules = [...this.modules.filter((item, i, self) => i === self.findIndex(other => JSON.stringify(other) === JSON.stringify(item)))].sort((a, b) => a.name.localeCompare(b.name));
+        this.modules = [...this.modules.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public cleanRawRouteParsed(route: string): object {
