@@ -1,4 +1,46 @@
 document.addEventListener('DOMContentLoaded', function () {
+    function restoreSidebarState() {
+        try {
+            var saved = localStorage.getItem('compodoc-sidebar-state');
+            if (saved) {
+                var states = JSON.parse(saved);
+                Object.keys(states).forEach(function (id) {
+                    var el = document.getElementById(id);
+                    if (el) {
+                        var bsnInstance = BSN.Collapse.getInstance(el) || BSN.Collapse.getInstance('#' + id);
+                        if (bsnInstance) {
+                            if (states[id]) {
+                                bsnInstance.show();
+                            } else {
+                                bsnInstance.hide();
+                            }
+                        } else {
+                            // Fallback: direct DOM manipulation
+                            if (states[id]) {
+                                el.classList.add('in');
+                                el.style.display = 'block';
+                            } else {
+                                el.classList.remove('in');
+                                el.style.display = 'none';
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (e) { /* localStorage blocked or invalid JSON */ }
+    }
+
+    function saveSidebarState() {
+        try {
+            var collapses = document.querySelectorAll('.menu .collapse[id]');
+            var states = {};
+            for (var i = 0; i < collapses.length; i++) {
+                states[collapses[i].id] = collapses[i].classList.contains('in');
+            }
+            localStorage.setItem('compodoc-sidebar-state', JSON.stringify(states));
+        } catch (e) { /* localStorage blocked */ }
+    }
+
     var menuCollapsed = false,
         mobileMenu = document.getElementById('mobile-menu');
 
@@ -145,6 +187,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
+        // Restore sidebar state AFTER Bootstrap Collapse initialization
+        restoreSidebarState();
+
         // collapse menu
         var classnameMenuToggler = document.getElementsByClassName('menu-toggler'),
             faAngleUpClass = 'ion-ios-arrow-up',
@@ -177,6 +222,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 }
+                // Persist sidebar state after animation completes
+                setTimeout(saveSidebarState, 350);
             };
 
         for (var i = 0; i < classnameMenuToggler.length; i++) {
@@ -263,6 +310,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     ) {
                         activeMenu.scrollTop = 0;
                     }
+                    saveSidebarState();
                 }, 300);
             }
         }

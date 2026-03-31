@@ -8,6 +8,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <link rel="icon" type="image/x-icon" href="{{relativeURL data.depth }}images/favicon.ico">
+        <style>
+            /* Critical sidebar CSS — prevents flash of collapsed/expanded content */
+            .menu .collapse.in { display: block !important; }
+            .menu .collapse:not(.in) { display: none !important; }
+        </style>
 	   <link rel="stylesheet" href="{{relativeURL data.depth }}styles/style.css">
         <link rel="stylesheet" href="{{relativeURL data.depth }}styles/dark.css">
         {{#if data.theme}}
