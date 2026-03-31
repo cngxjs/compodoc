@@ -1,8 +1,8 @@
-
 import { FunctionSignatureHelper } from '../../../../src/app/engines/html-engine-helpers/function-signature.helper';
 import DependenciesEngine from '../../../../src/app/engines/dependencies.engine';
 import AngularVersionUtil from '../../../../src/utils/angular-version.util';
 import BasicTypeUtil from '../../../../src/utils/basic-type.util';
+import { vi, expect } from 'vitest';
 
 describe('Engines - FunctionSignatureHelper', () => {
     let helper: FunctionSignatureHelper;
@@ -178,7 +178,9 @@ describe('Engines - FunctionSignatureHelper', () => {
         it('should handle method with basic type argument', () => {
             findStub.mockReturnValue(null);
             isKnownTypeStub.mockReturnValue(true);
-            typeUrlStub.mockReturnValue('https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String');
+            typeUrlStub.mockReturnValue(
+                'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String'
+            );
 
             const context = {};
             const method = {
@@ -407,4 +409,3 @@ describe('Engines - FunctionSignatureHelper', () => {
         });
     });
 });
-
