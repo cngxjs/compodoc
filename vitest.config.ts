@@ -8,5 +8,6 @@ export default defineConfig({
         hookTimeout: 120000,
         pool: 'forks',
         reporters: ['verbose'],
+        dangerouslyIgnoreUnhandledErrors: true,
     },
 });

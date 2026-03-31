@@ -11,7 +11,7 @@
         "start": "npm run test:watch",
         "copy-libs": "node tools/copy-libs.js",
         "*********BUILD********": "*******************",
-        "prebuild": "rimraf dist/*",
+        "prebuild": "rimraf dist",
         "build": "rollup -c rollup/rollup.config.mjs --bundleConfigAsCjs && npm run build-schematics",
         "build-schematics": "tsc --project schematics/tsconfig.json && cp schematics/collection.json dist",
         "*********UTILS********": "*******************",
