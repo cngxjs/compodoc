@@ -3,7 +3,7 @@ import { expect } from 'chai';
 
 describe(IfStringHelper.name, () => {
     let helper: IfStringHelper;
-    let options = {
+    const options = {
         fn: () => 'fnCalled',
         inverse: () => 'inverseCalled'
     };

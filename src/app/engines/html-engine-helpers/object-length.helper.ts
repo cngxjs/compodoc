@@ -2,8 +2,8 @@ import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.inte
 
 export class ObjectLengthHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, obj: Object, operator: string, length: number) {
-        let len = arguments.length - 1;
-        let options: IHandlebarsOptions = arguments[len];
+        const len = arguments.length - 1;
+        const options: IHandlebarsOptions = arguments[len];
 
         if (typeof obj !== 'object') {
             return options.inverse(context);

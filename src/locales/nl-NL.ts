@@ -9,8 +9,6 @@ export const TRANSLATION_NL_NL = {
     component: 'Component',
     components: 'Componenten',
     constructor: 'Constructor',
-    controllers: 'Controllers',
-    controller: 'Controller',
     'coverage-page-title': 'Documentatie coverage',
     declarations: 'Declaraties',
     decorators: 'Decorators',

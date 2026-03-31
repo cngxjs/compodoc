@@ -1,7 +1,8 @@
 import * as fs from 'fs-extra';
+import { tmpdir } from 'os';
 import * as path from 'path';
-import { expect } from 'chai';
-import * as request from 'supertest';
+
+import request from 'supertest';
 import { TemplatePlaygroundServer } from '../../../src/template-playground/template-playground-server';
 
 describe('TemplatePlaygroundServer', () => {
@@ -10,7 +11,6 @@ describe('TemplatePlaygroundServer', () => {
     let originalCwd: string;
 
     beforeEach(async function() {
-        this.timeout(10000);
 
         originalCwd = process.cwd();
         testDir = path.join(process.cwd(), 'test-temp');
@@ -66,7 +66,6 @@ export class AppComponent {
     });
 
     afterEach(async function() {
-        this.timeout(5000);
 
         if (server) {
             await server.stop();
@@ -77,7 +76,7 @@ export class AppComponent {
 
         // Clean up any session directories from OS temp folder
         try {
-            const tempDir = require('os').tmpdir();
+            const tempDir = tmpdir();
             const files = await fs.readdir(tempDir);
             const sessionDirs = files.filter(file =>
                 file.startsWith('hbs-templates-copy-') ||
@@ -170,7 +169,6 @@ export class AppComponent {
         });
 
         it('should generate documentation for session', async function() {
-            this.timeout(15000);
 
             // Create session
             const sessionResponse = await request(server.getHttpServer())
@@ -188,7 +186,6 @@ export class AppComponent {
         });
 
         it('should download template package as ZIP', async function() {
-            this.timeout(10000);
 
             // Create session
             const sessionResponse = await request(server.getHttpServer())

@@ -1,6 +1,5 @@
 import * as path from 'path';
 
-import * as _ from 'lodash';
 import { Project, ts, SyntaxKind } from 'ts-morph';
 
 import { IsKindType, kindToType } from '../../utils/kind-to-type';
@@ -26,7 +25,6 @@ import RouterParserUtil from '../../utils/router-parser.util';
 import { CodeGenerator } from './angular/code-generator';
 
 import { ComponentDepFactory } from './angular/deps/component-dep.factory';
-import { ControllerDepFactory } from './angular/deps/controller-dep.factory';
 import { DirectiveDepFactory } from './angular/deps/directive-dep.factory';
 import { ComponentCache } from './angular/deps/helpers/component-helper';
 import { JsDocHelper } from './angular/deps/helpers/js-doc-helper';
@@ -47,11 +45,10 @@ import {
     ITypeAliasDecDep
 } from './angular/dependencies.interfaces';
 
+import * as crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { getNodeDecorators, nodeHasDecorator } from '../../utils/node.util';
 import { markedAcl } from '../../utils/marked.acl';
-
-const crypto = require('crypto');
 const project = new Project();
 
 // TypeScript reference : https://github.com/Microsoft/TypeScript/blob/master/lib/typescript.d.ts
@@ -138,7 +135,6 @@ export class AngularDependencies extends FrameworkDependencies {
             modules: [],
             modulesForGraph: [],
             components: [],
-            controllers: [],
             entities: [],
             injectables: [],
             interceptors: [],
@@ -190,7 +186,7 @@ export class AngularDependencies extends FrameworkDependencies {
 
         if (deps.miscellaneous.variables.length > 0) {
             deps.miscellaneous.variables.forEach(_variable => {
-                let newVar = [];
+                const newVar = [];
 
                 // link ...VAR to VAR values, recursively
                 ((_var, _newVar) => {
@@ -250,7 +246,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             // Add variable
                             newVar.forEach(newEle => {
                                 if (
-                                    typeof _.find(initialArray, { name: newEle.name }) ===
+                                    typeof initialArray.find(el => el.name === newEle.name) ===
                                     'undefined'
                                 ) {
                                     initialArray.push(newEle);
@@ -260,7 +256,6 @@ export class AngularDependencies extends FrameworkDependencies {
                     };
                     process(mod.imports, _variable);
                     process(mod.exports, _variable);
-                    process(mod.controllers, _variable);
                     process(mod.declarations, _variable);
                     process(mod.providers, _variable);
                 };
@@ -466,7 +461,7 @@ export class AngularDependencies extends FrameworkDependencies {
             // Clean file for spread and dynamics inside routes definitions
             variableRoutesStatements.forEach(s => {
                 const variableDeclarations = s.getDeclarations();
-                let len = variableDeclarations.length;
+                const len = variableDeclarations.length;
                 let i = 0;
                 for (i; i < len; i++) {
                     if (variableDeclarations[i].compilerNode.type) {
@@ -563,18 +558,6 @@ export class AngularDependencies extends FrameworkDependencies {
                                 ComponentsTreeEngine.addComponent(componentDep);
                                 outputSymbols.components.push(componentDep);
                             }
-                        } else if (this.isController(visitedDecorator)) {
-                            const controllerDep = new ControllerDepFactory().create(
-                                file,
-                                srcFile,
-                                name,
-                                props,
-                                IO
-                            );
-                            deps = controllerDep;
-                            if (typeof IO.ignore === 'undefined') {
-                                outputSymbols.controllers.push(controllerDep);
-                            }
                         } else if (this.isEntity(visitedDecorator)) {
                             const entityDep = new EntityDepFactory().create(
                                 file,
@@ -623,7 +606,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             }
                             deps = injectableDeps;
                             if (typeof IO.ignore === 'undefined') {
-                                if (_.includes(IO.implements, 'HttpInterceptor')) {
+                                if (IO.implements.includes('HttpInterceptor')) {
                                     injectableDeps.type = 'interceptor';
                                     outputSymbols.interceptors.push(injectableDeps);
                                 } else if (this.isGuard(IO.implements)) {
@@ -950,7 +933,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                     node.thenStatement.statements &&
                                     node.thenStatement.statements.length > 0
                                 ) {
-                                    let firstStatement = node.thenStatement.statements[0];
+                                    const firstStatement = node.thenStatement.statements[0];
                                     resultNode = this.findExpressionByNameInExpressions(
                                         firstStatement.expression,
                                         'bootstrapModule'
@@ -971,7 +954,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             }
                             if (resultNode) {
                                 if (resultNode.arguments.length > 0) {
-                                    _.forEach(resultNode.arguments, (argument: any) => {
+                                    resultNode.arguments.forEach((argument: any) => {
                                         if (argument.text) {
                                             rootModule = argument.text;
                                         }
@@ -1207,11 +1190,9 @@ export class AngularDependencies extends FrameworkDependencies {
      * @param store Store
      */
     private addNewEntityInStore(entity, store) {
-        const findSameEntityInStore = _.filter(store, {
-            name: entity.name,
-            id: entity.id,
-            file: entity.file
-        });
+        const findSameEntityInStore = store.filter(el =>
+            el.name === entity.name && el.id === entity.id && el.file === entity.file
+        );
         if (findSameEntityInStore.length === 0) {
             store.push(entity);
         }
@@ -1244,7 +1225,7 @@ export class AngularDependencies extends FrameworkDependencies {
     }
 
     private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
-        _.forEach(tags, tag => {
+        tags.forEach(tag => {
             if (tag.tagName && tag.tagName.text) {
                 if (tag.tagName.text.indexOf('deprecated') > -1) {
                     result.deprecated = true;
@@ -1281,7 +1262,7 @@ export class AngularDependencies extends FrameworkDependencies {
         let result;
         const that = this;
         let i = 0;
-        let len = arg.length;
+        const len = arg.length;
         const loop = function (node, z) {
             if (node.body) {
                 if (node.body.statements && node.body.statements.length > 0) {
@@ -1302,7 +1283,7 @@ export class AngularDependencies extends FrameworkDependencies {
     private parseDecorators(decorators, type: string): boolean {
         let result = false;
         if (decorators.length > 1) {
-            _.forEach(decorators, function (decorator: any) {
+            decorators.forEach(function (decorator: any) {
                 if (decorator.expression.expression) {
                     if (decorator.expression.expression.text === type) {
                         result = true;
@@ -1329,10 +1310,6 @@ export class AngularDependencies extends FrameworkDependencies {
         return result;
     }
 
-    private isController(metadata) {
-        return this.parseDecorator(metadata, 'Controller');
-    }
-
     private isEntity(metadata) {
         return this.parseDecorator(metadata, 'Entity');
     }
@@ -1354,28 +1331,26 @@ export class AngularDependencies extends FrameworkDependencies {
     }
 
     private isModule(metadata) {
-        return this.parseDecorator(metadata, 'NgModule') || this.parseDecorator(metadata, 'Module');
+        return this.parseDecorator(metadata, 'NgModule');
     }
 
     private hasInternalDecorator(metadatas) {
         return (
-            this.parseDecorators(metadatas, 'Controller') ||
             this.parseDecorators(metadatas, 'Component') ||
             this.parseDecorators(metadatas, 'Pipe') ||
             this.parseDecorators(metadatas, 'Directive') ||
             this.parseDecorators(metadatas, 'Injectable') ||
-            this.parseDecorators(metadatas, 'NgModule') ||
-            this.parseDecorators(metadatas, 'Module')
+            this.parseDecorators(metadatas, 'NgModule')
         );
     }
 
     private isGuard(ioImplements: string[]): boolean {
         return (
-            _.includes(ioImplements, 'CanActivate') ||
-            _.includes(ioImplements, 'CanActivateChild') ||
-            _.includes(ioImplements, 'CanDeactivate') ||
-            _.includes(ioImplements, 'Resolve') ||
-            _.includes(ioImplements, 'CanLoad')
+            ioImplements.includes('CanActivate') ||
+            ioImplements.includes('CanActivateChild') ||
+            ioImplements.includes('CanDeactivate') ||
+            ioImplements.includes('Resolve') ||
+            ioImplements.includes('CanLoad')
         );
     }
 
@@ -1581,8 +1556,8 @@ export class AngularDependencies extends FrameworkDependencies {
                     })
                     .reverse();
                 if (
-                    _.indexOf(kinds, SyntaxKind.PublicKeyword) !== -1 &&
-                    _.indexOf(kinds, SyntaxKind.StaticKeyword) !== -1
+                    kinds.indexOf(SyntaxKind.PublicKeyword) !== -1 &&
+                    kinds.indexOf(SyntaxKind.StaticKeyword) !== -1
                 ) {
                     kinds = kinds.filter(kind => kind !== SyntaxKind.PublicKeyword);
                 }
@@ -1591,7 +1566,7 @@ export class AngularDependencies extends FrameworkDependencies {
         if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
             this.checkForDeprecation(jsdoctags[0].tags, result);
             result.jsdoctags = markedtags(jsdoctags[0].tags);
-            _.forEach(jsdoctags[0].tags, tag => {
+            jsdoctags[0].tags.forEach(tag => {
                 if (tag.tagName) {
                     if (tag.tagName.text) {
                         if (tag.tagName.text.indexOf('ignore') > -1) {
@@ -1668,7 +1643,7 @@ export class AngularDependencies extends FrameworkDependencies {
         };
         if (node.members) {
             let i = 0;
-            let len = node.members.length;
+            const len = node.members.length;
             let memberjsdoctags = [];
             for (i; i < len; i++) {
                 const member: any = {
@@ -1699,7 +1674,7 @@ export class AngularDependencies extends FrameworkDependencies {
     private visitEnumDeclarationForRoutes(fileName, node) {
         if (node.declarationList.declarations) {
             let i = 0;
-            let len = node.declarationList.declarations.length;
+            const len = node.declarationList.declarations.length;
             for (i; i < len; i++) {
                 const routesInitializer = node.declarationList.declarations[i].initializer;
                 const data = new CodeGenerator().generate(routesInitializer);

@@ -9,8 +9,6 @@ export const TRANSLATION_KA_GE = {
   component: 'კომპონენტი',
   components: 'კომპონენტები',
   constructor: 'კონსტრუქტორი',
-  controllers: 'კონტროლერები',
-  controller: 'კონტროლერი',
   'coverage-page-title': 'დოკუმენტაციის გაშუქება',
   declarations: 'დეკლარაციები',
   decorators: 'დეკორატორები',

@@ -1,7 +1,7 @@
-const polka = require('polka');
-const sirv = require('sirv');
-const { json, urlencoded } = require('body-parser');
-const send = require('@polka/send-type');
+import polka from 'polka';
+import sirv from 'sirv';
+import { json, urlencoded } from 'body-parser';
+import send from '@polka/send-type';
 import { IncomingMessage, ServerResponse } from 'http';
 import { Polka } from 'polka';
 import * as path from 'path';
@@ -9,7 +9,8 @@ import * as fs from 'fs-extra';
 import * as http from 'http';
 import * as crypto from 'crypto';
 import * as os from 'os';
-const archiver = require('archiver');
+import archiver from 'archiver';
+import Handlebars from 'handlebars';
 import { execSync } from 'child_process';
 import { logger } from '../utils/logger';
 
@@ -439,7 +440,7 @@ export class TemplatePlaygroundServer {
             logger.info(`🚀 Executing CompoDoc command: ${fullCmd}`);
 
             // Log the command to a file for debugging
-            require('fs').appendFileSync('server-commands.log', `${new Date().toISOString()} - ${fullCmd}\n`);
+            fs.appendFileSync('server-commands.log', `${new Date().toISOString()} - ${fullCmd}\n`);
 
             // Execute with proper error handling (inherit stdio to see errors)
             execSync(fullCmd, {
@@ -504,7 +505,7 @@ export class TemplatePlaygroundServer {
     }
 
     private initializeHandlebars(): void {
-        this.handlebars = require('handlebars');
+        this.handlebars = Handlebars;
         this.registerHandlebarsHelpers(this.handlebars, {});
     }
 
@@ -1016,7 +1017,6 @@ export class TemplatePlaygroundServer {
                 'guards': 'Guards',
                 'interceptors': 'Interceptors',
                 'entities': 'Entities',
-                'controllers': 'Controllers',
                 'info': 'Info',
                 'readme': 'Readme',
                 'source': 'Source',

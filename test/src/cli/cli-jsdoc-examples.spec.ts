@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 
 const tmp = temporaryDir();
@@ -7,7 +7,7 @@ describe('CLI generation - JSDoc @example language specifications', () => {
     let stdoutString = undefined;
     const distFolder = tmp.name + '-jsdoc-examples';
 
-    before(done => {
+    beforeAll(() => {
         tmp.create(distFolder);
         let ls = shell('node', [
             './bin/index-cli.js',
@@ -19,13 +19,12 @@ describe('CLI generation - JSDoc @example language specifications', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            throw new Error('error');
         }
         stdoutString = ls.stdout.toString();
-        done();
     });
 
-    after(() => tmp.clean(distFolder));
+    afterAll(() => tmp.clean(distFolder));
 
     it('should display generated message', () => {
         expect(stdoutString).to.contain('Documentation generated');
@@ -44,7 +43,7 @@ describe('CLI generation - JSDoc @example language specifications', () => {
     describe('JSDoc @example language specifications', () => {
         let directiveFile: string;
 
-        before(() => {
+        beforeAll(() => {
             directiveFile = read(`${distFolder}/directives/TestClass.html`);
         });
 
@@ -118,7 +117,7 @@ describe('CLI generation - JSDoc @example language specifications', () => {
     describe('Code block structure', () => {
         let directiveFile: string;
 
-        before(() => {
+        beforeAll(() => {
             directiveFile = read(`${distFolder}/directives/TestClass.html`);
         });
 
@@ -144,7 +143,7 @@ describe('CLI generation - JSDoc @example language specifications', () => {
     describe('Multiple examples handling', () => {
         let directiveFile: string;
 
-        before(() => {
+        beforeAll(() => {
             directiveFile = read(`${distFolder}/directives/TestClass.html`);
         });
 

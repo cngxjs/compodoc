@@ -1,7 +1,6 @@
+import * as crypto from 'crypto';
 import { IDep } from '../dependencies.interfaces';
 import { ts } from 'ts-morph';
-
-const crypto = require('crypto');
 
 export class EntityDepFactory {
     constructor() {}
@@ -17,7 +16,7 @@ export class EntityDepFactory {
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
         const infos: IEntityDep = {
             name,
-            id: 'controller-' + name + '-' + hash,
+            id: 'entity-' + name + '-' + hash,
             file: file,
             type: 'entity',
             description: IO.description,

@@ -40,17 +40,6 @@
             </div>
         </div>
         {{/if}}
-        {{#if controllers}}
-        <div class="col-sm-3">
-            <div class="card text-center">
-                <div class="card-block">
-                    <h4 class="card-title"><span class="icon ion-md-swap"></span></h4>
-                    <p class="card-text">{{ controllers.length }} {{#compare controllers.length "===" 1}}{{t "controller" }}{{/compare}}{{#compare
-                        controllers.length ">" 1}}{{t "controllers" }}{{/compare}}</p>
-                </div>
-            </div>
-        </div>
-        {{/if}}
         {{#if entities}}
         <div class="col-sm-3">
             <div class="card text-center">

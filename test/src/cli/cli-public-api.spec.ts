@@ -1,19 +1,16 @@
-import { expect } from 'chai';
+import fs from 'fs-extra';
+import path from 'path';
+
 import { temporaryDir, shell, exists, read } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI public-api-only option', () => {
     // Prepare the fixture library - check if dist already exists, if not build it
-    before(function (done) {
-        this.timeout(120000); // Increase timeout for build operations
+    beforeAll(() => {
 
         const fixtureDir = './test/fixtures/library';
         const distDir = './test/fixtures/library/dist/libs/my-lib';
-
-        // Check if dist folder already exists and has the necessary files
-        const fs = require('fs-extra');
-        const path = require('path');
 
         const distExists = fs.existsSync(distDir);
         const coreIndexExists = fs.existsSync(path.join(distDir, 'core/index.d.ts'));
@@ -22,7 +19,6 @@ describe('CLI public-api-only option', () => {
         // If dist already exists with proper structure, skip build
         if (distExists && coreIndexExists && dataIndexExists) {
             console.log('Fixture dist already built, skipping build step');
-            done();
             return;
         }
 
@@ -33,8 +29,7 @@ describe('CLI public-api-only option', () => {
             if (npmInstallResult.status !== 0) {
                 console.error(`NPM install stderr: ${npmInstallResult.stderr.toString()}`);
                 console.error(`NPM install stdout: ${npmInstallResult.stdout.toString()}`);
-                done('NPM install failed');
-                return;
+                throw new Error('NPM install failed');
             }
 
             // Build the library
@@ -43,8 +38,7 @@ describe('CLI public-api-only option', () => {
             if (buildResult.status !== 0) {
                 console.error(`Build stderr: ${buildResult.stderr.toString()}`);
                 console.error(`Build stdout: ${buildResult.stdout.toString()}`);
-                done('Build failed');
-                return;
+                throw new Error('Build failed');
             }
 
             // Extract API
@@ -53,15 +47,13 @@ describe('CLI public-api-only option', () => {
             if (extractResult.status !== 0) {
                 console.error(`Extract API stderr: ${extractResult.stderr.toString()}`);
                 console.error(`Extract API stdout: ${extractResult.stdout.toString()}`);
-                done('Extract API failed');
-                return;
+                throw new Error('Extract API failed');
             }
 
             console.log('Fixture build completed successfully');
-            done();
         } catch (error) {
             console.error(`Fixture build error: ${error}`);
-            done(error);
+            throw error;
         }
     });
 
@@ -69,7 +61,7 @@ describe('CLI public-api-only option', () => {
         let stdoutString = undefined;
         const distFolder = 'test-public-api-without-flag';
 
-        before(done => {
+        beforeAll(() => {
             tmp.create(distFolder);
 
             const ls = shell('node', [
@@ -85,10 +77,9 @@ describe('CLI public-api-only option', () => {
             }
             stdoutString = ls.stdout.toString();
 
-            done();
         });
 
-        after(() => {
+        afterAll(() => {
             tmp.clean(distFolder);
         });
 
@@ -125,7 +116,7 @@ describe('CLI public-api-only option', () => {
         let stdoutString = undefined;
         const distFolder = 'test-public-api-with-flag';
 
-        before(done => {
+        beforeAll(() => {
             tmp.create(distFolder);
 
             const ls = shell('node', [
@@ -143,10 +134,9 @@ describe('CLI public-api-only option', () => {
             }
             stdoutString = ls.stdout.toString();
 
-            done();
         });
 
-        after(() => {
+        afterAll(() => {
             tmp.clean(distFolder);
         });
 

@@ -3,7 +3,7 @@ import * as path from 'path';
 import { ts } from 'ts-morph';
 import { logger } from './logger';
 
-const fg = require('fast-glob');
+import fg from 'fast-glob';
 
 /**
  * Result of parsing API markdown exports

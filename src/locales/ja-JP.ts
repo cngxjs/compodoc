@@ -9,8 +9,6 @@ export const TRANSLATION_JA_JP = {
     component: 'コンポーネント',
     components: 'コンポーネント',
     constructor: 'コンストラクタ',
-    controllers: 'コントローラー',
-    controller: 'コントローラー',
     'coverage-page-title': 'カバレッジ',
     declarations: '宣言',
     decorators: 'デコレーター',

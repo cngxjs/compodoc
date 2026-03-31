@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync, stats } from '../helpers';
 const tmp = temporaryDir();
 
@@ -10,7 +10,7 @@ describe('CLI custom logo', () => {
     const distFolder = tmp.name + '-logo';
 
     describe('when specifying a custom logo png image', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -24,12 +24,11 @@ describe('CLI custom logo', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
 
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should have copied the customLogo', () => {
             let isFileExists = exists(`${distFolder}/images/logo.png`);
@@ -41,7 +40,7 @@ describe('CLI custom logo', () => {
     });
 
     describe('when specifying a custom logo svg image', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -55,12 +54,11 @@ describe('CLI custom logo', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
 
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should have copied the customLogo', () => {
             let isFileExists = exists(`${distFolder}/images/logo.svg`);
@@ -72,7 +70,7 @@ describe('CLI custom logo', () => {
     });
 
     describe('when not specifying a custom logo svg image', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -84,12 +82,11 @@ describe('CLI custom logo', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
 
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should not have copied the customLogo', () => {
             let isFileExists = exists(`${distFolder}/images/logo.svg`);

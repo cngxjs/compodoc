@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
@@ -14,7 +14,7 @@ describe('CLI serving', () => {
     describe('when serving with -s flag in another directory', () => {
         let stdoutString = '',
             child;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', ['./bin/index-cli.js', '-s', '-d', distFolder], {
                 timeout: TIMEOUT
@@ -22,13 +22,11 @@ describe('CLI serving', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('shell error'));
-                return;
+                throw new Error('shell error');
             }
             stdoutString = ls.stdout.toString();
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should serve', () => {
             expect(stripAnsi(stdoutString)).to.contain(
@@ -40,62 +38,62 @@ describe('CLI serving', () => {
     describe('when serving with default directory', () => {
         let stdoutString = '',
             child;
-        before(function (done) {
-            this.timeout(10000);
+        beforeAll(() => {
             tmp.create('documentation');
-            
-            const child = shellAsync('node', [
-                './bin/index-cli.js',
-                '-p',
-                './test/fixtures/sample-files/tsconfig.simple.json',
-                '-s'
-            ]);
 
-            let output = '';
-            let errorOutput = '';
+            return new Promise<void>((resolve, reject) => {
+                const child = shellAsync('node', [
+                    './bin/index-cli.js',
+                    '-p',
+                    './test/fixtures/sample-files/tsconfig.simple.json',
+                    '-s'
+                ]);
 
-            child.stdout.on('data', (data) => {
-                output += data.toString();
-                // Look for the serving message
-                if (output.includes('Serving documentation from')) {
-                    stdoutString = output;
-                    child.kill('SIGTERM');
-                    done();
-                }
+                let output = '';
+                let errorOutput = '';
+
+                child.stdout.on('data', (data) => {
+                    output += data.toString();
+                    // Look for the serving message
+                    if (output.includes('Serving documentation from')) {
+                        stdoutString = output;
+                        child.kill('SIGTERM');
+                    }
+                });
+
+                child.stderr.on('data', (data) => {
+                    errorOutput += data.toString();
+                });
+
+                child.on('error', (err) => {
+                    console.error(`Process error: ${err}`);
+                    reject(err);
+                });
+
+                child.on('exit', (code, signal) => {
+                    if (signal === 'SIGTERM') {
+                        resolve();
+                        return;
+                    }
+                    if (code !== 0 && errorOutput) {
+                        console.error(`Shell error: ${errorOutput}`);
+                        reject(new Error(`Process exited with code ${code}`));
+                    } else {
+                        if (!stdoutString) {
+                            stdoutString = output;
+                        }
+                        resolve();
+                    }
+                });
+
+                // Fallback timeout
+                setTimeout(() => {
+                    if (child.killed === false) {
+                        stdoutString = output;
+                        child.kill('SIGTERM');
+                    }
+                }, 8000);
             });
-
-            child.stderr.on('data', (data) => {
-                errorOutput += data.toString();
-            });
-
-            child.on('error', (err) => {
-                console.error(`Process error: ${err}`);
-                done(err);
-            });
-
-            child.on('exit', (code, signal) => {
-                if (signal === 'SIGTERM') {
-                    // Expected termination
-                    return;
-                }
-                if (code !== 0 && errorOutput) {
-                    console.error(`Shell error: ${errorOutput}`);
-                    done(new Error(`Process exited with code ${code}`));
-                } else if (!stdoutString) {
-                    // If we haven't captured output yet, use what we have
-                    stdoutString = output;
-                    done();
-                }
-            });
-
-            // Fallback timeout
-            setTimeout(() => {
-                if (child.killed === false) {
-                    stdoutString = output;
-                    child.kill('SIGTERM');
-                    done();
-                }
-            }, 8000);
         });
 
         it('should display message', () => {
@@ -108,69 +106,70 @@ describe('CLI serving', () => {
     describe('when serving with default directory and different host', () => {
         let stdoutString = '',
             child;
-        before(function (done) {
-            this.timeout(10000);
+        beforeAll(() => {
             tmp.create('documentation');
-            const child = shellAsync('node', [
-                './bin/index-cli.js',
-                '-p',
-                './test/fixtures/sample-files/tsconfig.simple.json',
-                '-s',
-                '--host',
-                '127.0.0.1'
-            ]);
 
-            let output = '';
-            let errorOutput = '';
+            return new Promise<void>((resolve, reject) => {
+                const child = shellAsync('node', [
+                    './bin/index-cli.js',
+                    '-p',
+                    './test/fixtures/sample-files/tsconfig.simple.json',
+                    '-s',
+                    '--host',
+                    '127.0.0.1'
+                ]);
 
-            child.stdout.on('data', (data) => {
-                output += data.toString();
-                // Look for the serving message with 127.0.0.1 host
-                if (output.includes('Serving documentation from') && output.includes('127.0.0.1')) {
-                    stdoutString = output;
-                    child.kill('SIGTERM');
-                    done();
-                }
+                let output = '';
+                let errorOutput = '';
+
+                child.stdout.on('data', (data) => {
+                    output += data.toString();
+                    // Look for the serving message with 127.0.0.1 host
+                    if (output.includes('Serving documentation from') && output.includes('127.0.0.1')) {
+                        stdoutString = output;
+                        child.kill('SIGTERM');
+                    }
+                });
+
+                child.stderr.on('data', (data) => {
+                    errorOutput += data.toString();
+                });
+
+                child.on('error', (err) => {
+                    console.error(`Process error: ${err}`);
+                    reject(err);
+                });
+
+                child.on('exit', (code, signal) => {
+                    if (signal === 'SIGTERM') {
+                        resolve();
+                        return;
+                    }
+                    if (code !== 0 && errorOutput) {
+                        console.error(`Shell error: ${errorOutput}`);
+                        reject(new Error(`Process exited with code ${code}`));
+                    } else {
+                        if (!stdoutString) {
+                            stdoutString = output;
+                        }
+                        resolve();
+                    }
+                });
+
+                // Fallback timeout
+                setTimeout(() => {
+                    if (child.killed === false) {
+                        stdoutString = output;
+                        child.kill('SIGTERM');
+                    }
+                }, 8000);
             });
-
-            child.stderr.on('data', (data) => {
-                errorOutput += data.toString();
-            });
-
-            child.on('error', (err) => {
-                console.error(`Process error: ${err}`);
-                done(err);
-            });
-
-            child.on('exit', (code, signal) => {
-                if (signal === 'SIGTERM') {
-                    // Expected termination
-                    return;
-                }
-                if (code !== 0 && errorOutput) {
-                    console.error(`Shell error: ${errorOutput}`);
-                    done(new Error(`Process exited with code ${code}`));
-                } else if (!stdoutString) {
-                    // If we haven't captured output yet, use what we have
-                    stdoutString = output;
-                    done();
-                }
-            });
-
-            // Fallback timeout
-            setTimeout(() => {
-                if (child.killed === false) {
-                    stdoutString = output;
-                    child.kill('SIGTERM');
-                    done();
-                }
-            }, 8000);
         });
 
-        it('should display message', function() {
+        it('should display message', ({ skip }) => {
             if (stdoutString === '') {
                 // Skip this test if there were network issues
-                this.skip();
+                skip();
                 return;
             }
             expect(stripAnsi(stdoutString)).to.contain(
@@ -182,18 +181,16 @@ describe('CLI serving', () => {
     describe('when serving with default directory and without doc generation', () => {
         let stdoutString = '',
             child;
-        before(function (done) {
+        beforeAll(() => {
             let ls = shell('node', ['./bin/index-cli.js', '-s', '-d', './documentation/'], {
                 timeout: TIMEOUT
             });
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('shell error'));
-                return;
+                throw new Error('shell error');
             }
             stdoutString = ls.stdout.toString();
-            done();
         });
 
         it('should display message', () => {
@@ -206,18 +203,16 @@ describe('CLI serving', () => {
     describe('when serving with default directory, without -d and without doc generation', () => {
         let stdoutString = '',
             child;
-        before(function (done) {
+        beforeAll(() => {
             let ls = shell('node', ['./bin/index-cli.js', '-s'], { timeout: TIMEOUT });
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done(new Error('shell error'));
-                return;
+                throw new Error('shell error');
             }
             stdoutString = ls.stdout.toString();
-            done();
         });
-        after(() => tmp.clean('documentation'));
+        afterAll(() => tmp.clean('documentation'));
 
         it('should display message', () => {
             expect(stripAnsi(stdoutString)).to.contain(

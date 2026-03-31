@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 
 const tmp = temporaryDir();
@@ -7,7 +7,7 @@ describe('CLI exclude from tsconfig', () => {
     const distFolder = tmp.name + '-exclude';
 
     describe('when specific files are excluded in tsconfig', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
 
             let ls = shell('node', [
@@ -20,11 +20,10 @@ describe('CLI exclude from tsconfig', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should not create files excluded', () => {
             let isFileExists = exists(`${distFolder}/components/BarComponent.html`);

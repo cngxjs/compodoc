@@ -1,7 +1,14 @@
 {
     "compilerOptions": {
-        "lib": ["es6", "es7"],
-        "downlevelIteration": true
+        "target": "ES2022",
+        "module": "ES2022",
+        "moduleResolution": "bundler",
+        "lib": ["ES2022"],
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+        "downlevelIteration": true,
+        "skipLibCheck": true
     },
-    "exclude": ["test"]
+    "exclude": ["test", "src/resources/template-playground"]
 }

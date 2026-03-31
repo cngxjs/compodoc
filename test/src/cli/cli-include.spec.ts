@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
@@ -6,7 +6,7 @@ describe('CLI include with tsconfig', () => {
     const distFolder = tmp.name + '-include';
 
     describe('when specific files (glob) are included in tsconfig', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -18,11 +18,10 @@ describe('CLI include with tsconfig', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should create files included', () => {
             let isFileExists = exists(`${distFolder}/components/BarComponent.html`);
@@ -35,7 +34,7 @@ describe('CLI include with tsconfig', () => {
     });
 
     describe('when specific file is included in tsconfig', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -47,11 +46,10 @@ describe('CLI include with tsconfig', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should create file included', () => {
             let isFileExists = exists(`${distFolder}/components/BarComponent.html`);
@@ -62,7 +60,7 @@ describe('CLI include with tsconfig', () => {
     });
 
     describe('when specific file is included in tsconfig with one level / cwd', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -74,11 +72,10 @@ describe('CLI include with tsconfig', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should create file included', () => {
             let isFileExists = exists(`${distFolder}/classes/GenTodo.html`);

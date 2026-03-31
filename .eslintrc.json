@@ -1,7 +1,8 @@
 {
     "env": {
         "browser": true,
-        "es6": true
+        "es6": true,
+        "node": true
     },
     "extends": [
         "eslint:recommended",
@@ -13,25 +14,30 @@
     },
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "ecmaVersion": 2018,
+        "ecmaVersion": 2022,
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "unused-imports"
     ],
     "rules": {
-        "indent": [
-            0
+        "indent": 0,
+        "linebreak-style": ["error", "unix"],
+        "quotes": 0,
+        "no-extra-semi": 0,
+        "no-unused-vars": "off",
+        "unused-imports/no-unused-imports": "error",
+        "unused-imports/no-unused-vars": [
+            "warn",
+            { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
         ],
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
-        "quotes": [
-            0
-        ],
-        "no-extra-semi": [
-            0
-        ]
+        "prefer-rest-params": "warn",
+        "no-prototype-builtins": "warn",
+        "prefer-const": "warn",
+        "no-useless-escape": "warn",
+        "no-self-assign": "warn",
+        "no-control-regex": "warn",
+        "no-empty": "warn"
     }
 }

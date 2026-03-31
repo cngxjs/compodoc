@@ -8,6 +8,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <link rel="icon" type="image/x-icon" href="{{relativeURL data.depth }}images/favicon.ico">
+        <style>
+            /* Critical sidebar CSS — prevents flash of collapsed/expanded content */
+            .menu .collapse.in { display: block !important; }
+            .menu .collapse:not(.in) { display: none !important; }
+        </style>
 	   <link rel="stylesheet" href="{{relativeURL data.depth }}styles/style.css">
         <link rel="stylesheet" href="{{relativeURL data.depth }}styles/dark.css">
         {{#if data.theme}}
@@ -24,7 +29,7 @@
                var darkModeState = useDark.matches;
                var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
                var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
-               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+               var darkModeStateLocal = localStorage.getItem('compodocx_darkmode-state');
 
                function checkToggle(check) {
                     for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
@@ -34,7 +39,7 @@
 
                function toggleDarkMode(state) {
                     if (window.localStorage) {
-                         localStorage.setItem('compodoc_darkmode-state', state);
+                         localStorage.setItem('compodocx_darkmode-state', state);
                     }
 
                     checkToggle(state);
@@ -140,10 +145,6 @@
                    {{/compare}}
                    {{#compare data.context "===" 'component'}}
                         {{~> component data ~}}
-                   {{/compare}}
-
-                   {{#compare data.context "===" 'controller'}}
-                        {{~> controller data ~}}
                    {{/compare}}
 
                    {{#compare data.context "===" 'entity'}}

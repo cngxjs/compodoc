@@ -18,21 +18,12 @@ export class ModuleHelper {
             .map(providerName => this.symbolHelper.parseDeepIndentifier(providerName, srcFile));
     }
 
-    public getModuleControllers(
-        props: ReadonlyArray<ts.ObjectLiteralElementLike>,
-        srcFile: ts.SourceFile
-    ): Array<IParseDeepIdentifierResult> {
-        return this.symbolHelper
-            .getSymbolDeps(props, 'controllers', srcFile)
-            .map(providerName => this.symbolHelper.parseDeepIndentifier(providerName, srcFile));
-    }
-
     public getModuleDeclarations(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
         srcFile: ts.SourceFile
     ): Deps[] {
         return this.symbolHelper.getSymbolDeps(props, 'declarations', srcFile).map(name => {
-            let component = this.cache.get(name);
+            const component = this.cache.get(name);
 
             if (component) {
                 return component;
@@ -47,7 +38,7 @@ export class ModuleHelper {
         srcFile: ts.SourceFile
     ): Deps[] {
         return this.symbolHelper.getSymbolDeps(props, 'entryComponents', srcFile).map(name => {
-            let component = this.cache.get(name);
+            const component = this.cache.get(name);
 
             if (component) {
                 return component;
@@ -58,7 +49,7 @@ export class ModuleHelper {
     }
 
     private cleanImportForRootForChild(name: string): string {
-        let nsModule = name.split('.');
+        const nsModule = name.split('.');
         if (nsModule.length > 0) {
             name = nsModule[0];
         }
@@ -107,7 +98,7 @@ export class ModuleHelper {
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
         srcFile: ts.SourceFile
     ) {
-        let schemas = this.symbolHelper.getSymbolDeps(props, 'schemas', srcFile);
+        const schemas = this.symbolHelper.getSymbolDeps(props, 'schemas', srcFile);
         return schemas;
     }
 

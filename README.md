@@ -1,122 +1,65 @@
-<p align="center">
-  <img src="https://avatars3.githubusercontent.com/u/23202313" alt="Compodoc: The missing documentation tool for your Angular application" width="226">
-  <br/>
-  <a href="https://github.com/compodoc/compodoc/actions"><img src="https://github.com/compodoc/compodoc/workflows/CI/badge.svg" alt="Github action Build Status"/></a>
-  <a href="https://codecov.io/gh/compodoc/compodoc"><img src="https://codecov.io/gh/compodoc/compodoc/branch/develop/graph/badge.svg" alt="Codecov"/></a>
-  <a href="https://www.npmjs.com/package/@compodoc/compodoc"><img src="https://badge.fury.io/js/%40compodoc%2Fcompodoc.svg" alt="npm badge"/></a>
-  <a href="https://sonarcloud.io/dashboard?id=compodoc_compodoc"><img src="https://sonarcloud.io/api/project_badges/measure?project=compodoc_compodoc&metric=alert_status" alt="Quality Gate Status"/></a>
-  <a href="https://snyk.io/test/github/compodoc/compodoc"><img src="https://snyk.io/test/github/compodoc/compodoc/badge.svg" alt="Known Vulnerabilities"/></a>
-  <br/>
-  <a href="https://npmcharts.com/compare/@compodoc/compodoc?minimal=true"><img src="https://img.shields.io/npm/dm/@compodoc/compodoc.svg?style=flat" alt="NPM Downloads"/></a>
-  <a href="https://opensource.org/licenses/MIT"><img src="http://img.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT badge"/></a>
-  <br/>
-  <a href="#backers"><img src="https://opencollective.com/compodoc/backers/badge.svg" alt="sponsors on Open Collective" /></a> <a href="#sponsors"><img src="https://opencollective.com/compodoc/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-</p>
-<p align="center">
-    <img src="https://saucelabs.com/browser-matrix/compodoc.svg" alt="saucelabs badge"/>
-</p>
-<p align="center">
-    <a href="https://gitter.im/compodoc/compodoc" target="_blank"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Gitter badge"/></a><br><br>
-</p>
+# compodocx
 
-<p align="center">The missing documentation tool for your Angular application.<br><br></p>
+Modern documentation tool for Angular applications.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/compodoc/compodoc/master/screenshots/main-view.gif" alt="Compodoc: The missing documentation tool for your Angular application"/>
-</p>
+Fork of [compodoc](https://github.com/compodoc/compodoc) by Vincent Ogloblinsky, rebuilt as an Angular-focused documentation tool under the [cngx](https://github.com/cngxjs) ecosystem.
 
-# Live Demo
+[![CI](https://github.com/cngxjs/compodocx/workflows/CI/badge.svg)](https://github.com/cngxjs/compodocx/actions)
+[![npm](https://img.shields.io/npm/v/@cngx/compodocx.svg)](https://www.npmjs.com/package/@cngx/compodocx)
+[![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 
-A live demo is available — **[see it in action][demo]** !
+## Features
 
-The demo features documentation generated for a simple [TodoMVC application].
+- **Angular-only** -- Built specifically for Angular 17+ projects
+- **Standalone-first** -- Standalone components as first-class citizens, NgModules supported
+- **@category grouping** -- Organize your sidebar with `@category` JSDoc tags
+- **Configurable info tabs** -- Control which sections appear via `--infoTabSections`
+- **Dark mode** -- System preference detection with manual toggle
+- **Search** -- Built-in search across all documented entities
+- **Documentation coverage** -- Coverage reports with CI-friendly threshold checks
+- **Offline** -- No server needed, generates static HTML files
 
-[demo]: https://compodoc.github.io/compodoc-demo-todomvc-angular/
-[todomvc application]: https://github.com/compodoc/compodoc-demo-todomvc-angular
+## Installation
 
-# Features
+```bash
+npm install --save-dev @cngx/compodocx
+```
 
-- **Clean, simple design** — Navigate the documentation on the left side, read it on the right.
+## Usage
 
-- **Beautiful themes** — Seven themes are available from well known documentation tools like [Gitbook], [Read the Docs] and projects like [Vagrant], [Laravel], [Postmark] and [Stripe].
+```bash
+# Generate documentation
+npx compodocx -p tsconfig.app.json -d docs
 
-- **Search** — Includes a powerful search engine ([lunr.js]) for easily finding what you're looking for.
+# Serve documentation locally
+npx compodocx -p tsconfig.app.json -d docs -s
 
-- **Automatic table of contents** — API table of contents is generated using elements found during files parsing.
+# Export as JSON
+npx compodocx -p tsconfig.app.json -e json -d .compodoc
+```
 
-- **JSDoc light support** — Support for `@param`, `@returns`, `@link`, `@ignore` and `@example` tags.
+## Configuration
 
-- **Documentation coverage** — Get the documentation coverage report of your project.
+Create a `.compodocrc.json` in your project root:
 
-- **Angular CLI-friendly** — Supports [Angular CLI] projects out-of-the-box.
+```json
+{
+  "tsconfig": "./tsconfig.app.json",
+  "output": "./docs",
+  "theme": "material",
+  "hideGenerator": true,
+  "navTabConfig": [
+    { "id": "info", "label": "API" },
+    { "id": "readme", "label": "Overview" },
+    { "id": "source", "label": "Source" }
+  ]
+}
+```
 
-- **Offline** — No server needed, no sources uploaded online, documentation generated entirely offline.
+## Coming from compodoc?
 
-- **Open-source and on npm** — Use it directly in your project using [npm] and a single script—that's it!
+compodocx is backwards-compatible with compodoc's CLI flags and configuration. Replace `@compodoc/compodoc` with `@cngx/compodocx` and `compodoc` with `compodocx` in your scripts.
 
-[gitbook]: https://www.gitbook.com
-[read the docs]: https://readthedocs.org/
-[vagrant]: https://www.vagrantup.com/docs/
-[laravel]: https://laravel.com/docs/5.3
-[postmark]: https://developer.postmarkapp.com/
-[stripe]: https://stripe.com/docs/api
-[lunr.js]: https://lunrjs.com/
-[angular cli]: https://cli.angular.io/
-[npm]: https://www.npmjs.com/
+## License
 
-# Documentation
-
-Official documentation has moved to [https://compodoc.github.io/website/](https://compodoc.github.io/website/guides/getting-started.html).
-
-# Installation
-
-Ready to get started? [Read installation instructions](https://compodoc.github.io/website/guides/installation.html).
-
-# 🏅 Backers
-
-Thank you to all our backers ! Support us with a monthly donation and help us continue our activities. [Become a backer][support-url]
-
-[![Backers][backers-image]][support-url]
-
-# 🎖 Sponsors
-
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [Become a sponsor][support-url]
-
-[![Sponsors][sponsors-image]][support-url]
-
-# Contributing
-
-Want to file a bug, contribute some code, or improve documentation? Excellent!
-
-Read up on our guidelines for [contributing](https://github.com/compodoc/compodoc/blob/master/CONTRIBUTING.md).
-
-# Contributors
-
-This project exists thanks to all these people.
-
-| [<img alt="vogloblinsky" src="https://avatars3.githubusercontent.com/u/2841805?v=4&s=117" width="117"/>](https://github.com/vogloblinsky) | [<img alt="manekinekko" src="https://avatars3.githubusercontent.com/u/1699357?v=4&s=117" width="117"/>](https://github.com/manekinekko) | [<img alt="tcorral" src="https://avatars.githubusercontent.com/u/802081?v=4" width="117"/>](https://github.com/tcorral) | [<img alt="mattlewis92" src="https://avatars1.githubusercontent.com/u/6425649?v=4&s=117" width="117"/>](https://github.com/mattlewis92) | [<img alt="JonasMH" src="https://avatars0.githubusercontent.com/u/1939229?v=4&s=117" width="117"/>](https://github.com/JonasMH) | [<img alt="rprotsyk" src="https://avatars0.githubusercontent.com/u/104502?v=4&s=117" width="117"/>](https://github.com/rprotsyk) | [<img alt="daniele-zurico" src="https://avatars0.githubusercontent.com/u/3193095?v=4&s=117" width="117"/>](https://github.com/daniele-zurico) |
-| :---------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------: |
-|                                              [vogloblinsky](https://github.com/vogloblinsky)                                              |                                              [manekinekko](https://github.com/manekinekko)                                              |                                          [tcorral](https://github.com/tcorral)                                          |                                              [mattlewis92](https://github.com/mattlewis92)                                              |                                              [JonasMH](https://github.com/JonasMH)                                              |                                             [rprotsyk](https://github.com/rprotsyk)                                              |                                              [daniele-zurico](https://github.com/daniele-zurico)                                              |
-
-| [<img alt="profimedica" src="https://avatars0.githubusercontent.com/u/2903499?v=4&s=117" width="117"/>](https://github.com/profimedica) | [<img alt="vogloblinsky" src="https://avatars3.githubusercontent.com/u/32763448?v=4&s=117" width="117"/>](https://github.com/dp-1a) | [<img alt="guilhermevrs" src="https://avatars0.githubusercontent.com/u/14924373?v=4&s=117" width="117"/>](https://github.com/ValentinGot) | [<img alt="Blakesalot" src="https://avatars1.githubusercontent.com/u/10159693?s=460&v=4" width="117"/>](https://github.com/Blakesalot) | [<img alt="Brigitte Hofmeister" src="https://avatars1.githubusercontent.com/u/16089658?s=460&v=4" width="117"/>](https://github.com/bhofmei) | [<img alt="lichangfeng" src="https://avatars2.githubusercontent.com/u/8101989?s=460&v=4" width="117"/>](https://github.com/lichangfeng) | [<img alt="guilhermevrs" src="https://avatars0.githubusercontent.com/u/1570567?v=4&s=117" width="117"/>](https://github.com/guilhermevrs) |
-| :-------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: |
-|                                              [profimedica](https://github.com/profimedica)                                              |                                                  [dp-1a](https://github.com/dp-1a)                                                  |                                               [ValentinGot](https://github.com/ValentinGot)                                               |                                             [Blake Simmon](https://github.com/Blakesalot)                                              |                                              [Brigitte Hofmeister](https://github.com/bhofmei)                                               |                                              [lichangfeng](https://github.com/lichangfeng)                                              |                                              [guilhermevrs](https://github.com/guilhermevrs)                                              |
-
-# Big Thanks
-
-Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs][homepage]
-
-[homepage]: https://saucelabs.com
-
-# License
-
-Everything in this repository is [licensed under the MIT License][license] unless otherwise specified.
-
-Copyright (c) 2016 – 2025 [Vincent Ogloblinsky]
-
-[license]: https://github.com/compodoc/compodoc/blob/master/LICENSE
-[vincent ogloblinsky]: https://www.vincentogloblinsky.com
-[support-url]: https://opencollective.com/compodoc#support
-[backers-image]: https://opencollective.com/compodoc/backers.svg
-[sponsors-image]: https://opencollective.com/compodoc/sponsor.svg
-[github-action-badge]: https://github.com/compodoc/compodoc/workflows/CI/badge.svg
+MIT -- Copyright (c) 2016 Vincent Ogloblinsky, 2026 Christian Weiss

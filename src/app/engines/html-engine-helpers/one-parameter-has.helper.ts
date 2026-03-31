@@ -3,8 +3,8 @@ import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.inte
 export class OneParameterHasHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, tags, typeToCheck): string {
         let result = false;
-        let len = arguments.length - 1;
-        let options: IHandlebarsOptions = arguments[len];
+        const len = arguments.length - 1;
+        const options: IHandlebarsOptions = arguments[len];
 
         let i = 0,
             leng = tags.length;

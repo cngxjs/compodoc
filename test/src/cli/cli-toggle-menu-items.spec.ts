@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
@@ -8,7 +8,7 @@ describe('CLI toggle menu items', () => {
         let stdoutString = undefined,
             fooIndexFile,
             fooServiceFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -22,13 +22,12 @@ describe('CLI toggle menu items', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             stdoutString = ls.stdout.toString();
             fooIndexFile = read(`${distFolder}/js/menu-wc.js`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('it should have a toggled item menu', () => {
             expect(fooIndexFile).to.contain('ion-ios-arrow-up');

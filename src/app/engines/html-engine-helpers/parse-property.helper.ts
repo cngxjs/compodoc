@@ -1,5 +1,4 @@
 import { IHtmlEngineHelper } from './html-engine-helper.interface';
-const Handlebars = require('handlebars');
 
 export class ParsePropertyHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, text: string) {

@@ -1,12 +1,17 @@
 //import * as PDFJS from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-export const shell = require('child_process').spawnSync;
-export const spawn = require('child_process').spawn;
-export const exec = require('child_process').exec;
-export const shellAsync = require('child_process').spawn;
-export const fs = require('fs-extra');
-export const path = require('path');
-export const pkg = require('../../../../package.json');
+import { spawnSync, spawn, exec } from 'child_process';
+import fs from 'fs-extra';
+import path from 'path';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+
+// JSON import with correct path from test/src/ (not test/dist/test/src/)
+const pkg = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf-8'));
+
+export const shell = spawnSync;
+export const shellAsync = spawn;
+export { spawn, exec, fs, path, pkg };
 
 export function read(file: string, encoding = null): string {
     return fs.readFileSync(file, encoding).toString();
@@ -29,7 +34,7 @@ export function copy(source: string, dest: string): any {
 }
 
 export function temporaryDir() {
-    let name = '.tmp-compodoc-test';
+    let name = '.tmp-compodocx-test';
     const cleanUp = cleanUpName => {
         if (fs.existsSync(cleanUpName)) {
             fs.readdirSync(cleanUpName).forEach(file => {

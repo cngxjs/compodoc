@@ -1,5 +1,5 @@
-const eol = require('os').EOL;
-import { expect } from 'chai';
+import { EOL as eol } from 'os';
+
 import { temporaryDir, shell, spawn, exists, read, exec } from '../helpers';
 
 const tmp = temporaryDir();
@@ -10,7 +10,7 @@ describe('CLI Additional documentation', () => {
 
     const distFolder = tmp.name + '-additional';
 
-    before(done => {
+    beforeAll(() => {
         tmp.create(distFolder);
         let ls = shell('node', [
             './bin/index-cli.js',
@@ -28,13 +28,12 @@ describe('CLI Additional documentation', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            throw new Error('error');
         }
         stdoutString = ls.stdout.toString();
         fooMenuFile = read(`${distFolder}/js/menu-wc.js`);
-        done();
     });
-    after(() => tmp.clean(distFolder));
+    afterAll(() => tmp.clean(distFolder));
 
     it('it should have a menu with links', () => {
         expect(fooMenuFile.indexOf('<a href="additional-documentation/big-introduction') > -1).to.be
@@ -93,31 +92,33 @@ describe('CLI Additional documentation - wrong folder', () => {
 
     const distFolder = tmp.name + '-additional-wrong-folder';
 
-    before(done => {
+    beforeAll(() => {
         tmp.create(distFolder);
-        const ls = exec(
-            'node' +
-                [
-                    '',
-                    './bin/index-cli.js',
-                    '-p',
-                    './test/fixtures/todomvc-ng2/src/tsconfig.json',
-                    '-d',
-                    distFolder,
-                    '-a',
-                    './test/fixtures/todomvc-ng2/screenshots',
-                    '--includes',
-                    './test/fixtures/todomvc-ng2/additional-doc-wrong',
-                    '--includesName',
-                    '"Additional documentation"'
-                ].join(' ')
-        );
-        ls.on('close', code => {
-            exitCode = code;
-            done();
+        return new Promise<void>((resolve) => {
+            const ls = exec(
+                'node' +
+                    [
+                        '',
+                        './bin/index-cli.js',
+                        '-p',
+                        './test/fixtures/todomvc-ng2/src/tsconfig.json',
+                        '-d',
+                        distFolder,
+                        '-a',
+                        './test/fixtures/todomvc-ng2/screenshots',
+                        '--includes',
+                        './test/fixtures/todomvc-ng2/additional-doc-wrong',
+                        '--includesName',
+                        '"Additional documentation"'
+                    ].join(' ')
+            );
+            ls.on('close', code => {
+                exitCode = code;
+                resolve();
+            });
         });
     });
-    after(() => tmp.clean(distFolder));
+    afterAll(() => tmp.clean(distFolder));
 
     it('should exit with code 1 if wrong folder provided', () => {
         expect(exitCode).to.equal(1);

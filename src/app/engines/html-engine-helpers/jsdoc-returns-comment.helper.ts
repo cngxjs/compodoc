@@ -3,7 +3,7 @@ import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.inte
 export class JsdocReturnsCommentHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, jsdocTags: Array<any>, options: IHandlebarsOptions) {
         let i = 0;
-        let len = jsdocTags.length;
+        const len = jsdocTags.length;
         let result;
         for (i; i < len; i++) {
             if (jsdocTags[i].tagName) {

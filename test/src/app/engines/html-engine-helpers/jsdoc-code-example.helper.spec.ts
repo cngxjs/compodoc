@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { JsdocCodeExampleHelper } from '../../../../../src/app/engines/html-engine-helpers/jsdoc-code-example.helper';
 import { JsdocTagInterface } from '../../../../../src/app/interfaces/jsdoc-tag.interface';
 

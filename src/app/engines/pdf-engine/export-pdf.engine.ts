@@ -1,12 +1,10 @@
 import * as fs from 'fs-extra';
-import * as _ from 'lodash';
 import * as path from 'path';
+import PdfPrinter from 'pdfmake';
 
 import Configuration from '../../configuration';
 import I18nEngine from '../i18n.engine';
 import MarkdownToPdfEngine from './markdown-to-pdf.engine';
-
-const PdfPrinter = require('pdfmake');
 
 export class ExportPdfEngine {
     private static instance: ExportPdfEngine;
@@ -19,7 +17,7 @@ export class ExportPdfEngine {
     }
 
     public export(outputFolder) {
-        let fonts = {
+        const fonts = {
             Roboto: {
                 normal: path.join(__dirname, '../src/resources/fonts/roboto-v15-latin-regular.ttf'),
                 bold: path.join(__dirname, '../src/resources/fonts/roboto-v15-latin-700.ttf'),
@@ -27,9 +25,9 @@ export class ExportPdfEngine {
             }
         };
 
-        let printer = new PdfPrinter(fonts);
+        const printer = new PdfPrinter(fonts);
 
-        let docDefinition = {
+        const docDefinition = {
             info: {
                 title: Configuration.mainData.documentationMainName
             },
@@ -125,7 +123,7 @@ export class ExportPdfEngine {
 
         // Coverage - docDefinition.content.push(...this.coverageEngine.calculateTable());
 
-        let pdfDoc = printer.createPdfKitDocument(docDefinition);
+        const pdfDoc = printer.createPdfKitDocument(docDefinition);
 
         return new Promise((resolve, reject) => {
             fs.ensureFile(outputFolder + path.sep + 'documentation.pdf', err => {
@@ -147,9 +145,9 @@ export class ExportPdfEngine {
     }
 
     private generateMarkdownContent() {
-        let pages = Configuration.markDownPages;
+        const pages = Configuration.markDownPages;
 
-        let data = [];
+        const data = [];
 
         pages.forEach(page => {
             data.push({
@@ -158,7 +156,7 @@ export class ExportPdfEngine {
                 style: 'header'
             });
 
-            let convertedMarkdownObject = MarkdownToPdfEngine.convert(page.data);
+            const convertedMarkdownObject = MarkdownToPdfEngine.convert(page.data);
             convertedMarkdownObject.margin = [0, 10];
 
             data.push(convertedMarkdownObject);
@@ -178,7 +176,7 @@ export class ExportPdfEngine {
     }
 
     private generateModulesContent() {
-        let data = [];
+        const data = [];
 
         data.push({
             text: 'Modules',
@@ -186,7 +184,7 @@ export class ExportPdfEngine {
             style: 'header'
         });
 
-        _.forEach(Configuration.mainData.modules, module => {
+        Configuration.mainData.modules.forEach(module => {
             data.push({
                 text: `${module.name}`,
                 style: 'subheader',
@@ -226,9 +224,9 @@ export class ExportPdfEngine {
                     margin: [0, 10]
                 });
 
-                let list = { ul: [] };
+                const list = { ul: [] };
 
-                _.forEach(module.declarations, declaration => {
+                module.declarations.forEach(declaration => {
                     list.ul.push({
                         text: `${declaration.name}`
                     });
@@ -244,9 +242,9 @@ export class ExportPdfEngine {
                     margin: [0, 10]
                 });
 
-                let list = { ul: [] };
+                const list = { ul: [] };
 
-                _.forEach(module.providers, provider => {
+                module.providers.forEach(provider => {
                     list.ul.push({
                         text: `${provider.name}`
                     });
@@ -262,9 +260,9 @@ export class ExportPdfEngine {
                     margin: [0, 10]
                 });
 
-                let list = { ul: [] };
+                const list = { ul: [] };
 
-                _.forEach(module.imports, importRef => {
+                module.imports.forEach(importRef => {
                     list.ul.push({
                         text: `${importRef.name}`
                     });
@@ -280,9 +278,9 @@ export class ExportPdfEngine {
                     margin: [0, 10]
                 });
 
-                let list = { ul: [] };
+                const list = { ul: [] };
 
-                _.forEach(module.exports, exportRef => {
+                module.exports.forEach(exportRef => {
                     list.ul.push({
                         text: `${exportRef.name}`
                     });
@@ -303,7 +301,7 @@ export class ExportPdfEngine {
     }
 
     private generateComponentsContent() {
-        let data = [];
+        const data = [];
 
         data.push({
             text: 'Components',
@@ -311,7 +309,7 @@ export class ExportPdfEngine {
             style: 'header'
         });
 
-        _.forEach(Configuration.mainData.components, component => {
+        Configuration.mainData.components.forEach(component => {
             data.push({
                 text: `${component.name}`,
                 style: 'subheader',

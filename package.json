@@ -1,17 +1,17 @@
 {
-    "name": "@compodoc/compodoc",
-    "version": "1.2.1",
-    "description": "The missing documentation tool for your Angular application",
+    "name": "@cngx/compodocx",
+    "version": "0.0.1",
+    "description": "Modern documentation tool for Angular applications",
     "main": "dist/index.js",
     "bin": {
+        "compodocx": "./bin/index-cli.js",
         "compodoc": "./bin/index-cli.js"
     },
     "scripts": {
         "start": "npm run test:watch",
         "copy-libs": "node tools/copy-libs.js",
-        "postinstall": "opencollective-postinstall || exit 0",
         "*********BUILD********": "*******************",
-        "prebuild": "rimraf dist/*",
+        "prebuild": "rimraf dist",
         "build": "rollup -c rollup/rollup.config.mjs --bundleConfigAsCjs && npm run build-schematics",
         "build-schematics": "tsc --project schematics/tsconfig.json && cp schematics/collection.json dist",
         "*********UTILS********": "*******************",
@@ -21,7 +21,7 @@
         "codecov": "codecov -f coverage/lcov_merged.info",
         "backup-package-json": "node tools/backup-package-json.js",
         "restore-package-json": "node tools/restore-package-json.js",
-        "madge": "./node_modules/.bin/madge --warning -i dist/madge.png src-refactored/index-cli.ts",
+        "madge": "./node_modules/.bin/madge --warning -i dist/madge.png src/index-cli.ts",
         "*********TEMPLATE PLAYGROUND********": "*******************",
         "build-template-playground": "node tools/build-template-playground.js",
         "start-playground": "npm run build && npm run build-template-playground && node -e \"const { TemplatePlaygroundServer } = require('./dist/template-playground-server.js'); const server = new TemplatePlaygroundServer(); server.start().then(() => console.log('✅ Template Playground started at http://localhost:3001')).catch(e => console.error('❌ Error:', e.message));\"",
@@ -29,26 +29,23 @@
         "dev:playground": "node scripts/start-playground.js",
         "playground:simple": "node scripts/start-playground-simple.js",
         "*********TEST********": "*******************",
-        "pretest": "npm run build && tsc -p tsconfig.test.json && node test/dist/test/src/cli-clean-root-folder.js && git checkout README.md CHANGELOG.md CONTRIBUTING.md",
-        "test": "cross-env TS_NODE_PROJECT=tsconfig.test.json TS_NODE_DISABLE_WARNINGS=1 nyc --reporter=lcov mocha --config test/.mocharc.json && node test/dist/test/src/cli-revert-root-folder.js",
-        "posttest": "rimraf test/dist",
-        "test:watch": "npm-watch build",
+        "pretest": "npm run build",
+        "test": "npm run test:unit && npm run test:cli && npm run test:playground",
+        "test:unit": "vitest run test/src/utils test/src/app",
+        "test:cli": "vitest run test/src/cli",
+        "test:playground": "vitest run test/src/template-playground",
+        "test:all": "vitest run",
+        "test:watch": "vitest watch",
         "*********TEST E2E********": "*******************",
-        "test:simple-doc": "ts-node ./bin/index-cli.js -p ./test/fixtures/sample-files/tsconfig.simple.json -d doc -s --port 4000",
+        "test:simple-doc": "node ./bin/index-cli.js -p ./test/fixtures/sample-files/tsconfig.simple.json -d doc -s --port 4000",
         "test-e2e-playwright": "npx playwright test",
-        "premerge-lcov": "mv coverage-refactoring/lcov.info coverage/lcov-refactoring.info",
-        "merge-lcov": "./node_modules/.bin/lcov-result-merger 'coverage/lcov-*.info' 'coverage/lcov_merged.info'",
         "*********PUBLISH********": "*******************",
         "prepublishOnly": "npm run build && npm run backup-package-json && npm run copy-libs",
         "postpublish": "npm run restore-package-json",
         "*********QUALITY********": "*******************",
         "lint": "eslint src/**/*.ts",
         "format:check": "prettier --config ./.prettierrc --list-different \"src/**/*.ts\"",
-        "format:write": "prettier --config ./.prettierrc --write \"src/**/*.ts\"",
-        "*********REFACTORING********": "*******************",
-        "test-refactoring": "cross-env nyc --nycrc-path=.nycrc-refactoring --reporter=lcov --report-dir=coverage-refactoring mocha --config src-refactored/.mocharc.json",
-        "build-refactoring": "rollup -c rollup/rollup.config-refactored.mjs --bundleConfigAsCjs",
-        "lint-refactoring": "eslint src-refactored/**/*.ts"
+        "format:write": "prettier --config ./.prettierrc --write \"src/**/*.ts\""
     },
     "watch": {
         "build": {
@@ -57,38 +54,30 @@
             ],
             "extensions": "js,ts",
             "quiet": true
-        },
-        "build-refactoring": {
-            "patterns": [
-                "src-refactored/**/*.ts"
-            ],
-            "extensions": "js,ts",
-            "quiet": true
         }
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/compodoc/compodoc.git"
+        "url": "git+https://github.com/cngxjs/compodocx.git"
     },
     "keywords": [
-        "angular2",
         "angular",
         "documentation",
         "components",
-        "module",
-        "graph",
-        "dependencies",
-        "markdown"
+        "standalone",
+        "signals",
+        "api-docs",
+        "compodoc"
     ],
-    "author": "Vindent Ogloblinsky (vincent.ogloblinsky@gmail.com)",
+    "author": "Christian Weiss",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/compodoc/compodoc/issues"
+        "url": "https://github.com/cngxjs/compodocx/issues"
     },
     "engines": {
-        "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
+        "node": ">=20"
     },
-    "homepage": "https://github.com/compodoc/compodoc#readme",
+    "homepage": "https://github.com/cngxjs/compodocx#readme",
     "dependencies": {
         "@angular-devkit/schematics": "21.1.0",
         "@babel/core": "7.28.6",
@@ -114,14 +103,12 @@
         "html-entities": "^2.6.0",
         "i18next": "25.7.4",
         "json5": "^2.2.3",
-        "lodash": "^4.17.21",
         "loglevel": "^1.9.2",
         "loglevel-plugin-prefix": "^0.8.4",
         "lunr": "^2.3.9",
         "marked": "7.0.3",
         "minimist": "^1.2.8",
         "neotraverse": "^0.6.18",
-        "opencollective-postinstall": "^2.0.3",
         "os-name": "4.0.1",
         "picocolors": "^1.1.1",
         "polka": "^0.5.2",
@@ -135,15 +122,12 @@
         "vis-network": "^10.0.2"
     },
     "devDependencies": {
-        "@istanbuljs/nyc-config-typescript": "1.0.2",
         "@playwright/test": "1.57.0",
+        "@rollup/plugin-json": "^6.1.0",
         "@rollup/plugin-typescript": "12.3.0",
         "@types/archiver": "^7.0.0",
-        "@types/chai": "5.2.3",
         "@types/fs-extra": "11.0.4",
-        "@types/lodash": "4.17.23",
         "@types/marked": "6.0.0",
-        "@types/mocha": "10.0.10",
         "@types/node": "25.0.9",
         "@types/polka": "^0.5.8",
         "@types/semver": "7.7.1",
@@ -152,34 +136,21 @@
         "@typescript-eslint/parser": "7.18.0",
         "archiver": "^7.0.1",
         "auto-changelog": "2.5.0",
-        "chai": "4.4.1",
-        "codecov": "3.8.3",
         "cpx2": "^8.0.0",
-        "cross-env": "10.1.0",
         "eslint": "8.56.0",
+        "eslint-plugin-unused-imports": "^4.4.1",
         "husky": "9.1.7",
-        "lcov-result-merger": "5.0.1",
         "madge": "8.0.0",
-        "mocha": "11.7.5",
         "nodemon": "3.1.11",
         "npm-watch": "0.13.0",
-        "nyc": "17.1.0",
         "prettier": "3.8.0",
         "pretty-quick": "4.2.2",
         "rimraf": "6.1.2",
         "rollup": "4.55.1",
         "rollup-plugin-typescript2": "0.36.0",
-        "sinon": "21.0.1",
-        "sonar-scanner": "3.1.0",
-        "source-map-support": "0.5.21",
         "supertest": "7.2.2",
-        "ts-node": "10.9.2",
-        "tslib": "2.8.1"
-    },
-    "collective": {
-        "type": "opencollective",
-        "url": "https://opencollective.com/compodoc",
-        "logo": "https://opencollective.com/compodoc/logo.txt"
+        "tslib": "2.8.1",
+        "vitest": "^4.1.2"
     },
     "husky": {
         "hooks": {

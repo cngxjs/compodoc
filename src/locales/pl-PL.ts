@@ -9,8 +9,6 @@ export const TRANSLATION_PL_PL = {
     component: 'Komponent',
     components: 'Komponenty',
     constructor: 'Konstruktor',
-    controllers: 'Kontrolery',
-    controller: 'Kontroler',
     'coverage-page-title': 'Pokrycie dokumentacją',
     declarations: 'Deklaracje',
     decorators: 'Dekoratory',

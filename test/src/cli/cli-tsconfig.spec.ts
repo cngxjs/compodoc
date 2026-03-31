@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, read } from '../helpers';
 const tmp = temporaryDir();
 
@@ -8,7 +8,7 @@ describe('CLI tsconfig', () => {
 
     describe('when specific files are included in tsconfig', () => {
         let moduleFile = undefined;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/sample-files/', tmpFolder);
 
@@ -20,12 +20,11 @@ describe('CLI tsconfig', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             moduleFile = read(`${distFolder}/modules/AppModule.html`);
-            done();
         });
-        after(() => tmp.clean(tmpFolder));
+        afterAll(() => tmp.clean(tmpFolder));
 
         it('should only create links to files included via tsconfig', () => {
             expect(moduleFile).to.contain('components/FooComponent.html');
@@ -38,7 +37,7 @@ describe('CLI tsconfig', () => {
 
     describe('when specific files are included in tsconfig + others', () => {
         let moduleFile = undefined;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/sample-files/', tmpFolder);
 
@@ -56,12 +55,11 @@ describe('CLI tsconfig', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             moduleFile = read(`${distFolder}/modules/AppModule.html`);
-            done();
         });
-        after(() => tmp.clean(tmpFolder));
+        afterAll(() => tmp.clean(tmpFolder));
 
         it('should only create links to files included via tsconfig', () => {
             expect(moduleFile).to.contain('components/FooComponent.html');

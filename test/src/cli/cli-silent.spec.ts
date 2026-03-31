@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { exec, shell, temporaryDir } from '../helpers';
 const tmp = temporaryDir();
 
@@ -6,7 +6,7 @@ describe('CLI silent flag', () => {
     const distFolder = tmp.name + '-silent';
     let stdoutString = '';
 
-    before(function (done) {
+    beforeAll(() => {
         tmp.create(distFolder);
         let ls = shell('node', [
             './bin/index-cli.js',
@@ -19,12 +19,11 @@ describe('CLI silent flag', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            throw new Error('error');
         }
         stdoutString = ls.stdout.toString();
-        done();
     });
-    after(() => tmp.clean(distFolder));
+    afterAll(() => tmp.clean(distFolder));
 
     it('should display simple message', () => {
         expect(stdoutString).to.contain('Compodoc v');
@@ -38,7 +37,7 @@ describe('CLI silent flag - error', () => {
 
     const distFolder = tmp.name + '-silent-error';
 
-    before(done => {
+    beforeAll(() => {
         tmp.create(distFolder);
         const ls = exec(
             'node' +
@@ -59,10 +58,9 @@ describe('CLI silent flag - error', () => {
         );
         ls.on('close', code => {
             exitCode = code;
-            done();
         });
     });
-    after(() => tmp.clean(distFolder));
+    afterAll(() => tmp.clean(distFolder));
 
     it('should exit with code 1 and log error', () => {
         expect(exitCode).to.equal(1);

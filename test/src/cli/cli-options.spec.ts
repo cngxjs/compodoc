@@ -1,11 +1,11 @@
-import { expect } from 'chai';
+
 
 import { shell, pkg } from '../helpers';
 
 describe('CLI Options', () => {
     let runHelp = undefined;
 
-    before(() => {
+    beforeAll(() => {
         runHelp = shell('node', ['./bin/index-cli.js', '-h']);
     });
 
@@ -39,7 +39,7 @@ describe('CLI Options', () => {
         it(`--theme`, () => {
             expect(runHelp.stdout.toString()).to.contain('--theme [theme]');
             expect(runHelp.stdout.toString()).to.contain(
-                "Choose one of available themes, default is 'gitbook' (laravel, original, material, postmark, readthedocs, stripe, vagrant)"
+                "Choose a theme: 'light' (default), 'dark', 'material', or a path to a custom CSS file"
             );
         });
 
@@ -92,7 +92,7 @@ describe('CLI Options', () => {
         it(`--hideGenerator`, () => {
             expect(runHelp.stdout.toString()).to.contain('--hideGenerator');
             expect(runHelp.stdout.toString()).to.contain(
-                'Do not print the Compodoc link at the bottom of the page'
+                'Do not print the compodocx link at the bottom of the page'
             );
         });
 

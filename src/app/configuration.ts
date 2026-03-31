@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
 
 import { ConfigurationInterface } from './interfaces/configuration.interface';
@@ -38,7 +36,6 @@ export class Configuration implements ConfigurationInterface {
         classes: [],
         interfaces: [],
         components: [],
-        controllers: [],
         entities: [],
         directives: [],
         injectables: [],
@@ -111,14 +108,14 @@ export class Configuration implements ConfigurationInterface {
     }
 
     public addPage(page: PageInterface) {
-        let indexPage = _.findIndex(this._pages, { name: page.name });
+        const indexPage = this._pages.findIndex(p => p.name === page.name);
         if (indexPage === -1) {
             this._pages.push(page);
         }
     }
 
     public hasPage(name: string): boolean {
-        let indexPage = _.findIndex(this._pages, { name: name });
+        const indexPage = this._pages.findIndex(p => p.name === name);
         return indexPage !== -1;
     }
 
@@ -139,15 +136,15 @@ export class Configuration implements ConfigurationInterface {
     }
 
     public resetRootMarkdownPages() {
-        let indexPage = _.findIndex(this._pages, { name: 'index' });
+        let indexPage = this._pages.findIndex(p => p.name === 'index');
         this._pages.splice(indexPage, 1);
-        indexPage = _.findIndex(this._pages, { name: 'changelog' });
+        indexPage = this._pages.findIndex(p => p.name === 'changelog');
         this._pages.splice(indexPage, 1);
-        indexPage = _.findIndex(this._pages, { name: 'contributing' });
+        indexPage = this._pages.findIndex(p => p.name === 'contributing');
         this._pages.splice(indexPage, 1);
-        indexPage = _.findIndex(this._pages, { name: 'license' });
+        indexPage = this._pages.findIndex(p => p.name === 'license');
         this._pages.splice(indexPage, 1);
-        indexPage = _.findIndex(this._pages, { name: 'todo' });
+        indexPage = this._pages.findIndex(p => p.name === 'todo');
         this._pages.splice(indexPage, 1);
         this._mainData.markdowns = [];
     }

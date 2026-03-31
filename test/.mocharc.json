@@ -1,7 +1,0 @@
-{
-    "reporter": "spec",
-    "extension": ["js"],
-    "ui": "bdd",
-    "timeout": 120000,
-    "spec": "test/dist/**/*.spec.js"
-}

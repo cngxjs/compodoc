@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
@@ -7,7 +7,7 @@ describe('CLI disable flags', () => {
 
     describe('disabling excluding methods with --disablePrivate', () => {
         let componentFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -20,12 +20,11 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should exclude methods marked as private', () => {
             expect(componentFile).not.to.contain('<code>privateMethod');
@@ -51,7 +50,7 @@ describe('CLI disable flags', () => {
 
     describe('disabling excluding methods with --disableProtected', () => {
         let componentFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -64,12 +63,11 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should exclude methods marked as protected', () => {
             expect(componentFile).not.to.contain('<code>varprotected');
@@ -90,7 +88,7 @@ describe('CLI disable flags', () => {
 
     describe('disabling excluding methods with --disableInternal', () => {
         let componentFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -103,12 +101,11 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should exclude methods marked as @internal', () => {
             expect(componentFile).not.to.contain('<code>internalMethod');
@@ -142,7 +139,7 @@ describe('CLI disable flags', () => {
 
     describe('disabling excluding methods with --disableLifeCycleHooks', () => {
         let componentFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -155,12 +152,11 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should exclude lifecyle hooks', () => {
             expect(componentFile).not.to.contain('<code>ngOnInit');
@@ -187,7 +183,7 @@ describe('CLI disable flags', () => {
 
     describe('disabling excluding methods with --disableLifeCycleHooks for component inheritance', () => {
         let componentFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -200,12 +196,11 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             componentFile = read(`${distFolder}/components/AppComponent.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should exclude lifecyle hooks', () => {
             expect(componentFile).not.to.contain('<code>ngOnInit');
@@ -214,7 +209,7 @@ describe('CLI disable flags', () => {
 
     describe('disabling excluding methods with --disableLifeCycleHooks --disableInternal --disableProtected --disablePrivate', () => {
         let componentFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -230,12 +225,11 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should exclude lifecyle hooks', () => {
             expect(componentFile).not.to.contain('<code>ngOnInit');
@@ -256,7 +250,7 @@ describe('CLI disable flags', () => {
 
     describe('disabling excluding methods with --disableConstructors', () => {
         let componentFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -269,12 +263,11 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             componentFile = read(`${distFolder}/components/BarComponent.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should exclude constructors', () => {
             expect(componentFile).not.to.contain('<code>constructor');
@@ -289,7 +282,7 @@ describe('CLI disable flags', () => {
 
     describe('disabling excluding methods with --disableConstructors for component inheritance', () => {
         let componentFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -302,12 +295,11 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             componentFile = read(`${distFolder}/components/AppComponent.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should exclude constructors', () => {
             expect(componentFile).not.to.contain('<code>constructor');
@@ -315,7 +307,7 @@ describe('CLI disable flags', () => {
     });
 
     describe('disabling search with --disableSearch', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -328,11 +320,10 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should not generate search JS files', () => {
             let file = read(`${distFolder}/index.html`);
@@ -348,7 +339,7 @@ describe('CLI disable flags', () => {
     });
 
     describe('disabling dependencies with --disableDependencies', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
@@ -361,11 +352,10 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should not generate the dependencies list', () => {
             const file = read(`${distFolder}/js/menu-wc.js`);
@@ -374,7 +364,7 @@ describe('CLI disable flags', () => {
     });
 
     describe('disabling properties with --disableProperties', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
@@ -387,11 +377,10 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should not generate the properties list', () => {
             const file = read(`${distFolder}/js/menu-wc.js`);
@@ -402,7 +391,7 @@ describe('CLI disable flags', () => {
     describe('minimal with --minimal', () => {
         let fileContents;
 
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -415,11 +404,10 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should not generate search JS files', () => {
             let file = read(`${distFolder}/index.html`);
@@ -464,12 +452,11 @@ describe('CLI disable flags', () => {
             serviceFile,
             classFile,
             interfaceFile,
-            controllerFile,
             entityFile,
             interceptorFile,
             guardFile;
 
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -482,11 +469,10 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should not display file path in component documentation', () => {
             componentFile = read(`${distFolder}/components/BarComponent.html`);
@@ -542,7 +528,7 @@ describe('CLI disable flags', () => {
 
     describe('disabling overview with --disableOverview', () => {
         let menuFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -555,11 +541,10 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should not generate overview.html when README exists', () => {
             const overviewExists = exists(`${distFolder}/overview.html`);
@@ -594,7 +579,7 @@ describe('CLI disable flags', () => {
 
     describe('disabling overview with --disableOverview without README', () => {
         let menuFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -607,11 +592,10 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should not generate additional overview page when no README', () => {
             const overviewExists = exists(`${distFolder}/overview.html`);
@@ -633,7 +617,7 @@ describe('CLI disable flags', () => {
         let menuFile;
         const additionalTestFolder = tmp.name + '-disable-overview-additional';
         
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(additionalTestFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
@@ -650,11 +634,10 @@ describe('CLI disable flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(additionalTestFolder));
+        afterAll(() => tmp.clean(additionalTestFolder));
 
         it('should not generate overview.html when using additional documentation', () => {
             const overviewExists = exists(`${additionalTestFolder}/overview.html`);
@@ -734,7 +717,7 @@ describe('CLI disable flags', () => {
         const withOverviewFolder = tmp.name + '-with-overview-additional';
         const withoutOverviewFolder = tmp.name + '-without-overview-additional';
         
-        before(function (done) {
+        beforeAll(() => {
             // Generate with overview
             tmp.create(withOverviewFolder);
             let ls1 = shell('node', [
@@ -751,8 +734,7 @@ describe('CLI disable flags', () => {
 
             if (ls1.stderr.toString() !== '') {
                 console.error(`shell error with overview: ${ls1.stderr.toString()}`);
-                done('error');
-                return;
+                throw new Error('error');
             }
 
             // Generate without overview
@@ -772,16 +754,14 @@ describe('CLI disable flags', () => {
 
             if (ls2.stderr.toString() !== '') {
                 console.error(`shell error without overview: ${ls2.stderr.toString()}`);
-                done('error');
-                return;
+                throw new Error('error');
             }
 
             withOverviewMenuFile = read(`${withOverviewFolder}/js/menu-wc.js`);
             withoutOverviewMenuFile = read(`${withoutOverviewFolder}/js/menu-wc.js`);
-            done();
         });
         
-        after(() => {
+        afterAll(() => {
             tmp.clean(withOverviewFolder);
             tmp.clean(withoutOverviewFolder);
         });

@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 import { ts, SyntaxKind } from 'ts-morph';
 
 import { getNamesCompareFn, mergeTagsAndArgs, markedtags } from '../../../../../utils/utils';
@@ -13,10 +11,9 @@ import { StringifyObjectLiteralExpression } from '../../../../../utils/object-li
 import DependenciesEngine from '../../../../engines/dependencies.engine';
 import Configuration from '../../../../configuration';
 import { StringifyArrowFunction } from '../../../../../utils/arrow-function.util';
+import * as crypto from 'crypto';
 import { getNodeDecorators, nodeHasDecorator } from '../../../../../utils/node.util';
 import { markedAcl } from '../../../../../utils/marked.acl';
-
-const crypto = require('crypto');
 
 export class ClassHelper {
     private jsdocParserUtil = new JsdocParserUtil();
@@ -42,7 +39,7 @@ export class ClassHelper {
     }
 
     private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
-        _.forEach(tags, tag => {
+        tags.forEach(tag => {
             if (tag.tagName && tag.tagName.text) {
                 if (tag.tagName.text.indexOf('deprecated') > -1) {
                     result.deprecated = true;
@@ -118,8 +115,8 @@ export class ClassHelper {
         }
         let kinds = node.modifiers.map(modifier => modifier.kind);
         if (
-            _.indexOf(kinds, SyntaxKind.PublicKeyword) !== -1 &&
-            _.indexOf(kinds, SyntaxKind.StaticKeyword) !== -1
+            kinds.indexOf(SyntaxKind.PublicKeyword) !== -1 &&
+            kinds.indexOf(SyntaxKind.StaticKeyword) !== -1
         ) {
             kinds = kinds.filter(kind => kind !== SyntaxKind.PublicKeyword);
         }
@@ -155,8 +152,8 @@ export class ClassHelper {
     }
 
     private getDecoratorOfType(node, decoratorType) {
-        let decorators = getNodeDecorators(node) || [];
-        let result = [];
+        const decorators = getNodeDecorators(node) || [];
+        const result = [];
         const len = decorators.length;
 
         if (len > 1) {
@@ -187,15 +184,15 @@ export class ClassHelper {
     }
 
     private formatDecorators(decorators) {
-        let _decorators = [];
+        const _decorators = [];
 
-        _.forEach(decorators, (decorator: any) => {
+        decorators.forEach((decorator: any) => {
             if (decorator.expression) {
                 if (decorator.expression.text) {
                     _decorators.push({ name: decorator.expression.text });
                 }
                 if (decorator.expression.expression) {
-                    let info: any = { name: decorator.expression.expression.text };
+                    const info: any = { name: decorator.expression.expression.text };
                     if (decorator.expression.arguments) {
                         info.stringifiedArguments = this.stringifyArguments(
                             decorator.expression.arguments
@@ -214,8 +211,8 @@ export class ClassHelper {
             return `${arg.name}${this.getOptionalString(arg)}: () => void`;
         }
 
-        let argums = arg.function.map(argu => {
-            let _result = DependenciesEngine.find(argu.type);
+        const argums = arg.function.map(argu => {
+            const _result = DependenciesEngine.find(argu.type);
             if (_result) {
                 if (_result.source === 'internal') {
                     let path = _result.data.type;
@@ -226,7 +223,7 @@ export class ClassHelper {
                         _result.data.name
                     }.html">${argu.type}</a>`;
                 } else {
-                    let path = AngularVersionUtil.getApiLink(
+                    const path = AngularVersionUtil.getApiLink(
                         _result.data,
                         Configuration.mainData.angularVersion
                     );
@@ -235,7 +232,7 @@ export class ClassHelper {
                     )}: <a href="${path}" target="_blank">${argu.type}</a>`;
                 }
             } else if (BasicTypeUtil.isKnownType(argu.type)) {
-                let path = BasicTypeUtil.getTypeUrl(argu.type);
+                const path = BasicTypeUtil.getTypeUrl(argu.type);
                 return `${argu.name}${this.getOptionalString(
                     arg
                 )}: <a href="${path}" target="_blank">${argu.type}</a>`;
@@ -274,7 +271,7 @@ export class ClassHelper {
                             _result.data.name
                         }.html">${arg.type}</a>`;
                     } else {
-                        let path = AngularVersionUtil.getApiLink(
+                        const path = AngularVersionUtil.getApiLink(
                             _result.data,
                             Configuration.mainData.angularVersion
                         );
@@ -371,7 +368,7 @@ export class ClassHelper {
         let nodeName = '';
         if (nodeAccessor.name) {
             nodeName = nodeAccessor.name.text;
-            let jsdoctags = this.jsdocParserUtil.getJSDocs(nodeAccessor);
+            const jsdoctags = this.jsdocParserUtil.getJSDocs(nodeAccessor);
 
             if (!accessors[nodeName]) {
                 accessors[nodeName] = {
@@ -382,7 +379,7 @@ export class ClassHelper {
             }
 
             if (nodeAccessor.kind === SyntaxKind.SetAccessor) {
-                let setSignature: any = {
+                const setSignature: any = {
                     name: nodeName,
                     type: 'void',
                     ...this.initializeDocumentationFields(),
@@ -403,7 +400,7 @@ export class ClassHelper {
                 accessors[nodeName].setSignature = setSignature;
             }
             if (nodeAccessor.kind === SyntaxKind.GetAccessor) {
-                let getSignature: any = {
+                const getSignature: any = {
                     name: nodeName,
                     type: nodeAccessor.type ? kindToType(nodeAccessor.type.kind) : '',
                     returnType: nodeAccessor.type ? this.visitType(nodeAccessor.type) : '',
@@ -522,12 +519,8 @@ export class ClassHelper {
         return this.hasDecoratorType(decorator, 'Pipe');
     }
 
-    private isControllerDecorator(decorator) {
-        return this.hasDecoratorType(decorator, 'Controller');
-    }
-
     private isModuleDecorator(decorator) {
-        return this.hasDecoratorType(decorator, 'NgModule', 'Module');
+        return this.hasDecoratorType(decorator, 'NgModule');
     }
 
     /**
@@ -540,7 +533,7 @@ export class ClassHelper {
         sourceFile?: ts.SourceFile,
         astFile?: ts.SourceFile
     ): any {
-        let symbol = this.typeChecker.getSymbolAtLocation(classDeclaration.name);
+        const symbol = this.typeChecker.getSymbolAtLocation(classDeclaration.name);
         let rawdescription = '';
         let deprecation = this.initializeDocumentationFields();
         let description = '';
@@ -554,7 +547,7 @@ export class ClassHelper {
                 return [{ ignore: true }];
             }
             if (symbol.declarations && symbol.declarations.length > 0) {
-                let declarationsjsdoctags = this.jsdocParserUtil.getJSDocs(symbol.declarations[0]);
+                const declarationsjsdoctags = this.jsdocParserUtil.getJSDocs(symbol.declarations[0]);
                 this.processJSDocTags(declarationsjsdoctags, deprecation, false);
                 if (isIgnore(symbol.declarations[0])) {
                     return [{ ignore: true }];
@@ -574,16 +567,16 @@ export class ClassHelper {
             }
         }
 
-        let className = classDeclaration.name.text;
+        const className = classDeclaration.name.text;
         let members;
-        let implementsElements = [];
+        const implementsElements = [];
         let extendsElements = [];
 
         if (typeof (ts as any).getEffectiveImplementsTypeNodes !== 'undefined') {
-            let implementedTypes = (ts as any).getEffectiveImplementsTypeNodes(classDeclaration);
+            const implementedTypes = (ts as any).getEffectiveImplementsTypeNodes(classDeclaration);
             if (implementedTypes) {
                 let i = 0;
-                let len = implementedTypes.length;
+                const len = implementedTypes.length;
                 for (i; i < len; i++) {
                     if (implementedTypes[i].expression) {
                         implementsElements.push(implementedTypes[i].expression.text);
@@ -600,7 +593,7 @@ export class ClassHelper {
                 }
                 if (interfaceOrClassNode) {
                     const extendsListRaw = interfaceOrClassNode.getExtends();
-                    let extendsList = [];
+                    const extendsList = [];
                     if (extendsListRaw) {
                         if (Array.isArray(extendsListRaw)) {
                             if (extendsListRaw.length > 0) {
@@ -632,15 +625,12 @@ export class ClassHelper {
 
         if (nodeHasDecorator(classDeclaration)) {
             const classDecorators = getNodeDecorators(classDeclaration);
-            // Loop and search for official decorators at top-level :
-            // Angular : @NgModule, @Component, @Directive, @Injectable, @Pipe
-            // Nestjs : @Controller, @Module, @Injectable
-            // Stencil : @Component
+            // Loop and search for Angular decorators:
+            // @NgModule, @Component, @Directive, @Injectable, @Pipe
             let isDirective = false;
             let isService = false;
             let isPipe = false;
             let isModule = false;
-            let isController = false;
             for (let a = 0; a < classDecorators.length; a++) {
                 //console.log(classDeclaration.decorators[i].expression);
 
@@ -650,7 +640,6 @@ export class ClassHelper {
                 isService = isService || this.isServiceDecorator(classDecorators[a]);
                 isPipe = isPipe || this.isPipeDecorator(classDecorators[a]);
                 isModule = isModule || this.isModuleDecorator(classDecorators[a]);
-                isController = isController || this.isControllerDecorator(classDecorators[a]);
             }
             if (isDirective) {
                 return {
@@ -791,23 +780,23 @@ export class ClassHelper {
         /**
          * Copyright https://github.com/ng-bootstrap/ng-bootstrap
          */
-        let inputs = [];
-        let outputs = [];
-        let methods = [];
-        let properties = [];
-        let indexSignatures = [];
+        const inputs = [];
+        const outputs = [];
+        const methods = [];
+        const properties = [];
+        const indexSignatures = [];
         let kind;
         let inputDecorator;
-        let hostBindings = [];
-        let hostListeners = [];
+        const hostBindings = [];
+        const hostListeners = [];
         let constructor;
         let outputDecorator;
-        let accessors = {};
+        const accessors = {};
         let result = {};
 
         for (let i = 0; i < members.length; i++) {
             // Allows typescript guess type when using ts.is*
-            let member = members[i];
+            const member = members[i];
 
             inputDecorator = this.getDecoratorOfType(member, 'Input');
             outputDecorator = this.getDecoratorOfType(member, 'Output');
@@ -876,12 +865,12 @@ export class ClassHelper {
                                     this.visitIndexDeclaration(member, sourceFile)
                                 );
                             } else if (ts.isConstructorDeclaration(member)) {
-                                let _constructorProperties = this.visitConstructorProperties(
+                                const _constructorProperties = this.visitConstructorProperties(
                                     member,
                                     sourceFile
                                 );
                                 let j = 0;
-                                let len = _constructorProperties.length;
+                                const len = _constructorProperties.length;
                                 for (j; j < len; j++) {
                                     properties.push(_constructorProperties[j]);
                                 }
@@ -934,7 +923,7 @@ export class ClassHelper {
     }
 
     public visitTypeIndex(node): string {
-        let _return = '';
+        const _return = '';
 
         if (!node) {
             return _return;
@@ -991,9 +980,9 @@ export class ClassHelper {
 
             const parseTypesOrElements = (arr, separator) => {
                 let i = 0;
-                let len = arr.length;
+                const len = arr.length;
                 for (i; i < len; i++) {
-                    let type = arr[i];
+                    const type = arr[i];
 
                     if (type.elementType) {
                         const _firstPart = this.visitType(type.elementType);
@@ -1042,14 +1031,14 @@ export class ClassHelper {
                 parseTypesOrElements(node.type.types, ' | ');
             }
             if (node.type.elementTypes) {
-                let elementTypes = node.type.elementTypes;
+                const elementTypes = node.type.elementTypes;
                 let i = 0;
-                let len = elementTypes.length;
+                const len = elementTypes.length;
                 if (len > 0) {
                     _return = '[';
 
                     for (i; i < len; i++) {
-                        let type = elementTypes[i];
+                        const type = elementTypes[i];
                         if (type.kind === SyntaxKind.ArrayType && type.elementType) {
                             _return += kindToType(type.elementType.kind);
                             _return += kindToType(type.kind);
@@ -1101,9 +1090,9 @@ export class ClassHelper {
         } else if (node.types && ts.isUnionTypeNode(node)) {
             _return = '';
             let i = 0;
-            let len = node.types.length;
+            const len = node.types.length;
             for (i; i < len; i++) {
-                let type = node.types[i];
+                const type = node.types[i];
                 if (ts.isLiteralTypeNode(type) && type.literal) {
                     if ((type.literal as any).text) {
                         _return += '"' + (type.literal as any).text + '"';
@@ -1143,7 +1132,7 @@ export class ClassHelper {
             let i = 0,
                 len = node.typeArguments.length;
             for (i; i < len; i++) {
-                let argument = node.typeArguments[i];
+                const argument = node.typeArguments[i];
                 _return += this.visitType(argument);
                 if (i >= 0 && i < len - 1) {
                     _return += ', ';
@@ -1155,9 +1144,9 @@ export class ClassHelper {
     }
 
     private visitCallDeclaration(method: ts.CallSignatureDeclaration, sourceFile: ts.SourceFile) {
-        let sourceCode = sourceFile.getText();
-        let hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
-        let result: any = {
+        const sourceCode = sourceFile.getText();
+        const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
+        const result: any = {
             id: 'call-declaration-' + hash,
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             returnType: this.visitType(method.type),
@@ -1174,9 +1163,9 @@ export class ClassHelper {
         method: ts.IndexSignatureDeclaration,
         sourceFile?: ts.SourceFile
     ) {
-        let sourceCode = sourceFile.getText();
-        let hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
-        let result = {
+        const sourceCode = sourceFile.getText();
+        const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
+        const result = {
             id: 'index-declaration-' + hash,
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             returnType: this.visitType(method.type),
@@ -1196,7 +1185,7 @@ export class ClassHelper {
         /**
          * Copyright https://github.com/ng-bootstrap/ng-bootstrap
          */
-        let result: any = {
+        const result: any = {
             name: 'constructor',
             description: '',
             ...this.initializeDocumentationFields(),
@@ -1297,9 +1286,9 @@ export class ClassHelper {
 
     private visitConstructorProperties(constr, sourceFile) {
         if (constr.parameters) {
-            let _parameters = [];
+            const _parameters = [];
             let i = 0;
-            let len = constr.parameters.length;
+            const len = constr.parameters.length;
             for (i; i < len; i++) {
                 const parameterOfConstructor = constr.parameters[i];
                 if (isIgnore(parameterOfConstructor)) {
@@ -1320,7 +1309,7 @@ export class ClassHelper {
              */
             if (constr.jsDoc) {
                 if (constr.jsDoc.length > 0) {
-                    let constrTags = constr.jsDoc[0].tags;
+                    const constrTags = constr.jsDoc[0].tags;
                     if (constrTags && constrTags.length > 0) {
                         constrTags.forEach(tag => {
                             _parameters.forEach(param => {
@@ -1349,7 +1338,7 @@ export class ClassHelper {
     }
 
     private visitMethodDeclaration(method: ts.MethodDeclaration | ts.MethodSignature, sourceFile: ts.SourceFile) {
-        let result: any = {
+        const result: any = {
             name: (method.name as any).text || (ts.isIdentifier(method.name) ? method.name.text : ''),
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             optional: typeof method.questionToken !== 'undefined',
@@ -1362,9 +1351,9 @@ export class ClassHelper {
         if (typeof method.type === 'undefined') {
             // Try to get inferred type
             if ((method as any).symbol) {
-                let symbol: ts.Symbol = (method as any).symbol;
+                const symbol: ts.Symbol = (method as any).symbol;
                 if (symbol.valueDeclaration) {
-                    let symbolType = this.typeChecker.getTypeOfSymbolAtLocation(
+                    const symbolType = this.typeChecker.getTypeOfSymbolAtLocation(
                         symbol,
                         symbol.valueDeclaration
                     );
@@ -1416,8 +1405,8 @@ export class ClassHelper {
         outDecorator: ts.Decorator,
         sourceFile?: ts.SourceFile
     ) {
-        let inArgs = (outDecorator.expression as any).arguments;
-        let _return: any = {
+        const inArgs = (outDecorator.expression as any).arguments;
+        const _return: any = {
             name: inArgs.length > 0 ? (inArgs[0] as any).text : ((property.name as any).text || (ts.isIdentifier(property.name) ? property.name.text : '')),
             defaultValue: property.initializer
                 ? this.stringifyDefaultValue(property.initializer)
@@ -1450,7 +1439,7 @@ export class ClassHelper {
     }
 
     private visitArgument(arg: ts.ParameterDeclaration) {
-        let _result: any = {
+        const _result: any = {
             name: (arg.name as any).text || (ts.isIdentifier(arg.name) ? arg.name.text : ''),
             type: this.visitType(arg),
             optional: !!arg.questionToken,
@@ -1473,7 +1462,7 @@ export class ClassHelper {
     private visitInputAndHostBinding(property, inDecorator, sourceFile?) {
         const inArgs = inDecorator.expression.arguments;
 
-        let _return: any = {};
+        const _return: any = {};
 
         let isInputConfigStringLiteral = false;
         let isInputConfigObjectLiteralExpression = false;
@@ -1566,8 +1555,8 @@ export class ClassHelper {
     }
 
     private visitHostListener(property, hostListenerDecorator, sourceFile?) {
-        let inArgs = hostListenerDecorator.expression.arguments;
-        let _return: any = {};
+        const inArgs = hostListenerDecorator.expression.arguments;
+        const _return: any = {};
         _return.name = inArgs.length > 0 ? inArgs[0].text : property.name.text;
         _return.args = property.parameters
             ? property.parameters.map(prop => this.visitArgument(prop))

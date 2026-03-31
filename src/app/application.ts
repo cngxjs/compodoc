@@ -1,15 +1,12 @@
+import babel from '@babel/core';
+import chokidar from 'chokidar';
+import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as LiveServer from '@compodoc/live-server';
-import * as _ from 'lodash';
+import traverse from 'neotraverse/legacy';
 import * as path from 'path';
 
 import { SyntaxKind } from 'ts-morph';
-
-const chokidar = require('chokidar');
-
-const traverse = require('neotraverse/legacy');
-const crypto = require('crypto');
-const babel = require('@babel/core');
 
 import { logger } from '../utils/logger';
 
@@ -84,7 +81,7 @@ export class Application {
      * @param options An object containing the options that should be used.
      */
     constructor(options?: Object) {
-        for (let option in options) {
+        for (const option in options) {
             if (typeof Configuration.mainData[option] !== 'undefined') {
                 Configuration.mainData[option] = options[option];
             }
@@ -173,7 +170,7 @@ export class Application {
     public hasWatchedFilesTSFiles(): boolean {
         let result = false;
 
-        _.forEach(this.updatedFiles, file => {
+        this.updatedFiles.forEach(file => {
             if (path.extname(file) === '.ts') {
                 result = true;
             }
@@ -189,7 +186,7 @@ export class Application {
     public hasWatchedFilesRootMarkdownFiles(): boolean {
         let result = false;
 
-        _.forEach(this.updatedFiles, file => {
+        this.updatedFiles.forEach(file => {
             if (path.extname(file) === '.md' && path.dirname(file) === cwd) {
                 result = true;
             }
@@ -210,7 +207,7 @@ export class Application {
         logger.info('Searching package.json file');
         FileEngine.get(cwd + path.sep + 'package.json').then(
             packageData => {
-                let parsedData = JSON.parse(packageData);
+                const parsedData = JSON.parse(packageData);
                 this.packageJsonData = parsedData;
                 if (
                     typeof parsedData.name !== 'undefined' &&
@@ -417,7 +414,7 @@ export class Application {
             'Regenerating README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE.md, TODO.md pages'
         );
 
-        let actions = [];
+        const actions = [];
 
         Configuration.resetRootMarkdownPages();
 
@@ -451,7 +448,7 @@ export class Application {
             dependenciesClass = AngularJSDependencies;
         }
 
-        let crawler = new dependenciesClass(
+        const crawler = new dependenciesClass(
             this.updatedFiles,
             {
                 tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
@@ -460,7 +457,7 @@ export class Application {
             RouterParserUtil
         );
 
-        let dependenciesData = crawler.getDependencies();
+        const dependenciesData = crawler.getDependencies();
 
         DependenciesEngine.update(dependenciesData);
 
@@ -473,7 +470,7 @@ export class Application {
     private rebuildExternalDocumentation(): void {
         logger.info('Rebuild external documentation');
 
-        let actions = [];
+        const actions = [];
 
         Configuration.resetAdditionalPages();
 
@@ -505,7 +502,7 @@ export class Application {
                         countJSFiles += 1;
                     }
                 });
-                let percentOfJSFiles = (countJSFiles * 100) / this.files.length;
+                const percentOfJSFiles = (countJSFiles * 100) / this.files.length;
                 if (percentOfJSFiles >= 75) {
                     result = true;
                 }
@@ -532,7 +529,7 @@ export class Application {
             dependenciesClass = AngularJSDependencies;
         }
 
-        let crawler = new dependenciesClass(
+        const crawler = new dependenciesClass(
             this.files,
             {
                 tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
@@ -541,7 +538,7 @@ export class Application {
             RouterParserUtil
         );
 
-        let dependenciesData = crawler.getDependencies();
+        const dependenciesData = crawler.getDependencies();
 
         DependenciesEngine.init(dependenciesData);
 
@@ -553,7 +550,7 @@ export class Application {
     }
 
     private prepareJustAFewThings(diffCrawledData): void {
-        let actions = [];
+        const actions = [];
 
         Configuration.resetPages();
 
@@ -563,9 +560,6 @@ export class Application {
 
         if (diffCrawledData.components.length > 0) {
             actions.push(() => this.prepareComponents());
-        }
-        if (diffCrawledData.controllers.length > 0) {
-            actions.push(() => this.prepareControllers());
         }
         if (diffCrawledData.entities.length > 0) {
             actions.push(() => this.prepareEntities());
@@ -671,9 +665,6 @@ export class Application {
         if (DependenciesEngine.components.length > 0) {
             logger.info(`- component    : ${DependenciesEngine.components.length}`);
         }
-        if (DependenciesEngine.controllers.length > 0) {
-            logger.info(`- controller   : ${DependenciesEngine.controllers.length}`);
-        }
         if (DependenciesEngine.entities.length > 0) {
             logger.info(`- entity       : ${DependenciesEngine.entities.length}`);
         }
@@ -708,7 +699,7 @@ export class Application {
     }
 
     private prepareEverything() {
-        let actions = [];
+        const actions = [];
 
         actions.push(() => {
             return this.prepareComponents();
@@ -720,12 +711,6 @@ export class Application {
         if (DependenciesEngine.directives.length > 0) {
             actions.push(() => {
                 return this.prepareDirectives();
-            });
-        }
-
-        if (DependenciesEngine.controllers.length > 0) {
-            actions.push(() => {
-                return this.prepareControllers();
             });
         }
 
@@ -869,21 +854,21 @@ export class Application {
 
                     const parsedSummaryData = JSON.parse(summaryData);
 
-                    let that = this;
+                    const that = this;
                     let lastLevelOnePage = undefined;
 
                     traverse(parsedSummaryData).forEach(function () {
                         // tslint:disable-next-line:no-invalid-this
                         if (this.notRoot && typeof this.node === 'object') {
                             // tslint:disable-next-line:no-invalid-this
-                            let rawPath = this.path;
+                            const rawPath = this.path;
                             // tslint:disable-next-line:no-invalid-this
-                            let additionalNode: AdditionalNode = this.node;
-                            let file = additionalNode.file;
-                            let title = additionalNode.title;
+                            const additionalNode: AdditionalNode = this.node;
+                            const file = additionalNode.file;
+                            const title = additionalNode.title;
                             let finalPath = Configuration.mainData.includesFolder;
 
-                            let finalDepth = rawPath.filter(el => {
+                            const finalDepth = rawPath.filter(el => {
                                 return !isNaN(parseInt(el, 10));
                             });
 
@@ -919,14 +904,14 @@ export class Application {
                                 });
 
                                 finalPath = finalPath.replace('/' + url, '');
-                                let markdownFile = MarkdownEngine.getTraditionalMarkdownSync(
+                                const markdownFile = MarkdownEngine.getTraditionalMarkdownSync(
                                     that.getIncludedPathForFile(file)
                                 );
 
                                 if (finalDepth.length > 5) {
                                     logger.error('Only 5 levels of depth are supported');
                                 } else {
-                                    let _page = {
+                                    const _page = {
                                         name: title,
                                         id: id,
                                         filename: url,
@@ -968,18 +953,17 @@ export class Application {
     public prepareModules(someModules?): Promise<any> {
         logger.info('Prepare modules');
         let i = 0;
-        let _modules = someModules ? someModules : DependenciesEngine.getModules();
+        const _modules = someModules ? someModules : DependenciesEngine.getModules();
 
         return new Promise((resolve, reject) => {
             Configuration.mainData.modules = _modules.map(ngModule => {
                 ngModule.compodocLinks = {
                     components: [],
-                    controllers: [],
                     directives: [],
                     injectables: [],
                     pipes: []
                 };
-                ['declarations', 'bootstrap', 'imports', 'exports', 'controllers'].forEach(
+                ['declarations', 'bootstrap', 'imports', 'exports'].forEach(
                     metadataType => {
                         ngModule[metadataType] = ngModule[metadataType].filter(metaDataItem => {
                             switch (metaDataItem.type) {
@@ -1029,25 +1013,6 @@ export class Application {
                                         }
                                     );
 
-                                case 'controller':
-                                    return DependenciesEngine.getControllers().some(controller => {
-                                        let selectedController;
-                                        if (typeof metaDataItem.id !== 'undefined') {
-                                            selectedController =
-                                                (controller as any).id === metaDataItem.id;
-                                        } else {
-                                            selectedController =
-                                                (controller as any).name === metaDataItem.name;
-                                        }
-                                        if (
-                                            selectedController &&
-                                            !ngModule.compodocLinks.controllers.includes(controller)
-                                        ) {
-                                            ngModule.compodocLinks.controllers.push(controller);
-                                        }
-                                        return selectedController;
-                                    });
-
                                 case 'module':
                                     return DependenciesEngine.getModules().some(
                                         module => (module as any).name === metaDataItem.name
@@ -1079,7 +1044,7 @@ export class Application {
                 ngModule.providers = ngModule.providers.filter(provider => {
                     return (
                         DependenciesEngine.getInjectables().some(injectable => {
-                            let selectedInjectable = (injectable as any).name === provider.name;
+                            const selectedInjectable = (injectable as any).name === provider.name;
                             if (
                                 selectedInjectable &&
                                 !ngModule.compodocLinks.injectables.includes(injectable)
@@ -1094,7 +1059,7 @@ export class Application {
                     );
                 });
                 // Try fixing type undefined for each providers
-                _.forEach(ngModule.providers, provider => {
+                ngModule.providers.forEach(provider => {
                     if (
                         DependenciesEngine.getInjectables().find(
                             injectable => (injectable as any).name === provider.name
@@ -1111,25 +1076,16 @@ export class Application {
                     }
                 });
                 // Order things
-                ngModule.compodocLinks.components = _.sortBy(ngModule.compodocLinks.components, [
-                    'name'
-                ]);
-                ngModule.compodocLinks.controllers = _.sortBy(ngModule.compodocLinks.controllers, [
-                    'name'
-                ]);
-                ngModule.compodocLinks.directives = _.sortBy(ngModule.compodocLinks.directives, [
-                    'name'
-                ]);
-                ngModule.compodocLinks.injectables = _.sortBy(ngModule.compodocLinks.injectables, [
-                    'name'
-                ]);
-                ngModule.compodocLinks.pipes = _.sortBy(ngModule.compodocLinks.pipes, ['name']);
+                ngModule.compodocLinks.components = [...ngModule.compodocLinks.components].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.compodocLinks.directives = [...ngModule.compodocLinks.directives].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.compodocLinks.injectables = [...ngModule.compodocLinks.injectables].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.compodocLinks.pipes = [...ngModule.compodocLinks.pipes].sort((a, b) => a.name.localeCompare(b.name));
 
-                ngModule.declarations = _.sortBy(ngModule.declarations, ['name']);
-                ngModule.entryComponents = _.sortBy(ngModule.entryComponents, ['name']);
-                ngModule.providers = _.sortBy(ngModule.providers, ['name']);
-                ngModule.imports = _.sortBy(ngModule.imports, ['name']);
-                ngModule.exports = _.sortBy(ngModule.exports, ['name']);
+                ngModule.declarations = [...ngModule.declarations].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.entryComponents = [...ngModule.entryComponents].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.providers = [...ngModule.providers].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.imports = [...ngModule.imports].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.exports = [...ngModule.exports].sort((a, b) => a.name.localeCompare(b.name));
 
                 return ngModule;
             });
@@ -1417,15 +1373,15 @@ export class Application {
         const hasCustomNavTabConfig = navTabConfig.length !== 0;
         navTabConfig =
             navTabConfig.length === 0
-                ? _.cloneDeep(COMPODOC_CONSTANTS.navTabDefinitions)
+                ? structuredClone(COMPODOC_CONSTANTS.navTabDefinitions)
                 : navTabConfig;
         const matchDepType = (depType: string) => {
             return depType === 'all' || depType === dependency.type;
         };
 
-        let navTabs = [];
-        _.forEach(navTabConfig, customTab => {
-            const navTab = _.find(COMPODOC_CONSTANTS.navTabDefinitions, { id: customTab.id });
+        const navTabs = [];
+        navTabConfig.forEach(customTab => {
+            const navTab = COMPODOC_CONSTANTS.navTabDefinitions.find(t => t.id === customTab.id);
             if (!navTab) {
                 throw new Error(`Invalid tab ID '${customTab.id}' specified in tab configuration`);
             }
@@ -1437,7 +1393,7 @@ export class Application {
             }
 
             // is tab applicable to target dependency?
-            if (-1 === _.findIndex(navTab.depTypes, matchDepType)) {
+            if (-1 === navTab.depTypes.findIndex(matchDepType)) {
                 return;
             }
 
@@ -1487,42 +1443,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         return navTabs;
     }
 
-    public prepareControllers(someControllers?) {
-        logger.info('Prepare controllers');
-        Configuration.mainData.controllers = someControllers
-            ? someControllers
-            : DependenciesEngine.getControllers();
-
-        return new Promise((resolve, reject) => {
-            let i = 0;
-            const len = Configuration.mainData.controllers.length;
-            const loop = () => {
-                if (i < len) {
-                    const controller = Configuration.mainData.controllers[i];
-                    const page = {
-                        path: 'controllers',
-                        name: controller.name,
-                        id: controller.id,
-                        navTabs: this.getNavTabs(controller),
-                        context: 'controller',
-                        controller: controller,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (controller.isDuplicate) {
-                        page.name += '-' + controller.duplicateId;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
     public prepareEntities(someEntities?) {
         logger.info('Prepare entities');
         Configuration.mainData.entities = someEntities
@@ -1534,8 +1454,8 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             const len = Configuration.mainData.entities.length;
             const loop = () => {
                 if (i < len) {
-                    let entity = Configuration.mainData.entities[i];
-                    let page = {
+                    const entity = Configuration.mainData.entities[i];
+                    const page = {
                         path: 'entities',
                         name: entity.name,
                         id: entity.id,
@@ -1672,16 +1592,16 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
         return new Promise((resolve, reject) => {
             let i = 0;
-            let len = Configuration.mainData.directives.length;
-            let loop = () => {
+            const len = Configuration.mainData.directives.length;
+            const loop = () => {
                 if (i < len) {
-                    let directive = Configuration.mainData.directives[i];
+                    const directive = Configuration.mainData.directives[i];
                     if (MarkdownEngine.hasNeighbourReadmeFile(directive.file)) {
                         logger.info(` ${directive.name} has a README file, include it`);
-                        let readme = MarkdownEngine.readNeighbourReadmeFile(directive.file);
+                        const readme = MarkdownEngine.readNeighbourReadmeFile(directive.file);
                         directive.readme = markedAcl(readme);
                     }
-                    let page = {
+                    const page = {
                         path: 'directives',
                         name: directive.name,
                         id: directive.id,
@@ -1714,16 +1634,16 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
         return new Promise((resolve, reject) => {
             let i = 0;
-            let len = Configuration.mainData.injectables.length;
-            let loop = () => {
+            const len = Configuration.mainData.injectables.length;
+            const loop = () => {
                 if (i < len) {
-                    let injec = Configuration.mainData.injectables[i];
+                    const injec = Configuration.mainData.injectables[i];
                     if (MarkdownEngine.hasNeighbourReadmeFile(injec.file)) {
                         logger.info(` ${injec.name} has a README file, include it`);
-                        let readme = MarkdownEngine.readNeighbourReadmeFile(injec.file);
+                        const readme = MarkdownEngine.readNeighbourReadmeFile(injec.file);
                         injec.readme = markedAcl(readme);
                     }
-                    let page = {
+                    const page = {
                         path: 'injectables',
                         name: injec.name,
                         id: injec.id,
@@ -1867,7 +1787,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
         return new Promise((resolve, reject) => {
             /*
-             * loop with components, directives, controllers, entities, classes, injectables, interfaces, pipes, guards, misc functions variables
+             * loop with components, directives, entities, classes, injectables, interfaces, pipes, guards, misc functions variables
              */
             let files = [];
             let totalProjectStatementDocumented = 0;
@@ -1885,7 +1805,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 return status;
             };
             const processComponentsAndDirectivesAndControllersAndEntities = list => {
-                _.forEach(list, (el: any) => {
+                list.forEach((el: any) => {
                     const element = (Object as any).assign({}, el);
                     if (!element.propertiesClass) {
                         element.propertiesClass = [];
@@ -1935,7 +1855,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         totalStatementDocumented += 1;
                     }
 
-                    _.forEach(element.propertiesClass, (property: any) => {
+                    element.propertiesClass.forEach((property: any) => {
                         if (property.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -1948,7 +1868,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.methodsClass, (method: any) => {
+                    element.methodsClass.forEach((method: any) => {
                         if (method.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -1961,7 +1881,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.hostBindings, (property: any) => {
+                    element.hostBindings.forEach((property: any) => {
                         if (property.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -1974,7 +1894,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.hostListeners, (method: any) => {
+                    element.hostListeners.forEach((method: any) => {
                         if (method.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -1987,7 +1907,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.inputsClass, (input: any) => {
+                    element.inputsClass.forEach((input: any) => {
                         if (input.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -2000,7 +1920,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.outputsClass, (output: any) => {
+                    element.outputsClass.forEach((output: any) => {
                         if (output.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -2026,12 +1946,12 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     files.push(cl);
                 });
             };
-            let processCoveragePerFile = () => {
+            const processCoveragePerFile = () => {
                 logger.info('Process documentation coverage per file');
                 logger.info('-------------------');
 
-                let overFiles = files.filter(f => {
-                    let overTest =
+                const overFiles = files.filter(f => {
+                    const overTest =
                         f.coveragePercent >= Configuration.mainData.coverageMinimumPerFile;
                     if (overTest && !Configuration.mainData.coverageTestShowOnlyFailed) {
                         logger.info(
@@ -2040,8 +1960,8 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     }
                     return overTest;
                 });
-                let underFiles = files.filter(f => {
-                    let underTest =
+                const underFiles = files.filter(f => {
+                    const underTest =
                         f.coveragePercent < Configuration.mainData.coverageMinimumPerFile;
                     if (underTest) {
                         logger.error(
@@ -2057,9 +1977,9 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     underFiles: underFiles
                 };
             };
-            let processFunctionsAndVariables = (id, type) => {
-                _.forEach(id, (el: any) => {
-                    let cl: any = {
+            const processFunctionsAndVariables = (id, type) => {
+                id.forEach((el: any) => {
+                    const cl: any = {
                         filePath: el.file,
                         type: type,
                         linktype: el.type,
@@ -2094,16 +2014,16 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 });
             };
 
-            let processClasses = (list, type, linktype) => {
-                _.forEach(list, (cl: any) => {
-                    let element = (Object as any).assign({}, cl);
+            const processClasses = (list, type, linktype) => {
+                list.forEach((cl: any) => {
+                    const element = (Object as any).assign({}, cl);
                     if (!element.properties) {
                         element.properties = [];
                     }
                     if (!element.methods) {
                         element.methods = [];
                     }
-                    let cla: any = {
+                    const cla: any = {
                         filePath: element.file,
                         type: type,
                         linktype: linktype,
@@ -2126,7 +2046,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         totalStatementDocumented += 1;
                     }
 
-                    _.forEach(element.properties, (property: any) => {
+                    element.properties.forEach((property: any) => {
                         if (property.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -2139,7 +2059,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             totalStatementDocumented += 1;
                         }
                     });
-                    _.forEach(element.methods, (method: any) => {
+                    element.methods.forEach((method: any) => {
                         if (method.modifierKind === SyntaxKind.PrivateKeyword) {
                             // Doesn't handle private for coverage
                             totalStatements -= 1;
@@ -2173,9 +2093,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 Configuration.mainData.directives
             );
             processComponentsAndDirectivesAndControllersAndEntities(
-                Configuration.mainData.controllers
-            );
-            processComponentsAndDirectivesAndControllersAndEntities(
                 Configuration.mainData.entities
             );
 
@@ -2185,15 +2102,15 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             processClasses(Configuration.mainData.guards, 'guard', 'guard');
             processClasses(Configuration.mainData.interceptors, 'interceptor', 'interceptor');
 
-            _.forEach(Configuration.mainData.pipes, (pipe: any) => {
-                let cl: any = {
+            Configuration.mainData.pipes.forEach((pipe: any) => {
+                const cl: any = {
                     filePath: pipe.file,
                     type: pipe.type,
                     linktype: pipe.type,
                     name: pipe.name
                 };
                 let totalStatementDocumented = 0;
-                let totalStatements = 1;
+                const totalStatements = 1;
                 if (pipe.description && pipe.description !== '') {
                     totalStatementDocumented += 1;
                 }
@@ -2218,9 +2135,9 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 'type alias'
             );
 
-            files = _.sortBy(files, ['filePath']);
+            files = [...files].sort((a, b) => a.filePath.localeCompare(b.filePath));
 
-            let coverageData = {
+            const coverageData = {
                 count:
                     files.length > 0
                         ? Math.floor(totalProjectStatementDocumented / files.length)
@@ -2247,7 +2164,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     coverageData
                 );
             }
-            files = _.sortBy(files, ['coveragePercent']);
+            files = [...files].sort((a, b) => a.coveragePercent - b.coveragePercent);
 
             let coverageTestPerFileResults;
             if (
@@ -2262,7 +2179,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     generationPromiseResolve(true);
                     process.exit(0);
                 } else {
-                    let message = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`;
+                    const message = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`;
                     generationPromiseReject();
                     if (Configuration.mainData.coverageTestThresholdFail) {
                         logger.error(message);
@@ -2279,7 +2196,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 coverageTestPerFileResults = processCoveragePerFile();
                 // Per file coverage test and not global
                 if (coverageTestPerFileResults.underFiles.length > 0) {
-                    let message = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
+                    const message = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
                     generationPromiseReject();
                     if (Configuration.mainData.coverageTestThresholdFail) {
                         logger.error(message);
@@ -2320,7 +2237,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     logger.info(
                         `Documentation coverage (${coverageData.count}%) is over threshold (${Configuration.mainData.coverageTestThreshold}%)`
                     );
-                    let message = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
+                    const message = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
                     generationPromiseReject();
                     if (Configuration.mainData.coverageTestThresholdFail) {
                         logger.error(message);
@@ -2333,7 +2250,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     coverageData.count < Configuration.mainData.coverageTestThreshold &&
                     coverageTestPerFileResults.underFiles.length > 0
                 ) {
-                    let messageGlobal = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`,
+                    const messageGlobal = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`,
                         messagePerFile = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
                     generationPromiseReject();
                     if (Configuration.mainData.coverageTestThresholdFail) {
@@ -2346,7 +2263,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         process.exit(0);
                     }
                 } else {
-                    let message = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`,
+                    const message = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`,
                         messagePerFile = `Documentation coverage per file is over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
                     generationPromiseReject();
                     if (Configuration.mainData.coverageTestThresholdFail) {
@@ -2370,14 +2287,14 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         return new Promise((resolve, reject) => {
             let covDat, covFileNames;
 
-            let coverageData: CoverageData = Configuration.mainData.coverageData;
+            const coverageData: CoverageData = Configuration.mainData.coverageData;
 
             if (!coverageData.files) {
                 logger.warn('Missing documentation coverage data');
             } else {
                 covDat = {};
-                covFileNames = _.map(coverageData.files, el => {
-                    let fileName = path.normalize(el.filePath);
+                covFileNames = coverageData.files.map(el => {
+                    const fileName = path.normalize(el.filePath);
                     covDat[fileName] = {
                         type: el.type,
                         linktype: el.linktype,
@@ -2389,13 +2306,13 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             }
             // read coverage summary file and data
             let unitTestSummary = {};
-            let fileDat = FileEngine.getSync(Configuration.mainData.unitTestCoverage);
+            const fileDat = FileEngine.getSync(Configuration.mainData.unitTestCoverage);
             if (fileDat) {
                 unitTestSummary = JSON.parse(fileDat);
             } else {
                 return Promise.reject('Error reading unit test coverage file');
             }
-            let getCovStatus = function (percent, totalLines) {
+            const getCovStatus = function (percent, totalLines) {
                 let status;
                 if (totalLines === 0) {
                     status = 'uncovered';
@@ -2410,27 +2327,27 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 }
                 return status;
             };
-            let getCoverageData = function (data, fileName) {
+            const getCoverageData = function (data, fileName) {
                 let out = {};
                 if (fileName !== 'total') {
                     if (covDat === undefined) {
                         // need a name to include in output but this isn't visible
                         out = { name: fileName, filePath: fileName };
                     } else {
-                        const findMatch = _.filter(covFileNames, el => {
+                        const findMatch = covFileNames.filter(el => {
                             const normalizedFilename = path.normalize(fileName).replace(/\\/g, '/');
                             return el.includes(fileName) || normalizedFilename.includes(el);
                         });
                         if (findMatch.length > 0) {
-                            out = _.clone(covDat[findMatch[0]]);
+                            out = { ...covDat[findMatch[0]] };
                             out['filePath'] = fileName;
                         }
                     }
                 }
-                let keysToGet = ['statements', 'branches', 'functions', 'lines'];
-                _.forEach(keysToGet, key => {
+                const keysToGet = ['statements', 'branches', 'functions', 'lines'];
+                keysToGet.forEach(key => {
                     if (data[key]) {
-                        let t = data[key];
+                        const t = data[key];
                         out[key] = {
                             coveragePercent: Math.round(t.pct),
                             coverageCount: '' + t.covered + '/' + t.total,
@@ -2441,10 +2358,10 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 return out;
             };
 
-            let unitTestData = {};
-            let files = [];
-            for (let file in unitTestSummary) {
-                let dat = getCoverageData(unitTestSummary[file], file);
+            const unitTestData = {};
+            const files = [];
+            for (const file in unitTestSummary) {
+                const dat = getCoverageData(unitTestSummary[file], file);
                 if (file === 'total') {
                     unitTestData['total'] = dat;
                 } else {
@@ -2465,8 +2382,8 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             });
 
             if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
-                let keysToGet = ['statements', 'branches', 'functions', 'lines'];
-                _.forEach(keysToGet, key => {
+                const keysToGet = ['statements', 'branches', 'functions', 'lines'];
+                keysToGet.forEach(key => {
                     if (unitTestData['total'][key]) {
                         HtmlEngine.generateCoverageBadge(Configuration.mainData.output, key, {
                             count: unitTestData['total'][key]['coveragePercent'],
@@ -2482,7 +2399,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
     private processPage(page): Promise<void> {
         logger.info('Process page', page.name);
 
-        let htmlData = HtmlEngine.render(Configuration.mainData, page);
+        const htmlData = HtmlEngine.render(Configuration.mainData, page);
         let finalPath = Configuration.mainData.output;
 
         if (Configuration.mainData.output.lastIndexOf('/') === -1) {
@@ -2666,12 +2583,12 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
     }
 
     public processPages() {
-        let pages = _.sortBy(Configuration.pages, ['name']);
+        const pages = [...Configuration.pages].sort((a, b) => a.name.localeCompare(b.name));
 
         logger.info('Process pages');
         Promise.all(pages.map(page => this.processPage(page)))
             .then(() => {
-                let callbacksAfterGenerateSearchIndexJson = () => {
+                const callbacksAfterGenerateSearchIndexJson = () => {
                     // Process template playground if enabled
                     if (Configuration.mainData.templatePlayground) {
                         this.processTemplatePlayground();
@@ -2744,7 +2661,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         mainData.categorizedInterfaces = DependenciesEngine.categorizedInterfaces;
         mainData.categorizedGuards = DependenciesEngine.categorizedGuards;
         mainData.categorizedInterceptors = DependenciesEngine.categorizedInterceptors;
-        mainData.categorizedControllers = DependenciesEngine.categorizedControllers;
         mainData.categorizedEntities = DependenciesEngine.categorizedEntities;
 
         return new Promise((resolveProcessMenu, rejectProcessMenu) => {
@@ -2798,7 +2714,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
     public processAdditionalPages() {
         logger.info('Process additional pages');
-        let pages = Configuration.mainData.additionalPages;
+        const pages = Configuration.mainData.additionalPages;
         Promise.all(
             pages.map(page => {
                 if (page.children.length > 0) {
@@ -2835,7 +2751,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         } else {
             let finalOutput = Configuration.mainData.output;
 
-            let testOutputDir = Configuration.mainData.output.match(cwd);
+            const testOutputDir = Configuration.mainData.output.match(cwd);
 
             if (testOutputDir && testOutputDir.length > 0) {
                 finalOutput = Configuration.mainData.output.replace(cwd + path.sep, '');
@@ -2883,7 +2799,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
         let finalOutput = Configuration.mainData.output;
 
-        let testOutputDir = Configuration.mainData.output.match(cwd);
+        const testOutputDir = Configuration.mainData.output.match(cwd);
 
         if (testOutputDir && testOutputDir.length > 0) {
             finalOutput = Configuration.mainData.output.replace(cwd + path.sep, '');
@@ -3002,10 +2918,10 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             this.processPages();
         } else {
             logger.info('Process main graph');
-            let modules = Configuration.mainData.modules;
+            const modules = Configuration.mainData.modules;
             let i = 0;
-            let len = modules.length;
-            let loop = () => {
+            const len = modules.length;
+            const loop = () => {
                 if (i <= len - 1) {
                     logger.info('Process module graph ', modules[i].name);
                     let finalPath = Configuration.mainData.output;
@@ -3013,7 +2929,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         finalPath += '/';
                     }
                     finalPath += 'modules/' + modules[i].name;
-                    let _rawModule = DependenciesEngine.getRawModule(modules[i].name);
+                    const _rawModule = DependenciesEngine.getRawModule(modules[i].name);
                     if (
                         _rawModule.declarations.length > 0 ||
                         _rawModule.bootstrap.length > 0 ||
@@ -3096,7 +3012,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
     public runWebServer(folder) {
         if (!this.isWatching) {
-            let liveServerConfiguration: LiveServerConfiguration = {
+            const liveServerConfiguration: LiveServerConfiguration = {
                 root: folder,
                 open: Configuration.mainData.open,
                 quiet: true,
@@ -3118,7 +3034,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 this.runWatch();
             }
         } else if (Configuration.mainData.watch && this.isWatching) {
-            let srcFolder = findMainSourceFolder(this.files);
+            const srcFolder = findMainSourceFolder(this.files);
             logger.info(`Already watching sources in ${srcFolder} folder`);
         }
     }
@@ -3142,22 +3058,22 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         // Check all elements of sources list exist
         sources = cleanSourcesForWatch(sources);
 
-        let watcher = chokidar.watch(sources, {
+        const watcher = chokidar.watch(sources, {
             awaitWriteFinish: true,
             ignoreInitial: true,
             ignored: /(spec|\.d)\.ts/
         });
         let timerAddAndRemoveRef;
         let timerChangeRef;
-        let runnerAddAndRemove = () => {
+        const runnerAddAndRemove = () => {
             startTime = new Date();
             this.generate();
         };
-        let waiterAddAndRemove = () => {
+        const waiterAddAndRemove = () => {
             clearTimeout(timerAddAndRemoveRef);
             timerAddAndRemoveRef = setTimeout(runnerAddAndRemove, 1000);
         };
-        let runnerChange = () => {
+        const runnerChange = () => {
             startTime = new Date();
             this.setUpdatedFiles(this.watchChangedFiles);
             if (this.hasWatchedFilesTSFiles()) {
@@ -3168,7 +3084,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 this.rebuildExternalDocumentation();
             }
         };
-        let waiterChange = () => {
+        const waiterChange = () => {
             clearTimeout(timerChangeRef);
             timerChangeRef = setTimeout(runnerChange, 1000);
         };

@@ -105,8 +105,8 @@
         "theme": {
             "$id": "/properties/theme",
             "type": "string",
-            "title": "Choose one of available themes, default is 'gitbook' (laravel, original, material, postmark, readthedocs, stripe, vagrant)",
-            "default": "gitbook",
+            "title": "Choose a theme: 'light' (default), 'dark', 'material', or a path to a custom CSS file",
+            "default": "light",
             "examples": [""]
         },
         "hideGenerator": {

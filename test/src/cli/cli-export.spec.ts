@@ -1,6 +1,6 @@
-import { expect } from 'chai';
+import fs from 'fs-extra';
+
 import { exists, read, shell, temporaryDir } from '../helpers';
-const fs = require('fs-extra');
 const tmp = temporaryDir();
 
 describe('CLI Export', () => {
@@ -9,7 +9,7 @@ describe('CLI Export', () => {
     describe('when specified JSON', () => {
         let stdoutString = undefined;
 
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -23,12 +23,11 @@ describe('CLI Export', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             stdoutString = ls.stdout.toString();
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should display generated message', () => {
             expect(stdoutString).to.contain('Documentation generated');
@@ -270,7 +269,7 @@ describe('CLI Export', () => {
     describe('when specified JSON and disable things', () => {
         let stdoutString = undefined;
 
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -286,12 +285,11 @@ describe('CLI Export', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             stdoutString = ls.stdout.toString();
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should display generated message', () => {
             expect(stdoutString).to.contain('Documentation generated');
@@ -329,7 +327,7 @@ describe('CLI Export', () => {
 
         const title = 'Documentation in pdf';
 
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -345,12 +343,11 @@ describe('CLI Export', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             stdoutString = ls.stdout.toString();
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should display generated message', () => {
             expect(stdoutString).to.contain('Documentation generated');
@@ -375,7 +372,7 @@ describe('CLI Export', () => {
     describe('when specified not supported format', () => {
         let stdoutString = undefined;
 
-        before(function (done) {
+        beforeAll(() => {
             tmp.create();
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -389,12 +386,11 @@ describe('CLI Export', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             stdoutString = ls.stdout.toString();
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should display error message', () => {
             expect(stdoutString).to.contain('Exported format not supported');

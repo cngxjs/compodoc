@@ -1,6 +1,6 @@
-const Handlebars = require('handlebars');
+import Handlebars from 'handlebars';
 import * as JSON5 from 'json5';
-import * as _ from 'lodash';
+import traverse from 'neotraverse/legacy';
 import * as path from 'path';
 import { Project, ts, SourceFile, SyntaxKind, Node } from 'ts-morph';
 
@@ -9,8 +9,6 @@ import { RoutingGraphNode } from '../app/nodes/routing-graph-node';
 
 import ImportsUtil from './imports.util';
 import { logger } from './logger';
-
-const traverse = require('neotraverse/legacy');
 
 const ast = new Project();
 
@@ -44,12 +42,12 @@ export class RouterParserUtil {
 
     public addRoute(route): void {
         this.routes.push(route);
-        this.routes = _.sortBy(_.uniqWith(this.routes, _.isEqual), ['name']);
+        this.routes = [...this.routes.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public addIncompleteRoute(route): void {
         this.incompleteRoutes.push(route);
-        this.incompleteRoutes = _.sortBy(_.uniqWith(this.incompleteRoutes, _.isEqual), ['name']);
+        this.incompleteRoutes = [...this.incompleteRoutes.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public addModuleWithRoutes(moduleName, moduleImports, filename): void {
@@ -58,7 +56,7 @@ export class RouterParserUtil {
             importsNode: moduleImports,
             filename: filename
         });
-        this.modulesWithRoutes = _.sortBy(_.uniqWith(this.modulesWithRoutes, _.isEqual), ['name']);
+        this.modulesWithRoutes = [...this.modulesWithRoutes.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public addModule(moduleName: string, moduleImports): void {
@@ -66,7 +64,7 @@ export class RouterParserUtil {
             name: moduleName,
             importsNode: moduleImports
         });
-        this.modules = _.sortBy(_.uniqWith(this.modules, _.isEqual), ['name']);
+        this.modules = [...this.modules.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public cleanRawRouteParsed(route: string): object {
@@ -155,16 +153,16 @@ export class RouterParserUtil {
         let i = 0;
         const len = this.modulesWithRoutes.length;
         for (i; i < len; i++) {
-            _.forEach(this.modulesWithRoutes[i].importsNode, (node: ts.Node) => {
+            this.modulesWithRoutes[i].importsNode.forEach((node: ts.Node) => {
                 if (ts.isPropertyDeclaration(node)) {
                     const initializer = node.initializer as ts.ArrayLiteralExpression;
                     if (initializer) {
                         if (initializer.elements) {
-                            _.forEach(initializer.elements, (element: ts.CallExpression) => {
+                            (initializer.elements as unknown as ts.CallExpression[]).forEach((element: ts.CallExpression) => {
                                 // find element with arguments
                                 if (element.arguments) {
-                                    _.forEach(element.arguments, (argument: ts.Identifier) => {
-                                        _.forEach(this.routes, route => {
+                                    (element.arguments as unknown as ts.Identifier[]).forEach((argument: ts.Identifier) => {
+                                        this.routes.forEach(route => {
                                             if (
                                                 argument.text &&
                                                 route.name === argument.text &&
@@ -207,8 +205,8 @@ export class RouterParserUtil {
                  */
                 if (ts.isCallExpression(node)) {
                     if (node.arguments) {
-                        _.forEach(node.arguments, (argument: ts.Identifier) => {
-                            _.forEach(this.routes, route => {
+                        (node.arguments as unknown as ts.Identifier[]).forEach((argument: ts.Identifier) => {
+                            this.routes.forEach(route => {
                                 if (
                                     argument.text &&
                                     route.name === argument.text &&
@@ -225,7 +223,7 @@ export class RouterParserUtil {
     }
 
     public foundRouteWithModuleName(moduleName: string): any {
-        return _.find(this.routes, { module: moduleName });
+        return this.routes.find(r => r.module === moduleName);
     }
 
     public foundLazyModuleWithPath(modulePath: string): string {
@@ -413,7 +411,7 @@ export class RouterParserUtil {
             }
         });
 
-        this.cleanModulesTree = _.cloneDeep(this.modulesTree);
+        this.cleanModulesTree = structuredClone(this.modulesTree);
 
         const routesTree = {
             name: '<root>',
@@ -485,7 +483,7 @@ export class RouterParserUtil {
             }
         };
 
-        const startModule = _.find(this.cleanModulesTree, { name: this.rootModule });
+        const startModule = this.cleanModulesTree.find(m => m.name === this.rootModule);
 
         if (startModule) {
             loopModulesParser(startModule);
@@ -554,9 +552,7 @@ export class RouterParserUtil {
                 for (const i in route.children) {
                     if (route.children[i].loadChildren) {
                         const child = this.foundLazyModuleWithPath(route.children[i].loadChildren);
-                        const module: RoutingGraphNode = _.find(this.cleanModulesTree, {
-                            name: child
-                        });
+                        const module: RoutingGraphNode = this.cleanModulesTree.find(m => m.name === child);
                         if (module) {
                             const _rawModule: RoutingGraphNode = {};
                             _rawModule.kind = 'module';
@@ -601,9 +597,9 @@ export class RouterParserUtil {
         };
 
         // Scan each module and add parent property
-        _.forEach(this.modules, firstLoopModule => {
-            _.forEach(firstLoopModule.importsNode, importNode => {
-                _.forEach(this.modules, module => {
+        this.modules.forEach(firstLoopModule => {
+            firstLoopModule.importsNode.forEach(importNode => {
+                this.modules.forEach(module => {
                     if (module.name === importNode.name) {
                         module.parent = firstLoopModule.name;
                     }

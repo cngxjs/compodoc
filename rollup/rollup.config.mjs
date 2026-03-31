@@ -1,5 +1,5 @@
-// rollup.config.js
 import typescript from '@rollup/plugin-typescript';
+import json from '@rollup/plugin-json';
 
 export default {
     input: {
@@ -13,34 +13,49 @@ export default {
         dir: 'dist'
     },
     plugins: [
-        typescript({
-            typescript: require('typescript')
-        })
+        json(),
+        typescript()
     ],
     external: [
-        'handlebars',
-        'marked',
-        'lodash',
-        'path',
-        'util',
-        'fs-extra',
-        '@compodoc/live-server',
-        'typescript',
-        'highlight.js',
-        'semver',
-        'json5',
-        'ts-simple-ast',
-        'i18next',
-        'loglevel',
-        'ts-morph',
-        'cosmiconfig',
-        'html-entities',
-        'uuid',
-        'express',
-        'crypto',
+        // Node builtins
         'child_process',
-        'os',
+        'crypto',
+        'fs',
         'http',
-        'archiver'
+        'module',
+        'os',
+        'path',
+        // npm dependencies (not bundled)
+        '@babel/core',
+        '@compodoc/live-server',
+        '@compodoc/ngd-transformer',
+        '@polka/send-type',
+        'archiver',
+        'body-parser',
+        'cheerio',
+        'chokidar',
+        'commander',
+        'cosmiconfig',
+        'decache',
+        'fancy-log',
+        'fast-glob',
+        'fs-extra',
+        'handlebars',
+        'html-entities',
+        'i18next',
+        'json5',
+        'lunr',
+        'marked',
+        'minimist',
+        'neotraverse/legacy',
+        'os-name',
+        'pdfmake',
+        'picocolors',
+        'polka',
+        'semver',
+        'sirv',
+        'ts-morph',
+        'typescript',
+        'uuid'
     ]
 };

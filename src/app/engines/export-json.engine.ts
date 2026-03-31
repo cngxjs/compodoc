@@ -7,10 +7,9 @@ import DependenciesEngine from './dependencies.engine';
 
 import { ExportData } from '../interfaces/export-data.interface';
 
+import traverse from 'neotraverse/legacy';
 import { AngularNgModuleNode } from '../nodes/angular-ngmodule-node';
 import FileEngine from './file.engine';
-
-const traverse = require('neotraverse/legacy');
 
 export class ExportJsonEngine {
     private static instance: ExportJsonEngine;
@@ -23,7 +22,7 @@ export class ExportJsonEngine {
     }
 
     public export(outputFolder, data) {
-        let exportData: ExportData = {};
+        const exportData: ExportData = {};
 
         traverse(data).forEach(function (node) {
             if (node) {
@@ -71,7 +70,7 @@ export class ExportJsonEngine {
     public processModules() {
         const modules: AngularNgModuleNode[] = DependenciesEngine.getModules();
 
-        let _resultedModules = [];
+        const _resultedModules = [];
 
         for (let moduleNr = 0; moduleNr < modules.length; moduleNr++) {
             const module = modules[moduleNr];

@@ -1,7 +1,7 @@
+import Handlebars from 'handlebars';
 import { IHtmlEngineHelper } from './html-engine-helper.interface';
-const Handlebars = require('handlebars');
 
-import { ts, SyntaxKind } from 'ts-morph';
+import { SyntaxKind } from 'ts-morph';
 
 export class ModifKindHelper implements IHtmlEngineHelper {
     /**

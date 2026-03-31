@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
@@ -6,7 +6,7 @@ describe('CLI Routes graph', () => {
     const distFolder = tmp.name + '-routes-graph';
 
     describe('disable it', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
@@ -19,11 +19,10 @@ describe('CLI Routes graph', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('it should not exist routes_index.js file', () => {
             const isFileExists = exists(`${distFolder}/js/routes/routes_index.js`);
@@ -32,7 +31,7 @@ describe('CLI Routes graph', () => {
     });
 
     describe('should support forRoot/forChild', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
@@ -44,11 +43,10 @@ describe('CLI Routes graph', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should clean forRoot and forChild in modules imports', () => {
             const file = read(distFolder + '/modules/AppModule.html');
@@ -57,7 +55,7 @@ describe('CLI Routes graph', () => {
     });
 
     describe('should support routing without routing module', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
@@ -69,11 +67,10 @@ describe('CLI Routes graph', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should have a clean graph', () => {
             const isFileExists = exists(`${distFolder}/js/routes/routes_index.js`);
@@ -84,7 +81,7 @@ describe('CLI Routes graph', () => {
     });
 
     describe('should support lazy-loaded modules with loadChildren syntax (containing possible trailing commas)', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
@@ -96,11 +93,10 @@ describe('CLI Routes graph', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should have a clean graph', () => {
             const isFileExists = exists(`${distFolder}/js/routes/routes_index.js`);
@@ -111,7 +107,7 @@ describe('CLI Routes graph', () => {
     });
 
     describe('should support lazy-loaded modules with new loadChildren syntax / async', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
@@ -123,11 +119,10 @@ describe('CLI Routes graph', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should have a clean graph', () => {
             const isFileExists = exists(`${distFolder}/js/routes/routes_index.js`);
@@ -138,7 +133,7 @@ describe('CLI Routes graph', () => {
     });
 
     describe('should support if statement for bootstrapModule', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
@@ -150,11 +145,10 @@ describe('CLI Routes graph', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should have a clean graph', () => {
             const isFileExists = exists(`${distFolder}/js/routes/routes_index.js`);
@@ -165,7 +159,7 @@ describe('CLI Routes graph', () => {
     });
 
     describe('should support route in external file', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
@@ -177,11 +171,10 @@ describe('CLI Routes graph', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should correctly read external file', () => {
             const file = read(`${distFolder}/js/routes/routes_index.js`);

@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, exists } from '../helpers';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -9,7 +9,7 @@ describe('Template Playground', () => {
     let stdoutString = undefined;
     const distFolder = tmp.name;
 
-    before(done => {
+    beforeAll(() => {
         tmp.create();
 
         // Create a simple test project with template playground enabled
@@ -32,13 +32,12 @@ describe('Template Playground', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            throw new Error('error');
         }
         stdoutString = ls.stdout.toString();
-        done();
     });
 
-    after(() => {
+    afterAll(() => {
         tmp.clean();
     });
 
@@ -88,7 +87,7 @@ describe('Template Playground', () => {
 });
 
 describe('Template Playground Configuration', () => {
-    it('should not generate template playground when disabled', (done) => {
+    it('should not generate template playground when disabled', () => {
         const tmpDisabled = temporaryDir();
         tmpDisabled.create();
 
@@ -113,10 +112,9 @@ describe('Template Playground Configuration', () => {
         expect(templatePlaygroundExists).to.be.false;
 
         tmpDisabled.clean();
-        done();
     });
 
-    it('should handle template playground flag via CLI', (done) => {
+    it('should handle template playground flag via CLI', () => {
         const tmpCli = temporaryDir();
         tmpCli.create();
 
@@ -133,12 +131,11 @@ describe('Template Playground Configuration', () => {
         expect(templatePlaygroundExists).to.be.true;
 
         tmpCli.clean();
-        done();
     });
 });
 
 describe('Template Playground Integration', () => {
-    it('should maintain existing functionality when template playground is enabled', (done) => {
+    it('should maintain existing functionality when template playground is enabled', () => {
         const tmpIntegration = temporaryDir();
         tmpIntegration.create();
 
@@ -173,6 +170,5 @@ describe('Template Playground Integration', () => {
         expect(fooComponentExists).to.be.true;
 
         tmpIntegration.clean();
-        done();
     });
 });

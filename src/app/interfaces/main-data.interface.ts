@@ -29,7 +29,6 @@ export interface MainDataInterface {
     classes: any;
     interfaces: any;
     components: any;
-    controllers: any;
     entities: any;
     directives: any;
     injectables: any;

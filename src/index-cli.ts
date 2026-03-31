@@ -20,11 +20,12 @@ import { createSourcePathMapper } from './utils/source-path-mapper.util';
 
 import { cosmiconfigSync } from 'cosmiconfig';
 
-const fg = require('fast-glob');
-const os = require('os');
-const osName = require('os-name');
-const pkg = require('../package.json');
-const { program } = require('commander');
+import fg from 'fast-glob';
+import minimist from 'minimist';
+import os from 'os';
+import osName from 'os-name';
+import pkg from '../package.json';
+import { program } from 'commander';
 
 const cosmiconfigModuleName = 'compodoc';
 
@@ -37,7 +38,7 @@ process.setMaxListeners(0);
 
 export class CliApplication extends Application {
     /**
-     * Run compodoc from the command line.
+     * Run compodocx from the command line.
      */
     protected async start(): Promise<any> {
         function list(val) {
@@ -49,7 +50,7 @@ export class CliApplication extends Application {
             .usage('<src> [options]')
             .option(
                 '-c, --config [config]',
-                'A configuration file : .compodocrc, .compodocrc.json, .compodocrc.yaml or compodoc property in package.json'
+                'A configuration file : .compodocrc, .compodocrc.json, .compodocrc.yaml, or compodoc/compodocx property in package.json'
             )
             .option('-p, --tsconfig [config]', 'A tsconfig.json file')
             .option(
@@ -94,11 +95,11 @@ export class CliApplication extends Application {
             )
             .option(
                 '--theme [theme]',
-                "Choose one of available themes, default is 'gitbook' (laravel, original, material, postmark, readthedocs, stripe, vagrant)"
+                "Choose a theme: 'light' (default), 'dark', 'material', or a path to a custom CSS file"
             )
             .option(
                 '--hideGenerator',
-                'Do not print the Compodoc link at the bottom of the page',
+                'Do not print the compodocx link at the bottom of the page',
                 COMPODOC_DEFAULTS.hideGenerator
             )
             .option(
@@ -108,7 +109,7 @@ export class CliApplication extends Application {
             )
             .option(
                 '--toggleMenuItems <items>',
-                "Close by default items in the menu values : ['all'] or one of these ['modules','components','directives','controllers','entities','classes','injectables','guards','interfaces','interceptors','pipes','miscellaneous','additionalPages']",
+                "Close by default items in the menu values : ['all'] or one of these ['modules','components','directives','entities','classes','injectables','guards','interfaces','interceptors','pipes','miscellaneous','additionalPages']",
                 list,
                 COMPODOC_DEFAULTS.toggleMenuItems
             )
@@ -209,7 +210,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             .allowExcessArguments()
             .parse(process.argv);
 
-        let outputHelp = () => {
+        const outputHelp = () => {
             program.outputHelp();
             process.exit(1);
         };
@@ -224,7 +225,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
 
         if (programOptions.config) {
             let configFilePath = programOptions.config;
-            let testConfigFilePath = configFilePath.match(process.cwd());
+            const testConfigFilePath = configFilePath.match(process.cwd());
             if (testConfigFilePath && testConfigFilePath.length > 0) {
                 configFilePath = configFilePath.replace(process.cwd() + path.sep, '');
             }
@@ -704,7 +705,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         /**
          * Check --files argument call
          */
-        const argv = require('minimist')(process.argv.slice(2));
+        const argv = minimist(process.argv.slice(2));
         if (argv && argv.files) {
             Configuration.mainData.hasFilesToCoverage = true;
             if (typeof argv.files === 'string') {

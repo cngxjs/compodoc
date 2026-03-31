@@ -6,17 +6,17 @@ export class ParseDescriptionHelper implements IHtmlEngineHelper {
     constructor() {}
 
     public helperFunc(context: any, description: string, depth: number) {
-        let tagRegExpLight = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i');
-        let tagRegExpFull = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i');
+        const tagRegExpLight = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i');
+        const tagRegExpFull = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i');
         let tagRegExp;
         let matches;
         let previousString;
-        let tagInfo = [];
+        const tagInfo = [];
 
         tagRegExp = description.indexOf(']{') !== -1 ? tagRegExpFull : tagRegExpLight;
 
         const processTheLink = (originalDescription, matchedTag, leadingText) => {
-            let leading = extractLeadingText(originalDescription, matchedTag.completeTag);
+            const leading = extractLeadingText(originalDescription, matchedTag.completeTag);
             let split;
             let resultInCompodoc;
             let newLink;
@@ -148,7 +148,7 @@ export class ParseDescriptionHelper implements IHtmlEngineHelper {
         };
 
         function replaceMatch(replacer, tag, match, text, linkText?) {
-            let matchedTag = {
+            const matchedTag = {
                 completeTag: match,
                 tag: tag,
                 text: text
@@ -165,14 +165,14 @@ export class ParseDescriptionHelper implements IHtmlEngineHelper {
         // Clean description for marked a tag parsed too early
 
         if (description.indexOf('href=') !== -1) {
-            let insideMarkedATagResults = description.match(/<a [^>]+>([^<]+)<\/a>/g);
+            const insideMarkedATagResults = description.match(/<a [^>]+>([^<]+)<\/a>/g);
 
             if (insideMarkedATagResults && insideMarkedATagResults.length > 0) {
                 for (let i = 0; i < insideMarkedATagResults.length; i++) {
-                    let markedATagRegExp = new RegExp('<a [^>]+>([^<]+)</a>', 'gm');
-                    let parsedATag = markedATagRegExp.exec(description);
+                    const markedATagRegExp = new RegExp('<a [^>]+>([^<]+)</a>', 'gm');
+                    const parsedATag = markedATagRegExp.exec(description);
                     if (parsedATag && parsedATag.length === 2) {
-                        let insideMarkedATag = parsedATag[1];
+                        const insideMarkedATag = parsedATag[1];
                         description = description.replace(
                             `{@link <a href="${encodeURI(
                                 insideMarkedATag

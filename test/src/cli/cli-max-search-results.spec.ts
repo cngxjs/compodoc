@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
@@ -7,7 +7,7 @@ describe('CLI max search results', () => {
 
     describe('custom maxSearchResults', () => {
         let coverageFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -21,12 +21,11 @@ describe('CLI max search results', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             coverageFile = read(`${distFolder}/index.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('it should have a MAX_SEARCH_RESULT of 20', () => {
             expect(coverageFile).to.contain('var MAX_SEARCH_RESULTS = 20;');
@@ -35,7 +34,7 @@ describe('CLI max search results', () => {
 
     describe('default maxSearchResult', () => {
         let coverageFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -47,12 +46,11 @@ describe('CLI max search results', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             coverageFile = read(`${distFolder}/index.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('it should have a MAX_SEARCH_RESULT of 15', () => {
             expect(coverageFile).to.contain('var MAX_SEARCH_RESULTS = 15;');

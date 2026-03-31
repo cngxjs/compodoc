@@ -1,30 +1,26 @@
-import { expect } from 'chai';
-import * as sinon from 'sinon';
 import { FunctionSignatureHelper } from '../../../../src/app/engines/html-engine-helpers/function-signature.helper';
 import DependenciesEngine from '../../../../src/app/engines/dependencies.engine';
 import AngularVersionUtil from '../../../../src/utils/angular-version.util';
 import BasicTypeUtil from '../../../../src/utils/basic-type.util';
+import { vi, expect } from 'vitest';
 
 describe('Engines - FunctionSignatureHelper', () => {
     let helper: FunctionSignatureHelper;
-    let findStub: sinon.SinonStub;
-    let apiLinkStub: sinon.SinonStub;
-    let isKnownTypeStub: sinon.SinonStub;
-    let typeUrlStub: sinon.SinonStub;
+    let findStub: ReturnType<typeof vi.spyOn>;
+    let apiLinkStub: ReturnType<typeof vi.spyOn>;
+    let isKnownTypeStub: ReturnType<typeof vi.spyOn>;
+    let typeUrlStub: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
         helper = new FunctionSignatureHelper();
-        findStub = sinon.stub(DependenciesEngine, 'find');
-        apiLinkStub = sinon.stub(AngularVersionUtil, 'getApiLink');
-        isKnownTypeStub = sinon.stub(BasicTypeUtil, 'isKnownType');
-        typeUrlStub = sinon.stub(BasicTypeUtil, 'getTypeUrl');
+        findStub = vi.spyOn(DependenciesEngine, 'find');
+        apiLinkStub = vi.spyOn(AngularVersionUtil, 'getApiLink');
+        isKnownTypeStub = vi.spyOn(BasicTypeUtil, 'isKnownType');
+        typeUrlStub = vi.spyOn(BasicTypeUtil, 'getTypeUrl');
     });
 
     afterEach(() => {
-        findStub.restore();
-        apiLinkStub.restore();
-        isKnownTypeStub.restore();
-        typeUrlStub.restore();
+        vi.restoreAllMocks();
     });
 
     describe('buildHrefForInternalType', () => {
@@ -127,7 +123,7 @@ describe('Engines - FunctionSignatureHelper', () => {
         });
 
         it('should handle method with internal type argument', () => {
-            findStub.returns({
+            findStub.mockReturnValue({
                 source: 'internal',
                 data: {
                     type: 'miscellaneous',
@@ -154,14 +150,14 @@ describe('Engines - FunctionSignatureHelper', () => {
         });
 
         it('should handle method with angular type argument', () => {
-            findStub.returns({
+            findStub.mockReturnValue({
                 source: 'angular',
                 data: {
                     name: 'ActivatedRoute'
                 }
             });
 
-            apiLinkStub.returns('https://angular.io/api/router/ActivatedRoute');
+            apiLinkStub.mockReturnValue('https://angular.io/api/router/ActivatedRoute');
 
             const context = {};
             const method = {
@@ -180,9 +176,11 @@ describe('Engines - FunctionSignatureHelper', () => {
         });
 
         it('should handle method with basic type argument', () => {
-            findStub.returns(null);
-            isKnownTypeStub.returns(true);
-            typeUrlStub.returns('https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String');
+            findStub.mockReturnValue(null);
+            isKnownTypeStub.mockReturnValue(true);
+            typeUrlStub.mockReturnValue(
+                'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String'
+            );
 
             const context = {};
             const method = {
@@ -202,8 +200,8 @@ describe('Engines - FunctionSignatureHelper', () => {
         });
 
         it('should handle method with optional argument', () => {
-            findStub.returns(null);
-            isKnownTypeStub.returns(false);
+            findStub.mockReturnValue(null);
+            isKnownTypeStub.mockReturnValue(false);
 
             const context = {};
             const method = {
@@ -222,8 +220,8 @@ describe('Engines - FunctionSignatureHelper', () => {
         });
 
         it('should handle method with rest parameters', () => {
-            findStub.returns(null);
-            isKnownTypeStub.returns(false);
+            findStub.mockReturnValue(null);
+            isKnownTypeStub.mockReturnValue(false);
 
             const context = {};
             const method = {
@@ -243,18 +241,21 @@ describe('Engines - FunctionSignatureHelper', () => {
         });
 
         it('should handle method with multiple arguments', () => {
-            findStub.withArgs('StatusType').returns({
-                source: 'internal',
-                data: {
-                    type: 'miscellaneous',
-                    subtype: 'typealias',
-                    name: 'StatusType'
+            findStub.mockImplementation((arg: string) => {
+                if (arg === 'StatusType') {
+                    return {
+                        source: 'internal',
+                        data: {
+                            type: 'miscellaneous',
+                            subtype: 'typealias',
+                            name: 'StatusType'
+                        }
+                    };
                 }
+                return null;
             });
-
-            findStub.withArgs('string').returns(null);
-            isKnownTypeStub.returns(true);
-            typeUrlStub.returns('https://developer.mozilla.org/...');
+            isKnownTypeStub.mockReturnValue(true);
+            typeUrlStub.mockReturnValue('https://developer.mozilla.org/...');
 
             const context = {};
             const method = {
@@ -292,16 +293,16 @@ describe('Engines - FunctionSignatureHelper', () => {
                 ]
             };
 
-            findStub.returns(null);
-            isKnownTypeStub.returns(false);
+            findStub.mockReturnValue(null);
+            isKnownTypeStub.mockReturnValue(false);
 
             const result = helper.helperFunc(context, method);
             expect(result).to.match(/^\(.*\)$/);
         });
 
         it('should handle destructured parameters', () => {
-            findStub.returns(null);
-            isKnownTypeStub.returns(false);
+            findStub.mockReturnValue(null);
+            isKnownTypeStub.mockReturnValue(false);
 
             const context = {};
             const method = {
@@ -329,8 +330,8 @@ describe('Engines - FunctionSignatureHelper', () => {
         });
 
         it('should handle arguments without type', () => {
-            findStub.returns(null);
-            isKnownTypeStub.returns(false);
+            findStub.mockReturnValue(null);
+            isKnownTypeStub.mockReturnValue(false);
 
             const context = {};
             const method = {
@@ -362,7 +363,7 @@ describe('Engines - FunctionSignatureHelper', () => {
         });
 
         it('should handle function with internal type parameters', () => {
-            findStub.returns({
+            findStub.mockReturnValue({
                 source: 'internal',
                 data: {
                     type: 'miscellaneous',
@@ -388,8 +389,8 @@ describe('Engines - FunctionSignatureHelper', () => {
         });
 
         it('should handle function with unknown types', () => {
-            findStub.returns(null);
-            isKnownTypeStub.returns(false);
+            findStub.mockReturnValue(null);
+            isKnownTypeStub.mockReturnValue(false);
 
             const arg = {
                 name: 'callback',
@@ -408,4 +409,3 @@ describe('Engines - FunctionSignatureHelper', () => {
         });
     });
 });
-

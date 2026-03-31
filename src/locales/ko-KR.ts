@@ -9,8 +9,6 @@ export const TRANSLATION_KO_KR = {
     component: '컴포넌트',
     components: '컴포넌트',
     constructor: '생성자',
-    controllers: '컨트롤러',
-    controller: '컨트롤러',
     'coverage-page-title': '문서 커버리지',
     declarations: '선언',
     decorators: '데코레이터',

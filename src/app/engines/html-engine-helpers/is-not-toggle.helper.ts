@@ -5,7 +5,7 @@ export class IsNotToggleHelper implements IHtmlEngineHelper {
     constructor() {}
 
     public helperFunc(context: any, type, options) {
-        let result = Configuration.mainData.toggleMenuItems.indexOf(type);
+        const result = Configuration.mainData.toggleMenuItems.indexOf(type);
 
         if (Configuration.mainData.toggleMenuItems.indexOf('all') !== -1) {
             return options.inverse(context);

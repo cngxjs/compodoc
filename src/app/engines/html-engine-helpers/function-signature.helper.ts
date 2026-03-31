@@ -1,5 +1,5 @@
+import Handlebars from 'handlebars';
 import { IHtmlEngineHelper } from './html-engine-helper.interface';
-const Handlebars = require('handlebars');
 
 import DependenciesEngine from '../dependencies.engine';
 import AngularVersionUtil from '../../../utils/angular-version.util';
@@ -113,7 +113,7 @@ export class FunctionSignatureHelper implements IHtmlEngineHelper {
                         const href = this.buildHrefForInternalType(_result.data);
                         args += `${arg.name}${this.getOptionalString(arg)}: <a href="${href}" target="_self">${Handlebars.escapeExpression(arg.type)}</a>`;
                     } else {
-                        let path = AngularVersionUtil.getApiLink(
+                        const path = AngularVersionUtil.getApiLink(
                             _result.data,
                             Configuration.mainData.angularVersion
                         );

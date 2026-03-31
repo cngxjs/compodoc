@@ -1,4 +1,4 @@
-const Handlebars = require('handlebars');
+import Handlebars from 'handlebars';
 import * as path from 'path';
 
 import { logger } from '../../utils/logger';
@@ -30,7 +30,6 @@ export class HtmlEngine {
             'modules',
             'module',
             'component',
-            'controller',
             'entity',
             'component-detail',
             'directive',

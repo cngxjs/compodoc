@@ -1,5 +1,4 @@
 import * as fs from 'fs-extra';
-import * as _ from 'lodash';
 import * as path from 'path';
 import { ts } from 'ts-morph';
 
@@ -36,8 +35,8 @@ export const formatDiagnosticsHost: ts.FormatDiagnosticsHost = {
 
 export function markedtags(tags: Array<any>) {
     const jsdocParserUtil = new JsdocParserUtil();
-    let mtags = tags;
-    _.forEach(mtags, tag => {
+    const mtags = tags;
+    mtags.forEach(tag => {
         const rawComment = jsdocParserUtil.parseJSDocNode(tag);
         tag.comment = markedAcl(LinkParser.resolveLinks(rawComment));
     });
@@ -45,13 +44,13 @@ export function markedtags(tags: Array<any>) {
 }
 
 export function mergeTagsAndArgs(args: Array<any>, jsdoctags?: Array<any>): Array<any> {
-    let margs = _.cloneDeep(args);
-    _.forEach(margs, arg => {
+    const margs = structuredClone(args);
+    margs.forEach(arg => {
         arg.tagName = {
             text: 'param'
         };
         if (jsdoctags) {
-            _.forEach(jsdoctags, jsdoctag => {
+            jsdoctags.forEach(jsdoctag => {
                 if (jsdoctag.name && jsdoctag.name.text === arg.name) {
                     arg.tagName = jsdoctag.tagName;
                     arg.name = jsdoctag.name;
@@ -63,7 +62,7 @@ export function mergeTagsAndArgs(args: Array<any>, jsdoctags?: Array<any>): Arra
     });
     // Add example & returns & private
     if (jsdoctags) {
-        _.forEach(jsdoctags, jsdoctag => {
+        jsdoctags.forEach(jsdoctag => {
             if (
                 jsdoctag.tagName &&
                 (jsdoctag.tagName.text === 'example' || jsdoctag.tagName.text === 'private')
@@ -92,9 +91,9 @@ export function mergeTagsAndArgs(args: Array<any>, jsdoctags?: Array<any>): Arra
 }
 
 export function readConfig(configFile: string): any {
-    let result = ts.readConfigFile(configFile, ts.sys.readFile);
+    const result = ts.readConfigFile(configFile, ts.sys.readFile);
     if (result.error) {
-        let message = ts.formatDiagnostics([result.error], formatDiagnosticsHost);
+        const message = ts.formatDiagnostics([result.error], formatDiagnosticsHost);
         throw new Error(message);
     }
     return result.config;
@@ -112,9 +111,9 @@ export function hasBom(source: string): boolean {
 }
 
 export function handlePath(files: Array<string>, cwd: string): Array<string> {
-    let _files = files;
+    const _files = files;
     let i = 0;
-    let len = files.length;
+    const len = files.length;
 
     for (i; i < len; i++) {
         if (files[i].indexOf(cwd) === -1) {
@@ -126,10 +125,10 @@ export function handlePath(files: Array<string>, cwd: string): Array<string> {
 }
 
 export function cleanLifecycleHooksFromMethods(methods: Array<any>): Array<any> {
-    let result = [];
+    const result = [];
     if (typeof methods !== 'undefined') {
         let i = 0;
-        let len = methods.length;
+        const len = methods.length;
         for (i; i < len; i++) {
             if (!(methods[i].name in AngularLifecycleHooks)) {
                 result.push(methods[i]);
@@ -186,10 +185,10 @@ if (!Array.prototype.includes) {
             }
 
             // 1. Let O be ? ToObject(this value).
-            let o = Object(this);
+            const o = Object(this);
 
             // 2. Let len be ? ToLength(? Get(O, "length")).
-            let len = o.length >>> 0;
+            const len = o.length >>> 0;
 
             // 3. If len is 0, return false.
             if (len === 0) {
@@ -198,7 +197,7 @@ if (!Array.prototype.includes) {
 
             // 4. Let n be ? ToInteger(fromIndex).
             //    (If fromIndex is undefined, this step produces the value 0.)
-            let n = fromIndex | 0;
+            const n = fromIndex | 0;
 
             // 5. If n ≥ 0, then
             //  a. Let k be n.
@@ -235,14 +234,14 @@ export function findMainSourceFolder(files: string[]) {
     let mainFolder = '';
     let mainFolderCount = 0;
     let rawFolders = files.map(filepath => {
-        let shortPath = filepath.replace(process.cwd() + path.sep, '');
+        const shortPath = filepath.replace(process.cwd() + path.sep, '');
         return path.dirname(shortPath);
     });
-    let folders = {};
-    rawFolders = _.uniq(rawFolders);
+    const folders = {};
+    rawFolders = [...new Set(rawFolders)];
 
     for (let i = 0; i < rawFolders.length; i++) {
-        let sep = rawFolders[i].split(path.sep);
+        const sep = rawFolders[i].split(path.sep);
         sep.forEach(folder => {
             if (folders[folder]) {
                 folders[folder] += 1;
@@ -251,7 +250,7 @@ export function findMainSourceFolder(files: string[]) {
             }
         });
     }
-    for (let f in folders) {
+    for (const f in folders) {
         if (folders[f] > mainFolderCount) {
             mainFolderCount = folders[f];
             mainFolder = f;
@@ -314,7 +313,7 @@ export function compilerHost(transpileOptions: any): ts.CompilerHost {
 }
 
 export function detectIndent(str, count): string {
-    let stripIndent = (stripedString: string) => {
+    const stripIndent = (stripedString: string) => {
         const match = stripedString.match(/^[ \t]*(?=\S)/gm);
 
         if (!match) {
@@ -327,7 +326,7 @@ export function detectIndent(str, count): string {
         return indent > 0 ? stripedString.replace(re, '') : stripedString;
     };
 
-    let repeating = (n, repeatString) => {
+    const repeating = (n, repeatString) => {
         repeatString = repeatString === undefined ? ' ' : repeatString;
 
         if (typeof repeatString !== 'string') {
@@ -353,7 +352,7 @@ export function detectIndent(str, count): string {
         return ret;
     };
 
-    let indentString = (indentedString, indentCount) => {
+    const indentString = (indentedString, indentCount) => {
         let indent = ' ';
         indentCount = indentCount === undefined ? 1 : indentCount;
 

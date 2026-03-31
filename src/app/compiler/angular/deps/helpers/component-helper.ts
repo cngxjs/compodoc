@@ -394,7 +394,7 @@ export class ComponentHelper {
     }
 
     public getComponentExampleUrls(text: string): Array<string> | undefined {
-        let exampleUrlsMatches = text.match(/<example-url>(.*?)<\/example-url>/g);
+        const exampleUrlsMatches = text.match(/<example-url>(.*?)<\/example-url>/g);
         let exampleUrls = undefined;
         if (exampleUrlsMatches && exampleUrlsMatches.length) {
             exampleUrls = exampleUrlsMatches.map(function (val) {
@@ -419,9 +419,9 @@ export class ComponentHelper {
     }
 
     private parseProperties(node: ts.ObjectLiteralElementLike): Map<string, string> {
-        let obj = new Map<string, string>();
+        const obj = new Map<string, string>();
         const element = node as any;
-        let properties = element.initializer?.properties || [];
+        const properties = element.initializer?.properties || [];
         properties.forEach((prop: any) => {
             obj.set(prop.name?.text, prop.initializer?.text);
         });
@@ -455,8 +455,8 @@ export class ComponentHelper {
         /**
          * Copyright https://github.com/ng-bootstrap/ng-bootstrap
          */
-        let reducedSource = fileBody ? fileBody.statements : sourceFile.statements;
-        let res = reducedSource.reduce((directive, statement) => {
+        const reducedSource = fileBody ? fileBody.statements : sourceFile.statements;
+        const res = reducedSource.reduce((directive, statement) => {
             if (ts.isClassDeclaration(statement)) {
                 if (statement.pos === node.pos && statement.end === node.end) {
                     return directive.concat(

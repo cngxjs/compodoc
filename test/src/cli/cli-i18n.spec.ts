@@ -1,13 +1,13 @@
-import { expect } from 'chai';
+import vm from 'vm';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
-const vm = require('vm');
 
 describe('CLI i18n', () => {
     const distFolder = tmp.name + '-i18n';
 
     const checkWcMenuFile = (lang, message) => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -21,11 +21,10 @@ describe('CLI i18n', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('it should contain a sentence in the correct language', () => {
             let file = read(distFolder + '/js/menu-wc.js');
@@ -92,7 +91,7 @@ describe('CLI i18n', () => {
 
     describe('with un-supported language', () => {
         let indexFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -106,13 +105,12 @@ describe('CLI i18n', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             indexFile = read(`${distFolder}/js/menu-wc.js`);
 
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('it should contain a sentence in the correct language', () => {
             let file = read(distFolder + '/js/menu-wc.js');

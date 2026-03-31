@@ -5,8 +5,8 @@ export class ElementAloneHelper implements IHtmlEngineHelper {
     constructor() {}
 
     public helperFunc(context: any, elements, elementType: string, options: IHandlebarsOptions) {
-        let alones = [];
-        let modules = DependenciesEngine.modules;
+        const alones = [];
+        const modules = DependenciesEngine.modules;
 
         elements.forEach(element => {
             let foundInOneModule = false;
@@ -24,14 +24,6 @@ export class ElementAloneHelper implements IHtmlEngineHelper {
                         foundInOneModule = true;
                     }
                     if (boostrapedElement.file === element.file) {
-                        foundInOneModule = true;
-                    }
-                });
-                module.controllers.forEach(controller => {
-                    if (controller.id === element.id) {
-                        foundInOneModule = true;
-                    }
-                    if (controller.file === element.file) {
                         foundInOneModule = true;
                     }
                 });
@@ -56,9 +48,6 @@ export class ElementAloneHelper implements IHtmlEngineHelper {
                     break;
                 case 'directive':
                     context.directives = alones;
-                    break;
-                case 'controller':
-                    context.controllers = alones;
                     break;
                 case 'injectable':
                     context.injectables = alones;

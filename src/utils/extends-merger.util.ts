@@ -1,5 +1,3 @@
-import { cloneDeep, concat, find } from 'lodash';
-
 import { cleanLifecycleHooksFromMethods } from '.';
 import Configuration from '../app/configuration';
 
@@ -8,7 +6,6 @@ export class ExtendsMerger {
     private classes;
     private injectables;
     private directives;
-    private controllers;
     private aliases;
 
     private static instance: ExtendsMerger;
@@ -25,7 +22,6 @@ export class ExtendsMerger {
         this.classes = deps.classes;
         this.injectables = deps.injectables;
         this.directives = deps.directives;
-        this.controllers = deps.controllers;
         this.aliases = deps.aliases;
 
         const mergeExtendedProperties = component => {
@@ -37,14 +33,14 @@ export class ExtendsMerger {
                     const recursiveScanWithInheritance = cls => {
                         // From class to component
                         if (typeof cls.methods !== 'undefined' && cls.methods.length > 0) {
-                            let newMethods = cloneDeep(cls.methods);
+                            let newMethods = structuredClone(cls.methods);
                             newMethods = this.markInheritance(newMethods, cls);
                             if (typeof component.methodsClass !== 'undefined') {
                                 this.mergeInheritance(component, 'methodsClass', newMethods);
                             }
                         }
                         if (typeof cls.properties !== 'undefined' && cls.properties.length > 0) {
-                            let newProperties = cloneDeep(cls.properties);
+                            let newProperties = structuredClone(cls.properties);
                             newProperties = this.markInheritance(newProperties, cls);
                             if (typeof component.propertiesClass !== 'undefined') {
                                 this.mergeInheritance(component, 'propertiesClass', newProperties);
@@ -52,7 +48,7 @@ export class ExtendsMerger {
                         }
                         // From component to component or directive to component
                         if (typeof cls.inputsClass !== 'undefined' && cls.inputsClass.length > 0) {
-                            let newInputs = cloneDeep(cls.inputsClass);
+                            let newInputs = structuredClone(cls.inputsClass);
                             newInputs = this.markInheritance(newInputs, cls);
                             if (typeof component.inputsClass !== 'undefined') {
                                 this.mergeInheritance(component, 'inputsClass', newInputs);
@@ -62,7 +58,7 @@ export class ExtendsMerger {
                             typeof cls.outputsClass !== 'undefined' &&
                             cls.outputsClass.length > 0
                         ) {
-                            let newOutputs = cloneDeep(cls.outputsClass);
+                            let newOutputs = structuredClone(cls.outputsClass);
                             newOutputs = this.markInheritance(newOutputs, cls);
                             if (typeof component.outputsClass !== 'undefined') {
                                 this.mergeInheritance(component, 'outputsClass', newOutputs);
@@ -72,7 +68,7 @@ export class ExtendsMerger {
                             typeof cls.methodsClass !== 'undefined' &&
                             cls.methodsClass.length > 0
                         ) {
-                            let newMethods = cloneDeep(cls.methodsClass);
+                            let newMethods = structuredClone(cls.methodsClass);
                             newMethods = this.markInheritance(newMethods, cls);
                             if (typeof component.methodsClass !== 'undefined') {
                                 this.mergeInheritance(component, 'methodsClass', newMethods);
@@ -82,7 +78,7 @@ export class ExtendsMerger {
                             typeof cls.propertiesClass !== 'undefined' &&
                             cls.propertiesClass.length > 0
                         ) {
-                            let newProperties = cloneDeep(cls.propertiesClass);
+                            let newProperties = structuredClone(cls.propertiesClass);
                             newProperties = this.markInheritance(newProperties, cls);
                             if (typeof component.propertiesClass !== 'undefined') {
                                 this.mergeInheritance(component, 'propertiesClass', newProperties);
@@ -92,7 +88,7 @@ export class ExtendsMerger {
                             typeof cls.hostBindings !== 'undefined' &&
                             cls.hostBindings.length > 0
                         ) {
-                            let newHostBindings = cloneDeep(cls.hostBindings);
+                            let newHostBindings = structuredClone(cls.hostBindings);
                             newHostBindings = this.markInheritance(newHostBindings, cls);
                             if (typeof component.hostBindings !== 'undefined') {
                                 this.mergeInheritance(component, 'hostBindings', newHostBindings);
@@ -102,7 +98,7 @@ export class ExtendsMerger {
                             typeof cls.hostListeners !== 'undefined' &&
                             cls.hostListeners.length > 0
                         ) {
-                            let newHostListeners = cloneDeep(cls.hostListeners);
+                            let newHostListeners = structuredClone(cls.hostListeners);
                             newHostListeners = this.markInheritance(newHostListeners, cls);
                             if (typeof component.hostListeners !== 'undefined') {
                                 this.mergeInheritance(component, 'hostListeners', newHostListeners);
@@ -125,8 +121,6 @@ export class ExtendsMerger {
 
         this.components.forEach(mergeExtendedProperties);
         this.directives.forEach(mergeExtendedProperties);
-        this.controllers.forEach(mergeExtendedProperties);
-
         const mergeExtendedClasses = el => {
             let ext;
             if (typeof el.extends !== 'undefined') {
@@ -134,14 +128,14 @@ export class ExtendsMerger {
                 if (ext) {
                     const recursiveScanWithInheritance = cls => {
                         if (typeof cls.methods !== 'undefined' && cls.methods.length > 0) {
-                            let newMethods = cloneDeep(cls.methods);
+                            let newMethods = structuredClone(cls.methods);
                             newMethods = this.markInheritance(newMethods, cls);
                             if (typeof el.methods !== 'undefined') {
                                 this.mergeInheritance(el, 'methods', newMethods);
                             }
                         }
                         if (typeof cls.properties !== 'undefined' && cls.properties.length > 0) {
-                            let newProperties = cloneDeep(cls.properties);
+                            let newProperties = structuredClone(cls.properties);
                             newProperties = this.markInheritance(newProperties, cls);
                             if (typeof el.properties !== 'undefined') {
                                 this.mergeInheritance(el, 'properties', newProperties);
@@ -160,8 +154,6 @@ export class ExtendsMerger {
         this.classes.forEach(mergeExtendedClasses);
         this.injectables.forEach(mergeExtendedClasses);
         this.directives.forEach(mergeExtendedClasses);
-        this.controllers.forEach(mergeExtendedClasses);
-
         return deps;
     }
 
@@ -190,16 +182,14 @@ export class ExtendsMerger {
     }
 
     private findInDependencies(name: string) {
-        const mergedData = concat(
-            [],
-            this.components,
-            this.classes,
-            this.injectables,
-            this.directives,
-            this.controllers
-        );
+        const mergedData = [
+            ...this.components,
+            ...this.classes,
+            ...this.injectables,
+            ...this.directives
+        ];
 
-        let result = find(mergedData, { name: name } as any);
+        let result = mergedData.find(el => el.name === name);
 
         // Find in aliases ?
         if (!result) {
@@ -208,7 +198,7 @@ export class ExtendsMerger {
             if (isInAlias) {
                 const finalOriginalName = this.findInAliases(name);
                 if (finalOriginalName) {
-                    result = find(mergedData, { name: finalOriginalName } as any);
+                    result = mergedData.find(el => el.name === finalOriginalName);
                 }
             }
         }

@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
@@ -9,7 +9,7 @@ describe('CLI Deprecated', () => {
     let menuFile;
 
     describe('Angular app', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/todomvc-ng2-deprecated/', tmpFolder);
             let ls = shell(
@@ -20,14 +20,13 @@ describe('CLI Deprecated', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
 
             menuFile = read(`${distFolder}/js/menu-wc.js`);
 
-            done();
         });
-        after(() => tmp.clean(tmpFolder));
+        afterAll(() => tmp.clean(tmpFolder));
 
         it('it should contain module deprecated', () => {
             const file = read(`${distFolder}/modules/AboutModule2.html`);
@@ -126,33 +125,4 @@ describe('CLI Deprecated', () => {
         });
     });
 
-    describe('Nestjs app', () => {
-        before(function (done) {
-            tmp.clean(tmpFolder);
-            tmp.copy('./test/fixtures/nest-app/', tmpFolder);
-            let ls = shell(
-                'node',
-                ['../bin/index-cli.js', '-p', './tsconfig.json', '-d', 'documentation'],
-                { cwd: tmpFolder }
-            );
-
-            if (ls.stderr.toString() !== '') {
-                console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
-            }
-
-            menuFile = read(`${distFolder}/js/menu-wc.js`);
-
-            done();
-        });
-        after(() => tmp.clean(tmpFolder));
-
-        it('it should contain controller deprecated', () => {
-            const file = read(`${distFolder}/controllers/AuthDeprecatedController.html`);
-            expect(file).to.contain('<h3 class="deprecated">Deprecated');
-            expect(menuFile).to.contain(
-                'data-type="entity-link" class="deprecated-name">AuthDeprecatedController'
-            );
-        });
-    });
 });

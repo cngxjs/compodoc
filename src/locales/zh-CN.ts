@@ -9,8 +9,6 @@ export const TRANSLATION_ZH_CN = {
     component: '组件',
     components: '组件列表',
     constructor: '构造方法',
-    controllers: 'Controllers',
-    controller: 'Controller',
     'coverage-page-title': '文档概览',
     declarations: '可声明对象列表',
     decorators: '装饰器列表',

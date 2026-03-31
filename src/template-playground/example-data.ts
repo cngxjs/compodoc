@@ -14,7 +14,6 @@ export interface ExampleData {
     guard: any;
     interceptor: any;
     entity: any;
-    controller: any;
     miscellaneous: any;
     overview: any;
     index: any;
@@ -480,44 +479,6 @@ export const EXAMPLE_DATA: ExampleData = {
         ]
     },
 
-    controller: {
-        name: 'UserController',
-        file: 'src/app/controllers/user.controller.ts',
-        deprecated: false,
-        description: 'REST controller for user operations',
-        methods: [
-            {
-                name: 'getUsers',
-                type: 'Promise<User[]>',
-                description: 'Get all users',
-                line: 12,
-                modifierKind: [119], // public
-                decorators: ['@Get()']
-            },
-            {
-                name: 'getUserById',
-                type: 'Promise<User>',
-                description: 'Get user by ID',
-                line: 18,
-                modifierKind: [119], // public
-                decorators: ['@Get(":id")'],
-                args: [
-                    {
-                        name: 'id',
-                        type: 'string',
-                        description: 'User ID'
-                    }
-                ]
-            }
-        ],
-        decorators: ['@Controller("users")'],
-        navTabs: [
-            { href: '#info', id: 'info', label: 'info', 'data-link': 'info' },
-            { href: '#readme', id: 'readme', label: 'readme', 'data-link': 'readme' },
-            { href: '#source', id: 'source', label: 'source', 'data-link': 'source' }
-        ]
-    },
-
     miscellaneous: {
         variables: [
             {
@@ -618,7 +579,6 @@ export const TEMPLATE_CONTEXT = {
             'guards': 'Guards',
             'interceptors': 'Interceptors',
             'entities': 'Entities',
-            'controllers': 'Controllers',
             'info': 'Info',
             'readme': 'Readme',
             'source': 'Source',

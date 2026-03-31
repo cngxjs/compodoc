@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 
 const tmp = temporaryDir();
@@ -10,7 +10,7 @@ describe('CLI simple generation - extends app', () => {
 
     const distFolder = tmp.name + '-big-app-extends';
 
-    before(done => {
+    beforeAll(() => {
         tmp.create(distFolder);
         let ls = shell('node', [
             './bin/index-cli.js',
@@ -22,14 +22,13 @@ describe('CLI simple generation - extends app', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            throw new Error('error');
         }
         stdoutString = ls.stdout.toString();
         appComponentFile = read(`${distFolder}/components/AppComponent.html`);
         myInitialClassFile = read(`${distFolder}/classes/MyInitialClass.html`);
-        done();
     });
-    after(() => tmp.clean(distFolder));
+    afterAll(() => tmp.clean(distFolder));
 
     it('AppComponent extends AnotherComponent', () => {
         expect(appComponentFile).to.contain('myprop');

@@ -1,6 +1,9 @@
-import * as _ from 'lodash';
-import { IApiSourceResult } from './api-source-result.interface';
+import { createRequire } from 'module';
 import * as path from 'path';
+
+import { IApiSourceResult } from './api-source-result.interface';
+
+const require = createRequire(import.meta.url);
 
 // Try multiple paths to find api-list.json - supports both source and bundled contexts
 let apiListPath = '../src/data/api-list.json';
@@ -26,8 +29,8 @@ export class AngularApiUtil {
 
     public findApi(type: string): IApiSourceResult<IAngularMainApi> {
         let foundedApi;
-        _.forEach(AngularAPIs, mainApi => {
-            _.forEach(mainApi.items, api => {
+        AngularAPIs.forEach(mainApi => {
+            mainApi.items.forEach(api => {
                 if (api.title === type) {
                     foundedApi = api;
                 }

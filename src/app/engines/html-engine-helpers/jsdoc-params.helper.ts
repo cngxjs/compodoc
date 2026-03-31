@@ -9,13 +9,13 @@ export class JsdocParamsHelper implements IHtmlEngineHelper {
         options: IHandlebarsOptions
     ) {
         let i = 0;
-        let len = jsdocTags.length;
-        let tags = [];
+        const len = jsdocTags.length;
+        const tags = [];
 
         for (i; i < len; i++) {
             if (jsdocTags[i].tagName) {
                 if (jsdocTags[i].tagName.text === 'param') {
-                    let tag = {} as JsdocTagInterface;
+                    const tag = {} as JsdocTagInterface;
                     if (jsdocTags[i].typeExpression && jsdocTags[i].typeExpression.type.kind) {
                         tag.type = kindToType(jsdocTags[i].typeExpression.type.kind);
                     }
