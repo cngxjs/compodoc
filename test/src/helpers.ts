@@ -29,7 +29,7 @@ export function copy(source: string, dest: string): any {
 }
 
 export function temporaryDir() {
-    let name = '.tmp-compodoc-test';
+    let name = '.tmp-compodocx-test';
     const cleanUp = cleanUpName => {
         if (fs.existsSync(cleanUpName)) {
             fs.readdirSync(cleanUpName).forEach(file => {

@@ -1,4 +1,4 @@
-import {expect} from 'chai';
+
 import {ts, Project, SourceFile} from 'ts-morph';
 
 import {SymbolHelper} from '../../../../../../../src/app/compiler/angular/deps/helpers/symbol-helper';

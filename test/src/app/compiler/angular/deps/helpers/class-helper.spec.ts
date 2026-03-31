@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { Project, SyntaxKind, ts } from 'ts-morph';
 import * as sinon from 'sinon';
 import { ClassHelper } from '../../../../../../../src/app/compiler/angular/deps/helpers/class-helper';

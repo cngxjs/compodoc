@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { Project, SyntaxKind } from 'ts-morph';
 import { nodeHasDecorator, getNodeDecorators } from '../../../src/utils/node.util';
 

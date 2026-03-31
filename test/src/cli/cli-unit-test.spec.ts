@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 
 const tmp = temporaryDir();
@@ -10,7 +10,7 @@ describe('CLI Unit Test Report', () => {
     describe('full path in JSON', () => {
         let stdoutString = undefined,
             unitTestFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/todomvc-ng2/', tmpFolder);
             const ls = shell(
@@ -29,14 +29,13 @@ describe('CLI Unit Test Report', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             stdoutString = ls.stdout.toString();
             unitTestFile = read(`${distFolder}/unit-test.html`);
-            done();
         });
 
-        after(() => tmp.clean(tmpFolder));
+        afterAll(() => tmp.clean(tmpFolder));
 
         it('should have unit test page', () => {
             expect(unitTestFile).to.contain('Unit test coverage');
@@ -63,7 +62,7 @@ describe('CLI Unit Test Report', () => {
     describe('partial path in JSON', () => {
         let stdoutString = undefined,
             unitTestFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/todomvc-ng2/', tmpFolder);
             const ls = shell(
@@ -82,13 +81,12 @@ describe('CLI Unit Test Report', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             stdoutString = ls.stdout.toString();
             unitTestFile = read(`${distFolder}/unit-test.html`);
-            done();
         });
-        after(() => tmp.clean(tmpFolder));
+        afterAll(() => tmp.clean(tmpFolder));
 
         it('should have unit test page', () => {
             expect(unitTestFile).to.contain('Unit test coverage');
@@ -115,7 +113,7 @@ describe('CLI Unit Test Report', () => {
     describe('Windows style path in JSON', () => {
         let stdoutString = undefined,
             unitTestFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/todomvc-ng2/', tmpFolder);
             let ls = shell(
@@ -134,13 +132,12 @@ describe('CLI Unit Test Report', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             stdoutString = ls.stdout.toString();
             unitTestFile = read(`${distFolder}/unit-test.html`);
-            done();
         });
-        after(() => tmp.clean(tmpFolder));
+        afterAll(() => tmp.clean(tmpFolder));
 
         it('should have unit test page', () => {
             expect(unitTestFile).to.contain('Unit test coverage');

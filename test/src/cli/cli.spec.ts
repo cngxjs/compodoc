@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 
 const tmp = temporaryDir();
@@ -105,7 +105,7 @@ describe('CLI simple flags', () => {
 
     describe('showing the output type', () => {
         let componentFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             tmp.copy('./test/fixtures/sample-files/', distFolder);
             let ls = shell(
@@ -116,12 +116,11 @@ describe('CLI simple flags', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             componentFile = read(`${distFolder}/documentation/components/FooComponent.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should show the event output type', () => {
             expect(componentFile).to.contain('foo: string');

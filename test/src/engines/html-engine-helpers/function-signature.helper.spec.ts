@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import * as sinon from 'sinon';
 import { FunctionSignatureHelper } from '../../../../src/app/engines/html-engine-helpers/function-signature.helper';
 import DependenciesEngine from '../../../../src/app/engines/dependencies.engine';

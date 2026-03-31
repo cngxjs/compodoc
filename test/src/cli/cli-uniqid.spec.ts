@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 
 const tmp = temporaryDir();
@@ -7,7 +7,7 @@ describe('CLI Uniq id for file', () => {
     const distFolder = tmp.name + '-uniqid';
 
     let indexFile;
-    before(function (done) {
+    beforeAll(() => {
         tmp.create(distFolder);
         let ls = shell('node', [
             './bin/index-cli.js',
@@ -19,13 +19,12 @@ describe('CLI Uniq id for file', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            throw new Error('error');
         }
         indexFile = read(`${distFolder}/js/menu-wc.js`);
 
-        done();
     });
-    after(() => tmp.clean(distFolder));
+    afterAll(() => tmp.clean(distFolder));
 
     it('it should contain a uniqid', () => {
         const expectedHash =

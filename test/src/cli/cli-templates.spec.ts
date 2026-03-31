@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, read } from '../helpers';
 const tmp = temporaryDir();
 
@@ -8,7 +8,7 @@ describe('CLI handlebars templates', () => {
     describe('with alternative handlebar template files', () => {
         let indexFile, barComponentFile, fooComponentFile;
 
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
 
             const ls = shell('node', [
@@ -23,14 +23,13 @@ describe('CLI handlebars templates', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             indexFile = read(`${distFolder}/index.html`);
             barComponentFile = read(`${distFolder}/components/BarComponent.html`);
             fooComponentFile = read(`${distFolder}/components/FooComponent.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('should use templated "page.hbs"', () => {
             expect(indexFile).to.contain('<span>THIS IS TEST CONTENT</span>');

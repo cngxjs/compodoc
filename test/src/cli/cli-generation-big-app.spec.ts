@@ -1,6 +1,6 @@
 const eol = require('os').EOL;
 
-import { expect } from 'chai';
+
 import { exists, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
@@ -31,7 +31,7 @@ describe('CLI simple generation - big app', () => {
     const tmpFolder = tmp.name + '-big-app';
     const distFolder = tmpFolder + '/documentation';
 
-    before(done => {
+    beforeAll(() => {
         tmp.create(tmpFolder);
         tmp.copy('./test/fixtures/todomvc-ng2/', tmpFolder);
         const ls = shell(
@@ -42,7 +42,7 @@ describe('CLI simple generation - big app', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            throw new Error('error');
         }
         stdoutString = ls.stdout.toString();
         interfaceIDATAFile = read(`${distFolder}/interfaces/IDATA.html`);
@@ -71,9 +71,8 @@ describe('CLI simple generation - big app', () => {
 
         contactInfoInterfaceFile = read(`${distFolder}/interfaces/ContactInfo.html`);
 
-        done();
     });
-    after(() => {
+    afterAll(() => {
         tmp.clean(tmpFolder);
     });
 

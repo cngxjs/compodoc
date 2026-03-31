@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 
 const tmp = temporaryDir();
@@ -7,7 +7,7 @@ describe('CLI ignore JSDoc tag support', () => {
     const distFolder = tmp.name + '-ignore-jsdoc';
 
     describe('without --disableLifeCycleHooks', () => {
-        before(done => {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -19,11 +19,10 @@ describe('CLI ignore JSDoc tag support', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('AppComponent ignored', () => {
             const file = exists(distFolder + '/components/AppComponent.html');
@@ -132,7 +131,7 @@ describe('CLI ignore JSDoc tag support', () => {
     });
 
     describe('with --disableLifeCycleHooks', () => {
-        before(done => {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -145,16 +144,15 @@ describe('CLI ignore JSDoc tag support', () => {
 
             if (ls.stdout.toString().indexOf('Sorry') !== -1) {
                 console.error(`shell error: ${ls.stdout.toString()}`);
-                done('error');
+                throw new Error('error');
             }
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('AppComponent ignored', () => {
             const file = exists(distFolder + '/components/AppComponent.html');

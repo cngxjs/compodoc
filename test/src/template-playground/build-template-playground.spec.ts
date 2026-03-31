@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { expect } from 'chai';
+
 import { execSync } from 'child_process';
 
 // Helper function to check if path exists

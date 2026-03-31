@@ -1,11 +1,11 @@
-import { expect } from 'chai';
+
 
 import { shell, pkg } from '../helpers';
 
 describe('CLI Options', () => {
     let runHelp = undefined;
 
-    before(() => {
+    beforeAll(() => {
         runHelp = shell('node', ['./bin/index-cli.js', '-h']);
     });
 

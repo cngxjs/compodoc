@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, exists, read } from '../helpers';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -13,7 +13,7 @@ describe('CLI Markdown files generation', () => {
         let stdoutString = undefined;
         let menuFile;
 
-        before(function (done) {
+        beforeAll(() => {
             // Create fixture folder with markdown files
             tmp.create(fixtureFolder);
             tmp.create(distFolder);
@@ -61,14 +61,13 @@ describe('CLI Markdown files generation', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             stdoutString = ls.stdout.toString();
             menuFile = read(`${distFolder}/js/menu-wc.js`);
-            done();
         });
         
-        after(() => {
+        afterAll(() => {
             tmp.clean(distFolder);
             tmp.clean(fixtureFolder);
         });
@@ -130,7 +129,7 @@ describe('CLI Markdown files generation', () => {
     describe('regression test for markdown menu entries', () => {
         let menuFile;
 
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder + '-regression');
             
             // Run compodoc - it will find project's markdown files from root
@@ -144,13 +143,12 @@ describe('CLI Markdown files generation', () => {
 
             if (ls.stderr.toString() !== '' ) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             menuFile = read(`${distFolder}-regression/js/menu-wc.js`);
-            done();
         });
         
-        after(() => tmp.clean(distFolder + '-regression'));
+        afterAll(() => tmp.clean(distFolder + '-regression'));
 
         it('should populate markdowns array when markdown files are found', () => {
             // REGRESSION TEST: This verifies that Configuration.mainData.markdowns.push()

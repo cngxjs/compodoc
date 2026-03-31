@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { Project, SyntaxKind, ts } from 'ts-morph';
 import * as sinon from 'sinon';
 import { ComponentHelper, ComponentCache } from '../../../../../../../src/app/compiler/angular/deps/helpers/component-helper';

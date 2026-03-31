@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { exists, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
@@ -11,7 +11,7 @@ describe('CLI generation with type aliases in method signatures', () => {
     const tmpFolder = tmp.name + '-type-alias-signatures';
     const distFolder = tmpFolder + '/documentation';
 
-    before(done => {
+    beforeAll(() => {
         tmp.create(tmpFolder);
         tmp.copy('./test/fixtures/todomvc-ng2/', tmpFolder);
         const ls = shell(
@@ -22,15 +22,14 @@ describe('CLI generation with type aliases in method signatures', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            throw new Error('error');
         }
         stdoutString = ls.stdout.toString();
         typeAliasExampleClassFile = read(`${distFolder}/classes/TypeAliasExample.html`);
         typeAliasesFile = read(`${distFolder}/miscellaneous/typealiases.html`);
 
-        done();
     });
-    after(() => {
+    afterAll(() => {
         tmp.clean(tmpFolder);
     });
 

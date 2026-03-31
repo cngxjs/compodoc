@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, exists } from '../helpers';
 
 const tmp = temporaryDir();
@@ -8,7 +8,7 @@ describe('CLI option file', () => {
 
     const distFolder = 'test-config-file'; // Match /test/fixtures/todomvc-ng2/.compodocrc
 
-    before(done => {
+    beforeAll(() => {
         tmp.create(distFolder);
 
         let ls = shell('node', [
@@ -21,13 +21,12 @@ describe('CLI option file', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            throw new Error('error');
         }
         stdoutString = ls.stdout.toString();
 
-        done();
     });
-    after(() => {
+    afterAll(() => {
         tmp.clean(distFolder);
     });
 

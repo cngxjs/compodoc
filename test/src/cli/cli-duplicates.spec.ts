@@ -1,6 +1,6 @@
 const eol = require('os').EOL;
 
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 
 const tmp = temporaryDir();
@@ -8,7 +8,7 @@ const tmp = temporaryDir();
 describe('CLI duplicates support', () => {
     const distFolder = tmp.name + '-duplicates';
 
-    before(done => {
+    beforeAll(() => {
         tmp.create(distFolder);
         let ls = shell('node', [
             './bin/index-cli.js',
@@ -20,11 +20,10 @@ describe('CLI duplicates support', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            throw new Error('error');
         }
-        done();
     });
-    after(() => tmp.clean(distFolder));
+    afterAll(() => tmp.clean(distFolder));
 
     it('Todo class generated', () => {
         const file = exists(distFolder + '/classes/Todo.html');

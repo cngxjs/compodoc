@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 
 const tmp = temporaryDir();
@@ -7,7 +7,7 @@ describe('CLI generation - TypeDoc examples', () => {
     let stdoutString = undefined;
     const distFolder = tmp.name + '-typedoc';
 
-    before(done => {
+    beforeAll(() => {
         tmp.create(distFolder);
         let ls = shell('node', [
             './bin/index-cli.js',
@@ -19,12 +19,11 @@ describe('CLI generation - TypeDoc examples', () => {
 
         if (ls.stderr.toString() !== '') {
             console.error(`shell error: ${ls.stderr.toString()}`);
-            done('error');
+            throw new Error('error');
         }
         stdoutString = ls.stdout.toString();
-        done();
     });
-    after(() => tmp.clean(distFolder));
+    afterAll(() => tmp.clean(distFolder));
 
     it('should display generated message', () => {
         expect(stdoutString).to.contain('Documentation generated');

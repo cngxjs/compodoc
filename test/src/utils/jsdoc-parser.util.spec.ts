@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { Project, SyntaxKind } from 'ts-morph';
 import { JsdocParserUtil } from '../../../src/utils/jsdoc-parser.util';
 

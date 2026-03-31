@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
@@ -7,7 +7,7 @@ describe('CLI Analytics tracking', () => {
 
     describe('add tracking code', () => {
         let coverageFile;
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(distFolder);
             let ls = shell('node', [
                 './bin/index-cli.js',
@@ -23,12 +23,11 @@ describe('CLI Analytics tracking', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
             coverageFile = read(`${distFolder}/index.html`);
-            done();
         });
-        after(() => tmp.clean(distFolder));
+        afterAll(() => tmp.clean(distFolder));
 
         it('it should contain tracking code', () => {
             expect(coverageFile).to.contain('www.google-analytics.com');

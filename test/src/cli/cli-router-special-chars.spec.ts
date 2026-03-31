@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, exists, read } from '../helpers';
 import * as path from 'path';
 
@@ -7,8 +7,7 @@ const tmp = temporaryDir();
 describe('CLI Router Parser Special Characters Fix', () => {
     const distFolder = tmp.name + '-router-special-chars';
     
-    before(function (done) {
-        this.timeout(60000);
+    beforeAll(() => {
         tmp.create(distFolder);
         
         // Create test project with problematic special characters
@@ -75,15 +74,13 @@ export class AppModule { }`;
         fs.writeFileSync(path.join(srcDir, 'app.module.ts'), moduleWithSpecialCharRoutes);
         fs.writeFileSync(path.join(distFolder, 'tsconfig.json'), tsconfig);
         
-        done();
     });
     
-    after(() => {
+    afterAll(() => {
         tmp.clean(distFolder);
     });
 
-    it('should generate documentation without JSON5 parsing errors for special character routes', function (done) {
-        this.timeout(60000);
+    it('should generate documentation without JSON5 parsing errors for special character routes', () => {
         
         const ls = shell('node', [
             './bin/index-cli.js',
@@ -109,11 +106,9 @@ export class AppModule { }`;
         // Documentation should be generated
         expect(exists(path.join(distFolder, 'docs'))).to.be.true;
         
-        done();
     });
 
-    it('should handle template literal routes and complex character combinations', function (done) {
-        this.timeout(30000);
+    it('should handle template literal routes and complex character combinations', () => {
         
         // Test that our fix handles template literals and all reported special character issues
         const ls = shell('node', [
@@ -136,6 +131,5 @@ export class AppModule { }`;
         // Should still generate documentation successfully
         expect(stdout).to.contain('Documentation generated');
         
-        done();
     });
 });

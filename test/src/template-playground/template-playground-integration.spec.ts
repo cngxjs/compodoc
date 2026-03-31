@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { expect } from 'chai';
+
 import * as request from 'supertest';
 import { TemplatePlaygroundServer } from '../../../src/template-playground/template-playground-server';
 
@@ -10,7 +10,6 @@ describe('Template Playground Integration Tests', () => {
     let originalCwd: string;
 
     beforeEach(async function() {
-        this.timeout(15000); // Increase timeout for setup
 
         originalCwd = process.cwd();
         testDir = path.join(process.cwd(), 'test-temp-integration');
@@ -224,7 +223,6 @@ console.log('Template playground app loaded');
     });
 
     afterEach(async function() {
-        this.timeout(5000); // Increase timeout for cleanup
 
         if (server) {
             await server.stop();
@@ -251,7 +249,6 @@ console.log('Template playground app loaded');
 
     describe('Full Workflow Integration', () => {
         it('should complete full template customization workflow', async function() {
-            this.timeout(20000);
 
             // 1. Create session via API
             const sessionResponse = await request(server.getHttpServer())
@@ -315,7 +312,6 @@ console.log('Template playground app loaded');
         });
 
         it('should handle concurrent sessions with isolation', async function() {
-            this.timeout(15000);
 
             // Create multiple sessions
             const sessions = [];
@@ -349,7 +345,6 @@ console.log('Template playground app loaded');
         });
 
         it('should preserve modifications across multiple operations', async function() {
-            this.timeout(15000);
 
             // Create session
             const sessionResponse = await request(server.getHttpServer())
@@ -411,7 +406,6 @@ console.log('Template playground app loaded');
 
     describe('Error Recovery Integration', () => {
         it('should handle API errors gracefully', async function() {
-            this.timeout(10000);
 
             // Try to access non-existent session
             await request(server.getHttpServer())
@@ -441,7 +435,6 @@ console.log('Template playground app loaded');
         });
 
         it('should handle malformed requests', async function() {
-            this.timeout(10000);
 
             // Create session
             const sessionResponse = await request(server.getHttpServer())
@@ -474,7 +467,6 @@ console.log('Template playground app loaded');
 
     describe('Resource Management', () => {
         it('should handle multiple sessions efficiently', async function() {
-            this.timeout(20000);
 
             const sessions = [];
             const numSessions = 5;

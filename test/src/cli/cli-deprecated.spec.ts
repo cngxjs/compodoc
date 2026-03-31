@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+
 import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
@@ -9,7 +9,7 @@ describe('CLI Deprecated', () => {
     let menuFile;
 
     describe('Angular app', () => {
-        before(function (done) {
+        beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/todomvc-ng2-deprecated/', tmpFolder);
             let ls = shell(
@@ -20,14 +20,13 @@ describe('CLI Deprecated', () => {
 
             if (ls.stderr.toString() !== '') {
                 console.error(`shell error: ${ls.stderr.toString()}`);
-                done('error');
+                throw new Error('error');
             }
 
             menuFile = read(`${distFolder}/js/menu-wc.js`);
 
-            done();
         });
-        after(() => tmp.clean(tmpFolder));
+        afterAll(() => tmp.clean(tmpFolder));
 
         it('it should contain module deprecated', () => {
             const file = read(`${distFolder}/modules/AboutModule2.html`);

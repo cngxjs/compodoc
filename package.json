@@ -29,10 +29,9 @@
         "dev:playground": "node scripts/start-playground.js",
         "playground:simple": "node scripts/start-playground-simple.js",
         "*********TEST********": "*******************",
-        "pretest": "npm run build && tsc -p tsconfig.test.json && node test/dist/test/src/cli-clean-root-folder.js && git checkout README.md CHANGELOG.md CONTRIBUTING.md",
-        "test": "cross-env TS_NODE_PROJECT=tsconfig.test.json TS_NODE_DISABLE_WARNINGS=1 nyc --reporter=lcov mocha --config test/.mocharc.json && node test/dist/test/src/cli-revert-root-folder.js",
-        "posttest": "rimraf test/dist",
-        "test:watch": "npm-watch build",
+        "pretest": "npm run build",
+        "test": "vitest run",
+        "test:watch": "vitest watch",
         "*********TEST E2E********": "*******************",
         "test:simple-doc": "ts-node ./bin/index-cli.js -p ./test/fixtures/sample-files/tsconfig.simple.json -d doc -s --port 4000",
         "test-e2e-playwright": "npx playwright test",
@@ -156,7 +155,8 @@
         "source-map-support": "0.5.21",
         "supertest": "7.2.2",
         "ts-node": "10.9.2",
-        "tslib": "2.8.1"
+        "tslib": "2.8.1",
+        "vitest": "^4.1.2"
     },
     "husky": {
         "hooks": {
