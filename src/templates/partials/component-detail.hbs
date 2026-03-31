@@ -1,3 +1,4 @@
+{{#isInfoSection "file"}}
 {{#unless disableFilePath}}
 <p class="comment">
     <h3>{{t "file" }}</h3>
@@ -6,7 +7,9 @@
     <code>{{component.file}}</code>
 </p>
 {{/unless}}
+{{/isInfoSection}}
 
+{{#isInfoSection "deprecated"}}
 {{#if component.deprecated}}
     <p class="comment">
         <h3 class="deprecated">{{t "deprecated" }}</h3>
@@ -15,7 +18,9 @@
         {{{ component.deprecationMessage }}}
     </p>
 {{/if}}
+{{/isInfoSection}}
 
+{{#isInfoSection "description"}}
 {{#if component.description}}
     <p class="comment">
         <h3>{{t "description" }}</h3>
@@ -24,7 +29,9 @@
         {{{parseDescription component.description depth}}}
     </p>
 {{/if}}
+{{/isInfoSection}}
 
+{{#isInfoSection "extends"}}
 {{#if component.extends}}
     <p class="comment">
         <h3>{{t "extends" }}</h3>
@@ -46,7 +53,9 @@
         {{/each}}
     </p>
 {{/if}}
+{{/isInfoSection}}
 
+{{#isInfoSection "examples"}}
 {{#if component.jsdoctags}}
     <p class="comment">
         <h3>{{t "example" }}</h3>
@@ -61,7 +70,9 @@
         {{/jsdoc-code-example}}
     </div>
 {{/if}}
+{{/isInfoSection}}
 
+{{#isInfoSection "metadata"}}
 {{#orLength component.animations component.changeDetection component.encapsulation component.entryComponents
             component.exportAs component.host component.interpolation component.moduleId
             component.providers component.queries component.selector component.styleUrls component.styles
@@ -289,39 +300,58 @@
     </table>
 </section>
 {{/orLength}}
+{{/isInfoSection}}
 
+{{#isInfoSection "index"}}
 {{#orLength component.propertiesClass component.methodsClass component.inputsClass component.outputClass component.hostBindings component.hostListeners component.accessors}}
     {{> index methods=component.methodsClass properties=component.propertiesClass inputs=component.inputsClass outputs=component.outputsClass hostBindings=component.hostBindings hostListeners=component.hostListeners accessors=component.accessors}}
 {{/orLength}}
+{{/isInfoSection}}
 
+{{#isInfoSection "constructor"}}
 {{#if component.constructorObj}}
     {{> block-constructor constructor=component.constructorObj file=component.file }}
 {{/if}}
+{{/isInfoSection}}
 
+{{#isInfoSection "inputs"}}
 {{#if component.inputsClass}}
     {{> block-input element=component file=component.file }}
 {{/if}}
+{{/isInfoSection}}
 
+{{#isInfoSection "outputs"}}
 {{#if component.outputsClass}}
     {{> block-output element=component file=component.file }}
 {{/if}}
+{{/isInfoSection}}
 
+{{#isInfoSection "hostBindings"}}
 {{#if component.hostBindings}}
     {{> block-property properties=component.hostBindings file=component.file title="HostBindings" }}
 {{/if}}
+{{/isInfoSection}}
 
+{{#isInfoSection "hostListeners"}}
 {{#if component.hostListeners}}
     {{> block-method methods=component.hostListeners file=component.file title="HostListeners" }}
 {{/if}}
+{{/isInfoSection}}
 
+{{#isInfoSection "methods"}}
 {{#if component.methodsClass}}
     {{> block-method methods=component.methodsClass file=component.file }}
 {{/if}}
+{{/isInfoSection}}
 
+{{#isInfoSection "properties"}}
 {{#if component.propertiesClass}}
     {{> block-property properties=component.propertiesClass file=component.file }}
 {{/if}}
+{{/isInfoSection}}
 
+{{#isInfoSection "accessors"}}
 {{#if component.accessors}}
     {{> block-accessors accessors=component.accessors file=component.file }}
 {{/if}}
+{{/isInfoSection}}

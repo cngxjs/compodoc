@@ -315,6 +315,10 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             Configuration.mainData.navTabConfig = JSON.parse(programOptions.navTabConfig);
         }
 
+        if (configFile.infoTabSections) {
+            Configuration.mainData.infoTabSections = configFile.infoTabSections;
+        }
+
         if (configFile.includes) {
             Configuration.mainData.includes = configFile.includes;
         }

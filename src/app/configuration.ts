@@ -97,7 +97,8 @@ export class Configuration implements ConfigurationInterface {
         language: COMPODOC_DEFAULTS.language,
         maxSearchResults: 15,
         publicApiOnly: '',
-        publicApiExports: new Map<string, Set<string>>()
+        publicApiExports: new Map<string, Set<string>>(),
+        infoTabSections: []
     };
 
     private static instance: Configuration;

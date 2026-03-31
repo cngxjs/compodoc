@@ -89,4 +89,5 @@ export interface MainDataInterface {
     maxSearchResults: number;
     publicApiOnly: string;
     publicApiExports: Map<string, Set<string>>;
+    infoTabSections: string[];
 }

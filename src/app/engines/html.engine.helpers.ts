@@ -40,6 +40,7 @@ import { RelativeURLHelper } from './html-engine-helpers/relative-url.helper';
 import { ShortURLHelper } from './html-engine-helpers/short-url.helper';
 import { StripURLHelper } from './html-engine-helpers/strip-url.helper';
 import { IfEqualStringHelper } from './html-engine-helpers/if-equal-string.helper';
+import { IsInfoSectionHelper } from './html-engine-helpers/is-info-section.helper';
 
 export class HtmlEngineHelpers {
     public registerHelpers(bars): void {
@@ -80,6 +81,7 @@ export class HtmlEngineHelpers {
         this.registerHelper(bars, 't', new I18nHelper());
         this.registerHelper(bars, 'capitalize', new CapitalizeHelper());
         this.registerHelper(bars, 'parse-property', new ParsePropertyHelper());
+        this.registerHelper(bars, 'isInfoSection', new IsInfoSectionHelper());
     }
 
     private registerHelper(bars, key: string, helper: IHtmlEngineHelper) {
