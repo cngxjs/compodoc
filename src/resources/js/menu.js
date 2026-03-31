@@ -204,22 +204,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 var linkType = activeLink.getAttribute('data-type');
                 var linkContext = activeLink.getAttribute('data-context');
                 if (linkType === 'entity-link') {
-                    var parentLi = activeLink.parentNode,
-                        parentUl,
-                        parentChapterMenu;
-                    if (parentLi) {
-                        parentUl = parentLi.parentNode;
-                        if (parentUl) {
-                            parentChapterMenu = parentUl.parentNode;
-                            if (parentChapterMenu) {
-                                var toggler = parentChapterMenu.querySelector('.menu-toggler'),
-                                    elementIconChild =
-                                        toggler.getElementsByClassName(faAngleUpClass)[0];
-                                if (toggler && !elementIconChild) {
-                                    toggler.click();
+                    // Walk up the DOM and expand all collapsed parent groups
+                    // (handles both direct parents and category sub-groups)
+                    var el = activeLink.parentNode;
+                    while (el && el !== activeMenu) {
+                        if (el.classList && el.classList.contains('collapse') && !el.classList.contains('in')) {
+                            var parentOfCollapse = el.parentNode;
+                            if (parentOfCollapse) {
+                                var toggler = parentOfCollapse.querySelector('.menu-toggler');
+                                if (toggler) {
+                                    var iconChild = toggler.getElementsByClassName(faAngleUpClass)[0];
+                                    if (!iconChild) {
+                                        toggler.click();
+                                    }
                                 }
                             }
                         }
+                        el = el.parentNode;
                     }
                     if (linkContext && linkContext === 'sub-entity') {
                         // Toggle also the master parent menu
