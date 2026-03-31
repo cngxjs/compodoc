@@ -49,7 +49,9 @@ export class ClassHelper {
                     result.deprecationMessage = tag.comment || '';
                 }
                 if (tag.tagName.text === 'category') {
-                    result.category = (tag.comment || '').trim();
+                    // Take only the first line of the comment (category name)
+                    const raw = (tag.comment || '').trim();
+                    result.category = raw.split('\n')[0].trim();
                 }
             }
         });
