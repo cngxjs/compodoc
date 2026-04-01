@@ -28,7 +28,6 @@ export default {
         'path',
         // npm dependencies (not bundled)
         '@kitajs/html',
-        '@babel/core',
         '@compodoc/live-server',
         '@compodoc/ngd-transformer',
         '@polka/send-type',

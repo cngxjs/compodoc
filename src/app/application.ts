@@ -1,4 +1,3 @@
-import babel from '@babel/core';
 import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as LiveServer from '@compodoc/live-server';
@@ -2613,94 +2612,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             .catch(e => {
                 logger.error(e);
             });
-    }
-
-    private transpileMenuWCToES5(es6Code) {
-        return babel.transformAsync(es6Code, {
-            cwd: __dirname,
-            filename: 'menu-wc_es5.js',
-            presets: [
-                [
-                    '@babel/preset-env',
-                    {
-                        targets: {
-                            ie: '11'
-                        }
-                    }
-                ]
-            ],
-            plugins: [
-                [
-                    '@babel/plugin-transform-private-methods',
-                    {
-                        loose: false
-                    }
-                ]
-            ]
-        });
-    }
-
-    private processMenu(mainData): Promise<void> {
-        logger.info('Process menu...');
-
-        // Inject category groupings for sidebar navigation
-        mainData.categorizedComponents = DependenciesEngine.categorizedComponents;
-        mainData.categorizedDirectives = DependenciesEngine.categorizedDirectives;
-        mainData.categorizedInjectables = DependenciesEngine.categorizedInjectables;
-        mainData.categorizedPipes = DependenciesEngine.categorizedPipes;
-        mainData.categorizedClasses = DependenciesEngine.categorizedClasses;
-        mainData.categorizedInterfaces = DependenciesEngine.categorizedInterfaces;
-        mainData.categorizedGuards = DependenciesEngine.categorizedGuards;
-        mainData.categorizedInterceptors = DependenciesEngine.categorizedInterceptors;
-        mainData.categorizedEntities = DependenciesEngine.categorizedEntities;
-
-        return new Promise((resolveProcessMenu, rejectProcessMenu) => {
-            let output = mainData.output.slice();
-            const outputLastCharacter = output.lastIndexOf('/');
-            if (outputLastCharacter !== -1) {
-                output = output.slice(0, -1);
-            }
-            const finalPathES6 = `${output}/js/menu-wc.js`;
-            const finalPathES5 = `${output}/js/menu-wc_es5.js`;
-
-            HtmlEngine.renderMenu(Configuration.mainData.templates, mainData)
-                .then(htmlData => {
-                    FileEngine.write(finalPathES6, htmlData)
-                        .then(() => {
-                            this.transpileMenuWCToES5(htmlData)
-                                .then(es5Data => {
-                                    FileEngine.write(finalPathES5, es5Data.code)
-                                        .then(() => {
-                                            resolveProcessMenu();
-                                        })
-                                        .catch(err => {
-                                            logger.error(
-                                                'Error during ' + finalPathES5 + ' page generation'
-                                            );
-                                            logger.error(err);
-                                            return rejectProcessMenu('');
-                                        });
-                                })
-                                .catch(err => {
-                                    logger.error(
-                                        'Error during ' + finalPathES5 + ' page generation'
-                                    );
-                                    logger.error(err);
-                                    return rejectProcessMenu('');
-                                });
-                        })
-                        .catch(err => {
-                            logger.error('Error during ' + finalPathES6 + ' page generation');
-                            logger.error(err);
-                            return rejectProcessMenu('');
-                        });
-                })
-                .catch(err => {
-                    logger.error('Error during ' + finalPathES6 + ' page generation');
-                    logger.error(err);
-                    return rejectProcessMenu('');
-                });
-        });
     }
 
     public processAdditionalPages() {
