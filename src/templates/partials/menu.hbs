@@ -75,7 +75,7 @@
         </li>
         {{#if additionalPages}}
             <li class="chapter additional">
-                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#additional-pages"{{else}}data-bs-target="#xs-additional-pages"{{/compare}}>
+                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#additional-pages"{{else}}data-cdx-target="#xs-additional-pages"{{/compare}}>
                     <span class="icon ion-ios-book"></span>
                     <span>{{includesName}}</span>
                     <span class="icon {{#isNotToggle 'additionalPages'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -86,7 +86,7 @@
                             {{#compare depth "===" 1 }}
                             <li class="chapter inner">
                                 <a data-type="chapter-link" href="{{path}}/{{filename}}.html" data-context-id="additional">
-                                    <div class="menu-toggler linked" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#additional-page-{{id}}"{{else}}data-bs-target="#xs-additional-page-{{id}}"{{/compare}}>
+                                    <div class="menu-toggler linked" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#additional-page-{{id}}"{{else}}data-cdx-target="#xs-additional-page-{{id}}"{{/compare}}>
                                         <span class="link-name">{{ name }}</span>
                                         <span class="icon ion-ios-arrow-down"></span>
                                     </div>
@@ -112,7 +112,7 @@
         {{#if modules}}
             <li class="chapter modules">
                 <a data-type="chapter-link" href="modules.html">
-                    <div class="menu-toggler linked" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#modules-links"{{else}}data-bs-target="#xs-modules-links"{{/compare}}>
+                    <div class="menu-toggler linked" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#modules-links"{{else}}data-cdx-target="#xs-modules-links"{{/compare}}>
                         <span class="icon ion-ios-archive"></span>
                         <span class="link-name">{{t "modules" }}</span>
                         <span class="icon {{#isNotToggle 'modules'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -124,7 +124,7 @@
                         <a href="modules/{{name}}.html" data-type="entity-link" {{#if deprecated}}class="deprecated-name"{{/if}}>{{ name }}</a>
                         {{#compare compodocLinks.components.length ">" 0}}
                             <li class="chapter inner">
-                                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#components-links-{{id}}"{{else}}data-bs-target="#xs-components-links-{{id}}"{{/compare}}>
+                                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#components-links-{{id}}"{{else}}data-cdx-target="#xs-components-links-{{id}}"{{/compare}}>
                                     <span class="icon ion-md-cog"></span>
                                     <span>{{t "components" }}</span>
                                     <span class="icon {{#isNotToggle 'components'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -140,7 +140,7 @@
                         {{/compare}}
                         {{#compare compodocLinks.directives.length ">" 0}}
                         <li class="chapter inner">
-                            <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#directives-links-{{id}}"{{else}}data-bs-target="#xs-directives-links-{{id}}"{{/compare}}>
+                            <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#directives-links-{{id}}"{{else}}data-cdx-target="#xs-directives-links-{{id}}"{{/compare}}>
                                 <span class="icon ion-md-code-working"></span>
                                 <span>{{t "directives" }}</span>
                                 <span class="icon {{#isNotToggle 'directives'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -156,7 +156,7 @@
                         {{/compare}}
                         {{#compare compodocLinks.injectables.length ">" 0}}
                         <li class="chapter inner">
-                            <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#injectables-links-{{id}}"{{else}}data-bs-target="#xs-injectables-links-{{id}}"{{/compare}}>
+                            <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#injectables-links-{{id}}"{{else}}data-cdx-target="#xs-injectables-links-{{id}}"{{/compare}}>
                                 <span class="icon ion-md-arrow-round-down"></span>
                                 <span>{{t "injectables" }}</span>
                                 <span class="icon {{#isNotToggle 'injectables'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -172,7 +172,7 @@
                         {{/compare}}
                         {{#compare compodocLinks.pipes.length ">" 0}}
                             <li class="chapter inner">
-                                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#pipes-links-{{id}}"{{else}}data-bs-target="#xs-pipes-links-{{id}}"{{/compare}}>
+                                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#pipes-links-{{id}}"{{else}}data-cdx-target="#xs-pipes-links-{{id}}"{{/compare}}>
                                     <span class="icon ion-md-add"></span>
                                     <span>{{t "pipes" }}</span>
                                     <span class="icon {{#isNotToggle 'pipes'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -194,7 +194,7 @@
         {{#if components}}
             {{#element-alone components 'component'}}
             <li class="chapter">
-                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#components-links"{{else}}data-bs-target="#xs-components-links"{{/compare}}>
+                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#components-links"{{else}}data-cdx-target="#xs-components-links"{{/compare}}>
                     <span class="icon ion-md-cog"></span>
                     <span>{{t "components" }}</span>
                     <span class="icon {{#isNotToggle 'components'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -203,7 +203,7 @@
                     {{#objectLength categorizedComponents ">" 0}}
                         {{#each categorizedComponents}}
                         <li class="chapter inner">
-                            <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#components-category-{{@key}}"{{else}}data-bs-target="#xs-components-category-{{@key}}"{{/compare}}>
+                            <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#components-category-{{@key}}"{{else}}data-cdx-target="#xs-components-category-{{@key}}"{{/compare}}>
                                 <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                 <span class="icon ion-ios-arrow-down"></span>
                             </div>
@@ -230,7 +230,7 @@
         {{#if entities}}
             {{#element-alone entities 'entity'}}
                 <li class="chapter">
-                    <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#entities-links"{{else}}data-bs-target="#xs-entities-links"{{/compare}}>
+                    <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#entities-links"{{else}}data-cdx-target="#xs-entities-links"{{/compare}}>
                         <span class="icon ion-ios-apps"></span>
                         <span>{{t "entities" }}</span>
                         <span class="icon {{#isNotToggle 'entities'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -248,7 +248,7 @@
         {{#if directives}}
             {{#element-alone directives 'directive'}}
                 <li class="chapter">
-                    <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#directives-links"{{else}}data-bs-target="#xs-directives-links"{{/compare}}>
+                    <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#directives-links"{{else}}data-cdx-target="#xs-directives-links"{{/compare}}>
                         <span class="icon ion-md-code-working"></span>
                         <span>{{t "directives" }}</span>
                         <span class="icon {{#isNotToggle 'directives'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -257,7 +257,7 @@
                         {{#objectLength categorizedDirectives ">" 0}}
                             {{#each categorizedDirectives}}
                             <li class="chapter inner">
-                                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#directives-category-{{@key}}"{{else}}data-bs-target="#xs-directives-category-{{@key}}"{{/compare}}>
+                                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#directives-category-{{@key}}"{{else}}data-cdx-target="#xs-directives-category-{{@key}}"{{/compare}}>
                                     <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                     <span class="icon ion-ios-arrow-down"></span>
                                 </div>
@@ -283,7 +283,7 @@
         {{/if}}
         {{#if classes}}
             <li class="chapter">
-                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#classes-links"{{else}}data-bs-target="#xs-classes-links"{{/compare}}>
+                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#classes-links"{{else}}data-cdx-target="#xs-classes-links"{{/compare}}>
                     <span class="icon ion-ios-paper"></span>
                     <span>{{t "classes" }}</span>
                     <span class="icon {{#isNotToggle 'classes'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -292,7 +292,7 @@
                     {{#objectLength categorizedClasses ">" 0}}
                         {{#each categorizedClasses}}
                         <li class="chapter inner">
-                            <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#classes-category-{{@key}}"{{else}}data-bs-target="#xs-classes-category-{{@key}}"{{/compare}}>
+                            <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#classes-category-{{@key}}"{{else}}data-cdx-target="#xs-classes-category-{{@key}}"{{/compare}}>
                                 <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                 <span class="icon ion-ios-arrow-down"></span>
                             </div>
@@ -318,7 +318,7 @@
         {{#if injectables}}
             {{#element-alone injectables 'injectable'}}
                 <li class="chapter">
-                    <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#injectables-links"{{else}}data-bs-target="#xs-injectables-links"{{/compare}}>
+                    <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#injectables-links"{{else}}data-cdx-target="#xs-injectables-links"{{/compare}}>
                         <span class="icon ion-md-arrow-round-down"></span>
                         <span>{{t "injectables" }}</span>
                         <span class="icon {{#isNotToggle 'injectables'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -327,7 +327,7 @@
                         {{#objectLength categorizedInjectables ">" 0}}
                             {{#each categorizedInjectables}}
                             <li class="chapter inner">
-                                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#injectables-category-{{@key}}"{{else}}data-bs-target="#xs-injectables-category-{{@key}}"{{/compare}}>
+                                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#injectables-category-{{@key}}"{{else}}data-cdx-target="#xs-injectables-category-{{@key}}"{{/compare}}>
                                     <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                     <span class="icon ion-ios-arrow-down"></span>
                                 </div>
@@ -353,7 +353,7 @@
         {{/if}}
         {{#if interceptors}}
             <li class="chapter">
-                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#interceptors-links"{{else}}data-bs-target="#xs-interceptors-links"{{/compare}}>
+                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#interceptors-links"{{else}}data-cdx-target="#xs-interceptors-links"{{/compare}}>
                     <span class="icon ion-ios-swap"></span>
                     <span>{{t "interceptors" }}</span>
                     <span class="icon {{#isNotToggle 'interceptors'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -362,7 +362,7 @@
                     {{#objectLength categorizedInterceptors ">" 0}}
                         {{#each categorizedInterceptors}}
                         <li class="chapter inner">
-                            <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#interceptors-category-{{@key}}"{{else}}data-bs-target="#xs-interceptors-category-{{@key}}"{{/compare}}>
+                            <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#interceptors-category-{{@key}}"{{else}}data-cdx-target="#xs-interceptors-category-{{@key}}"{{/compare}}>
                                 <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                 <span class="icon ion-ios-arrow-down"></span>
                             </div>
@@ -387,7 +387,7 @@
         {{/if}}
         {{#if guards}}
             <li class="chapter">
-                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#guards-links"{{else}}data-bs-target="#xs-guards-links"{{/compare}}>
+                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#guards-links"{{else}}data-cdx-target="#xs-guards-links"{{/compare}}>
                     <span class="icon ion-ios-lock"></span>
                     <span>{{t "guards" }}</span>
                     <span class="icon {{#isNotToggle 'guards'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -396,7 +396,7 @@
                     {{#objectLength categorizedGuards ">" 0}}
                         {{#each categorizedGuards}}
                         <li class="chapter inner">
-                            <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#guards-category-{{@key}}"{{else}}data-bs-target="#xs-guards-category-{{@key}}"{{/compare}}>
+                            <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#guards-category-{{@key}}"{{else}}data-cdx-target="#xs-guards-category-{{@key}}"{{/compare}}>
                                 <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                 <span class="icon ion-ios-arrow-down"></span>
                             </div>
@@ -421,7 +421,7 @@
         {{/if}}
         {{#if interfaces}}
             <li class="chapter">
-                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#interfaces-links"{{else}}data-bs-target="#xs-interfaces-links"{{/compare}}>
+                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#interfaces-links"{{else}}data-cdx-target="#xs-interfaces-links"{{/compare}}>
                     <span class="icon ion-md-information-circle-outline"></span>
                     <span>{{t "interfaces" }}</span>
                     <span class="icon {{#isNotToggle 'interfaces'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -430,7 +430,7 @@
                     {{#objectLength categorizedInterfaces ">" 0}}
                         {{#each categorizedInterfaces}}
                         <li class="chapter inner">
-                            <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#interfaces-category-{{@key}}"{{else}}data-bs-target="#xs-interfaces-category-{{@key}}"{{/compare}}>
+                            <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#interfaces-category-{{@key}}"{{else}}data-cdx-target="#xs-interfaces-category-{{@key}}"{{/compare}}>
                                 <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                 <span class="icon ion-ios-arrow-down"></span>
                             </div>
@@ -456,7 +456,7 @@
         {{#if pipes}}
             {{#element-alone pipes 'pipe'}}
                 <li class="chapter">
-                    <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#pipes-links"{{else}}data-bs-target="#xs-pipes-links"{{/compare}}>
+                    <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#pipes-links"{{else}}data-cdx-target="#xs-pipes-links"{{/compare}}>
                         <span class="icon ion-md-add"></span>
                         <span>{{t "pipes" }}</span>
                         <span class="icon {{#isNotToggle 'pipes'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>
@@ -465,7 +465,7 @@
                         {{#objectLength categorizedPipes ">" 0}}
                             {{#each categorizedPipes}}
                             <li class="chapter inner">
-                                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare ../menu "===" "normal"}}data-bs-target="#pipes-category-{{@key}}"{{else}}data-bs-target="#xs-pipes-category-{{@key}}"{{/compare}}>
+                                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare ../menu "===" "normal"}}data-cdx-target="#pipes-category-{{@key}}"{{else}}data-cdx-target="#xs-pipes-category-{{@key}}"{{/compare}}>
                                     <span class="link-name">{{#compare @key "!==" ""}}{{@key}}{{else}}Uncategorized{{/compare}}</span>
                                     <span class="icon ion-ios-arrow-down"></span>
                                 </div>
@@ -491,7 +491,7 @@
         {{/if}}
         {{#if miscellaneous}}
             <li class="chapter">
-                <div class="simple menu-toggler" data-bs-toggle="collapse" {{#compare menu "===" "normal"}}data-bs-target="#miscellaneous-links"{{else}}data-bs-target="#xs-miscellaneous-links"{{/compare}}>
+                <div class="simple menu-toggler" data-cdx-toggle="collapse" {{#compare menu "===" "normal"}}data-cdx-target="#miscellaneous-links"{{else}}data-cdx-target="#xs-miscellaneous-links"{{/compare}}>
                     <span class="icon ion-ios-cube"></span>
                     <span>{{t "miscellaneous" }}</span>
                     <span class="icon {{#isNotToggle 'miscellaneous'}}ion-ios-arrow-up{{else}}ion-ios-arrow-down{{/isNotToggle}}"></span>

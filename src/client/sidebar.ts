@@ -72,7 +72,7 @@ const toggleCollapse = (targetId: string) => {
     }
 
     // Toggle arrow icon
-    const toggler = document.querySelector(`[data-bs-target="${targetId}"]`);
+    const toggler = document.querySelector(`[data-cdx-target="${targetId}"]`);
     if (toggler) {
         const icon = toggler.querySelector('.ion-ios-arrow-up, .ion-ios-arrow-down');
         if (icon) {
@@ -85,9 +85,9 @@ const toggleCollapse = (targetId: string) => {
 };
 
 const bindTogglers = () => {
-    document.querySelectorAll<HTMLElement>('[data-bs-toggle="collapse"]').forEach(toggler => {
+    document.querySelectorAll<HTMLElement>('[data-cdx-toggle="collapse"]').forEach(toggler => {
         toggler.addEventListener('click', (e) => {
-            const target = toggler.getAttribute('data-bs-target');
+            const target = toggler.getAttribute('data-cdx-target');
             if (!target) return;
 
             const clickedEl = e.target as HTMLElement;
@@ -115,7 +115,32 @@ const bindTogglers = () => {
     });
 };
 
+/** Sync chevron icons with actual collapse state */
+const syncChevrons = () => {
+    document.querySelectorAll<HTMLElement>('.menu .collapse[id]').forEach(el => {
+        const isOpen = el.classList.contains('in');
+        const toggler = document.querySelector(`[data-cdx-target="#${el.id}"]`);
+        if (!toggler) return;
+        const icon = toggler.querySelector('.ion-ios-arrow-up, .ion-ios-arrow-down');
+        if (!icon) return;
+        if (isOpen) {
+            icon.classList.add('ion-ios-arrow-up');
+            icon.classList.remove('ion-ios-arrow-down');
+        } else {
+            icon.classList.add('ion-ios-arrow-down');
+            icon.classList.remove('ion-ios-arrow-up');
+        }
+    });
+};
+
 export const initSidebar = () => {
     bindTogglers();
     restoreState();
+    syncChevrons();
+};
+
+/** Re-bind togglers without restoring state (used after SPA navigation) */
+export const rebindSidebar = () => {
+    bindTogglers();
+    syncChevrons();
 };

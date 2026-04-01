@@ -1326,7 +1326,7 @@ export class TemplatePlaygroundServer {
             const label = labelMap[tab.label] || tab.label;
 
             return `        <li class="nav-item">
-            <a href="${tab.href}" class="${activeClass}" role="tab" id="${tab.id}-tab" data-bs-toggle="tab" data-link="${tab['data-link']}">${label}</a>
+            <a href="${tab.href}" class="${activeClass}" role="tab" id="${tab.id}-tab" data-cdx-toggle="tab" data-link="${tab['data-link']}">${label}</a>
         </li>`;
         }).join('\n');
 

@@ -4,16 +4,16 @@
  */
 
 export const initTabs = () => {
-    document.querySelectorAll<HTMLElement>('[data-bs-toggle="tab"]').forEach(tab => {
+    document.querySelectorAll<HTMLElement>('[data-cdx-toggle="tab"]').forEach(tab => {
         tab.addEventListener('click', (e) => {
             e.preventDefault();
-            const targetId = tab.getAttribute('data-bs-target') || tab.getAttribute('href');
+            const targetId = tab.getAttribute('data-cdx-target') || tab.getAttribute('href');
             if (!targetId) return;
 
             // Deactivate all tabs in this group
             const tabList = tab.closest('.nav-tabs, .nav, [role="tablist"]');
             if (tabList) {
-                tabList.querySelectorAll('[data-bs-toggle="tab"]').forEach(t => {
+                tabList.querySelectorAll('[data-cdx-toggle="tab"]').forEach(t => {
                     t.classList.remove('active');
                     t.parentElement?.classList.remove('active');
                 });
