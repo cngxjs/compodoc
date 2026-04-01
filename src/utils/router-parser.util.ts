@@ -7,6 +7,7 @@ import { Project, ts, SourceFile, SyntaxKind, Node } from 'ts-morph';
 import FileEngine from '../app/engines/file.engine';
 import { RoutingGraphNode } from '../app/nodes/routing-graph-node';
 
+import { deepClone } from './deep-clone.util';
 import ImportsUtil from './imports.util';
 import { logger } from './logger';
 
@@ -411,7 +412,7 @@ export class RouterParserUtil {
             }
         });
 
-        this.cleanModulesTree = structuredClone(this.modulesTree);
+        this.cleanModulesTree = deepClone(this.modulesTree);
 
         const routesTree = {
             name: '<root>',

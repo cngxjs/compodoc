@@ -7,6 +7,7 @@ import { IApiSourceResult } from '../../utils/api-source-result.interface';
 import { getNamesCompareFn } from '../../utils/utils';
 
 import {
+    IDep,
     IEnumDecDep,
     IFunctionDecDep,
     IGuardDep,
@@ -24,28 +25,28 @@ import { IModuleDep } from '../compiler/angular/deps/module-dep.factory';
 
 export class DependenciesEngine {
     public rawData: ParsedData;
-    public modules: Object[];
-    public rawModules: Object[];
-    public rawModulesForOverview: Object[];
-    public components: Object[];
-    public entities: Object[];
-    public directives: Object[];
-    public injectables: Object[];
-    public interceptors: Object[];
-    public guards: Object[];
-    public interfaces: Object[];
+    public modules: IModuleDep[];
+    public rawModules: IModuleDep[];
+    public rawModulesForOverview: IModuleDep[];
+    public components: IComponentDep[];
+    public entities: IDep[];
+    public directives: IDirectiveDep[];
+    public injectables: IInjectableDep[];
+    public interceptors: IInterceptorDep[];
+    public guards: IGuardDep[];
+    public interfaces: IInterfaceDep[];
     public routes: RouteInterface;
-    public pipes: Object[];
-    public classes: Object[];
-    public categorizedComponents: { [category: string]: Object[] } = {};
-    public categorizedDirectives: { [category: string]: Object[] } = {};
-    public categorizedInjectables: { [category: string]: Object[] } = {};
-    public categorizedPipes: { [category: string]: Object[] } = {};
-    public categorizedClasses: { [category: string]: Object[] } = {};
-    public categorizedInterfaces: { [category: string]: Object[] } = {};
-    public categorizedGuards: { [category: string]: Object[] } = {};
-    public categorizedInterceptors: { [category: string]: Object[] } = {};
-    public categorizedEntities: { [category: string]: Object[] } = {};
+    public pipes: IPipeDep[];
+    public classes: IDep[];
+    public categorizedComponents: Record<string, IComponentDep[]> = {};
+    public categorizedDirectives: Record<string, IDirectiveDep[]> = {};
+    public categorizedInjectables: Record<string, IInjectableDep[]> = {};
+    public categorizedPipes: Record<string, IPipeDep[]> = {};
+    public categorizedClasses: Record<string, IDep[]> = {};
+    public categorizedInterfaces: Record<string, IInterfaceDep[]> = {};
+    public categorizedGuards: Record<string, IGuardDep[]> = {};
+    public categorizedInterceptors: Record<string, IInterceptorDep[]> = {};
+    public categorizedEntities: Record<string, IDep[]> = {};
     public miscellaneous: MiscellaneousData = {
         variables: [],
         functions: [],
