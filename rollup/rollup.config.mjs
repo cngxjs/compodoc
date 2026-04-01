@@ -27,6 +27,7 @@ export default {
         'os',
         'path',
         // npm dependencies (not bundled)
+        '@kitajs/html',
         '@babel/core',
         '@compodoc/live-server',
         '@compodoc/ngd-transformer',

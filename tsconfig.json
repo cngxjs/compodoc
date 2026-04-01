@@ -7,7 +7,11 @@
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "resolveJsonModule": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "jsx": "react",
+        "jsxFactory": "Html.createElement",
+        "jsxFragmentFactory": "Html.Fragment",
+        "plugins": [{ "name": "@kitajs/ts-html-plugin" }]
     },
     "exclude": ["test", "src/resources/template-playground"]
 }
