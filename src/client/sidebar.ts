@@ -90,13 +90,27 @@ const bindTogglers = () => {
             const target = toggler.getAttribute('data-bs-target');
             if (!target) return;
 
-            // Don't prevent default on links (they should still navigate)
+            const clickedEl = e.target as HTMLElement;
             const link = toggler.closest('a');
-            if (!link || toggler.classList.contains('simple')) {
-                e.preventDefault();
-            }
 
-            toggleCollapse(target);
+            if (toggler.classList.contains('simple')) {
+                // Pure toggler (no link) -- always prevent default
+                e.preventDefault();
+                toggleCollapse(target);
+            } else if (link && toggler.classList.contains('linked')) {
+                // Linked toggler -- only toggle collapse if clicking the
+                // toggler div or arrow icon, not the link-name text
+                if (clickedEl.classList.contains('link-name')) {
+                    // Let the link navigate, don't toggle
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                toggleCollapse(target);
+            } else {
+                e.preventDefault();
+                toggleCollapse(target);
+            }
         });
     });
 };
