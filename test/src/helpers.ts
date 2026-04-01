@@ -18,8 +18,20 @@ export { spawn, exec, fs, path, pkg };
  * fancy-log writes all output to stderr, so normal info/debug messages appear there.
  */
 export function hasStderrError(stderr: string): boolean {
-    // Strip ANSI escape codes and check if anything meaningful remains
-    const stripped = stderr.replace(/\x1b\[[0-9;]*m/g, '').trim();
+    // Filter out Node.js ExperimentalWarning (from ESM-only deps loaded via require() in CJS dist)
+    const stripped = stderr
+        .replace(/\x1b\[[0-9;]*m/g, '')
+        .split('\n')
+        .filter(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return false;
+            if (trimmed.includes('ExperimentalWarning')) return false;
+            if (trimmed.startsWith('Support for loading ES Module')) return false;
+            if (trimmed.startsWith('(Use `node --trace-warnings')) return false;
+            return true;
+        })
+        .join('\n')
+        .trim();
     return stripped.length > 0;
 }
 

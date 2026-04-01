@@ -1,5 +1,5 @@
 
-import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI disable flags', () => {
@@ -18,7 +18,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -61,7 +61,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -99,7 +99,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -150,7 +150,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -194,7 +194,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -223,7 +223,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -261,7 +261,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -293,7 +293,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -318,7 +318,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -350,7 +350,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -375,7 +375,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -402,7 +402,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -467,7 +467,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -539,7 +539,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -590,7 +590,7 @@ describe('CLI disable flags', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -632,7 +632,7 @@ describe('CLI disable flags', () => {
                 'Additional Documentation'
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -732,7 +732,7 @@ describe('CLI disable flags', () => {
                 'Additional Documentation'
             ]);
 
-            if (ls1.stderr.toString() !== '') {
+            if (hasStderrError(ls1.stderr.toString())) {
                 console.error(`shell error with overview: ${ls1.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -752,7 +752,7 @@ describe('CLI disable flags', () => {
                 'Additional Documentation'
             ]);
 
-            if (ls2.stderr.toString() !== '') {
+            if (hasStderrError(ls2.stderr.toString())) {
                 console.error(`shell error without overview: ${ls2.stderr.toString()}`);
                 throw new Error('error');
             }

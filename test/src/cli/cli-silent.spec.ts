@@ -1,5 +1,5 @@
 
-import { exec, shell, temporaryDir } from '../helpers';
+import { hasStderrError, exec, shell, temporaryDir } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI silent flag', () => {
@@ -17,7 +17,7 @@ describe('CLI silent flag', () => {
             '--silent'
         ]);
 
-        if (ls.stderr.toString() !== '') {
+        if (hasStderrError(ls.stderr.toString())) {
             console.error(`shell error: ${ls.stderr.toString()}`);
             throw new Error('error');
         }

@@ -1,5 +1,5 @@
 
-import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 
 const tmp = temporaryDir();
 
@@ -114,7 +114,7 @@ describe('CLI simple flags', () => {
                 { cwd: distFolder }
             );
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -123,7 +123,9 @@ describe('CLI simple flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should show the event output type', () => {
-            expect(componentFile).to.contain('foo: string');
+            // Strip HTML tags since Shiki highlights source code with spans
+            const stripped = componentFile.replace(/<[^>]+>/g, '');
+            expect(stripped).to.contain('foo: string');
         });
     });
 });

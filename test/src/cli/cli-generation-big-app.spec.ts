@@ -1,6 +1,6 @@
 import { EOL as eol } from 'os';
 
-import { exists, read, shell, temporaryDir } from '../helpers';
+import { hasStderrError, exists, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
@@ -39,7 +39,7 @@ describe('CLI simple generation - big app', () => {
             { cwd: tmpFolder }
         );
 
-        if (ls.stderr.toString() !== '') {
+        if (hasStderrError(ls.stderr.toString())) {
             console.error(`shell error: ${ls.stderr.toString()}`);
             throw new Error('error');
         }

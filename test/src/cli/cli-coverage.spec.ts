@@ -1,5 +1,5 @@
 
-import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI coverage report', () => {
@@ -18,7 +18,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -45,7 +45,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -73,7 +73,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -100,7 +100,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -127,7 +127,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -157,7 +157,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -185,7 +185,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -214,7 +214,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -248,7 +248,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -282,7 +282,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -314,7 +314,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -343,7 +343,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -376,7 +376,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -429,7 +429,7 @@ describe('CLI coverage report', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }

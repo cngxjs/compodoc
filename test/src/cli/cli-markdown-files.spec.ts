@@ -1,5 +1,5 @@
 
-import { temporaryDir, shell, exists, read } from '../helpers';
+import { hasStderrError, temporaryDir, shell, exists, read } from '../helpers';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -59,7 +59,7 @@ describe('CLI Markdown files generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -141,7 +141,7 @@ describe('CLI Markdown files generation', () => {
                 distFolder + '-regression'
             ]);
 
-            if (ls.stderr.toString() !== '' ) {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
