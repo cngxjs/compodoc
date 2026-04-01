@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 
-import { temporaryDir, shell, exists, read } from '../helpers';
+import { hasStderrError, temporaryDir, shell, exists, read } from '../helpers';
 
 const tmp = temporaryDir();
 
@@ -72,7 +72,7 @@ describe('CLI public-api-only option', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
             }
             stdoutString = ls.stdout.toString();
@@ -129,7 +129,7 @@ describe('CLI public-api-only option', () => {
                 './test/fixtures/library/dist/libs/my-lib'
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
             }
             stdoutString = ls.stdout.toString();

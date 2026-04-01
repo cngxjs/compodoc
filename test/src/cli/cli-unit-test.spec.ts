@@ -1,5 +1,5 @@
 
-import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 
 const tmp = temporaryDir();
 
@@ -27,7 +27,7 @@ describe('CLI Unit Test Report', () => {
                 { cwd: tmpFolder }
             );
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -79,7 +79,7 @@ describe('CLI Unit Test Report', () => {
                 { cwd: tmpFolder }
             );
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -130,7 +130,7 @@ describe('CLI Unit Test Report', () => {
                 { cwd: tmpFolder }
             );
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }

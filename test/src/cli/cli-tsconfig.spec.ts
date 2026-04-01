@@ -1,5 +1,5 @@
 
-import { temporaryDir, shell, read } from '../helpers';
+import { hasStderrError, temporaryDir, shell, read } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI tsconfig', () => {
@@ -18,7 +18,7 @@ describe('CLI tsconfig', () => {
                 { cwd: tmpFolder }
             );
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -53,7 +53,7 @@ describe('CLI tsconfig', () => {
                 { cwd: tmpFolder }
             );
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }

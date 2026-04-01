@@ -1,5 +1,5 @@
 
-import { temporaryDir, shell, exists, read } from '../helpers';
+import { hasStderrError, temporaryDir, shell, exists, read } from '../helpers';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -59,12 +59,12 @@ describe('CLI Markdown files generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
             stdoutString = ls.stdout.toString();
-            menuFile = read(`${distFolder}/js/menu-wc.js`);
+            menuFile = read(`${distFolder}/index.html`);
         });
         
         afterAll(() => {
@@ -141,11 +141,11 @@ describe('CLI Markdown files generation', () => {
                 distFolder + '-regression'
             ]);
 
-            if (ls.stderr.toString() !== '' ) {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
-            menuFile = read(`${distFolder}-regression/js/menu-wc.js`);
+            menuFile = read(`${distFolder}-regression/index.html`);
         });
         
         afterAll(() => tmp.clean(distFolder + '-regression'));

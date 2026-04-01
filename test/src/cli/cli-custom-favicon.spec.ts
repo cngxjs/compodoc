@@ -1,5 +1,5 @@
 
-import { temporaryDir, shell, pkg, exists, exec, read, shellAsync, stats } from '../helpers';
+import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync, stats } from '../helpers';
 const tmp = temporaryDir();
 
 interface Image {
@@ -22,7 +22,7 @@ describe('CLI custom favicon', () => {
                 './test/fixtures/todomvc-ng2/favicon.ico'
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }

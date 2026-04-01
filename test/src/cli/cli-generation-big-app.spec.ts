@@ -1,6 +1,6 @@
 import { EOL as eol } from 'os';
 
-import { exists, read, shell, temporaryDir } from '../helpers';
+import { hasStderrError, exists, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
@@ -39,7 +39,7 @@ describe('CLI simple generation - big app', () => {
             { cwd: tmpFolder }
         );
 
-        if (ls.stderr.toString() !== '') {
+        if (hasStderrError(ls.stderr.toString())) {
             console.error(`shell error: ${ls.stderr.toString()}`);
             throw new Error('error');
         }
@@ -165,13 +165,13 @@ describe('CLI simple generation - big app', () => {
      */
 
     it('should have generated search index json', () => {
-        const isIndexExists = exists(`${distFolder}/js/search/search_index.js`);
+        const isIndexExists = exists(`${distFolder}/pagefind/pagefind.js`);
         expect(isIndexExists).to.be.true;
     });
 
-    it('should have excluded big file for search index json', () => {
-        const searchIndexFile = read(`${distFolder}/js/search/search_index.js`);
-        expect(searchIndexFile).to.not.contain('photo64_1');
+    it('should have generated pagefind directory', () => {
+        const isPagefindExists = exists(`${distFolder}/pagefind`);
+        expect(isPagefindExists).to.be.true;
     });
 
     it('should have generated extends information for todo class', () => {

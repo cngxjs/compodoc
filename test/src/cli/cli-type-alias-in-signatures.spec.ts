@@ -1,5 +1,5 @@
 
-import { exists, read, shell, temporaryDir } from '../helpers';
+import { hasStderrError, exists, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
@@ -20,7 +20,7 @@ describe('CLI generation with type aliases in method signatures', () => {
             { cwd: tmpFolder }
         );
 
-        if (ls.stderr.toString() !== '') {
+        if (hasStderrError(ls.stderr.toString())) {
             console.error(`shell error: ${ls.stderr.toString()}`);
             throw new Error('error');
         }

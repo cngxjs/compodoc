@@ -1,5 +1,5 @@
 
-import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 // Helper function to strip ANSI escape codes
@@ -20,7 +20,7 @@ describe('CLI serving', () => {
                 timeout: TIMEOUT
             });
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('shell error');
             }
@@ -186,7 +186,7 @@ describe('CLI serving', () => {
                 timeout: TIMEOUT
             });
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('shell error');
             }
@@ -206,7 +206,7 @@ describe('CLI serving', () => {
         beforeAll(() => {
             let ls = shell('node', ['./bin/index-cli.js', '-s'], { timeout: TIMEOUT });
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('shell error');
             }

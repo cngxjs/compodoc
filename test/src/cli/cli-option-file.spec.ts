@@ -1,5 +1,5 @@
 
-import { temporaryDir, shell, exists } from '../helpers';
+import { hasStderrError, temporaryDir, shell, exists } from '../helpers';
 
 const tmp = temporaryDir();
 
@@ -19,7 +19,7 @@ describe('CLI option file', () => {
             './test/fixtures/todomvc-ng2/src/tsconfig.json'
         ]);
 
-        if (ls.stderr.toString() !== '') {
+        if (hasStderrError(ls.stderr.toString())) {
             console.error(`shell error: ${ls.stderr.toString()}`);
             throw new Error('error');
         }

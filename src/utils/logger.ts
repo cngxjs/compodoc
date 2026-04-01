@@ -1,77 +1,63 @@
-import log from 'fancy-log';
 import c from 'picocolors';
 
-enum LEVEL {
-    INFO,
-    DEBUG,
-    ERROR,
-    WARN
-}
+type LogLevel = 'info' | 'debug' | 'warn' | 'error';
 
-class Logger {
-    public logger;
-    public silent;
+const pad = (s: string, len: number): string => s + ' '.repeat(Math.max(0, len - s.length));
 
-    constructor() {
-        this.logger = log;
-        this.silent = true;
+const timestamp = (): string => c.gray(`[${new Date().toLocaleTimeString()}]`);
+
+const colorize = (level: LogLevel, msg: string): string => {
+    switch (level) {
+        case 'info':
+            return c.green(msg);
+        case 'debug':
+            return c.cyan(msg);
+        case 'warn':
+            return c.yellow(msg);
+        case 'error':
+            return c.red(msg);
     }
+};
 
-    public info(...args) {
-        if (!this.silent) {
+const formatArgs = (args: unknown[]): string => {
+    if (args.length > 1) {
+        const first = String(args[0]);
+        return `${pad(first, 15)}: ${args.slice(1).join(' ')}`;
+    }
+    return args.join(' ');
+};
+
+export type Logger = {
+    silent: boolean;
+    info(...args: unknown[]): void;
+    warn(...args: unknown[]): void;
+    debug(...args: unknown[]): void;
+    error(...args: unknown[]): void;
+};
+
+export const createLogger = (): Logger => {
+    const state = { silent: true };
+
+    const write = (level: LogLevel, args: unknown[]) => {
+        if (!state.silent && level !== 'error') {
             return;
         }
-        this.logger(this.format(LEVEL.INFO, ...args));
-    }
+        const msg = colorize(level, formatArgs(args));
+        process.stdout.write(`${timestamp()} ${msg}\n`);
+    };
 
-    public error(...args) {
-        this.logger(this.format(LEVEL.ERROR, ...args));
-    }
+    return {
+        get silent() {
+            return state.silent;
+        },
+        set silent(v: boolean) {
+            state.silent = v;
+        },
+        info: (...args: unknown[]) => write('info', args),
+        warn: (...args: unknown[]) => write('warn', args),
+        debug: (...args: unknown[]) => write('debug', args),
+        error: (...args: unknown[]) => write('error', args)
+    };
+};
 
-    public warn(...args) {
-        if (!this.silent) {
-            return;
-        }
-        this.logger(this.format(LEVEL.WARN, ...args));
-    }
-
-    public debug(...args) {
-        if (!this.silent) {
-            return;
-        }
-        this.logger(this.format(LEVEL.DEBUG, ...args));
-    }
-
-    private format(level, ...args) {
-        const pad = (s, l, z = '') => {
-            return s + Array(Math.max(0, l - (s.length ?? 0) + 1)).join(z);
-        };
-
-        let msg = args.join(' ');
-        if (args.length > 1) {
-            msg = `${pad(args.shift(), 15, ' ')}: ${args.join(' ')}`;
-        }
-
-        switch (level) {
-            case LEVEL.INFO:
-                msg = c.green(msg);
-                break;
-
-            case LEVEL.DEBUG:
-                msg = c.cyan(msg);
-                break;
-
-            case LEVEL.WARN:
-                msg = c.yellow(msg);
-                break;
-
-            case LEVEL.ERROR:
-                msg = c.red(msg);
-                break;
-        }
-
-        return [msg].join('');
-    }
-}
-
-export const logger = new Logger();
+export const logger = createLogger();

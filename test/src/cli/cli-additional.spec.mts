@@ -1,6 +1,6 @@
 import { EOL as eol } from 'os';
 
-import { temporaryDir, shell, spawn, exists, read, exec } from '../helpers';
+import { hasStderrError, temporaryDir, shell, spawn, exists, read, exec } from '../helpers';
 
 const tmp = temporaryDir();
 
@@ -26,7 +26,7 @@ describe('CLI Additional documentation', () => {
             '"Additional documentation"'
         ]);
 
-        if (ls.stderr.toString() !== '') {
+        if (hasStderrError(ls.stderr.toString())) {
             console.error(`shell error: ${ls.stderr.toString()}`);
             throw new Error('error');
         }

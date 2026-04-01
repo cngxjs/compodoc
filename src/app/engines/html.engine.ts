@@ -9,8 +9,6 @@ export class HtmlEngine {
     private cache: { page: string } = {} as any;
     private compiledPage;
 
-    private precompiledMenu;
-
     private static instance: HtmlEngine;
     private constructor() {
         const helper = new HtmlEngineHelpers();
@@ -63,7 +61,8 @@ export class HtmlEngine {
             'miscellaneous-enumerations',
             'additional-page',
             'package-dependencies',
-            'package-properties'
+            'package-properties',
+            'menu'
         ];
         if (templatePath) {
             // Check if templatePath is absolute or relative
@@ -100,25 +99,8 @@ export class HtmlEngine {
                 });
             })
             .then(() => {
-                const menuPath = this.determineTemplatePath(templatePath, 'partials/menu.hbs');
-                return FileEngine.get(menuPath).then(menuTemplate => {
-                    this.precompiledMenu = Handlebars.compile(menuTemplate, {
-                        preventIndent: true,
-                        strict: true
-                    });
-                });
+                // Menu is now a standard partial registered above, no separate compilation needed
             });
-    }
-
-    public renderMenu(templatePath, data) {
-        const menuPath = this.determineTemplatePath(templatePath, 'partials/menu.hbs');
-        return FileEngine.get(menuPath).then(menuTemplate => {
-            data.menu = 'normal';
-            return Handlebars.compile(menuTemplate, {
-                preventIndent: true,
-                strict: true
-            })({ ...data });
-        });
     }
 
     public render(mainData: any, page: any): string {

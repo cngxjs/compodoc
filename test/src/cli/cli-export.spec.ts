@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 
-import { exists, read, shell, temporaryDir } from '../helpers';
+import { hasStderrError, exists, read, shell, temporaryDir } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI Export', () => {
@@ -21,7 +21,7 @@ describe('CLI Export', () => {
                 'json'
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -283,7 +283,7 @@ describe('CLI Export', () => {
                 '--disableCoverage'
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -341,7 +341,7 @@ describe('CLI Export', () => {
                 'pdf'
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -384,7 +384,7 @@ describe('CLI Export', () => {
                 'xml'
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }

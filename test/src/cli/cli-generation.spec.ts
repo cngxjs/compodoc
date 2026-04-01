@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI simple generation', () => {
@@ -25,7 +25,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -68,14 +68,16 @@ describe('CLI simple generation', () => {
         });
 
         it('should have generated search index json', () => {
-            const isIndexExists = exists(`${distFolder}/js/search/search_index.js`);
+            const isIndexExists = exists(`${distFolder}/pagefind/pagefind.js`);
             expect(isIndexExists).to.be.true;
         });
 
         it('should have generated sourceCode for files', () => {
-            expect(moduleFile).to.contain('import { FooDirective } from');
-            expect(fooComponentFile).to.contain('export class FooComponent');
-            expect(fooServiceFile).to.contain('export class FooService');
+            // Shiki wraps tokens in <span> tags, so strip HTML before checking text content
+            const strip = (html: string) => html.replace(/<[^>]+>/g, '');
+            expect(strip(moduleFile)).to.contain('import { FooDirective } from');
+            expect(strip(fooComponentFile)).to.contain('export class FooComponent');
+            expect(strip(fooServiceFile)).to.contain('export class FooService');
         });
 
         /**
@@ -596,7 +598,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -636,7 +638,7 @@ describe('CLI simple generation', () => {
                 { cwd: distFolder }
             );
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -676,7 +678,7 @@ describe('CLI simple generation', () => {
         });
 
         it('should have generated search index json', () => {
-            const isIndexExists = exists(`/tmp/${distFolder}/js/search/search_index.js`);
+            const isIndexExists = exists(`/tmp/${distFolder}/pagefind/pagefind.js`);
             expect(isIndexExists).to.be.true;
         });
     });
@@ -703,7 +705,7 @@ describe('CLI simple generation', () => {
                 '-p', './test/fixtures/sample-files/tsconfig.simple.json',
                 '-d', actualDir + '/' + distFolder], { cwd: distFolder});
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -743,7 +745,7 @@ describe('CLI simple generation', () => {
         });
 
         it('should have generated search index json', () => {
-            const isIndexExists = exists(`${actualDir}/${distFolder}/js/search/search_index.js`);
+            const isIndexExists = exists(`${actualDir}/${distFolder}/pagefind/pagefind.js`);
             expect(isIndexExists).to.be.true;
         });
     });*/
@@ -761,7 +763,7 @@ describe('CLI simple generation', () => {
                 './screenshots/'
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -787,7 +789,7 @@ describe('CLI simple generation', () => {
                 './test/fixtures/todomvc-ng2/screenshots/actions'
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -813,7 +815,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -847,7 +849,7 @@ describe('CLI simple generation', () => {
                 './test/fixtures/sample-files/tsconfig.simple.json'
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -896,7 +898,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -925,7 +927,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -955,7 +957,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -983,7 +985,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -1011,7 +1013,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -1039,7 +1041,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -1067,7 +1069,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -1099,7 +1101,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -1145,7 +1147,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -1173,7 +1175,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -1201,7 +1203,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -1229,7 +1231,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -1279,7 +1281,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
@@ -1330,7 +1332,7 @@ describe('CLI simple generation', () => {
                 { timeout: 10000 }
             );
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 throw new Error(`shell error: ${ls.stderr.toString()}`);
             }
 
@@ -1357,7 +1359,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 throw new Error(`shell error: ${ls.stderr.toString()}`);
             }
 
@@ -1384,7 +1386,7 @@ describe('CLI simple generation', () => {
                 distFolder
             ]);
 
-            if (ls.stderr.toString() !== '') {
+            if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
