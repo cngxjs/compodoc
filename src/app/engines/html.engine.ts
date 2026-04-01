@@ -5,6 +5,11 @@ import { logger } from '../../utils/logger';
 import FileEngine from './file.engine';
 import { HtmlEngineHelpers } from './html.engine.helpers';
 import { Layout } from '../../templates/Layout';
+import { SearchInput } from '../../templates/components/SearchInput';
+import { SearchResults } from '../../templates/components/SearchResults';
+import { Markdown } from '../../templates/pages/Markdown';
+import { AdditionalPage } from '../../templates/pages/AdditionalPage';
+import { PackageDependencies } from '../../templates/pages/PackageDependencies';
 
 /** Map page context to its Handlebars partial name */
 const CONTEXT_PARTIAL_MAP: Record<string, string> = {
@@ -104,20 +109,39 @@ export class HtmlEngine {
         });
     }
 
+    /** TSX-rendered content for specific contexts */
+    private renderTsxContent(data: any): string | null {
+        switch (data.context) {
+            case 'getting-started':
+            case 'readme':
+            case 'changelog':
+            case 'contributing':
+            case 'license':
+                return Markdown({ markdown: data.markdown });
+            case 'additional-page':
+                return AdditionalPage({ additionalPage: data.additionalPage });
+            case 'package-dependencies':
+                return data.disableDependencies ? '' : PackageDependencies(data);
+            default:
+                return null; // Fall back to Handlebars
+        }
+    }
+
     public render(mainData: any, page: any): string {
         const data = { ...mainData, ...page };
 
-        // Render content via the appropriate Handlebars partial
-        const partialName = CONTEXT_PARTIAL_MAP[data.context];
-        let content = '';
-        if (partialName && this.compiledPartials[partialName]) {
-            // Skip disabled sections
-            if (data.context === 'package-dependencies' && data.disableDependencies) {
-                content = '';
-            } else if (data.context === 'package-properties' && data.disableProperties) {
-                content = '';
+        // Try TSX first, fall back to Handlebars
+        let content = this.renderTsxContent(data);
+        if (content === null) {
+            const partialName = CONTEXT_PARTIAL_MAP[data.context];
+            if (partialName && this.compiledPartials[partialName]) {
+                if (data.context === 'package-properties' && data.disableProperties) {
+                    content = '';
+                } else {
+                    content = this.compiledPartials[partialName](data);
+                }
             } else {
-                content = this.compiledPartials[partialName](data);
+                content = '';
             }
         }
 
@@ -125,17 +149,13 @@ export class HtmlEngine {
         const menuHtml = this.compiledMenu?.({ ...data, menu: 'normal' }) ?? '';
         const menuHtmlMobile = this.compiledMenu?.({ ...data, menu: 'mobile' }) ?? '';
 
-        // Render search partials
-        const searchInputHtml = this.compiledSearchInput?.(data) ?? '';
-        const searchResultsHtml = this.compiledSearchResults?.(data) ?? '';
-
         return Layout({
             data,
             content,
             menuHtml,
             menuHtmlMobile,
-            searchInputHtml,
-            searchResultsHtml,
+            searchInputHtml: SearchInput(),
+            searchResultsHtml: SearchResults(),
         });
     }
 
