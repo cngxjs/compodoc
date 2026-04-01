@@ -4,14 +4,15 @@
  * and swaps the content area without full page reload.
  */
 
-import { rebindSidebar } from './sidebar';
 import { initTabs } from './tabs';
 import { initCodeBlocks } from './code-blocks';
 
 const CONTENT_SELECTOR = '.content-data';
 const SEARCH_RESULTS_SELECTOR = '.search-results';
-const DESKTOP_MENU_SELECTOR = '.d-none.d-md-block.menu';
-const MOBILE_MENU_SELECTOR = '.xs-menu.menu';
+
+/** Strip any existing relative prefix from a path */
+const stripPrefix = (path: string): string =>
+    path.replace(/^(\.\/|\.\.\/)+/, '');
 
 /** Rewrite relative sidebar links based on current page depth */
 const fixMenuLinks = () => {
@@ -20,15 +21,15 @@ const fixMenuLinks = () => {
 
     document.querySelectorAll<HTMLAnchorElement>('.menu a[data-type]').forEach(a => {
         const href = a.getAttribute('href');
-        if (!href || href.startsWith('.') || href.startsWith('/') || href.startsWith('http')) return;
-        a.setAttribute('href', prefix + href);
+        if (!href || href.startsWith('/') || href.startsWith('http')) return;
+        a.setAttribute('href', prefix + stripPrefix(href));
     });
 
     // Fix logo images
     document.querySelectorAll<HTMLImageElement>('.menu img[data-src]').forEach(img => {
         const src = img.getAttribute('data-src');
-        if (!src || src.startsWith('.') || src.startsWith('/') || src.startsWith('http')) return;
-        img.src = prefix + src;
+        if (!src || src.startsWith('/') || src.startsWith('http')) return;
+        img.src = prefix + stripPrefix(src);
     });
 };
 
@@ -36,9 +37,6 @@ const fixMenuLinks = () => {
 const reinitPage = () => {
     initTabs();
     initCodeBlocks();
-
-    // Re-bind sidebar togglers (don't restore state -- sidebar is fresh from server)
-    rebindSidebar();
 
     // Trigger lazy-load check for graphs
     window.dispatchEvent(new Event('scroll'));
@@ -132,35 +130,8 @@ const navigate = async (url: string, pushState = true) => {
             currentSearch.innerHTML = newSearch.innerHTML;
         }
 
-        // Save sidebar collapse state before swap
-        const collapseStates: Record<string, boolean> = {};
-        document.querySelectorAll<HTMLElement>('.menu .collapse[id]').forEach(el => {
-            collapseStates[el.id] = el.classList.contains('in');
-        });
-
-        // Swap sidebar menus (links are relative to page depth)
-        const swapMenu = (selector: string) => {
-            const newMenu = doc.querySelector(selector);
-            const currentMenu = document.querySelector(selector);
-            if (newMenu && currentMenu) {
-                currentMenu.innerHTML = newMenu.innerHTML;
-            }
-        };
-        swapMenu(DESKTOP_MENU_SELECTOR);
-        swapMenu(MOBILE_MENU_SELECTOR);
-
-        // Restore sidebar collapse state after swap
-        Object.entries(collapseStates).forEach(([id, wasOpen]) => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            if (wasOpen) {
-                el.classList.add('in');
-                el.style.display = 'block';
-            } else {
-                el.classList.remove('in');
-                el.style.display = 'none';
-            }
-        });
+        // Sidebar is NOT swapped -- menu structure is identical across pages.
+        // Only link prefixes and active state need updating.
 
         // Update page title
         document.title = doc.title;
@@ -201,8 +172,9 @@ const navigate = async (url: string, pushState = true) => {
 };
 
 export const initRouter = () => {
-    // Fix sidebar links on initial page load
+    // Fix sidebar links and set active link on initial page load
     fixMenuLinks();
+    updateActiveLink(window.location.href);
 
     // Intercept link clicks
     document.addEventListener('click', (e) => {
