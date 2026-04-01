@@ -87,6 +87,11 @@
         }
 
         if (!pagefind) {
+            // Pagefind requires HTTP — search is unavailable via file:// protocol
+            if (window.location.protocol === 'file:') {
+                displayResults(q, []);
+                return;
+            }
             try {
                 var prefix = '';
                 switch (COMPODOC_CURRENT_PAGE_DEPTH) {
@@ -100,7 +105,7 @@
                 pagefind = await import(prefix + 'pagefind/pagefind.js');
                 await pagefind.init();
             } catch (e) {
-                console.error('Pagefind init failed:', e);
+                console.warn('Search unavailable:', e.message);
                 return;
             }
         }
