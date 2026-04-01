@@ -38,7 +38,6 @@ export default {
         'commander',
         'cosmiconfig',
         'decache',
-        'fancy-log',
         'fast-glob',
         'fs-extra',
         'handlebars',

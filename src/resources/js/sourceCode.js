@@ -19,16 +19,16 @@ document.addEventListener('DOMContentLoaded', function() {
             var targetLine = event.target.getAttribute('data-line');
             event.preventDefault();
 
-            $prismPre.setAttribute('data-line', targetLine);
-            Prism.highlightElement($prismCode, function() {});
-
             $tabSource.click();
 
+            // Scroll to the target line in the Shiki-highlighted source
             setTimeout(function() {
-                var $prismHighlightLine = document.querySelector('.line-highlight'),
-                    top = parseInt(getComputedStyle($prismHighlightLine)['top']);
-                $content.scrollTop = top;
-            }, 500);
+                var lines = $prismPre.querySelectorAll('.line');
+                var lineIndex = parseInt(targetLine, 10) - 1;
+                if (lines[lineIndex]) {
+                    lines[lineIndex].scrollIntoView({ block: 'center' });
+                }
+            }, 300);
         };
 
         window.onhashchange = function(event) {

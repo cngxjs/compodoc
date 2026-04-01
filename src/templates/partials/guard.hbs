@@ -109,7 +109,7 @@
 
     {{#isTabEnabled navTabs "source"}}
         <div class="tab-pane fade {{#isInitialTab navTabs "source"}}active in{{/isInitialTab}} tab-source-code" id="source">
-            <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">{{ injectable.sourceCode}}</code></pre>
+            <div class="compodoc-sourcecode">{{{highlightCode injectable.sourceCode}}}</div>
         </div>
     {{/isTabEnabled}}
 </div>

@@ -19,6 +19,7 @@ import I18nEngine from './engines/i18n.engine';
 import MarkdownEngine, { markdownReadedDatas } from './engines/markdown.engine';
 import NgdEngine from './engines/ngd.engine';
 import SearchEngine from './engines/search.engine';
+import { initHighlighter } from './engines/syntax-highlight.engine';
 
 import { AngularDependencies } from './compiler/angular-dependencies';
 import { AngularJSDependencies } from './compiler/angularjs-dependencies';
@@ -113,7 +114,9 @@ export class Application {
         if (Configuration.mainData.exportFormat !== COMPODOC_DEFAULTS.exportFormat) {
             this.processPackageJson();
         } else {
-            HtmlEngine.init(Configuration.mainData.templates).then(() => this.processPackageJson());
+            initHighlighter()
+                .then(() => HtmlEngine.init(Configuration.mainData.templates))
+                .then(() => this.processPackageJson());
         }
         return generationPromise;
     }

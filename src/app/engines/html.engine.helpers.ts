@@ -11,6 +11,7 @@ import { EscapeSimpleQuoteHelper } from './html-engine-helpers/escape-simple-quo
 import { FilterAngular2ModulesHelper } from './html-engine-helpers/filter-angular2-modules.helper';
 import { FunctionSignatureHelper } from './html-engine-helpers/function-signature.helper';
 import { HasOwnHelper } from './html-engine-helpers/has-own.helper';
+import { HighlightCodeHelper } from './html-engine-helpers/highlight-code.helper';
 import { IHtmlEngineHelper } from './html-engine-helpers/html-engine-helper.interface';
 import { I18nHelper } from './html-engine-helpers/i18n.helper';
 import { IfStringHelper } from './html-engine-helpers/if-string.helper';
@@ -80,6 +81,7 @@ export class HtmlEngineHelpers {
         this.registerHelper(bars, 'capitalize', new CapitalizeHelper());
         this.registerHelper(bars, 'parse-property', new ParsePropertyHelper());
         this.registerHelper(bars, 'isInfoSection', new IsInfoSectionHelper());
+        this.registerHelper(bars, 'highlightCode', new HighlightCodeHelper());
     }
 
     private registerHelper(bars, key: string, helper: IHtmlEngineHelper) {

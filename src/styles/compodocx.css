@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@source "../templates/**/*.hbs";
+@source "../templates/**/*.tsx";
+
+/* ----------------------------------------------------------------
+   Design tokens — see .internal/compodocx-design-system.md
+   ---------------------------------------------------------------- */
+
+@theme {
+  /* --- Surface hierarchy --- */
+  --color-cdx-bg:            hsl(220 16% 98%);
+  --color-cdx-bg-alt:        hsl(220 16% 96%);
+  --color-cdx-bg-elevated:   hsl(0 0% 100%);
+  --color-cdx-bg-code:       hsl(220 16% 95%);
+  --color-cdx-bg-code-block: hsl(225 16% 16%);
+
+  /* --- Text hierarchy --- */
+  --color-cdx-text:           hsl(220 20% 14%);
+  --color-cdx-text-secondary: hsl(220 12% 44%);
+  --color-cdx-text-muted:     hsl(220 10% 62%);
+  --color-cdx-text-inverse:   hsl(220 16% 96%);
+
+  /* --- Primary accent --- */
+  --color-cdx-primary:        hsl(222 68% 52%);
+  --color-cdx-primary-hover:  hsl(222 68% 44%);
+  --color-cdx-primary-subtle: hsl(222 68% 96%);
+
+  /* --- Entity type accents --- */
+  --color-cdx-entity-component:   hsl(172 52% 44%);
+  --color-cdx-entity-service:     hsl(38 92% 50%);
+  --color-cdx-entity-directive:   hsl(262 52% 56%);
+  --color-cdx-entity-pipe:        hsl(340 65% 56%);
+  --color-cdx-entity-module:      hsl(222 68% 52%);
+  --color-cdx-entity-class:       hsl(142 52% 40%);
+  --color-cdx-entity-interface:   hsl(200 60% 48%);
+  --color-cdx-entity-guard:       hsl(28 80% 52%);
+  --color-cdx-entity-interceptor: hsl(280 48% 52%);
+
+  /* --- Feedback --- */
+  --color-cdx-deprecated: hsl(38 92% 50%);
+  --color-cdx-danger:     hsl(0 72% 52%);
+
+  /* --- Borders --- */
+  --color-cdx-border:        hsl(220 14% 90%);
+  --color-cdx-border-strong: hsl(220 14% 80%);
+  --color-cdx-border-focus:  hsl(222 68% 52%);
+
+  /* --- Typography --- */
+  --font-heading: "Instrument Sans", system-ui, sans-serif;
+  --font-body:    "Source Sans 3", system-ui, sans-serif;
+  --font-code:    "JetBrains Mono", ui-monospace, monospace;
+
+  /* --- Shadows --- */
+  --shadow-cdx-sm: 0 1px 2px hsl(220 20% 14% / 0.06);
+  --shadow-cdx-md: 0 4px 12px hsl(220 20% 14% / 0.08);
+  --shadow-cdx-lg: 0 12px 32px hsl(220 20% 14% / 0.12);
+
+  /* --- Layout --- */
+  --spacing-cdx-sidebar: 280px;
+
+  /* --- Radii --- */
+  --radius-cdx-sm: 4px;
+  --radius-cdx-md: 8px;
+  --radius-cdx-lg: 12px;
+
+  /* --- Transitions --- */
+  --cdx-transition-fast: 120ms ease;
+  --cdx-transition-base: 200ms ease;
+}
+
+/* ----------------------------------------------------------------
+   Dark theme overrides
+   ---------------------------------------------------------------- */
+
+.dark {
+  --color-cdx-bg:            hsl(225 16% 10%);
+  --color-cdx-bg-alt:        hsl(225 16% 13%);
+  --color-cdx-bg-elevated:   hsl(225 16% 17%);
+  --color-cdx-bg-code:       hsl(225 16% 15%);
+  --color-cdx-bg-code-block: hsl(225 16% 8%);
+
+  --color-cdx-text:           hsl(220 16% 90%);
+  --color-cdx-text-secondary: hsl(220 12% 64%);
+  --color-cdx-text-muted:     hsl(220 10% 46%);
+  --color-cdx-text-inverse:   hsl(220 20% 14%);
+
+  --color-cdx-primary:        hsl(222 80% 68%);
+  --color-cdx-primary-hover:  hsl(222 80% 76%);
+  --color-cdx-primary-subtle: hsl(222 40% 18%);
+
+  --color-cdx-entity-component:   hsl(172 44% 52%);
+  --color-cdx-entity-service:     hsl(38 80% 56%);
+  --color-cdx-entity-directive:   hsl(262 44% 64%);
+  --color-cdx-entity-pipe:        hsl(340 56% 64%);
+  --color-cdx-entity-module:      hsl(222 72% 68%);
+  --color-cdx-entity-class:       hsl(142 44% 52%);
+  --color-cdx-entity-interface:   hsl(200 52% 56%);
+  --color-cdx-entity-guard:       hsl(28 72% 58%);
+  --color-cdx-entity-interceptor: hsl(280 40% 62%);
+
+  --color-cdx-border:        hsl(225 14% 20%);
+  --color-cdx-border-strong: hsl(225 14% 28%);
+
+  --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
+  --shadow-cdx-md: 0 4px 12px hsl(0 0% 0% / 0.3);
+  --shadow-cdx-lg: 0 12px 32px hsl(0 0% 0% / 0.4);
+}
