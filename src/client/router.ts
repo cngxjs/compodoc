@@ -4,20 +4,41 @@
  * and swaps the content area without full page reload.
  */
 
-import { initSidebar } from './sidebar';
+import { rebindSidebar } from './sidebar';
 import { initTabs } from './tabs';
 import { initCodeBlocks } from './code-blocks';
 
 const CONTENT_SELECTOR = '.content-data';
 const SEARCH_RESULTS_SELECTOR = '.search-results';
+const DESKTOP_MENU_SELECTOR = '.d-none.d-md-block.menu';
+const MOBILE_MENU_SELECTOR = '.xs-menu.menu';
+
+/** Rewrite relative sidebar links based on current page depth */
+const fixMenuLinks = () => {
+    const depth = (window as any).COMPODOC_CURRENT_PAGE_DEPTH ?? 0;
+    const prefix = depth === 0 ? './' : '../'.repeat(depth);
+
+    document.querySelectorAll<HTMLAnchorElement>('.menu a[data-type]').forEach(a => {
+        const href = a.getAttribute('href');
+        if (!href || href.startsWith('.') || href.startsWith('/') || href.startsWith('http')) return;
+        a.setAttribute('href', prefix + href);
+    });
+
+    // Fix logo images
+    document.querySelectorAll<HTMLImageElement>('.menu img[data-src]').forEach(img => {
+        const src = img.getAttribute('data-src');
+        if (!src || src.startsWith('.') || src.startsWith('/') || src.startsWith('http')) return;
+        img.src = prefix + src;
+    });
+};
 
 /** Re-run page initializers after content swap */
 const reinitPage = () => {
     initTabs();
     initCodeBlocks();
 
-    // Re-bind sidebar togglers for any new collapse elements
-    initSidebar();
+    // Re-bind sidebar togglers (don't restore state -- sidebar is fresh from server)
+    rebindSidebar();
 
     // Trigger lazy-load check for graphs
     window.dispatchEvent(new Event('scroll'));
@@ -27,10 +48,15 @@ const reinitPage = () => {
 const updateActiveLink = (url: string) => {
     document.querySelectorAll('.menu a.active').forEach(a => a.classList.remove('active'));
 
-    const filename = url.split('/').pop() || 'index.html';
+    // Extract pathname and get the filename
+    const pathname = new URL(url, window.location.origin).pathname;
+    const filename = pathname.split('/').pop() || 'index.html';
+
     document.querySelectorAll<HTMLAnchorElement>('.menu a[data-type]').forEach(a => {
         const href = a.getAttribute('href') || '';
-        const hrefFile = href.split('/').pop() || '';
+        // Strip prefix (./ or ../) to get raw filename or path
+        const cleaned = href.replace(/^(\.\/|\.\.\/)+/, '');
+        const hrefFile = cleaned.split('/').pop() || '';
         if (hrefFile.toLowerCase() === filename.toLowerCase()) {
             a.classList.add('active');
         }
@@ -87,7 +113,12 @@ const navigate = async (url: string, pushState = true) => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        // Swap content
+        // Swap content area (including the wrapper's context class)
+        const newContentWrapper = doc.querySelector('.content');
+        const currentContentWrapper = document.querySelector('.content');
+        if (newContentWrapper && currentContentWrapper) {
+            currentContentWrapper.className = newContentWrapper.className;
+        }
         const newContent = doc.querySelector(CONTENT_SELECTOR);
         const currentContent = document.querySelector(CONTENT_SELECTOR);
         if (newContent && currentContent) {
@@ -101,6 +132,36 @@ const navigate = async (url: string, pushState = true) => {
             currentSearch.innerHTML = newSearch.innerHTML;
         }
 
+        // Save sidebar collapse state before swap
+        const collapseStates: Record<string, boolean> = {};
+        document.querySelectorAll<HTMLElement>('.menu .collapse[id]').forEach(el => {
+            collapseStates[el.id] = el.classList.contains('in');
+        });
+
+        // Swap sidebar menus (links are relative to page depth)
+        const swapMenu = (selector: string) => {
+            const newMenu = doc.querySelector(selector);
+            const currentMenu = document.querySelector(selector);
+            if (newMenu && currentMenu) {
+                currentMenu.innerHTML = newMenu.innerHTML;
+            }
+        };
+        swapMenu(DESKTOP_MENU_SELECTOR);
+        swapMenu(MOBILE_MENU_SELECTOR);
+
+        // Restore sidebar collapse state after swap
+        Object.entries(collapseStates).forEach(([id, wasOpen]) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (wasOpen) {
+                el.classList.add('in');
+                el.style.display = 'block';
+            } else {
+                el.classList.remove('in');
+                el.style.display = 'none';
+            }
+        });
+
         // Update page title
         document.title = doc.title;
 
@@ -112,7 +173,8 @@ const navigate = async (url: string, pushState = true) => {
             history.pushState({ path: url }, '', url);
         }
 
-        // Update sidebar active state
+        // Fix sidebar links for new page depth and update active state
+        fixMenuLinks();
         updateActiveLink(url);
 
         // Scroll to top or to anchor
@@ -139,6 +201,9 @@ const navigate = async (url: string, pushState = true) => {
 };
 
 export const initRouter = () => {
+    // Fix sidebar links on initial page load
+    fixMenuLinks();
+
     // Intercept link clicks
     document.addEventListener('click', (e) => {
         const anchor = (e.target as HTMLElement).closest('a');
