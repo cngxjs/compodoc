@@ -333,7 +333,7 @@ describe('CLI disable flags', () => {
         });
 
         it('should not generate search input', () => {
-            let file = read(`${distFolder}/js/menu-wc.js`);
+            let file = read(`${distFolder}/index.html`);
             expect(file).not.to.contain('book-search-input');
         });
     });
@@ -358,7 +358,7 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should not generate the dependencies list', () => {
-            const file = read(`${distFolder}/js/menu-wc.js`);
+            const file = read(`${distFolder}/index.html`);
             expect(file).not.to.contain('href="dependencies.html"');
         });
     });
@@ -383,7 +383,7 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should not generate the properties list', () => {
-            const file = read(`${distFolder}/js/menu-wc.js`);
+            const file = read(`${distFolder}/index.html`);
             expect(file).not.to.contain('href="properties.html"');
         });
     });
@@ -417,7 +417,7 @@ describe('CLI disable flags', () => {
         });
 
         it('should not generate search input', () => {
-            let file = read(`${distFolder}/js/menu-wc.js`);
+            let file = read(`${distFolder}/index.html`);
             expect(file).not.to.contain('book-search-input');
         });
 
@@ -552,7 +552,7 @@ describe('CLI disable flags', () => {
         });
 
         it('should not display overview link in menu', () => {
-            menuFile = read(`${distFolder}/js/menu-wc.js`);
+            menuFile = read(`${distFolder}/index.html`);
             expect(menuFile).not.to.contain('href="overview.html"');
             expect(menuFile).not.to.contain('ion-ios-keypad');
         });
@@ -565,13 +565,13 @@ describe('CLI disable flags', () => {
         });
 
         it('should still display other menu items', () => {
-            menuFile = read(`${distFolder}/js/menu-wc.js`);
+            menuFile = read(`${distFolder}/index.html`);
             expect(menuFile).to.contain('href="modules.html"');
             expect(menuFile).to.contain('ion-ios-archive');
         });
 
         it('should properly handle menu structure without overview', () => {
-            menuFile = read(`${distFolder}/js/menu-wc.js`);
+            menuFile = read(`${distFolder}/index.html`);
             // Should not contain the overview section in the getting-started chapter
             expect(menuFile).not.to.contain('<span class="icon ion-ios-keypad"></span>{{t "overview"}}');
         });
@@ -608,7 +608,7 @@ describe('CLI disable flags', () => {
         });
 
         it('should not display overview link in menu without README', () => {
-            menuFile = read(`${distFolder}/js/menu-wc.js`);
+            menuFile = read(`${distFolder}/index.html`);
             expect(menuFile).not.to.contain('<span class="icon ion-ios-keypad"></span>{{t "overview"}}');
         });
     });
@@ -656,7 +656,7 @@ describe('CLI disable flags', () => {
         });
 
         it('should not display overview link in menu but show additional documentation', () => {
-            menuFile = read(`${additionalTestFolder}/js/menu-wc.js`);
+            menuFile = read(`${additionalTestFolder}/index.html`);
             expect(menuFile).to.not.contain('href="overview.html"');
             expect(menuFile).to.contain('Additional Documentation');
             expect(menuFile).to.contain('href="additional-documentation/big-introduction.html"');
@@ -669,7 +669,7 @@ describe('CLI disable flags', () => {
         });
 
         it('should maintain nested additional documentation structure', () => {
-            menuFile = read(`${additionalTestFolder}/js/menu-wc.js`);
+            menuFile = read(`${additionalTestFolder}/index.html`);
             expect(menuFile).to.contain('href="additional-documentation/edition/edition-of-a-todo.html"');
             expect(menuFile).to.contain('Edition of a todo');
             
@@ -678,7 +678,7 @@ describe('CLI disable flags', () => {
         });
 
         it('should handle deep nesting levels correctly without overview', () => {
-            menuFile = read(`${additionalTestFolder}/js/menu-wc.js`);
+            menuFile = read(`${additionalTestFolder}/index.html`);
             // Should contain up to level 5 but not level 6
             expect(menuFile).to.contain('for-chapter2');
             expect(menuFile).to.contain('for-chapter3');
@@ -688,7 +688,7 @@ describe('CLI disable flags', () => {
         });
 
         it('should generate correct additional documentation links without overview interference', () => {
-            menuFile = read(`${additionalTestFolder}/js/menu-wc.js`);
+            menuFile = read(`${additionalTestFolder}/index.html`);
             [
                 'href="additional-documentation/edition/edition-of-a-todo/edit-level3.html',
                 'href="additional-documentation/edition/edition-of-a-todo/edit-level3/edit-level4.html',
@@ -757,8 +757,8 @@ describe('CLI disable flags', () => {
                 throw new Error('error');
             }
 
-            withOverviewMenuFile = read(`${withOverviewFolder}/js/menu-wc.js`);
-            withoutOverviewMenuFile = read(`${withoutOverviewFolder}/js/menu-wc.js`);
+            withOverviewMenuFile = read(`${withOverviewFolder}/index.html`);
+            withoutOverviewMenuFile = read(`${withoutOverviewFolder}/index.html`);
         });
         
         afterAll(() => {

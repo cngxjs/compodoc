@@ -64,7 +64,7 @@ describe('CLI Markdown files generation', () => {
                 throw new Error('error');
             }
             stdoutString = ls.stdout.toString();
-            menuFile = read(`${distFolder}/js/menu-wc.js`);
+            menuFile = read(`${distFolder}/index.html`);
         });
         
         afterAll(() => {
@@ -145,7 +145,7 @@ describe('CLI Markdown files generation', () => {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
-            menuFile = read(`${distFolder}-regression/js/menu-wc.js`);
+            menuFile = read(`${distFolder}-regression/index.html`);
         });
         
         afterAll(() => tmp.clean(distFolder + '-regression'));
