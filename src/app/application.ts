@@ -1,6 +1,7 @@
 import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
-import * as LiveServer from '@compodoc/live-server';
+import polka from 'polka';
+import sirv from 'sirv';
 import traverse from 'neotraverse/legacy';
 import * as path from 'path';
 
@@ -37,7 +38,6 @@ import {
 
 import { AdditionalNode } from './interfaces/additional-node.interface';
 import { CoverageData } from './interfaces/coverageData.interface';
-import { LiveServerConfiguration } from './interfaces/live-server-configuration.interface';
 import { markedAcl } from '../utils/marked.acl';
 import { IComponentDep } from './compiler/angular/deps/component-dep.factory';
 
@@ -2917,18 +2917,24 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
     public runWebServer(folder) {
         if (!this.isWatching) {
-            const liveServerConfiguration: LiveServerConfiguration = {
-                root: folder,
-                open: Configuration.mainData.open,
-                quiet: true,
-                logLevel: 0,
-                wait: 1000,
-                port: Configuration.mainData.port
-            };
-            if (Configuration.mainData.host !== '') {
-                liveServerConfiguration.host = Configuration.mainData.host;
-            }
-            LiveServer.start(liveServerConfiguration);
+            const host = Configuration.mainData.host || 'localhost';
+            const port = Configuration.mainData.port;
+            const assets = sirv(folder, { dev: true, single: false });
+
+            polka()
+                .use(assets)
+                .listen(port, host, () => {
+                    logger.info(`Serving on http://${host}:${port}`);
+                    if (Configuration.mainData.open) {
+                        const open = require('child_process').exec;
+                        const url = `http://${host}:${port}`;
+                        switch (process.platform) {
+                            case 'darwin': open(`open "${url}"`); break;
+                            case 'win32': open(`start "" "${url}"`); break;
+                            default: open(`xdg-open "${url}"`); break;
+                        }
+                    }
+                });
         }
         if (Configuration.mainData.watch && !this.isWatching) {
             if (typeof this.files === 'undefined') {
