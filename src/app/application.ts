@@ -544,6 +544,17 @@ export class Application {
 
         DependenciesEngine.init(dependenciesData);
 
+        // Inject category groupings for sidebar navigation (used by menu partial)
+        Configuration.mainData.categorizedComponents = DependenciesEngine.categorizedComponents;
+        Configuration.mainData.categorizedDirectives = DependenciesEngine.categorizedDirectives;
+        Configuration.mainData.categorizedInjectables = DependenciesEngine.categorizedInjectables;
+        Configuration.mainData.categorizedPipes = DependenciesEngine.categorizedPipes;
+        Configuration.mainData.categorizedClasses = DependenciesEngine.categorizedClasses;
+        Configuration.mainData.categorizedInterfaces = DependenciesEngine.categorizedInterfaces;
+        Configuration.mainData.categorizedGuards = DependenciesEngine.categorizedGuards;
+        Configuration.mainData.categorizedInterceptors = DependenciesEngine.categorizedInterceptors;
+        Configuration.mainData.categorizedEntities = DependenciesEngine.categorizedEntities;
+
         Configuration.mainData.routesLength = RouterParserUtil.routesLength();
 
         this.printStatistics();
@@ -2598,9 +2609,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     }
                 };
                 callbacksAfterGenerateSearchIndexJson();
-            })
-            .then(() => {
-                return this.processMenu(Configuration.mainData);
             })
             .catch(e => {
                 logger.error(e);

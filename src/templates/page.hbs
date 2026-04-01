@@ -49,13 +49,13 @@
             {{#unless data.disableSearch}}
                 {{> search-input data }}
             {{/unless}}
-            <compodoc-menu></compodoc-menu>
+            {{> menu data menu="mobile" }}
         </div>
 
         <div class="container-fluid main">
            <div class="row main">
                <div class="d-none d-md-block menu">
-                   <compodoc-menu mode="normal"></compodoc-menu>
+                   {{> menu data menu="normal" }}
                </div>
                <!-- START CONTENT -->
                <div class="content {{data.context}}">
