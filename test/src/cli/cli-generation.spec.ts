@@ -68,7 +68,7 @@ describe('CLI simple generation', () => {
         });
 
         it('should have generated search index json', () => {
-            const isIndexExists = exists(`${distFolder}/js/search/search_index.js`);
+            const isIndexExists = exists(`${distFolder}/pagefind/pagefind.js`);
             expect(isIndexExists).to.be.true;
         });
 
@@ -678,7 +678,7 @@ describe('CLI simple generation', () => {
         });
 
         it('should have generated search index json', () => {
-            const isIndexExists = exists(`/tmp/${distFolder}/js/search/search_index.js`);
+            const isIndexExists = exists(`/tmp/${distFolder}/pagefind/pagefind.js`);
             expect(isIndexExists).to.be.true;
         });
     });
@@ -745,7 +745,7 @@ describe('CLI simple generation', () => {
         });
 
         it('should have generated search index json', () => {
-            const isIndexExists = exists(`${actualDir}/${distFolder}/js/search/search_index.js`);
+            const isIndexExists = exists(`${actualDir}/${distFolder}/pagefind/pagefind.js`);
             expect(isIndexExists).to.be.true;
         });
     });*/

@@ -328,7 +328,7 @@ describe('CLI disable flags', () => {
         it('should not generate search JS files', () => {
             let file = read(`${distFolder}/index.html`);
             expect(file).not.to.contain('lunr.min.js');
-            const index = exists(distFolder + '/js/search/search_index.js');
+            const index = exists(distFolder + '/pagefind/pagefind.js');
             expect(index).to.be.false;
         });
 
@@ -412,7 +412,7 @@ describe('CLI disable flags', () => {
         it('should not generate search JS files', () => {
             let file = read(`${distFolder}/index.html`);
             expect(file).not.to.contain('lunr.min.js');
-            const index = exists(distFolder + '/js/search/search_index.js');
+            const index = exists(distFolder + '/pagefind/pagefind.js');
             expect(index).to.be.false;
         });
 

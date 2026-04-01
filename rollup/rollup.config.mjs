@@ -44,7 +44,6 @@ export default {
         'html-entities',
         'i18next',
         'json5',
-        'lunr',
         'marked',
         'minimist',
         'neotraverse/legacy',

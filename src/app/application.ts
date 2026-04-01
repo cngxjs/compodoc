@@ -18,7 +18,7 @@ import HtmlEngine from './engines/html.engine';
 import I18nEngine from './engines/i18n.engine';
 import MarkdownEngine, { markdownReadedDatas } from './engines/markdown.engine';
 import NgdEngine from './engines/ngd.engine';
-import SearchEngine from './engines/search.engine';
+import { runPagefindIndex } from './engines/search-indexer.engine';
 import { initHighlighter } from './engines/syntax-highlight.engine';
 
 import { AngularDependencies } from './compiler/angular-dependencies';
@@ -2417,14 +2417,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             finalPath += page.name + '.html';
         }
 
-        if (!Configuration.mainData.disableSearch) {
-            SearchEngine.indexPage({
-                infos: page,
-                rawData: htmlData,
-                url: finalPath
-            });
-        }
-
         FileEngine.writeSync(finalPath, htmlData);
         return Promise.resolve(true);
     }
@@ -2605,18 +2597,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         this.processResources();
                     }
                 };
-                if (!Configuration.mainData.disableSearch) {
-                    SearchEngine.generateSearchIndexJson(Configuration.mainData.output).then(
-                        () => {
-                            callbacksAfterGenerateSearchIndexJson();
-                        },
-                        e => {
-                            logger.error(e);
-                        }
-                    );
-                } else {
-                    callbacksAfterGenerateSearchIndexJson();
-                }
+                callbacksAfterGenerateSearchIndexJson();
             })
             .then(() => {
                 return this.processMenu(Configuration.mainData);
@@ -2730,12 +2711,10 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             })
         )
             .then(() => {
-                SearchEngine.generateSearchIndexJson(Configuration.mainData.output).then(() => {
-                    if (Configuration.mainData.assetsFolder !== '') {
-                        this.processAssetsFolder();
-                    }
-                    this.processResources();
-                });
+                if (Configuration.mainData.assetsFolder !== '') {
+                    this.processAssetsFolder();
+                }
+                this.processResources();
             })
             .catch(e => {
                 logger.error(e);
@@ -2779,6 +2758,11 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         logger.info('Copy main resources');
 
         const onComplete = () => {
+            // Run Pagefind search indexing after all HTML files are written
+            if (!Configuration.mainData.disableSearch) {
+                runPagefindIndex(Configuration.mainData.output);
+            }
+
             logger.info(
                 'Documentation generated in ' +
                     Configuration.mainData.output +
