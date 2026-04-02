@@ -124,8 +124,6 @@ export const ModulePage = (data: any): string => {
                     <button id="zoom-out" class="btn btn-default btn-sm">{t('zoomout')}</button>
                 </div>
             </div>
-            <script src={`${base}js/libs/svg-pan-zoom.min.js`}></script>
-            <script src={`${base}js/svg-pan-zoom.controls.js`}></script>
         </>)}
 
         {EntityTabs({

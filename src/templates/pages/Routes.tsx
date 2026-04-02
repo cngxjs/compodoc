@@ -14,9 +14,6 @@ export const Routes = (props: RoutesProps): string => {
 
         <div id="body-routes"></div>
 
-        <script src={`${base}js/libs/d3.v3.min.js`}></script>
-        <script src={`${base}js/libs/innersvg.js`}></script>
         <script src={`${base}js/routes/routes_index.js`}></script>
-        <script src={`${base}js/routes.js`}></script>
     </>) as string;
 };

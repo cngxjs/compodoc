@@ -35,6 +35,9 @@ src/**/*.js
 !src/resources/**/*.js
 !src/playground-demo/**/*.js
 
+# esbuild code-split chunks (build artifacts with hashed names)
+src/resources/js/chunks/
+
 # Miscellaneous
 tmp/
 .tmp/

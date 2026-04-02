@@ -4,6 +4,7 @@ import { initCodeBlocks } from './code-blocks';
 import { initTheme } from './theme';
 import { initRouter } from './router';
 import { initCommandPalette } from './command-palette';
+import { initGraphs } from './graphs';
 
 // Theme must run before DOMContentLoaded to prevent flash
 initTheme();
@@ -14,4 +15,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initCodeBlocks();
     initRouter();
     initCommandPalette();
+    initGraphs();
 });

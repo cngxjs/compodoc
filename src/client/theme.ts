@@ -1,6 +1,7 @@
 /**
  * Dark mode toggle.
- * Replaces inline script in page.hbs.
+ * The inline script in <head> sets .dark on <html> before paint to prevent flash.
+ * This module syncs <body>, binds toggle switches, and handles system preference changes.
  */
 
 const STORAGE_KEY = 'compodocx_darkmode-state';
@@ -9,6 +10,7 @@ const getSystemPreference = (): boolean =>
     window.matchMedia('(prefers-color-scheme: dark)').matches;
 
 const applyDarkMode = (dark: boolean) => {
+    document.documentElement.classList.toggle('dark', dark);
     document.body.classList.toggle('dark', dark);
     document.querySelectorAll<HTMLInputElement>('.dark-mode-switch input').forEach(el => {
         el.checked = dark;
@@ -34,7 +36,7 @@ export const initTheme = () => {
     // Bind toggle switches
     document.querySelectorAll<HTMLInputElement>('.dark-mode-switch input').forEach(el => {
         el.addEventListener('change', () => {
-            const current = document.body.classList.contains('dark');
+            const current = document.documentElement.classList.contains('dark');
             applyDarkMode(!current);
         });
     });

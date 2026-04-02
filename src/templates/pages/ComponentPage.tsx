@@ -298,15 +298,11 @@ export const ComponentPage = (data: any): string => {
             )}
         </div>
 
-        <script src={`${base}js/libs/vis-network.min.js`}></script>
-        <script src={`${base}js/libs/htmlparser.js`}></script>
-        <script src={`${base}js/libs/deep-iterator.js`}></script>
         <script>{`
     var COMPONENT_TEMPLATE = '<div>${escapeSimpleQuote(c.template || c.templateData)}</div>'
     var COMPONENTS = [${(data.components ?? []).map((comp: any) => `{'name': '${comp.name}', 'selector': '${comp.selector}'}`).join(',')}];
     var DIRECTIVES = [${(data.directives ?? []).map((dir: any) => `{'name': '${dir.name}', 'selector': '${dir.selector}'}`).join(',')}];
     var ACTUAL_COMPONENT = {'name': '${data.name}'};
 `}</script>
-        <script src={`${base}js/tree.js`}></script>
     </>) as string;
 };

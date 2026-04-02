@@ -91,8 +91,6 @@ export const Overview = (props: OverviewProps): string => {
             </div>
         </div>
         {!props.disableGraph && (<>
-            <script src="js/libs/svg-pan-zoom.min.js"></script>
-            <script src="js/svg-pan-zoom.controls.js"></script>
         </>)}
     </>) as string;
 };
