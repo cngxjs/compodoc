@@ -190,7 +190,7 @@ export const Menu = (props: MenuProps): string => {
                 </li>
 
                 {/* Additional Pages */}
-                {d.additionalPages && (
+                {d.additionalPages?.length > 0 && (
                     <li class="chapter additional">
                         <div class="simple menu-toggler" data-cdx-toggle="collapse" data-cdx-target={`#${p}additional-pages`}>
                             <span class="icon ion-ios-book"></span>
@@ -286,7 +286,7 @@ export const Menu = (props: MenuProps): string => {
                 )}
 
                 {/* Routes */}
-                {!d.disableRoutesGraph && d.routes && (
+                {!d.disableRoutesGraph && d.routes?.length > 0 && (
                     <li class="chapter">
                         <a data-type="chapter-link" href="routes.html"><span class="icon ion-ios-git-branch"></span>{t('routes')}</a>
                     </li>
