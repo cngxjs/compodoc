@@ -20,7 +20,7 @@ export class JsdocDefaultHelper implements IHtmlEngineHelper {
                             tag.comment = jsdocTags[i].comment;
                         }
                         if (jsdocTags[i].name) {
-                            tag.name = jsdocTags[i].name.text;
+                            tag.name = (jsdocTags[i].name as any).text;
                         }
                     }
                 }

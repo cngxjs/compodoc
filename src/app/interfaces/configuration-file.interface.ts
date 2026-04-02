@@ -52,4 +52,5 @@ export interface ConfigurationFileInterface {
     exclude;
     include;
     publicApiOnly: string;
+    infoTabSections: string[];
 }

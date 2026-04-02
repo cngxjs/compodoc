@@ -1002,7 +1002,7 @@ export class TemplatePlaygroundServer {
 
     private registerHandlebarsHelpers(Handlebars: any, context: any): void {
         // Register translation helper (matches Compodoc's i18n helper pattern)
-        Handlebars.registerHelper('t', function() {
+        Handlebars.registerHelper('t', function(this: any) {
             console.log('T HELPER CALLED');
             const context = this;
             const key = arguments[0];
@@ -1043,7 +1043,7 @@ export class TemplatePlaygroundServer {
         });
 
                         // Register comparison helper (matches Compodoc's CompareHelper implementation)
-        Handlebars.registerHelper('compare', function() {
+        Handlebars.registerHelper('compare', function(this: any) {
             const context = this;
             const a = arguments[0];
             const operator = arguments[1];
@@ -1094,7 +1094,7 @@ export class TemplatePlaygroundServer {
         });
 
         // Register tab helpers (matches Compodoc's IsTabEnabledHelper and IsInitialTabHelper)
-        Handlebars.registerHelper('isTabEnabled', function() {
+        Handlebars.registerHelper('isTabEnabled', function(this: any) {
             const context = this;
             const navTabs = arguments[0];
             const tabId = arguments[1];
@@ -1108,7 +1108,7 @@ export class TemplatePlaygroundServer {
             }
         });
 
-        Handlebars.registerHelper('isInitialTab', function() {
+        Handlebars.registerHelper('isInitialTab', function(this: any) {
             const context = this;
             const navTabs = arguments[0];
             const tabId = arguments[1];
@@ -1121,7 +1121,7 @@ export class TemplatePlaygroundServer {
         });
 
         // Register utility helpers
-        Handlebars.registerHelper('orLength', function(...args: any[]) {
+        Handlebars.registerHelper('orLength', function(this: any, ...args: any[]) {
             const options = args.pop();
             const hasLength = args.some(arg => arg && (Array.isArray(arg) ? arg.length > 0 : arg));
             if (hasLength) {

@@ -8,10 +8,13 @@
         "allowSyntheticDefaultImports": true,
         "resolveJsonModule": true,
         "skipLibCheck": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+        "noImplicitThis": true,
         "jsx": "react",
         "jsxFactory": "Html.createElement",
         "jsxFragmentFactory": "Html.Fragment",
         "plugins": [{ "name": "@kitajs/ts-html-plugin" }]
     },
-    "exclude": ["test", "src/resources/template-playground"]
+    "exclude": ["test", "src/**/*.spec.ts", "src/resources/template-playground", "src/client", "doc/template-playground", "documentation/template-playground", "src/playground-demo"]
 }

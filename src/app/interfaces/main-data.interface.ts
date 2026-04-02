@@ -83,10 +83,18 @@ export interface MainDataInterface {
     gaID: string;
     gaSite: string;
     angularProject: boolean;
-    angularJSProject: boolean;
     language: string;
     maxSearchResults: number;
     publicApiOnly: string;
     publicApiExports: Map<string, Set<string>>;
     infoTabSections: string[];
+    categorizedComponents: Record<string, unknown[]>;
+    categorizedDirectives: Record<string, unknown[]>;
+    categorizedInjectables: Record<string, unknown[]>;
+    categorizedPipes: Record<string, unknown[]>;
+    categorizedClasses: Record<string, unknown[]>;
+    categorizedInterfaces: Record<string, unknown[]>;
+    categorizedGuards: Record<string, unknown[]>;
+    categorizedInterceptors: Record<string, unknown[]>;
+    categorizedEntities: Record<string, unknown[]>;
 }

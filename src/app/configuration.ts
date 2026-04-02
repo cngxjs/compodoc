@@ -90,12 +90,20 @@ export class Configuration implements ConfigurationInterface {
         gaID: '',
         gaSite: '',
         angularProject: false,
-        angularJSProject: false,
         language: COMPODOC_DEFAULTS.language,
         maxSearchResults: 15,
         publicApiOnly: '',
         publicApiExports: new Map<string, Set<string>>(),
-        infoTabSections: []
+        infoTabSections: [],
+        categorizedComponents: {},
+        categorizedDirectives: {},
+        categorizedInjectables: {},
+        categorizedPipes: {},
+        categorizedClasses: {},
+        categorizedInterfaces: {},
+        categorizedGuards: {},
+        categorizedInterceptors: {},
+        categorizedEntities: {}
     };
 
     private static instance: Configuration;

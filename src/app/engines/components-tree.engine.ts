@@ -23,7 +23,7 @@ class ComponentsTreeEngine {
     }
 
     private readTemplates() {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             let i = 0;
             const len = this.componentsForTree.length;
             const loop = () => {
@@ -60,9 +60,10 @@ class ComponentsTreeEngine {
     }
 
     private findChildrenAndParents() {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             this.componentsForTree.forEach(component => {
-                const $component = cheerio(component.templateData);
+                const $ = cheerio.load(component.templateData);
+                const $component = $.root();
                 this.componentsForTree.forEach(componentToFind => {
                     if ($component.find(componentToFind.selector).length > 0) {
                         console.log(componentToFind.name + ' found in ' + component.name);
@@ -75,7 +76,7 @@ class ComponentsTreeEngine {
     }
 
     private createTreesForComponents() {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             this.components.forEach(component => {
                 const _component = {
                     name: component.name,
