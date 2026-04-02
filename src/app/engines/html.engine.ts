@@ -4,10 +4,69 @@ import * as path from 'path';
 import { logger } from '../../utils/logger';
 import FileEngine from './file.engine';
 import { HtmlEngineHelpers } from './html.engine.helpers';
+import { Layout } from '../../templates/Layout';
+import { SearchInput } from '../../templates/components/SearchInput';
+import { SearchResults } from '../../templates/components/SearchResults';
+import { Markdown } from '../../templates/pages/Markdown';
+import { AdditionalPage } from '../../templates/pages/AdditionalPage';
+import { PackageDependencies } from '../../templates/pages/PackageDependencies';
+import { PackageProperties } from '../../templates/pages/PackageProperties';
+import { Overview } from '../../templates/pages/Overview';
+import { Modules } from '../../templates/pages/Modules';
+import { Routes } from '../../templates/pages/Routes';
+import { CoverageReport } from '../../templates/pages/CoverageReport';
+import { UnitTestReport } from '../../templates/pages/UnitTestReport';
+import { ClassPage } from '../../templates/pages/ClassPage';
+import { DirectivePage } from '../../templates/pages/DirectivePage';
+import { EntityDetailPage } from '../../templates/pages/EntityDetailPage';
+import { GuardPage } from '../../templates/pages/GuardPage';
+import { InjectablePage } from '../../templates/pages/InjectablePage';
+import { InterceptorPage } from '../../templates/pages/InterceptorPage';
+import { InterfacePage } from '../../templates/pages/InterfacePage';
+import { MiscellaneousEnumerations } from '../../templates/pages/MiscellaneousEnumerations';
+import { MiscellaneousFunctions } from '../../templates/pages/MiscellaneousFunctions';
+import { MiscellaneousTypealiases } from '../../templates/pages/MiscellaneousTypealiases';
+import { MiscellaneousVariables } from '../../templates/pages/MiscellaneousVariables';
+import { ModulePage } from '../../templates/pages/ModulePage';
+import { PipePage } from '../../templates/pages/PipePage';
+import { ComponentPage } from '../../templates/pages/ComponentPage';
+
+/** Map page context to its Handlebars partial name */
+const CONTEXT_PARTIAL_MAP: Record<string, string> = {
+    'getting-started': 'markdown',
+    'readme': 'markdown',
+    'changelog': 'markdown',
+    'contributing': 'markdown',
+    'license': 'markdown',
+    'overview': 'overview',
+    'modules': 'modules',
+    'module': 'module',
+    'component': 'component',
+    'entity': 'entity',
+    'directive': 'directive',
+    'injectable': 'injectable',
+    'interceptor': 'interceptor',
+    'guard': 'guard',
+    'pipe': 'pipe',
+    'class': 'class',
+    'interface': 'interface',
+    'routes': 'routes',
+    'package-dependencies': 'package-dependencies',
+    'package-properties': 'package-properties',
+    'miscellaneous-functions': 'miscellaneous-functions',
+    'miscellaneous-variables': 'miscellaneous-variables',
+    'miscellaneous-typealiases': 'miscellaneous-typealiases',
+    'miscellaneous-enumerations': 'miscellaneous-enumerations',
+    'coverage': 'coverage-report',
+    'unit-test': 'unit-test-report',
+    'additional-page': 'additional-page',
+};
 
 export class HtmlEngine {
-    private cache: { page: string } = {} as any;
-    private compiledPage;
+    private compiledPartials: Record<string, HandlebarsTemplateDelegate> = {};
+    private compiledMenu: HandlebarsTemplateDelegate | null = null;
+    private compiledSearchInput: HandlebarsTemplateDelegate | null = null;
+    private compiledSearchResults: HandlebarsTemplateDelegate | null = null;
 
     private static instance: HtmlEngine;
     private constructor() {
@@ -23,49 +82,20 @@ export class HtmlEngine {
 
     public init(templatePath: string): Promise<void> {
         const partials = [
-            'overview',
-            'markdown',
-            'modules',
-            'module',
-            'component',
-            'entity',
-            'component-detail',
-            'directive',
-            'injectable',
-            'interceptor',
-            'guard',
-            'pipe',
-            'class',
-            'interface',
-            'routes',
-            'index',
-            'index-misc',
-            'search-results',
-            'search-input',
-            'link-type',
-            'block-method',
-            'block-host-listener',
-            'block-enum',
-            'block-property',
-            'block-index',
-            'block-constructor',
-            'block-typealias',
-            'block-accessors',
-            'block-input',
-            'block-output',
-            'coverage-report',
-            'unit-test-report',
-            'miscellaneous-functions',
-            'miscellaneous-variables',
-            'miscellaneous-typealiases',
-            'miscellaneous-enumerations',
-            'additional-page',
-            'package-dependencies',
-            'package-properties',
+            'overview', 'markdown', 'modules', 'module', 'component', 'entity',
+            'component-detail', 'directive', 'injectable', 'interceptor', 'guard',
+            'pipe', 'class', 'interface', 'routes', 'index', 'index-misc',
+            'search-results', 'search-input', 'link-type',
+            'block-method', 'block-host-listener', 'block-enum', 'block-property',
+            'block-index', 'block-constructor', 'block-typealias', 'block-accessors',
+            'block-input', 'block-output', 'coverage-report', 'unit-test-report',
+            'miscellaneous-functions', 'miscellaneous-variables',
+            'miscellaneous-typealiases', 'miscellaneous-enumerations',
+            'additional-page', 'package-dependencies', 'package-properties',
             'menu'
         ];
+
         if (templatePath) {
-            // Check if templatePath is absolute or relative
             const resolvedTemplatePath = path.isAbsolute(templatePath)
                 ? templatePath
                 : path.resolve(process.cwd() + path.sep + templatePath);
@@ -83,41 +113,115 @@ export class HtmlEngine {
                     templatePath,
                     'partials/' + partial + '.hbs'
                 );
-                return FileEngine.get(partialPath).then(data =>
-                    Handlebars.registerPartial(partial, data)
-                );
-            })
-        )
-            .then(() => {
-                const pagePath = this.determineTemplatePath(templatePath, 'page.hbs');
-                return FileEngine.get(pagePath).then(data => {
-                    this.cache.page = data;
-                    this.compiledPage = Handlebars.compile(this.cache.page, {
+                return FileEngine.get(partialPath).then(data => {
+                    Handlebars.registerPartial(partial, data);
+                    // Pre-compile content partials for direct invocation
+                    this.compiledPartials[partial] = Handlebars.compile(data, {
                         preventIndent: true,
                         strict: true
                     });
                 });
             })
-            .then(() => {
-                // Menu is now a standard partial registered above, no separate compilation needed
-            });
+        ).then(() => {
+            this.compiledMenu = this.compiledPartials['menu'] ?? null;
+            this.compiledSearchInput = this.compiledPartials['search-input'] ?? null;
+            this.compiledSearchResults = this.compiledPartials['search-results'] ?? null;
+        });
+    }
+
+    /** TSX-rendered content for specific contexts */
+    private renderTsxContent(data: any): string | null {
+        switch (data.context) {
+            case 'getting-started':
+            case 'readme':
+            case 'changelog':
+            case 'contributing':
+            case 'license':
+                return Markdown({ markdown: data.markdown });
+            case 'additional-page':
+                return AdditionalPage({ additionalPage: data.additionalPage });
+            case 'package-dependencies':
+                return data.disableDependencies ? '' : PackageDependencies(data);
+            case 'package-properties':
+                return data.disableProperties ? '' : PackageProperties(data);
+            case 'overview':
+                return Overview(data);
+            case 'modules':
+                return Modules(data);
+            case 'routes':
+                return Routes(data);
+            case 'coverage':
+                return CoverageReport(data);
+            case 'unit-test':
+                return UnitTestReport(data);
+            case 'class':
+                return ClassPage(data);
+            case 'directive':
+                return DirectivePage(data);
+            case 'entity':
+                return EntityDetailPage(data);
+            case 'guard':
+                return GuardPage(data);
+            case 'injectable':
+                return InjectablePage(data);
+            case 'interceptor':
+                return InterceptorPage(data);
+            case 'interface':
+                return InterfacePage(data);
+            case 'module':
+                return ModulePage(data);
+            case 'pipe':
+                return PipePage(data);
+            case 'miscellaneous-functions':
+                return MiscellaneousFunctions(data);
+            case 'miscellaneous-variables':
+                return MiscellaneousVariables(data);
+            case 'miscellaneous-typealiases':
+                return MiscellaneousTypealiases(data);
+            case 'miscellaneous-enumerations':
+                return MiscellaneousEnumerations(data);
+            case 'component':
+                return ComponentPage(data);
+            default:
+                return null; // Fall back to Handlebars (menu only)
+        }
     }
 
     public render(mainData: any, page: any): string {
-        const o = mainData;
-        (Object as any).assign(o, page);
+        const data = { ...mainData, ...page };
 
-        // let mem = process.memoryUsage();
-        // console.log(`heapTotal: ${mem.heapTotal} | heapUsed: ${mem.heapUsed}`);
+        // Try TSX first, fall back to Handlebars
+        let content = this.renderTsxContent(data);
+        if (content === null) {
+            const partialName = CONTEXT_PARTIAL_MAP[data.context];
+            if (partialName && this.compiledPartials[partialName]) {
+                if (data.context === 'package-properties' && data.disableProperties) {
+                    content = '';
+                } else {
+                    content = this.compiledPartials[partialName](data);
+                }
+            } else {
+                content = '';
+            }
+        }
 
-        return this.compiledPage({
-            data: o
+        // Render menu for desktop and mobile
+        const menuHtml = this.compiledMenu?.({ ...data, menu: 'normal' }) ?? '';
+        const menuHtmlMobile = this.compiledMenu?.({ ...data, menu: 'mobile' }) ?? '';
+
+        return Layout({
+            data,
+            content,
+            menuHtml,
+            menuHtmlMobile,
+            searchInputHtml: SearchInput(),
+            searchResultsHtml: SearchResults(),
         });
     }
+
     private determineTemplatePath(templatePath: string, filePath: string): string {
         let outPath = path.resolve(__dirname + '/../src/templates/' + filePath);
         if (templatePath) {
-            // Handle both absolute and relative template paths correctly
             const baseTemplatePath = path.isAbsolute(templatePath)
                 ? templatePath
                 : path.resolve(process.cwd() + path.sep + templatePath);
