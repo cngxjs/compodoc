@@ -30,6 +30,7 @@ import { MiscellaneousVariables } from '../../templates/pages/MiscellaneousVaria
 import { ModulePage } from '../../templates/pages/ModulePage';
 import { PipePage } from '../../templates/pages/PipePage';
 import { ComponentPage } from '../../templates/pages/ComponentPage';
+import { Menu } from '../../templates/components/Menu';
 
 /** Map page context to its Handlebars partial name */
 const CONTEXT_PARTIAL_MAP: Record<string, string> = {
@@ -64,9 +65,6 @@ const CONTEXT_PARTIAL_MAP: Record<string, string> = {
 
 export class HtmlEngine {
     private compiledPartials: Record<string, HandlebarsTemplateDelegate> = {};
-    private compiledMenu: HandlebarsTemplateDelegate | null = null;
-    private compiledSearchInput: HandlebarsTemplateDelegate | null = null;
-    private compiledSearchResults: HandlebarsTemplateDelegate | null = null;
 
     private static instance: HtmlEngine;
     private constructor() {
@@ -81,18 +79,19 @@ export class HtmlEngine {
     }
 
     public init(templatePath: string): Promise<void> {
+        // HBS partials kept for --templates custom template override support.
+        // All default rendering goes through TSX (renderTsxContent + Menu).
         const partials = [
             'overview', 'markdown', 'modules', 'module', 'component', 'entity',
             'component-detail', 'directive', 'injectable', 'interceptor', 'guard',
             'pipe', 'class', 'interface', 'routes', 'index', 'index-misc',
-            'search-results', 'search-input', 'link-type',
+            'link-type',
             'block-method', 'block-host-listener', 'block-enum', 'block-property',
             'block-index', 'block-constructor', 'block-typealias', 'block-accessors',
             'block-input', 'block-output', 'coverage-report', 'unit-test-report',
             'miscellaneous-functions', 'miscellaneous-variables',
             'miscellaneous-typealiases', 'miscellaneous-enumerations',
             'additional-page', 'package-dependencies', 'package-properties',
-            'menu'
         ];
 
         if (templatePath) {
@@ -122,11 +121,7 @@ export class HtmlEngine {
                     });
                 });
             })
-        ).then(() => {
-            this.compiledMenu = this.compiledPartials['menu'] ?? null;
-            this.compiledSearchInput = this.compiledPartials['search-input'] ?? null;
-            this.compiledSearchResults = this.compiledPartials['search-results'] ?? null;
-        });
+        ).then(() => {});
     }
 
     /** TSX-rendered content for specific contexts */
@@ -206,8 +201,8 @@ export class HtmlEngine {
         }
 
         // Render menu for desktop and mobile
-        const menuHtml = this.compiledMenu?.({ ...data, menu: 'normal' }) ?? '';
-        const menuHtmlMobile = this.compiledMenu?.({ ...data, menu: 'mobile' }) ?? '';
+        const menuHtml = Menu({ data, mode: 'normal' });
+        const menuHtmlMobile = Menu({ data, mode: 'mobile' });
 
         return Layout({
             data,
