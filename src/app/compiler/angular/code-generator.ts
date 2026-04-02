@@ -39,10 +39,10 @@ class TsKindsToText {
 
 const TsKindConversion: Array<TsKindsToText> = [
     new TsKindsToText(
-        node => ['"', node.text, '"'],
+        node => ['"', (node as any).text, '"'],
         [SyntaxKind.FirstLiteralToken, SyntaxKind.Identifier]
     ),
-    new TsKindsToText(node => ['"', node.text, '"'], [SyntaxKind.StringLiteral]),
+    new TsKindsToText(node => ['"', (node as any).text, '"'], [SyntaxKind.StringLiteral]),
     new TsKindsToText(node => [], [SyntaxKind.ArrayLiteralExpression]),
     new TsKindsToText(node => ['import', ' '], [SyntaxKind.ImportKeyword]),
     new TsKindsToText(node => ['from', ' '], [SyntaxKind.FromKeyword]),

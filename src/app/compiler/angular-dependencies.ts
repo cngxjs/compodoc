@@ -156,7 +156,7 @@ export class AngularDependencies extends FrameworkDependencies {
 
         const sourceFiles = this.program.getSourceFiles() || [];
 
-        RouterParserUtil.scannedFiles = sourceFiles;
+        RouterParserUtil.scannedFiles = [...sourceFiles];
 
         sourceFiles.map((file: ts.SourceFile) => {
             const filePath = file.fileName;
@@ -338,7 +338,7 @@ export class AngularDependencies extends FrameworkDependencies {
             deps.extends = IO.extends;
         }
         if (IO.jsdoctags && IO.jsdoctags.length > 0) {
-            deps.jsdoctags = IO.jsdoctags[0].tags;
+            deps.jsdoctags = (IO.jsdoctags[0] as any).tags;
         }
         if (IO.accessors) {
             deps.accessors = IO.accessors;
@@ -466,8 +466,8 @@ export class AngularDependencies extends FrameworkDependencies {
                 for (i; i < len; i++) {
                     if (variableDeclarations[i].compilerNode.type) {
                         if (
-                            variableDeclarations[i].compilerNode.type.typeName &&
-                            variableDeclarations[i].compilerNode.type.typeName.text === 'Routes'
+                            (variableDeclarations[i].compilerNode.type as any).typeName &&
+                            (variableDeclarations[i].compilerNode.type as any).typeName.text === 'Routes'
                         ) {
                             hasRoutesStatements = true;
                             
@@ -488,7 +488,7 @@ export class AngularDependencies extends FrameworkDependencies {
             astFile = RouterParserUtil.cleanCallExpressions(astFile);
             scannedFile = RouterParserUtil.cleanFileDynamics(astFile).compilerNode;
 
-            scannedFile.kind = SyntaxKind.SourceFile;
+            (scannedFile as any).kind = SyntaxKind.SourceFile;
         }
 
         ts.forEachChild(scannedFile, (initialNode: ts.Node) => {
@@ -591,7 +591,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                 injectableDeps.constructorObj = IO.constructor;
                             }
                             if (IO.jsdoctags && IO.jsdoctags.length > 0) {
-                                injectableDeps.jsdoctags = IO.jsdoctags[0].tags;
+                                injectableDeps.jsdoctags = (IO.jsdoctags[0] as any).tags;
                             }
                             if (IO.accessors) {
                                 injectableDeps.accessors = IO.accessors;
@@ -649,7 +649,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                 pipeDeps.methods = cleanLifecycleHooksFromMethods(pipeDeps.methods);
                             }
                             if (IO.jsdoctags && IO.jsdoctags.length > 0) {
-                                pipeDeps.jsdoctags = IO.jsdoctags[0].tags;
+                                pipeDeps.jsdoctags = (IO.jsdoctags[0] as any).tags;
                             }
                             deps = pipeDeps;
                             if (typeof IO.ignore === 'undefined') {
@@ -672,7 +672,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                 !hasMultipleDecoratorsWithInternalOne
                             ) {
                                 classWithCustomDecorator = true;
-                                this.processClass(node, file, srcFile, outputSymbols, fileBody);
+                                this.processClass(node, file, srcFile, outputSymbols, fileBody, astFile);
                             }
                         }
                         this.cache.set(name, deps);
@@ -878,8 +878,8 @@ export class AngularDependencies extends FrameworkDependencies {
                         }
                     } else if (ts.isModuleDeclaration(node)) {
                         if (node.body) {
-                            if (node.body.statements && node.body.statements.length > 0) {
-                                node.body.statements.forEach(statement =>
+                            if ((node.body as any).statements && (node.body as any).statements.length > 0) {
+                                (node.body as any).statements.forEach(statement =>
                                     parseNode(file, srcFile, statement, node.body, astFile)
                                 );
                             }
@@ -906,7 +906,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         outputSymbols.routes = [...outputSymbols.routes, ...newRoutes];
                     }
                     if (ts.isClassDeclaration(node)) {
-                        this.processClass(node, file, srcFile, outputSymbols, fileBody);
+                        this.processClass(node, file, srcFile, outputSymbols, fileBody, astFile);
                     }
                     if (ts.isExpressionStatement(node) || ts.isIfStatement(node)) {
                         const bootstrapModuleReference = 'bootstrapModule';
@@ -928,12 +928,12 @@ export class AngularDependencies extends FrameworkDependencies {
                                     'bootstrapModule'
                                 );
                             }
-                            if (typeof node.thenStatement !== 'undefined') {
+                            if (typeof (node as any).thenStatement !== 'undefined') {
                                 if (
-                                    node.thenStatement.statements &&
-                                    node.thenStatement.statements.length > 0
+                                    (node as any).thenStatement.statements &&
+                                    (node as any).thenStatement.statements.length > 0
                                 ) {
-                                    const firstStatement = node.thenStatement.statements[0];
+                                    const firstStatement = (node as any).thenStatement.statements[0];
                                     resultNode = this.findExpressionByNameInExpressions(
                                         firstStatement.expression,
                                         'bootstrapModule'
@@ -943,11 +943,11 @@ export class AngularDependencies extends FrameworkDependencies {
                             if (!resultNode) {
                                 if (
                                     node.expression &&
-                                    node.expression.arguments &&
-                                    node.expression.arguments.length > 0
+                                    (node.expression as any).arguments &&
+                                    (node.expression as any).arguments.length > 0
                                 ) {
                                     resultNode = this.findExpressionByNameInExpressionArguments(
-                                        node.expression.arguments,
+                                        (node.expression as any).arguments,
                                         'bootstrapModule'
                                     );
                                 }
@@ -1041,9 +1041,9 @@ export class AngularDependencies extends FrameworkDependencies {
                         };
 
                         if (isDestructured) {
-                            if (nodeVariableDeclarations[0].name.elements) {
+                            if ((nodeVariableDeclarations[0].name as any).elements) {
                                 const destructuredVariables =
-                                    nodeVariableDeclarations[0].name.elements;
+                                    (nodeVariableDeclarations[0].name as any).elements;
 
                                 for (let i = 0; i < destructuredVariables.length; i++) {
                                     const destructuredVariable = destructuredVariables[i];
@@ -1057,9 +1057,9 @@ export class AngularDependencies extends FrameworkDependencies {
                                         file: file
                                     };
                                     if (nodeVariableDeclarations[0].initializer) {
-                                        if (nodeVariableDeclarations[0].initializer.elements) {
+                                        if ((nodeVariableDeclarations[0].initializer as any).elements) {
                                             deps.initializer =
-                                                nodeVariableDeclarations[0].initializer.elements[i];
+                                                (nodeVariableDeclarations[0].initializer as any).elements[i];
                                         }
                                         deps.defaultValue = deps.initializer
                                             ? this.classHelper.stringifyDefaultValue(
@@ -1364,10 +1364,10 @@ export class AngularDependencies extends FrameworkDependencies {
     ): ReadonlyArray<ts.ObjectLiteralElementLike> {
         if (
             visitedNode.expression &&
-            visitedNode.expression.arguments &&
-            visitedNode.expression.arguments.length > 0
+            (visitedNode.expression as any).arguments &&
+            (visitedNode.expression as any).arguments.length > 0
         ) {
-            const pop = visitedNode.expression.arguments[0];
+            const pop = (visitedNode.expression as any).arguments[0];
 
             if (pop && pop.properties && pop.properties.length >= 0) {
                 return pop.properties;
@@ -1375,7 +1375,7 @@ export class AngularDependencies extends FrameworkDependencies {
                 return [pop];
             } else {
                 logger.warn('Empty metadatas, trying to find it with imports.');
-                return ImportsUtil.findValueInImportOrLocalVariables(pop.text, sourceFile);
+                return ImportsUtil.findValueInImportOrLocalVariables(pop.text, sourceFile) as any;
             }
         }
 
@@ -1412,9 +1412,9 @@ export class AngularDependencies extends FrameworkDependencies {
         };
         const jsdoctags = this.jsdocParserUtil.getJSDocs(node);
 
-        if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-            this.checkForDeprecation(jsdoctags[0].tags, result);
-            result.jsdoctags = markedtags(jsdoctags[0].tags);
+        if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
+            this.checkForDeprecation((jsdoctags[0] as any).tags, result);
+            result.jsdoctags = markedtags((jsdoctags[0] as any).tags);
         }
         return result;
     }
@@ -1475,8 +1475,8 @@ export class AngularDependencies extends FrameworkDependencies {
             }
             const jsdoctags = this.jsdocParserUtil.getJSDocs(arg);
 
-            if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-                this.checkForDeprecation(jsdoctags[0].tags, result);
+            if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
+                this.checkForDeprecation((jsdoctags[0] as any).tags, result);
             }
             return result;
         }
@@ -1563,10 +1563,10 @@ export class AngularDependencies extends FrameworkDependencies {
                 }
             }
         }
-        if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-            this.checkForDeprecation(jsdoctags[0].tags, result);
-            result.jsdoctags = markedtags(jsdoctags[0].tags);
-            jsdoctags[0].tags.forEach(tag => {
+        if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
+            this.checkForDeprecation((jsdoctags[0] as any).tags, result);
+            result.jsdoctags = markedtags((jsdoctags[0] as any).tags);
+            (jsdoctags[0] as any).tags.forEach(tag => {
                 if (tag.tagName) {
                     if (tag.tagName.text) {
                         if (tag.tagName.text.indexOf('ignore') > -1) {
@@ -1613,8 +1613,8 @@ export class AngularDependencies extends FrameworkDependencies {
                 const jsdoctags = this.jsdocParserUtil.getJSDocs(
                     node.declarationList.declarations[i]
                 );
-                if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-                    this.checkForDeprecation(jsdoctags[0].tags, result);
+                if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
+                    this.checkForDeprecation((jsdoctags[0] as any).tags, result);
                 }
                 return result;
             }
@@ -1647,26 +1647,26 @@ export class AngularDependencies extends FrameworkDependencies {
             let memberjsdoctags = [];
             for (i; i < len; i++) {
                 const member: any = {
-                    name: node.members[i].name.text,
+                    name: (node.members[i].name as any).text,
                     deprecated: false,
                     deprecationMessage: ''
                 };
                 if (node.members[i].initializer) {
                     // if the initializer kind is a number do cast to the number type
                     member.value = IsKindType.NUMBER(node.members[i].initializer.kind)
-                        ? Number(node.members[i].initializer.text)
-                        : node.members[i].initializer.text;
+                        ? Number((node.members[i].initializer as any).text)
+                        : (node.members[i].initializer as any).text;
                 }
-                memberjsdoctags = this.jsdocParserUtil.getJSDocs(node.members[i]);
-                if (memberjsdoctags && memberjsdoctags.length >= 1 && memberjsdoctags[0].tags) {
-                    this.checkForDeprecation(memberjsdoctags[0].tags, member);
+                memberjsdoctags = [...this.jsdocParserUtil.getJSDocs(node.members[i])];
+                if (memberjsdoctags && memberjsdoctags.length >= 1 && (memberjsdoctags[0] as any).tags) {
+                    this.checkForDeprecation((memberjsdoctags[0] as any).tags, member);
                 }
                 result.members.push(member);
             }
         }
         const jsdoctags = this.jsdocParserUtil.getJSDocs(node);
-        if (jsdoctags && jsdoctags.length >= 1 && jsdoctags[0].tags) {
-            this.checkForDeprecation(jsdoctags[0].tags, result);
+        if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
+            this.checkForDeprecation((jsdoctags[0] as any).tags, result);
         }
         return result;
     }
