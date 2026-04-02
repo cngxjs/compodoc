@@ -1,4 +1,3 @@
-import Handlebars from 'handlebars';
 import * as JSON5 from 'json5';
 import traverse from 'neotraverse/legacy';
 import * as path from 'path';
@@ -611,12 +610,9 @@ export class RouterParserUtil {
     }
 
     public generateRoutesIndex(outputFolder: string, routes: Array<any>): Promise<void> {
-        return FileEngine.get(__dirname + '/../src/templates/partials/routes-index.hbs').then(
-            data => {
-                const template: any = Handlebars.compile(data);
-                const result = template({
-                    routes: JSON.stringify(routes)
-                });
+        return Promise.resolve().then(
+            () => {
+                const result = 'var ROUTES_INDEX = ' + JSON.stringify(routes);
                 const testOutputDir = outputFolder.match(process.cwd());
 
                 if (testOutputDir && testOutputDir.length > 0) {
