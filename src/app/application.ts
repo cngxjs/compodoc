@@ -72,7 +72,7 @@ export class Application {
     /**
      * Store package.json data
      */
-    private packageJsonData = {};
+    private packageJsonData: Record<string, any> = {};
 
     /**
      * Create a new compodoc application instance.
@@ -439,7 +439,7 @@ export class Application {
     private getMicroDependenciesData(): void {
         logger.info('Get diff dependencies data');
 
-        let dependenciesClass: AngularDependencies | AngularJSDependencies = AngularDependencies;
+        let dependenciesClass: typeof AngularDependencies | typeof AngularJSDependencies = AngularDependencies;
         Configuration.mainData.angularProject = true;
 
         if (this.detectAngularJSProjects()) {
@@ -453,9 +453,7 @@ export class Application {
             this.updatedFiles,
             {
                 tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
-            },
-            Configuration,
-            RouterParserUtil
+            }
         );
 
         const dependenciesData = crawler.getDependencies();
@@ -520,7 +518,7 @@ export class Application {
          * - if in package.json
          * - if 75% of scanned files are *.js files
          */
-        let dependenciesClass: AngularDependencies | AngularJSDependencies = AngularDependencies;
+        let dependenciesClass: typeof AngularDependencies | typeof AngularJSDependencies = AngularDependencies;
         Configuration.mainData.angularProject = true;
 
         if (this.detectAngularJSProjects()) {
@@ -534,9 +532,7 @@ export class Application {
             this.files,
             {
                 tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
-            },
-            Configuration,
-            RouterParserUtil
+            }
         );
 
         const dependenciesData = crawler.getDependencies();
@@ -881,7 +877,7 @@ export class Application {
                             let finalPath = Configuration.mainData.includesFolder;
 
                             const finalDepth = rawPath.filter(el => {
-                                return !isNaN(parseInt(el, 10));
+                                return !isNaN(parseInt(String(el), 10));
                             });
 
                             if (typeof file !== 'undefined' && typeof title !== 'undefined') {
@@ -1401,7 +1397,7 @@ export class Application {
             navTab.label = customTab.label;
 
             if (hasCustomNavTabConfig) {
-                navTab.custom = true;
+                (navTab as any).custom = true;
             }
 
             // is tab applicable to target dependency?
@@ -2428,7 +2424,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         }
 
         FileEngine.writeSync(finalPath, htmlData);
-        return Promise.resolve(true);
+        return Promise.resolve();
     }
 
     private processTemplatePlayground(): void {

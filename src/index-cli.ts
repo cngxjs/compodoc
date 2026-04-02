@@ -76,7 +76,7 @@ export class CliApplication extends Application {
                 COMPODOC_DEFAULTS.serve
             )
             .option('--host [host]', 'Change default host address')
-            .option('-r, --port [port]', 'Change default serving port', COMPODOC_DEFAULTS.port)
+            .option('-r, --port [port]', 'Change default serving port', String(COMPODOC_DEFAULTS.port))
             .option(
                 '-w, --watch',
                 'Watch source files after serve and force documentation rebuild',
@@ -205,7 +205,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             .option(
                 '--maxSearchResults [maxSearchResults]',
                 'Max search results on the results page. To show all results, set to 0',
-                COMPODOC_DEFAULTS.maxSearchResults
+                String(COMPODOC_DEFAULTS.maxSearchResults)
             )
             .allowExcessArguments()
             .parse(process.argv);
@@ -219,7 +219,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
 
         let configExplorerResult;
 
-        let configFile: ConfigurationFileInterface = {};
+        let configFile = {} as Partial<ConfigurationFileInterface>;
 
         const programOptions = program.opts();
 
