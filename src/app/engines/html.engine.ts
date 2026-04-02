@@ -16,6 +16,19 @@ import { Modules } from '../../templates/pages/Modules';
 import { Routes } from '../../templates/pages/Routes';
 import { CoverageReport } from '../../templates/pages/CoverageReport';
 import { UnitTestReport } from '../../templates/pages/UnitTestReport';
+import { ClassPage } from '../../templates/pages/ClassPage';
+import { DirectivePage } from '../../templates/pages/DirectivePage';
+import { EntityDetailPage } from '../../templates/pages/EntityDetailPage';
+import { GuardPage } from '../../templates/pages/GuardPage';
+import { InjectablePage } from '../../templates/pages/InjectablePage';
+import { InterceptorPage } from '../../templates/pages/InterceptorPage';
+import { InterfacePage } from '../../templates/pages/InterfacePage';
+import { MiscellaneousEnumerations } from '../../templates/pages/MiscellaneousEnumerations';
+import { MiscellaneousFunctions } from '../../templates/pages/MiscellaneousFunctions';
+import { MiscellaneousTypealiases } from '../../templates/pages/MiscellaneousTypealiases';
+import { MiscellaneousVariables } from '../../templates/pages/MiscellaneousVariables';
+import { ModulePage } from '../../templates/pages/ModulePage';
+import { PipePage } from '../../templates/pages/PipePage';
 
 /** Map page context to its Handlebars partial name */
 const CONTEXT_PARTIAL_MAP: Record<string, string> = {
@@ -140,8 +153,34 @@ export class HtmlEngine {
                 return CoverageReport(data);
             case 'unit-test':
                 return UnitTestReport(data);
+            case 'class':
+                return ClassPage(data);
+            case 'directive':
+                return DirectivePage(data);
+            case 'entity':
+                return EntityDetailPage(data);
+            case 'guard':
+                return GuardPage(data);
+            case 'injectable':
+                return InjectablePage(data);
+            case 'interceptor':
+                return InterceptorPage(data);
+            case 'interface':
+                return InterfacePage(data);
+            case 'module':
+                return ModulePage(data);
+            case 'pipe':
+                return PipePage(data);
+            case 'miscellaneous-functions':
+                return MiscellaneousFunctions(data);
+            case 'miscellaneous-variables':
+                return MiscellaneousVariables(data);
+            case 'miscellaneous-typealiases':
+                return MiscellaneousTypealiases(data);
+            case 'miscellaneous-enumerations':
+                return MiscellaneousEnumerations(data);
             default:
-                return null; // Fall back to Handlebars
+                return null; // Fall back to Handlebars (component only)
         }
     }
 
