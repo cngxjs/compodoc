@@ -2,11 +2,11 @@
 import { hasStderrError, temporaryDir, shell, read } from '../helpers';
 const tmp = temporaryDir();
 
-describe('CLI handlebars templates', () => {
+describe('CLI custom JS templates', () => {
     const distFolder = tmp.name + '-templates';
 
-    describe('with alternative handlebar template files', () => {
-        let indexFile, barComponentFile, fooComponentFile;
+    describe('with alternative JS template files', () => {
+        let barComponentFile, fooComponentFile;
 
         beforeAll(() => {
             tmp.create(distFolder);
@@ -25,23 +25,17 @@ describe('CLI handlebars templates', () => {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
-            indexFile = read(`${distFolder}/index.html`);
             barComponentFile = read(`${distFolder}/components/BarComponent.html`);
             fooComponentFile = read(`${distFolder}/components/FooComponent.html`);
         });
         afterAll(() => tmp.clean(distFolder));
 
-        it('should use templated "page.hbs"', () => {
-            expect(indexFile).to.contain('<span>THIS IS TEST CONTENT</span>');
-            expect(indexFile).to.contain('<div class="content readme bg-info">');
-        });
-
-        it('should use partial "component-detail.hbs"', () => {
+        it('should use custom "component.js" template', () => {
             expect(barComponentFile).not.to.contain('<td class="col-md-3">selector</td>');
             expect(barComponentFile).to.contain('<h3>Selector</h3>');
         });
 
-        it('should use partial "block-constructor.hbs"', () => {
+        it('should render constructor from custom template', () => {
             expect(fooComponentFile).to.contain('<code>myprop</code>');
             expect(fooComponentFile).to.contain('<i><p>description</p>\n</i>');
         });

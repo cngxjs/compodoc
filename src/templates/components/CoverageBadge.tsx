@@ -1,0 +1,27 @@
+import Html from '@kitajs/html';
+
+const STATUS_COLORS: Record<string, string> = {
+    'low': '#d8604b',
+    'medium': '#dab226',
+    'good': '#8fbd08',
+    'very-good': '#4dc71f',
+};
+
+type CoverageBadgeProps = {
+    readonly label: string;
+    readonly count: number;
+    readonly status: string;
+};
+
+export const CoverageBadge = (props: CoverageBadgeProps): string => {
+    const color = STATUS_COLORS[props.status] ?? '#5d5d5d';
+    return `<svg width="135" height="20" xmlns="http://www.w3.org/2000/svg">
+    <g>
+        <rect id="svg_1" height="20" width="130" y="0" x="0" stroke-width="1.5" stroke="#5d5d5d" fill="#5d5d5d" rx="7" ry="7"/>
+        <rect id="svg_2" height="20" width="40" y="0" x="92" stroke-width="1.5" stroke="${color}" fill="${color}" rx="7" ry="7"/>
+        <rect id="svg_3" height="20" width="22" y="0" x="92" stroke-width="1.5" stroke="${color}" fill="${color}"/>
+        <text xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="12" id="svg_4" y="14" x="6" stroke-width="0" stroke="#5d5d5d" fill="#ffffff">${props.label}</text>
+        <text xml:space="preserve" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" id="svg_5" y="14" x="112" stroke-width="0" stroke="#5d5d5d" fill="#ffffff" style="text-anchor: middle">${props.count}%</text>
+    </g>
+</svg>`;
+};
