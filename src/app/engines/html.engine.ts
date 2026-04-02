@@ -29,6 +29,7 @@ import { MiscellaneousTypealiases } from '../../templates/pages/MiscellaneousTyp
 import { MiscellaneousVariables } from '../../templates/pages/MiscellaneousVariables';
 import { ModulePage } from '../../templates/pages/ModulePage';
 import { PipePage } from '../../templates/pages/PipePage';
+import { ComponentPage } from '../../templates/pages/ComponentPage';
 
 /** Map page context to its Handlebars partial name */
 const CONTEXT_PARTIAL_MAP: Record<string, string> = {
@@ -179,8 +180,10 @@ export class HtmlEngine {
                 return MiscellaneousTypealiases(data);
             case 'miscellaneous-enumerations':
                 return MiscellaneousEnumerations(data);
+            case 'component':
+                return ComponentPage(data);
             default:
-                return null; // Fall back to Handlebars (component only)
+                return null; // Fall back to Handlebars (menu only)
         }
     }
 
