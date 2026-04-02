@@ -4,7 +4,6 @@ import { logger } from '../../utils/logger';
 import FileEngine from './file.engine';
 import { Layout } from '../../templates/Layout';
 import { SearchInput } from '../../templates/components/SearchInput';
-import { SearchResults } from '../../templates/components/SearchResults';
 import { CoverageBadge } from '../../templates/components/CoverageBadge';
 import { Menu } from '../../templates/components/Menu';
 import { Markdown } from '../../templates/pages/Markdown';
@@ -159,7 +158,6 @@ export class HtmlEngine {
             menuHtml,
             menuHtmlMobile,
             searchInputHtml: SearchInput(),
-            searchResultsHtml: SearchResults(),
         });
     }
 

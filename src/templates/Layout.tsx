@@ -23,7 +23,6 @@ type LayoutProps = {
     readonly menuHtml: string;
     readonly menuHtmlMobile: string;
     readonly searchInputHtml: string;
-    readonly searchResultsHtml: string;
 };
 
 const IframeTrackingScript = `
@@ -68,6 +67,29 @@ const GoogleAnalytics = (props: { gaID: string; gaSite: string }) => (
     </script>
 );
 
+const CommandPalette = () => (
+    <dialog id="cdx-command-palette" class="cdx-cp" aria-label="Search documentation">
+        <div class="cdx-cp-panel">
+            <div class="cdx-cp-header">
+                <svg class="cdx-cp-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input class="cdx-cp-input" type="text" placeholder="Search documentation..."
+                    autocomplete="off" spellcheck="false" role="combobox"
+                    aria-expanded="true" aria-controls="cdx-cp-listbox"
+                    aria-autocomplete="list" />
+                <kbd class="cdx-cp-kbd">Esc</kbd>
+            </div>
+            <div class="cdx-cp-body" id="cdx-cp-listbox" role="listbox">
+                <div class="cdx-cp-results"></div>
+                <div class="cdx-cp-empty" hidden>No results</div>
+            </div>
+        </div>
+    </dialog>
+) as string;
+
 const DarkModeToggle = () => (
     <label class="dark-mode-switch">
         <input type="checkbox" />
@@ -82,7 +104,7 @@ const DarkModeToggle = () => (
 );
 
 export const Layout = (props: LayoutProps): string => {
-    const { data, content, menuHtml, menuHtmlMobile, searchInputHtml, searchResultsHtml } = props;
+    const { data, content, menuHtml, menuHtmlMobile, searchInputHtml } = props;
     const r = (path: string) => relativeUrl(data.depth, path);
 
     return '<!doctype html>\n' + (
@@ -130,7 +152,6 @@ export const Layout = (props: LayoutProps): string => {
                             <div class="content-data">
                                 {(content)}
                             </div>
-                            {(searchResultsHtml)}
                         </div>
                         {/* END CONTENT */}
                     </div>
@@ -138,11 +159,10 @@ export const Layout = (props: LayoutProps): string => {
 
                 {!data.hideDarkModeToggle && <DarkModeToggle />}
 
+                {!data.disableSearch && <CommandPalette />}
+
                 <PageGlobals data={data} />
 
-                {!data.disableSearch && (
-                    <script src={r('js/search/search.js')}></script>
-                )}
                 <script src={r('js/lazy-load-graphs.js')}></script>
 
                 {data.gaID && <GoogleAnalytics gaID={data.gaID} gaSite={data.gaSite!} />}
