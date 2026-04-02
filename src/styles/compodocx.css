@@ -70,6 +70,112 @@
 }
 
 /* ----------------------------------------------------------------
+   Command Palette
+   ---------------------------------------------------------------- */
+
+.cdx-cp {
+  @apply fixed inset-0 z-50 m-0 h-full w-full max-h-full max-w-full border-none p-0;
+  background: transparent;
+}
+
+.cdx-cp::backdrop {
+  background: hsl(220 20% 14% / 0.4);
+  backdrop-filter: blur(4px);
+  animation: cdx-cp-backdrop 200ms ease;
+}
+
+.cdx-cp .cdx-cp-panel {
+  @apply mx-auto mt-[15vh] flex flex-col overflow-hidden;
+  max-width: 640px;
+  background: var(--color-cdx-bg-elevated);
+  border-radius: var(--radius-cdx-lg);
+  box-shadow: var(--shadow-cdx-lg);
+  animation: cdx-cp-enter 150ms ease;
+}
+
+.cdx-cp .cdx-cp-header {
+  @apply flex items-center gap-3 px-4 py-3;
+  border-bottom: 1px solid var(--color-cdx-border);
+}
+
+.cdx-cp .cdx-cp-icon {
+  @apply shrink-0;
+  color: var(--color-cdx-text-muted);
+}
+
+.cdx-cp .cdx-cp-input {
+  @apply flex-1 border-none bg-transparent text-base outline-none;
+  color: var(--color-cdx-text);
+  font-family: var(--font-body);
+}
+
+.cdx-cp .cdx-cp-input::placeholder {
+  color: var(--color-cdx-text-muted);
+}
+
+.cdx-cp .cdx-cp-kbd {
+  @apply shrink-0 rounded px-1.5 py-0.5 text-xs;
+  border: 1px solid var(--color-cdx-border);
+  color: var(--color-cdx-text-muted);
+  font-family: var(--font-code);
+}
+
+.cdx-cp .cdx-cp-body {
+  @apply overflow-y-auto px-2 py-2;
+  max-height: 400px;
+}
+
+.cdx-cp .cdx-cp-results {
+  @apply flex flex-col gap-0.5;
+}
+
+.cdx-cp .cdx-cp-item {
+  @apply flex items-center gap-3 rounded-lg px-3 py-2 no-underline;
+  color: var(--color-cdx-text);
+  transition: background var(--cdx-transition-fast);
+}
+
+.cdx-cp .cdx-cp-item.cdx-cp-active {
+  background: var(--color-cdx-primary-subtle);
+}
+
+.cdx-cp .cdx-cp-badge {
+  @apply shrink-0 rounded px-2 py-0.5 text-xs font-semibold uppercase;
+  font-family: var(--font-body);
+}
+
+.cdx-cp .cdx-cp-badge--component  { background: var(--color-cdx-entity-component);  color: white; }
+.cdx-cp .cdx-cp-badge--service    { background: var(--color-cdx-entity-service);    color: hsl(220 20% 14%); }
+.cdx-cp .cdx-cp-badge--directive  { background: var(--color-cdx-entity-directive);  color: white; }
+.cdx-cp .cdx-cp-badge--pipe       { background: var(--color-cdx-entity-pipe);       color: white; }
+.cdx-cp .cdx-cp-badge--module     { background: var(--color-cdx-entity-module);     color: white; }
+.cdx-cp .cdx-cp-badge--class      { background: var(--color-cdx-entity-class);      color: white; }
+.cdx-cp .cdx-cp-badge--interface  { background: var(--color-cdx-entity-interface);  color: white; }
+.cdx-cp .cdx-cp-badge--guard      { background: var(--color-cdx-entity-guard);      color: white; }
+.cdx-cp .cdx-cp-badge--interceptor { background: var(--color-cdx-entity-interceptor); color: white; }
+.cdx-cp .cdx-cp-badge--other      { background: var(--color-cdx-border);            color: var(--color-cdx-text-secondary); }
+
+.cdx-cp .cdx-cp-name {
+  @apply truncate;
+  font-family: var(--font-body);
+}
+
+.cdx-cp .cdx-cp-empty {
+  @apply px-3 py-6 text-center text-sm;
+  color: var(--color-cdx-text-muted);
+}
+
+@keyframes cdx-cp-enter {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes cdx-cp-backdrop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ----------------------------------------------------------------
    Dark theme overrides
    ---------------------------------------------------------------- */
 

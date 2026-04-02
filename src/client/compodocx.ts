@@ -3,6 +3,7 @@ import { initTabs } from './tabs';
 import { initCodeBlocks } from './code-blocks';
 import { initTheme } from './theme';
 import { initRouter } from './router';
+import { initCommandPalette } from './command-palette';
 
 // Theme must run before DOMContentLoaded to prevent flash
 initTheme();
@@ -12,4 +13,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initCodeBlocks();
     initRouter();
+    initCommandPalette();
 });

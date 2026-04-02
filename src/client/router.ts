@@ -8,7 +8,6 @@ import { initTabs } from './tabs';
 import { initCodeBlocks } from './code-blocks';
 
 const CONTENT_SELECTOR = '.content-data';
-const SEARCH_RESULTS_SELECTOR = '.search-results';
 
 /** Strip any existing relative prefix from a path */
 const stripPrefix = (path: string): string =>
@@ -121,13 +120,6 @@ const navigate = async (url: string, pushState = true) => {
         const currentContent = document.querySelector(CONTENT_SELECTOR);
         if (newContent && currentContent) {
             currentContent.innerHTML = newContent.innerHTML;
-        }
-
-        // Swap search results area
-        const newSearch = doc.querySelector(SEARCH_RESULTS_SELECTOR);
-        const currentSearch = document.querySelector(SEARCH_RESULTS_SELECTOR);
-        if (newSearch && currentSearch) {
-            currentSearch.innerHTML = newSearch.innerHTML;
         }
 
         // Sidebar is NOT swapped -- menu structure is identical across pages.
