@@ -10,6 +10,12 @@ import { SearchResults } from '../../templates/components/SearchResults';
 import { Markdown } from '../../templates/pages/Markdown';
 import { AdditionalPage } from '../../templates/pages/AdditionalPage';
 import { PackageDependencies } from '../../templates/pages/PackageDependencies';
+import { PackageProperties } from '../../templates/pages/PackageProperties';
+import { Overview } from '../../templates/pages/Overview';
+import { Modules } from '../../templates/pages/Modules';
+import { Routes } from '../../templates/pages/Routes';
+import { CoverageReport } from '../../templates/pages/CoverageReport';
+import { UnitTestReport } from '../../templates/pages/UnitTestReport';
 
 /** Map page context to its Handlebars partial name */
 const CONTEXT_PARTIAL_MAP: Record<string, string> = {
@@ -122,6 +128,18 @@ export class HtmlEngine {
                 return AdditionalPage({ additionalPage: data.additionalPage });
             case 'package-dependencies':
                 return data.disableDependencies ? '' : PackageDependencies(data);
+            case 'package-properties':
+                return data.disableProperties ? '' : PackageProperties(data);
+            case 'overview':
+                return Overview(data);
+            case 'modules':
+                return Modules(data);
+            case 'routes':
+                return Routes(data);
+            case 'coverage':
+                return CoverageReport(data);
+            case 'unit-test':
+                return UnitTestReport(data);
             default:
                 return null; // Fall back to Handlebars
         }
