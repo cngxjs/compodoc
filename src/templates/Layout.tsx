@@ -134,7 +134,8 @@ export const Layout = (props: LayoutProps): string => {
                 <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
                     <div class="d-flex">
                         <a href={r('')} class="navbar-brand">{data.documentationMainName}</a>
-                        <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+                        <button type="button" class="btn btn-default btn-menu ion-ios-menu"
+                            data-cdx-mobile-toggle="#mobile-menu"></button>
                     </div>
                 </div>
 
