@@ -83,7 +83,6 @@ export interface MainDataInterface {
     gaID: string;
     gaSite: string;
     angularProject: boolean;
-    angularJSProject: boolean;
     language: string;
     maxSearchResults: number;
     publicApiOnly: string;

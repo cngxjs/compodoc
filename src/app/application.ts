@@ -22,7 +22,6 @@ import { runPagefindIndex } from './engines/search-indexer.engine';
 import { initHighlighter } from './engines/syntax-highlight.engine';
 
 import { AngularDependencies } from './compiler/angular-dependencies';
-import { AngularJSDependencies } from './compiler/angularjs-dependencies';
 
 import AngularVersionUtil from '../utils/angular-version.util';
 import { COMPODOC_CONSTANTS } from '../utils/constants';
@@ -439,17 +438,9 @@ export class Application {
     private getMicroDependenciesData(): void {
         logger.info('Get diff dependencies data');
 
-        let dependenciesClass: typeof AngularDependencies | typeof AngularJSDependencies = AngularDependencies;
         Configuration.mainData.angularProject = true;
 
-        if (this.detectAngularJSProjects()) {
-            logger.info('AngularJS project detected');
-            Configuration.mainData.angularProject = false;
-            Configuration.mainData.angularJSProject = true;
-            dependenciesClass = AngularJSDependencies;
-        }
-
-        const crawler = new dependenciesClass(
+        const crawler = new AngularDependencies(
             this.updatedFiles,
             {
                 tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
@@ -489,46 +480,12 @@ export class Application {
             });
     }
 
-    private detectAngularJSProjects() {
-        let result = false;
-        if (typeof this.packageJsonData.dependencies !== 'undefined') {
-            if (typeof this.packageJsonData.dependencies.angular !== 'undefined') {
-                result = true;
-            } else {
-                let countJSFiles = 0;
-                this.files.forEach(file => {
-                    if (path.extname(file) === '.js') {
-                        countJSFiles += 1;
-                    }
-                });
-                const percentOfJSFiles = (countJSFiles * 100) / this.files.length;
-                if (percentOfJSFiles >= 75) {
-                    result = true;
-                }
-            }
-        }
-        return result;
-    }
-
     private getDependenciesData(): void {
         logger.info('Get dependencies data');
 
-        /**
-         * AngularJS detection strategy :
-         * - if in package.json
-         * - if 75% of scanned files are *.js files
-         */
-        let dependenciesClass: typeof AngularDependencies | typeof AngularJSDependencies = AngularDependencies;
         Configuration.mainData.angularProject = true;
 
-        if (this.detectAngularJSProjects()) {
-            logger.info('AngularJS project detected');
-            Configuration.mainData.angularProject = false;
-            Configuration.mainData.angularJSProject = true;
-            dependenciesClass = AngularJSDependencies;
-        }
-
-        const crawler = new dependenciesClass(
+        const crawler = new AngularDependencies(
             this.files,
             {
                 tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)

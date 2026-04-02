@@ -162,10 +162,6 @@ export class AngularDependencies extends FrameworkDependencies {
             const filePath = file.fileName;
 
             if (path.extname(filePath) === '.ts' || path.extname(filePath) === '.tsx') {
-                if (!Configuration.mainData.angularJSProject && path.extname(filePath) === '.js') {
-                    logger.info('parsing', filePath);
-                    this.getSourceFileDecorators(file, deps);
-                } else {
                     if (
                         filePath.lastIndexOf('.d.ts') === -1 &&
                         filePath.lastIndexOf('spec.ts') === -1
@@ -175,7 +171,6 @@ export class AngularDependencies extends FrameworkDependencies {
                         this.getTypescriptImportsAliases(file, deps);
                         this.getSourceFileDecorators(file, deps);
                     }
-                }
             }
 
             return deps;
