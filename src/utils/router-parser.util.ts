@@ -1023,8 +1023,9 @@ export class RouterParserUtil {
         sourceFile: ts.SourceFile
     ): ts.Node {
 
-        initializer.elements.forEach((element: ts.ObjectLiteralExpression) => {
-            element.properties.forEach((property: ts.PropertyAssignment) => {
+        initializer.elements.forEach((element) => {
+            (element as ts.ObjectLiteralExpression).properties.forEach((_property) => {
+                const property = _property as ts.PropertyAssignment;
                 const propertyName = property.name.getText(),
                     propertyInitializer = property.initializer;
                 switch (propertyName) {

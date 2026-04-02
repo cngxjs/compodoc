@@ -85,9 +85,8 @@ export class HtmlEngineHelpers {
     }
 
     private registerHelper(bars, key: string, helper: IHtmlEngineHelper) {
-        Handlebars.registerHelper(key, function () {
-            // tslint:disable-next-line:no-invalid-this
-            return helper.helperFunc.apply(helper, [this, ...Array.from(arguments as any)]);
+        Handlebars.registerHelper(key, function (this: any, ...args: any[]) {
+            return helper.helperFunc.apply(helper, [this, ...args]);
         });
     }
 }
