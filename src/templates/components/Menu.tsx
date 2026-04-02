@@ -286,7 +286,7 @@ export const Menu = (props: MenuProps): string => {
                 )}
 
                 {/* Routes */}
-                {!d.disableRoutesGraph && d.routes?.length > 0 && (
+                {!d.disableRoutesGraph && d.routes && (
                     <li class="chapter">
                         <a data-type="chapter-link" href="routes.html"><span class="icon ion-ios-git-branch"></span>{t('routes')}</a>
                     </li>

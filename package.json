@@ -13,7 +13,7 @@
         "*********BUILD********": "*******************",
         "prebuild": "rimraf dist",
         "build": "rollup -c rollup/rollup.config.mjs --bundleConfigAsCjs && npm run build-schematics && npm run build:client && npm run build:css",
-        "build:client": "esbuild src/client/compodocx.ts --bundle --minify --outfile=src/resources/js/compodocx.js --target=es2020",
+        "build:client": "esbuild src/client/compodocx.ts --bundle --minify --splitting --format=esm --outdir=src/resources/js --target=es2020 --entry-names=[name] --chunk-names=chunks/[name]-[hash]",
         "build:css": "tailwindcss -i src/styles/compodocx.css -o src/resources/styles/compodocx.css --minify",
         "build-schematics": "tsc --project schematics/tsconfig.json && cp schematics/collection.json dist",
         "*********UTILS********": "*******************",
@@ -89,6 +89,7 @@
         "chokidar": "^5.0.0",
         "commander": "^14.0.2",
         "cosmiconfig": "^9.0.0",
+        "d3": "^7.9.0",
         "decache": "^4.6.2",
         "fast-glob": "^3.3.3",
         "fs-extra": "^11.3.3",
@@ -106,11 +107,9 @@
         "semver": "^7.7.3",
         "shiki": "^4.0.2",
         "sirv": "^3.0.2",
-        "svg-pan-zoom": "^3.6.2",
         "tablesort": "^5.7.0",
         "ts-morph": "^27.0.2",
-        "uuid": "11.1.0",
-        "vis-network": "^10.0.2"
+        "uuid": "11.1.0"
     },
     "devDependencies": {
         "@kitajs/ts-html-plugin": "^4.1.4",
@@ -119,6 +118,7 @@
         "@rollup/plugin-typescript": "12.3.0",
         "@tailwindcss/cli": "^4.2.2",
         "@types/archiver": "^7.0.0",
+        "@types/d3": "^7.4.3",
         "@types/fs-extra": "11.0.4",
         "@types/marked": "6.0.0",
         "@types/node": "25.0.9",

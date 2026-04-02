@@ -1,0 +1,484 @@
+/**
+ * Graph rendering with D3 v7 (lazy-loaded).
+ * Replaces: routes.js (D3 v3), tree.js (vis-network), svg-pan-zoom.controls.js,
+ * lazy-load-graphs.js, and all associated libs.
+ */
+
+declare const ROUTES_INDEX: any;
+declare const COMPONENT_TEMPLATE: string;
+declare const COMPONENTS: Array<{ name: string; selector: string }>;
+declare const DIRECTIVES: Array<{ name: string; selector: string }>;
+declare const ACTUAL_COMPONENT: { name: string };
+
+type D3Module = typeof import('d3');
+
+let d3: D3Module | null = null;
+
+const loadD3 = async (): Promise<D3Module> => {
+    if (d3) return d3;
+    d3 = await import('d3');
+    return d3;
+};
+
+// ──────────────────────────────────────────────
+// Lazy SVG loading (replaces lazy-load-graphs.js)
+// ──────────────────────────────────────────────
+
+const initLazyGraphs = () => {
+    const lazyEls = document.querySelectorAll<HTMLObjectElement>('[lazy]');
+    if (lazyEls.length === 0) return;
+
+    // The scroll container is .content, not the viewport.
+    // Use it as IntersectionObserver root so elements inside it are detected.
+    const scrollRoot = document.querySelector('.content') as HTMLElement | null;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target as HTMLObjectElement;
+            const src = el.getAttribute('lazy');
+            if (src) {
+                el.data = src;
+                el.removeAttribute('lazy');
+            }
+            observer.unobserve(el);
+        });
+    }, { root: scrollRoot, rootMargin: '200px' });
+
+    lazyEls.forEach(el => observer.observe(el));
+};
+
+// ──────────────────────────────────────────────
+// SVG pan-zoom (replaces svg-pan-zoom lib)
+// ──────────────────────────────────────────────
+
+const initSvgPanZoom = async () => {
+    const container = document.getElementById('module-graph-svg');
+    if (!container) return;
+
+    const svgEl = container.querySelector('svg');
+    if (!svgEl) return;
+
+    const { zoom, select, zoomIdentity } = await loadD3();
+
+    const svgSelection = select(svgEl);
+
+    // Graphviz SVGs have a <g> with its own transform (scale/rotate/translate).
+    // We must NOT overwrite that. Instead, wrap all SVG content in a new <g>
+    // and apply D3 zoom transforms to the wrapper only.
+    const wrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    wrapper.setAttribute('class', 'zoom-wrapper');
+    // Move all existing children into the wrapper
+    while (svgEl.firstChild) {
+        wrapper.appendChild(svgEl.firstChild);
+    }
+    svgEl.appendChild(wrapper);
+
+    // Make SVG fill its container and use viewBox for scaling
+    const bbox = wrapper.getBBox();
+    svgEl.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+    svgEl.style.width = '100%';
+    svgEl.style.maxHeight = '400px';
+    svgEl.removeAttribute('width');
+    svgEl.removeAttribute('height');
+
+    const wrapperSelection = select(wrapper);
+
+    const zoomBehavior = zoom<SVGSVGElement, unknown>()
+        .scaleExtent([0.5, 5])
+        .on('zoom', (event) => {
+            wrapperSelection.attr('transform', event.transform);
+        });
+
+    svgSelection.call(zoomBehavior);
+
+    // Wire zoom buttons
+    const zoomIn = document.getElementById('zoom-in');
+    const zoomOut = document.getElementById('zoom-out');
+    const reset = document.getElementById('reset');
+    const fullscreen = document.getElementById('fullscreen');
+
+    zoomIn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        svgSelection.transition().duration(300).call(zoomBehavior.scaleBy, 1.3);
+    });
+
+    zoomOut?.addEventListener('click', (e) => {
+        e.preventDefault();
+        svgSelection.transition().duration(300).call(zoomBehavior.scaleBy, 0.7);
+    });
+
+    reset?.addEventListener('click', (e) => {
+        e.preventDefault();
+        svgSelection.transition().duration(300).call(zoomBehavior.transform, zoomIdentity);
+    });
+
+    if (fullscreen) {
+        let isFullscreen = false;
+        const originalContainerHeight = container.style.height;
+        const originalMaxHeight = svgEl.style.maxHeight;
+
+        fullscreen.addEventListener('click', () => {
+            if (isFullscreen) {
+                container.style.height = originalContainerHeight;
+                svgEl.style.maxHeight = originalMaxHeight || '400px';
+                isFullscreen = false;
+                fullscreen.classList.remove('ion-md-close');
+                fullscreen.classList.add('ion-ios-resize');
+            } else {
+                container.style.height = '85vh';
+                svgEl.style.maxHeight = 'none';
+                isFullscreen = true;
+                fullscreen.classList.remove('ion-ios-resize');
+                fullscreen.classList.add('ion-md-close');
+            }
+            svgEl.style.height = container.clientHeight + 'px';
+            svgSelection.transition().duration(300).call(zoomBehavior.transform, zoomIdentity);
+        });
+    }
+};
+
+// ──────────────────────────────────────────────
+// Routes graph (replaces routes.js + D3 v3)
+// ──────────────────────────────────────────────
+
+const htmlEntities = (str: string): string =>
+    String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+const initRoutesGraph = async () => {
+    const target = document.getElementById('body-routes');
+    if (!target || typeof ROUTES_INDEX === 'undefined') return;
+
+    const { select, tree, hierarchy, linkHorizontal } = await loadD3();
+
+    // Clean string children from route tree
+    const cleanStringChildren = (obj: any) => {
+        for (const prop in obj) {
+            if (!Object.prototype.hasOwnProperty.call(obj, prop)) continue;
+            if (prop === 'children' && Array.isArray(obj[prop])) {
+                obj[prop] = obj[prop].filter((c: any) => typeof c !== 'string');
+            }
+            if (typeof obj[prop] === 'object' && obj[prop] !== null) {
+                cleanStringChildren(obj[prop]);
+            }
+        }
+    };
+
+    const data = ROUTES_INDEX;
+    cleanStringChildren(data);
+
+    const root = hierarchy(data);
+    const nodeCount = root.descendants().length;
+
+    // Calculate dimensions based on tree size
+    const nodeHeight = 90;
+    const nodeWidth = 250;
+    const height = nodeCount * nodeHeight;
+    const width = (root.height + 1) * nodeWidth;
+
+    const treeLayout = tree<any>().size([height, width - 160]);
+    treeLayout(root);
+
+    const svg = select(target)
+        .append('svg')
+        .attr('id', 'main')
+        .attr('width', width + 40)
+        .attr('height', height + 40);
+
+    const g = svg.append('g').attr('transform', 'translate(20,20)');
+
+    // Draw links
+    g.selectAll('.link')
+        .data(root.links())
+        .enter()
+        .append('path')
+        .attr('class', 'link')
+        .attr('fill', 'none')
+        .attr('stroke', '#ccc')
+        .attr('stroke-width', 1.5)
+        .attr('d', linkHorizontal<any, any>()
+            .x((d: any) => d.y)
+            .y((d: any) => d.x)
+        );
+
+    // Draw nodes
+    const node = g.selectAll('.node')
+        .data(root.descendants())
+        .enter()
+        .append('g')
+        .attr('class', 'node')
+        .attr('transform', (d: any) => `translate(${d.y},${d.x})`);
+
+    // Node icon
+    node.append('text')
+        .attr('font-family', 'Ionicons')
+        .attr('y', 5)
+        .attr('x', 0)
+        .attr('class', (d: any) => d.children ? 'icon has-children' : 'icon')
+        .attr('font-size', '15px')
+        .text('\uf183');
+
+    // Node text
+    node.append('text')
+        .attr('x', 0)
+        .attr('y', 10)
+        .attr('dy', '.35em')
+        .attr('class', 'text')
+        .attr('text-anchor', 'start')
+        .html((d: any) => buildNodeLabel(d.data));
+
+    // Lazy load icon
+    node.append('text')
+        .attr('y', 45)
+        .attr('x', -18)
+        .attr('font-family', 'Ionicons')
+        .attr('class', 'icon')
+        .attr('font-size', '15px')
+        .text((d: any) => {
+            if (d.data.loadChildren || d.data.loadComponent) return '\uf4c1';
+            if (d.data.guarded) return '\uf1b0';
+            return '';
+        });
+
+    // Calculate bounding boxes and add backgrounds
+    node.each(function (this: SVGGElement) {
+        const texts = this.querySelectorAll('text.text');
+        texts.forEach(text => {
+            const bbox = (text as SVGTextElement).getBBox();
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('width', String(bbox.width));
+            rect.setAttribute('height', String(bbox.height));
+            rect.setAttribute('x', String(bbox.x));
+            rect.setAttribute('y', String(bbox.y));
+            rect.style.fill = 'white';
+            rect.style.fillOpacity = '0.75';
+            this.insertBefore(rect, text);
+        });
+    });
+
+    // Resize SVG to fit content
+    const mainGroup = g.node();
+    if (mainGroup) {
+        const bbox = mainGroup.getBBox();
+        svg.attr('width', bbox.width + 50).attr('height', bbox.height + 50);
+    }
+
+    // Add pan-zoom via mouse wheel / drag
+    const { zoom } = await loadD3();
+    const zoomBehavior = zoom<SVGSVGElement, unknown>()
+        .scaleExtent([0.3, 3])
+        .on('zoom', (event) => {
+            g.attr('transform', event.transform);
+        });
+    svg.call(zoomBehavior);
+};
+
+/** Build the label HTML for a route node */
+const buildNodeLabel = (d: any): string => {
+    let label = '';
+    if (d.kind === 'module') {
+        if (d.module) {
+            label += `<tspan x="0" dy="1.4em"><a href="./modules/${d.module}.html">${d.module}</a></tspan>`;
+            if (d.name) label += `<tspan x="0" dy="1.4em">${d.name}</tspan>`;
+        } else {
+            label += `<tspan x="0" dy="1.4em">${htmlEntities(d.name)}</tspan>`;
+        }
+    } else if (d.kind === 'component') {
+        label += `<tspan x="0" dy="1.4em">${d.path || d.name}</tspan>`;
+        if (d.component) {
+            label += `<tspan x="0" dy="1.4em"><a href="./components/${d.component}.html">${d.component}</a></tspan>`;
+        } else if (d.name?.includes('Component')) {
+            label += `<tspan x="0" dy="1.4em">${d.name}</tspan>`;
+        }
+        if (d.outlet) label += `<tspan x="0" dy="1.4em">&lt;outlet&gt; : ${d.outlet}</tspan>`;
+    } else {
+        label += `<tspan x="0" dy="1.4em">/${d.path || d.name}</tspan>`;
+        if (d.component) {
+            label += `<tspan x="0" dy="1.4em"><a href="./components/${d.component}.html">${d.component}</a></tspan>`;
+        }
+        if (d.loadChildren) {
+            const parts = d.loadChildren.split('#');
+            const moduleName = parts[1] || parts[0];
+            label += `<tspan x="0" dy="1.4em"><a href="./modules/${moduleName}.html">${moduleName}</a></tspan>`;
+        }
+        if (d.canActivate) label += '<tspan x="0" dy="1.4em">&#10003; canActivate</tspan>';
+        if (d.canDeactivate) label += '<tspan x="0" dy="1.4em">&#215;&nbsp;&nbsp;canDeactivate</tspan>';
+        if (d.canActivateChild) label += '<tspan x="0" dy="1.4em">&#10003; canActivateChild</tspan>';
+        if (d.canLoad) label += '<tspan x="0" dy="1.4em">&#8594; canLoad</tspan>';
+        if (d.redirectTo) label += `<tspan x="0" dy="1.4em">&rarr; ${d.redirectTo}</tspan>`;
+        if (d.pathMatch) label += `<tspan x="0" dy="1.4em">&gt; ${d.pathMatch}</tspan>`;
+        if (d.outlet) label += `<tspan x="0" dy="1.4em">&lt;outlet&gt; : ${d.outlet}</tspan>`;
+    }
+    return label;
+};
+
+// ──────────────────────────────────────────────
+// DOM tree (replaces tree.js + vis-network)
+// ──────────────────────────────────────────────
+
+interface TreeNode {
+    name: string;
+    type: string;
+    isComponent?: boolean;
+    isDirective?: boolean;
+    componentName?: string;
+    children: TreeNode[];
+}
+
+/** Parse HTML template string into a tree structure */
+const parseTemplate = (html: string): TreeNode => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    const walk = (el: Element): TreeNode => {
+        const tagName = el.tagName.toLowerCase();
+        const node: TreeNode = {
+            name: tagName,
+            type: 'tag',
+            children: []
+        };
+
+        // Check if this element matches a component selector
+        for (const comp of COMPONENTS) {
+            if (comp.selector === tagName) {
+                node.isComponent = true;
+                node.componentName = comp.name;
+                break;
+            }
+        }
+
+        // Check if this element has a directive attribute
+        for (const dir of DIRECTIVES) {
+            const attrs = Array.from(el.attributes).map(a => a.name);
+            if (attrs.some(attr => dir.selector.includes(attr))) {
+                node.isDirective = true;
+                node.componentName = dir.name;
+                break;
+            }
+        }
+
+        for (const child of el.children) {
+            node.children.push(walk(child));
+        }
+
+        return node;
+    };
+
+    // Get first element child of body
+    const root = doc.body.firstElementChild;
+    if (!root) return { name: 'div', type: 'tag', children: [] };
+    return walk(root);
+};
+
+const initDomTree = async () => {
+    const container = document.getElementById('tree-container');
+    if (!container || typeof COMPONENT_TEMPLATE === 'undefined') return;
+
+    const treeTab = document.getElementById('tree-tab');
+
+    const { select, tree, hierarchy, linkVertical } = await loadD3();
+
+    const renderTree = () => {
+        container.innerHTML = '';
+        const data = parseTemplate(COMPONENT_TEMPLATE);
+        const root = hierarchy(data);
+
+        const nodeCount = root.descendants().length;
+        const width = Math.max(600, container.clientWidth);
+        const height = Math.max(400, nodeCount * 50);
+
+        container.style.height = (document.querySelector('.content') as HTMLElement)?.offsetHeight - 140 + 'px';
+
+        const treeLayout = tree<TreeNode>().size([width - 100, height - 100]);
+        treeLayout(root);
+
+        const svg = select(container)
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const g = svg.append('g').attr('transform', 'translate(50,30)');
+
+        // Links
+        g.selectAll('.tree-link')
+            .data(root.links())
+            .enter()
+            .append('path')
+            .attr('class', 'tree-link')
+            .attr('fill', 'none')
+            .attr('stroke', '#ccc')
+            .attr('stroke-width', 1.5)
+            .attr('d', linkVertical<any, any>()
+                .x((d: any) => d.x)
+                .y((d: any) => d.y)
+            );
+
+        // Nodes
+        const node = g.selectAll('.tree-node')
+            .data(root.descendants())
+            .enter()
+            .append('g')
+            .attr('class', 'tree-node')
+            .attr('transform', (d: any) => `translate(${d.x},${d.y})`)
+            .style('cursor', (d: any) => d.data.isComponent ? 'pointer' : 'default');
+
+        // Node circles
+        node.append('ellipse')
+            .attr('rx', (d: any) => {
+                const label = d.data.name;
+                return Math.max(30, label.length * 4 + 10);
+            })
+            .attr('ry', 15)
+            .attr('fill', (d: any) => {
+                if (d.data.isComponent) return '#FB7E81';
+                if (d.data.isDirective) return '#FF9800';
+                return '#D2E5FF';
+            })
+            .attr('stroke', '#ccc');
+
+        // Node labels
+        node.append('text')
+            .attr('dy', 4)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '12px')
+            .attr('font-weight', (d: any) => (d.data.isComponent || d.data.isDirective) ? 'bold' : 'normal')
+            .text((d: any) => d.data.name);
+
+        // Click handler for component nodes
+        node.on('click', (_event: any, d: any) => {
+            if (d.data.isComponent && d.data.componentName) {
+                const current = window.location;
+                document.location.href = current.origin + current.pathname.replace(ACTUAL_COMPONENT.name, d.data.componentName);
+            }
+        });
+
+        // Resize SVG to fit
+        const gNode = g.node();
+        if (gNode) {
+            const bbox = gNode.getBBox();
+            svg.attr('width', bbox.width + 100).attr('height', bbox.height + 60);
+        }
+    };
+
+    // Render on initial load
+    setTimeout(renderTree, 200);
+
+    // Re-render when tree tab is clicked
+    treeTab?.addEventListener('click', () => {
+        setTimeout(renderTree, 200);
+    });
+};
+
+// ──────────────────────────────────────────────
+// Public API
+// ──────────────────────────────────────────────
+
+export const initGraphs = () => {
+    // Lazy SVG loading runs synchronously (IntersectionObserver)
+    initLazyGraphs();
+
+    // Async graph initialization
+    initSvgPanZoom().catch(e => console.error('SVG pan-zoom init failed:', e));
+    initRoutesGraph().catch(e => console.error('Routes graph init failed:', e));
+    initDomTree().catch(e => console.error('DOM tree init failed:', e));
+};

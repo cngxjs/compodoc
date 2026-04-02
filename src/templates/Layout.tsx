@@ -116,6 +116,7 @@ export const Layout = (props: LayoutProps): string => {
                 <meta name="description" content="" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <link rel="icon" type="image/x-icon" href={r('images/favicon.ico')} />
+                <script>{(`(function(){try{var d=localStorage.getItem('compodocx_darkmode-state');var dark=d!==null?d==='true':window.matchMedia('(prefers-color-scheme:dark)').matches;if(dark)document.documentElement.classList.add('dark')}catch(e){}}())`)}</script>
                 <style>{(`
                     .menu .collapse.in { display: block !important; }
                     .menu .collapse:not(.in) { display: none !important; }
@@ -127,13 +128,14 @@ export const Layout = (props: LayoutProps): string => {
                 )}
             </head>
             <body>
-                <script src={r('js/compodocx.js')}></script>
+                <script type="module" src={r('js/compodocx.js')}></script>
                 <script>{(IframeTrackingScript)}</script>
 
                 <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
                     <div class="d-flex">
                         <a href={r('')} class="navbar-brand">{data.documentationMainName}</a>
-                        <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+                        <button type="button" class="btn btn-default btn-menu ion-ios-menu"
+                            data-cdx-mobile-toggle="#mobile-menu"></button>
                     </div>
                 </div>
 
@@ -162,8 +164,6 @@ export const Layout = (props: LayoutProps): string => {
                 {!data.disableSearch && <CommandPalette />}
 
                 <PageGlobals data={data} />
-
-                <script src={r('js/lazy-load-graphs.js')}></script>
 
                 {data.gaID && <GoogleAnalytics gaID={data.gaID} gaSite={data.gaSite!} />}
             </body>

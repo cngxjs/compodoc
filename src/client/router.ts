@@ -6,6 +6,7 @@
 
 import { initTabs } from './tabs';
 import { initCodeBlocks } from './code-blocks';
+import { initGraphs } from './graphs';
 
 const CONTENT_SELECTOR = '.content-data';
 
@@ -32,13 +33,38 @@ const fixMenuLinks = () => {
     });
 };
 
+/** Execute script tags found in the content area after SPA swap.
+ *  innerHTML doesn't run scripts, so we clone them into live elements.
+ *  Returns a promise that resolves when all external scripts have loaded. */
+const executeContentScripts = (): Promise<void> => {
+    const content = document.querySelector(CONTENT_SELECTOR);
+    if (!content) return Promise.resolve();
+
+    const promises: Promise<void>[] = [];
+    content.querySelectorAll('script').forEach(oldScript => {
+        const newScript = document.createElement('script');
+        if (oldScript.src) {
+            const p = new Promise<void>((resolve) => {
+                newScript.onload = () => resolve();
+                newScript.onerror = () => resolve();
+            });
+            promises.push(p);
+            newScript.src = oldScript.src;
+        } else {
+            newScript.textContent = oldScript.textContent;
+        }
+        oldScript.replaceWith(newScript);
+    });
+
+    return Promise.all(promises).then(() => {});
+};
+
 /** Re-run page initializers after content swap */
-const reinitPage = () => {
+const reinitPage = async () => {
+    await executeContentScripts();
     initTabs();
     initCodeBlocks();
-
-    // Trigger lazy-load check for graphs
-    window.dispatchEvent(new Event('scroll'));
+    initGraphs();
 };
 
 /** Update sidebar active state */

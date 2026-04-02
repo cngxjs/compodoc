@@ -11,7 +11,7 @@ type ModulesProps = {
     readonly disableGraph?: boolean;
 };
 
-/** Renders the SVG object tag with a custom `lazy` attribute (read by lazy-load-graphs.js). */
+/** Renders the SVG object tag with a custom `lazy` attribute (loaded by IntersectionObserver in graphs.ts). */
 const lazyGraphObject = (name: string): string =>
     `<object id="demo-svg" type="image/svg+xml" lazy="./modules/${name}/dependencies.svg" style="width: 100%; height: 175px;">${t('no-svg')}</object>`;
 

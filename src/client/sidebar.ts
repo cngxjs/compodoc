@@ -1,30 +1,40 @@
 /**
  * Sidebar collapse/expand behavior.
- * Replaces bootstrap.native Collapse + menu.js logic.
+ * Shared state between desktop and mobile menus.
+ * Default: all sections collapsed when no saved state exists.
  */
 
 const STORAGE_KEY = 'compodoc-sidebar-state';
 const ANIMATION_MS = 200;
+
+/** Normalize element ID to a shared state key (strip xs- prefix) */
+const stateKey = (id: string): string => id.replace(/^xs-/, '');
+
+/** Get the sibling element ID (desktop <-> mobile) */
+const siblingId = (id: string): string =>
+    id.startsWith('xs-') ? id.slice(3) : 'xs-' + id;
 
 const saveState = () => {
     try {
         const collapses = document.querySelectorAll<HTMLElement>('.menu .collapse[id]');
         const states: Record<string, boolean> = {};
         collapses.forEach(el => {
-            states[el.id] = el.classList.contains('in');
+            states[stateKey(el.id)] = el.classList.contains('in');
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
     } catch { /* localStorage blocked */ }
 };
 
+/** Apply saved state to all collapses. Without saved state, collapse all. */
 const restoreState = () => {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved) return;
-        const states: Record<string, boolean> = JSON.parse(saved);
-        Object.entries(states).forEach(([id, open]) => {
-            const el = document.getElementById(id);
-            if (!el) return;
+        const states: Record<string, boolean> = saved ? JSON.parse(saved) : {};
+
+        document.querySelectorAll<HTMLElement>('.menu .collapse[id]').forEach(el => {
+            const key = stateKey(el.id);
+            // Default to closed if no saved state
+            const open = states[key] ?? false;
             if (open) {
                 el.classList.add('in');
                 el.style.display = 'block';
@@ -34,6 +44,26 @@ const restoreState = () => {
             }
         });
     } catch { /* localStorage blocked or invalid JSON */ }
+};
+
+/** Apply open/closed state to an element without animation */
+const applyState = (el: HTMLElement, open: boolean) => {
+    if (open) {
+        el.classList.add('in');
+        el.style.display = 'block';
+    } else {
+        el.classList.remove('in');
+        el.style.display = 'none';
+    }
+    // Sync chevron
+    const toggler = document.querySelector(`[data-cdx-target="#${el.id}"]`);
+    if (toggler) {
+        const icon = toggler.querySelector('.ion-ios-arrow-up, .ion-ios-arrow-down');
+        if (icon) {
+            icon.classList.toggle('ion-ios-arrow-up', open);
+            icon.classList.toggle('ion-ios-arrow-down', !open);
+        }
+    }
 };
 
 const toggleCollapse = (targetId: string) => {
@@ -71,7 +101,7 @@ const toggleCollapse = (targetId: string) => {
         }, ANIMATION_MS);
     }
 
-    // Toggle arrow icon
+    // Toggle arrow icon on the clicked toggler
     const toggler = document.querySelector(`[data-cdx-target="${targetId}"]`);
     if (toggler) {
         const icon = toggler.querySelector('.ion-ios-arrow-up, .ion-ios-arrow-down');
@@ -79,6 +109,13 @@ const toggleCollapse = (targetId: string) => {
             icon.classList.toggle('ion-ios-arrow-up');
             icon.classList.toggle('ion-ios-arrow-down');
         }
+    }
+
+    // Sync sibling (desktop <-> mobile) without animation
+    const id = targetId.replace('#', '');
+    const sibling = document.getElementById(siblingId(id));
+    if (sibling) {
+        applyState(sibling, !isOpen);
     }
 
     setTimeout(saveState, ANIMATION_MS + 50);
@@ -94,14 +131,10 @@ const bindTogglers = () => {
             const link = toggler.closest('a');
 
             if (toggler.classList.contains('simple')) {
-                // Pure toggler (no link) -- always prevent default
                 e.preventDefault();
                 toggleCollapse(target);
             } else if (link && toggler.classList.contains('linked')) {
-                // Linked toggler -- only toggle collapse if clicking the
-                // toggler div or arrow icon, not the link-name text
                 if (clickedEl.classList.contains('link-name')) {
-                    // Let the link navigate, don't toggle
                     return;
                 }
                 e.preventDefault();
@@ -123,12 +156,39 @@ const syncChevrons = () => {
         if (!toggler) return;
         const icon = toggler.querySelector('.ion-ios-arrow-up, .ion-ios-arrow-down');
         if (!icon) return;
-        if (isOpen) {
-            icon.classList.add('ion-ios-arrow-up');
-            icon.classList.remove('ion-ios-arrow-down');
-        } else {
-            icon.classList.add('ion-ios-arrow-down');
-            icon.classList.remove('ion-ios-arrow-up');
+        icon.classList.toggle('ion-ios-arrow-up', isOpen);
+        icon.classList.toggle('ion-ios-arrow-down', !isOpen);
+    });
+};
+
+/** Mobile hamburger menu toggle (data-cdx-mobile-toggle) */
+const bindMobileMenu = () => {
+    const menus: HTMLElement[] = [];
+
+    document.querySelectorAll<HTMLElement>('[data-cdx-mobile-toggle]').forEach(btn => {
+        const targetId = btn.getAttribute('data-cdx-mobile-toggle');
+        if (!targetId) return;
+        const menu = document.querySelector<HTMLElement>(targetId);
+        if (!menu) return;
+        menus.push(menu);
+
+        btn.addEventListener('click', () => {
+            const isOpen = menu.style.display === 'block';
+            menu.style.display = isOpen ? 'none' : 'block';
+        });
+
+        menu.querySelectorAll('a[data-type]').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.style.display = 'none';
+            });
+        });
+    });
+
+    // Close mobile menu when resizing to desktop
+    const mq = window.matchMedia('(min-width: 768px)');
+    mq.addEventListener('change', (e) => {
+        if (e.matches) {
+            menus.forEach(m => { m.style.display = 'none'; });
         }
     });
 };
@@ -137,6 +197,7 @@ export const initSidebar = () => {
     bindTogglers();
     restoreState();
     syncChevrons();
+    bindMobileMenu();
 };
 
 /** Re-bind togglers without restoring state (used after SPA navigation) */
