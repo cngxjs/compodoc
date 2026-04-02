@@ -10,7 +10,7 @@ export class ModifKindHelper implements IHtmlEngineHelper {
      * @param  {SyntaxKind[]} kind  SyntaxKind concatenated
      * @return {string}                Parsed string
      */
-    public helperFunc(context: any, kind: SyntaxKind[]) {
+    public helperFunc(context: any, kind: SyntaxKind) {
         let _kindText = '';
         switch (kind) {
             case SyntaxKind.PrivateKeyword:
