@@ -1,25 +1,40 @@
 /**
  * Code block copy button and line navigation.
- * Replaces sourceCode.js + clipboard.min.js.
+ * Copy button with checkmark animation.
  */
 
 export const initCodeBlocks = () => {
     // Add copy buttons to all code blocks
     document.querySelectorAll<HTMLElement>('.compodoc-sourcecode pre').forEach(pre => {
+        // Skip if already has a copy button
+        if (pre.querySelector('.cdx-code-copy')) return;
+
         const btn = document.createElement('button');
-        btn.className = 'copy-btn';
+        btn.className = 'cdx-code-copy';
         btn.textContent = 'Copy';
+        btn.setAttribute('aria-label', 'Copy code');
         btn.addEventListener('click', () => {
             const code = pre.querySelector('code');
             if (code) {
                 navigator.clipboard.writeText(code.textContent || '').then(() => {
                     btn.textContent = 'Copied!';
-                    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+                    btn.setAttribute('aria-label', 'Copied!');
+                    btn.classList.add('cdx-code-copy--copied');
+                    setTimeout(() => {
+                        btn.textContent = 'Copy';
+                        btn.setAttribute('aria-label', 'Copy code');
+                        btn.classList.remove('cdx-code-copy--copied');
+                    }, 2000);
                 });
             }
         });
         pre.style.position = 'relative';
         pre.appendChild(btn);
+
+        // Detect horizontal overflow for gradient indicator
+        if (pre.scrollWidth > pre.clientWidth) {
+            pre.classList.add('cdx-overflow');
+        }
     });
 
     // Link-to-source line navigation

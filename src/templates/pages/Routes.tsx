@@ -8,8 +8,8 @@ type RoutesProps = {
 export const Routes = (props: RoutesProps): string => {
     const base = relativeUrl(props.depth);
     return (<>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('routes')}</li>
+        <ol class="cdx-breadcrumb">
+            <li class="">{t('routes')}</li>
         </ol>
 
         <div id="body-routes"></div>

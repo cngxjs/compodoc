@@ -40,8 +40,8 @@ const fileLink = (f: UnitTestFile): string | null => {
 export const UnitTestReport = (props: UnitTestReportProps): string => {
     const base = relativeUrl(props.data.depth);
     return (<>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('unit-test-coverage')}</li>
+        <ol class="cdx-breadcrumb">
+            <li class="">{t('unit-test-coverage')}</li>
         </ol>
 
         <div>

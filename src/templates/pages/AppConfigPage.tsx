@@ -46,8 +46,8 @@ export const AppConfigPage = (data: any): string => {
     if (configs.length === 0) return '';
 
     return (<>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">Application Configuration</li>
+        <ol class="cdx-breadcrumb">
+            <li class="">Application Configuration</li>
         </ol>
 
         {configs.map(config => (<>

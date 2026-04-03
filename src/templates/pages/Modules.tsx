@@ -17,8 +17,8 @@ const lazyGraphObject = (name: string): string =>
 
 export const Modules = (props: ModulesProps): string => (
     <>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('modules')}</li>
+        <ol class="cdx-breadcrumb">
+            <li class="">{t('modules')}</li>
         </ol>
         <div class="container-fluid modules">
             <div class="row">

@@ -13,9 +13,9 @@ type MiscTypealiasesProps = {
 
 export const MiscellaneousTypealiases = (props: MiscTypealiasesProps): string => (
     <>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('miscellaneous')}</li>
-            <li class="breadcrumb-item">{t('type-aliases')}</li>
+        <ol class="cdx-breadcrumb">
+            <li class="">{t('miscellaneous')}</li>
+            <li class="">{t('type-aliases')}</li>
         </ol>
         {IndexMisc({ list: props.miscellaneous.typealiases })}
         {Object.entries(props.miscellaneous.groupedTypeAliases).map(([key, typealias]) => (<>

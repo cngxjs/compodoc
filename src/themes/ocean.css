@@ -1,0 +1,35 @@
+/* compodocx theme: Ocean
+   Cool, calm, deep-teal-tinted — long reading sessions */
+
+:root {
+  --color-cdx-primary:        hsl(200 60% 42%);
+  --color-cdx-primary-hover:  hsl(200 60% 34%);
+  --color-cdx-primary-subtle: hsl(200 40% 95%);
+
+  --color-cdx-bg:             hsl(200 20% 97%);
+  --color-cdx-bg-alt:         hsl(200 18% 94%);
+  --color-cdx-bg-elevated:    hsl(0 0% 100%);
+
+  --color-cdx-text:           hsl(200 25% 12%);
+  --color-cdx-text-secondary: hsl(200 14% 40%);
+  --color-cdx-text-muted:     hsl(200 10% 58%);
+
+  --color-cdx-border:         hsl(200 16% 88%);
+  --color-cdx-border-focus:   hsl(200 60% 42%);
+}
+
+.dark {
+  --color-cdx-primary:        hsl(200 70% 62%);
+  --color-cdx-primary-hover:  hsl(200 70% 70%);
+  --color-cdx-primary-subtle: hsl(200 30% 18%);
+
+  --color-cdx-bg:             hsl(200 20% 9%);
+  --color-cdx-bg-alt:         hsl(200 18% 12%);
+  --color-cdx-bg-elevated:    hsl(200 16% 16%);
+
+  --color-cdx-text:           hsl(200 16% 88%);
+  --color-cdx-text-secondary: hsl(200 12% 62%);
+  --color-cdx-text-muted:     hsl(200 10% 44%);
+
+  --color-cdx-border:         hsl(200 14% 20%);
+}

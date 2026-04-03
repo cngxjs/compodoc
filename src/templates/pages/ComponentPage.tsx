@@ -254,9 +254,9 @@ export const ComponentPage = (data: any): string => {
     const navTabs = data.navTabs;
 
     return (<>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('components')}</li>
-            <li class={c.deprecated ? 'breadcrumb-item deprecated-name' : 'breadcrumb-item'}>
+        <ol class="cdx-breadcrumb">
+            <li class="">{t('components')}</li>
+            <li class={c.deprecated ? 'deprecated-name' : ''}>
                 {c.name}
                 {c.standalone ? <span class="cdx-badge cdx-badge--standalone">Standalone</span> : ''}
                 {c.zoneless ? <span class="cdx-badge cdx-badge--zoneless">Zoneless</span> : ''}
@@ -266,11 +266,11 @@ export const ComponentPage = (data: any): string => {
             </li>
         </ol>
 
-        <ul class="nav nav-tabs" role="tablist">
+        <ul class="cdx-tabs" role="tablist">
             {navTabs.map((tab: any, i: number) => (
-                <li class="nav-item">
+                <li>
                     <a href={tab.href}
-                        class={i === 0 ? 'nav-link active' : 'nav-link'}
+                        class={i === 0 ? 'active' : ''}
                         role="tab" id={`${tab.id}-tab`}
                         data-cdx-toggle="tab"
                         data-link={tab['data-link']}>{t(tab.label)}</a>
@@ -278,33 +278,33 @@ export const ComponentPage = (data: any): string => {
             ))}
         </ul>
 
-        <div class="tab-content">
+        <div>
             {isTabEnabled(navTabs, 'info') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'info') ? ' active in' : ''}`} id="info">
+                <div class={`cdx-tab-panel${isInitialTab(navTabs, 'info') ? ' active' : ''}`} id="info">
                     {InfoContent(data)}
                 </div>
             )}
 
             {isTabEnabled(navTabs, 'readme') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'readme') ? ' active in' : ''}`} id="readme">
+                <div class={`cdx-tab-panel${isInitialTab(navTabs, 'readme') ? ' active' : ''}`} id="readme">
                     <p>{c.readme}</p>
                 </div>
             )}
 
             {isTabEnabled(navTabs, 'source') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'source') ? ' active in' : ''} tab-source-code`} id="source">
+                <div class={`cdx-tab-panel${isInitialTab(navTabs, 'source') ? ' active' : ''} tab-source-code`} id="source">
                     <div class="compodoc-sourcecode">{highlightCode(c.sourceCode ?? '', 'typescript')}</div>
                 </div>
             )}
 
             {isTabEnabled(navTabs, 'templateData') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'templateData') ? ' active in' : ''}`} id="templateData">
+                <div class={`cdx-tab-panel${isInitialTab(navTabs, 'templateData') ? ' active' : ''}`} id="templateData">
                     <pre class="line-numbers"><code class="language-html">{c.templateData}</code></pre>
                 </div>
             )}
 
             {isTabEnabled(navTabs, 'styleData') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'styleData') ? ' active in' : ''}`} id="styleData">
+                <div class={`cdx-tab-panel${isInitialTab(navTabs, 'styleData') ? ' active' : ''}`} id="styleData">
                     {c.styleUrlsData?.length > 0 && c.styleUrlsData.map((s: any) => (<>
                         <p class="comment"><code>{s.styleUrl}</code></p>
                         <pre class="line-numbers"><code class="language-scss">{s.data}</code></pre>
@@ -316,7 +316,7 @@ export const ComponentPage = (data: any): string => {
             )}
 
             {isTabEnabled(navTabs, 'tree') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'tree') ? ' active in' : ''}`} id="tree">
+                <div class={`cdx-tab-panel${isInitialTab(navTabs, 'tree') ? ' active' : ''}`} id="tree">
                     <div id="tree-container"></div>
                     <div class="tree-legend">
                         <div class="title"><b>{t('legend')}</b></div>
@@ -328,7 +328,7 @@ export const ComponentPage = (data: any): string => {
             )}
 
             {isTabEnabled(navTabs, 'example') && c.exampleUrls && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'example') ? ' active in' : ''}`} id="example">
+                <div class={`cdx-tab-panel${isInitialTab(navTabs, 'example') ? ' active' : ''}`} id="example">
                     {c.exampleUrls.map((url: string) => (
                         <iframe class="exampleContainer" src={url}><p>{t('no-iframes')}</p></iframe>
                     ))}

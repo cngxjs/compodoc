@@ -124,7 +124,7 @@ export const Layout = (props: LayoutProps): string => {
                 `)}</style>
                 <link rel="stylesheet" href={r('styles/style.css')} />
                 <link rel="stylesheet" href={r('styles/compodocx.css')} />
-                {data.theme && data.theme !== 'gitbook' && (
+                {data.theme && !['gitbook', 'default'].includes(data.theme) && (
                     <link rel="stylesheet" href={r(`styles/${data.theme}.css`)} />
                 )}
             </head>
@@ -133,6 +133,7 @@ export const Layout = (props: LayoutProps): string => {
                 <script>{(IframeTrackingScript)}</script>
 
                 <a href="#main-content" class="cdx-skip-link">Skip to main content</a>
+                <div class="cdx-progress"><div class="cdx-progress-bar"></div></div>
 
                 {/* Mobile top bar */}
                 <header class="cdx-topbar">

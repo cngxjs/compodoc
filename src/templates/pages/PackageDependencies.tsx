@@ -18,8 +18,8 @@ export const PackageDependencies = (props: PackageDependenciesProps): string => 
     <>
         {props.packageDependencies && (
             <>
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">{t('dependencies')}</li>
+                <ol class="cdx-breadcrumb">
+                    <li class="">{t('dependencies')}</li>
                 </ol>
                 <DependencyList deps={props.packageDependencies} />
             </>
@@ -27,8 +27,8 @@ export const PackageDependencies = (props: PackageDependenciesProps): string => 
         {props.packagePeerDependencies && (
             <>
                 {props.packageDependencies && <br />}
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">{t('peer-dependencies')}</li>
+                <ol class="cdx-breadcrumb">
+                    <li class="">{t('peer-dependencies')}</li>
                 </ol>
                 <DependencyList deps={props.packagePeerDependencies} />
             </>

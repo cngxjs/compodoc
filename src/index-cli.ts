@@ -95,7 +95,7 @@ export class CliApplication extends Application {
             )
             .option(
                 '--theme [theme]',
-                "Choose a theme: 'light' (default), 'dark', 'material', or a path to a custom CSS file"
+                "Choose a theme: 'default', 'ocean', 'ember', 'midnight', or a path to a custom CSS file"
             )
             .option(
                 '--hideGenerator',
@@ -271,6 +271,19 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.theme) {
             Configuration.mainData.theme = programOptions.theme;
+        }
+
+        // Handle deprecated theme names
+        if (Configuration.mainData.theme === 'material') {
+            logger.warn(
+                "'material' theme has been removed. Use 'default', 'ocean', 'ember', or 'midnight' instead."
+            );
+            Configuration.mainData.theme = 'default';
+        }
+
+        // --extTheme is a deprecated alias — treat as custom theme path
+        if (Configuration.mainData.extTheme && !Configuration.mainData.theme) {
+            Configuration.mainData.theme = Configuration.mainData.extTheme;
         }
 
         if (configFile.name) {

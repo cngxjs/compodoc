@@ -30,9 +30,9 @@ const FunctionBadges = (fn: any): string => {
 
 export const MiscellaneousFunctions = (props: MiscFunctionsProps): string => (
     <>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('miscellaneous')}</li>
-            <li class="breadcrumb-item">{t('functions')}</li>
+        <ol class="cdx-breadcrumb">
+            <li class="">{t('miscellaneous')}</li>
+            <li class="">{t('functions')}</li>
         </ol>
         {IndexMisc({ list: props.miscellaneous.functions })}
         {Object.entries(props.miscellaneous.groupedFunctions).map(([key, methods]) => (<>

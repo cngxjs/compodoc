@@ -83,6 +83,197 @@
 }
 
 /* ----------------------------------------------------------------
+   Global color transition (dark mode toggle)
+   ---------------------------------------------------------------- */
+
+body, .cdx-sidebar, .content, .cdx-topbar,
+.cdx-member-card, .cdx-member-header,
+.cdx-cp .cdx-cp-panel, .cdx-cp .cdx-cp-header {
+  transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+}
+
+/* ----------------------------------------------------------------
+   SPA progress bar
+   ---------------------------------------------------------------- */
+
+.cdx-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 100;
+  pointer-events: none;
+  background: transparent;
+}
+
+.cdx-progress-bar {
+  height: 100%;
+  background: var(--color-cdx-primary);
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 300ms ease;
+}
+
+.cdx-progress-bar.cdx-progress--loading {
+  transform: scaleX(0.8);
+}
+
+.cdx-progress-bar.cdx-progress--done {
+  transform: scaleX(1);
+  transition: transform 150ms ease;
+}
+
+.cdx-progress-bar.cdx-progress--hide {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+/* ----------------------------------------------------------------
+   Content swap fade (SPA navigation)
+   ---------------------------------------------------------------- */
+
+.content-data.cdx-fade-in {
+  animation: cdx-content-fade 200ms ease-out;
+}
+
+@keyframes cdx-content-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ----------------------------------------------------------------
+   Button micro-interactions
+   ---------------------------------------------------------------- */
+
+.cdx-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+}
+
+.cdx-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-cdx-md);
+}
+
+.cdx-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-cdx-sm);
+  transition-duration: 60ms;
+}
+
+/* Ripple */
+.cdx-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, currentColor 10%, transparent 10.01%) no-repeat 50% 50%;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 400ms ease, opacity 400ms ease;
+}
+
+.cdx-btn:active::after {
+  transform: scale(2.5);
+  opacity: 0.15;
+  transition-duration: 0ms;
+}
+
+/* ----------------------------------------------------------------
+   Sidebar micro-interactions
+   ---------------------------------------------------------------- */
+
+.menu ul.list li a:hover {
+  background: var(--color-cdx-bg-alt);
+  transition: background 120ms ease;
+}
+
+.menu ul.list li a.active {
+  border-left: 3px solid var(--color-cdx-primary);
+  padding-left: 12px;
+  background: var(--color-cdx-primary-subtle);
+}
+
+.menu ul.list li.chapter .simple:hover,
+.menu .menu-toggler.linked:hover {
+  background: var(--color-cdx-bg-alt);
+  transition: background 120ms ease;
+}
+
+/* ----------------------------------------------------------------
+   Code block micro-interactions
+   ---------------------------------------------------------------- */
+
+.compodoc-sourcecode .line:hover {
+  background: hsl(220 20% 14% / 0.06);
+  transition: background 80ms ease;
+}
+
+.dark .compodoc-sourcecode .line:hover {
+  background: hsl(220 16% 90% / 0.06);
+}
+
+/* Overflow gradient indicator */
+pre {
+  position: relative;
+}
+
+pre::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(to right, transparent, var(--color-cdx-bg-code-block));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+pre:has(::-webkit-scrollbar) pre::after,
+pre.cdx-overflow::after {
+  opacity: 1;
+}
+
+/* Code copy button */
+.cdx-code-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-cdx-border);
+  border-radius: var(--radius-cdx-sm);
+  background: var(--color-cdx-bg-elevated);
+  color: var(--color-cdx-text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+pre:hover .cdx-code-copy {
+  opacity: 1;
+}
+
+.cdx-code-copy:hover {
+  color: var(--color-cdx-text);
+  background: var(--color-cdx-bg-alt);
+}
+
+.cdx-code-copy.cdx-code-copy--copied {
+  color: hsl(142 50% 40%);
+  transform: scale(1);
+  animation: cdx-copy-flash 300ms ease;
+}
+
+@keyframes cdx-copy-flash {
+  from { transform: scale(0.8); }
+  to   { transform: scale(1); }
+}
+
+/* ----------------------------------------------------------------
    Skip link
    ---------------------------------------------------------------- */
 
@@ -1004,7 +1195,9 @@ th[role='columnheader'].statements:not(.no-sort):after { margin-left: 10px; }
 
 /* Content lists */
 .content ol { list-style-type: decimal; margin-top: 0; padding-left: 20px; margin-bottom: 16px; }
+.content ol.cdx-breadcrumb { list-style: none !important; padding-left: 0; margin-bottom: 1rem; }
 .content ul { list-style: disc; margin-top: 0; padding-left: 20px; margin-bottom: 16px; }
+.content ul.cdx-tabs { list-style: none !important; padding-left: 0; margin-bottom: 1.5rem; }
 .content ul.list-group { padding-left: 0; }
 .content ul.list-group li.list-group-item a { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .content ul ul { list-style-type: circle; }

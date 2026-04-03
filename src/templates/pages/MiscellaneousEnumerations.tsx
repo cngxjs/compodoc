@@ -13,9 +13,9 @@ type MiscEnumerationsProps = {
 
 export const MiscellaneousEnumerations = (props: MiscEnumerationsProps): string => (
     <>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('miscellaneous')}</li>
-            <li class="breadcrumb-item">{t('enumerations')}</li>
+        <ol class="cdx-breadcrumb">
+            <li class="">{t('miscellaneous')}</li>
+            <li class="">{t('enumerations')}</li>
         </ol>
         {IndexMisc({ list: props.miscellaneous.enumerations })}
         {Object.entries(props.miscellaneous.groupedEnumerations).map(([key, enums]) => (<>

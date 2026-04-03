@@ -8,8 +8,8 @@ type PackagePropertiesProps = {
 export const PackageProperties = (props: PackagePropertiesProps): string => {
     if (!props.packageProperties) return '';
     return (<>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('properties')}</li>
+        <ol class="cdx-breadcrumb">
+            <li class="">{t('properties')}</li>
         </ol>
         <ul class="properties-list">
             {Object.entries(props.packageProperties).map(([key, value]) => (

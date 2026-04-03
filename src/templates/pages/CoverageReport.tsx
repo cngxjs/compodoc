@@ -31,8 +31,8 @@ const fileLink = (f: CoverageFile): string => {
 export const CoverageReport = (props: CoverageReportProps): string => {
     const base = relativeUrl(props.data.depth);
     return (<>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('coverage-page-title')}</li>
+        <ol class="cdx-breadcrumb">
+            <li class="">{t('coverage-page-title')}</li>
         </ol>
 
         <div>

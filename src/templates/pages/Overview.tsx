@@ -89,8 +89,8 @@ export const Overview = (props: OverviewProps): string => {
     const hasModules = props.modules?.length > 0;
 
     return (<>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('overview')}</li>
+        <ol class="cdx-breadcrumb">
+            <li class="">{t('overview')}</li>
         </ol>
         {!props.disableGraph && !props.disableMainGraph && hasModules && (
             <div class="text-center module-graph-container">

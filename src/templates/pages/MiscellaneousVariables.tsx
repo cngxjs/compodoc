@@ -13,9 +13,9 @@ type MiscVariablesProps = {
 
 export const MiscellaneousVariables = (props: MiscVariablesProps): string => (
     <>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('miscellaneous')}</li>
-            <li class="breadcrumb-item">{t('variables')}</li>
+        <ol class="cdx-breadcrumb">
+            <li class="">{t('miscellaneous')}</li>
+            <li class="">{t('variables')}</li>
         </ol>
         {IndexMisc({ list: props.miscellaneous.variables })}
         {Object.entries(props.miscellaneous.groupedVariables).map(([key, properties]) => (<>
