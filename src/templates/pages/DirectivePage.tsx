@@ -77,4 +77,6 @@ export const DirectivePage = (data: any): string =>
         showMethods: true,
         showProperties: true,
         showAccessors: true,
+        showStandaloneBadge: true,
+        showJsdocBadges: true,
     });

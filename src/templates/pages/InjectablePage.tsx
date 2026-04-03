@@ -15,4 +15,6 @@ export const InjectablePage = (data: any): string =>
         showMethods: true,
         showProperties: true,
         showAccessors: true,
+        showTokenBadge: true,
+        showJsdocBadges: true,
     });

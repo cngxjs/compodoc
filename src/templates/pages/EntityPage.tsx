@@ -41,6 +41,9 @@ export type EntityInfoProps = {
     readonly showProperties?: boolean;
     readonly showAccessors?: boolean;
     readonly showIndexSignatures?: boolean;
+    readonly showStandaloneBadge?: boolean;
+    readonly showTokenBadge?: boolean;
+    readonly showJsdocBadges?: boolean;
 };
 
 const InfoContent = (props: EntityInfoProps): string => {
@@ -138,7 +141,14 @@ const InfoContent = (props: EntityInfoProps): string => {
 export const renderEntityPage = (props: EntityInfoProps): string => (<>
     <ol class="breadcrumb">
         <li class="breadcrumb-item">{t(props.breadcrumbLabel)}</li>
-        <li class={props.entity.deprecated ? 'breadcrumb-item deprecated-name' : 'breadcrumb-item'}>{props.entity.name}</li>
+        <li class={props.entity.deprecated ? 'breadcrumb-item deprecated-name' : 'breadcrumb-item'}>
+            {props.entity.name}
+            {props.showStandaloneBadge && props.entity.standalone ? <span class="cdx-badge cdx-badge--standalone">Standalone</span> : ''}
+            {props.showTokenBadge && props.entity.isToken ? <span class="cdx-badge cdx-badge--token">Token</span> : ''}
+            {props.showJsdocBadges && props.entity.beta ? <span class="cdx-badge cdx-badge--beta">Beta</span> : ''}
+            {props.showJsdocBadges && props.entity.since ? <span class="cdx-badge cdx-badge--since">v{props.entity.since}</span> : ''}
+            {props.showJsdocBadges && props.entity.breaking ? <span class="cdx-badge cdx-badge--breaking">Breaking {props.entity.breaking}</span> : ''}
+        </li>
     </ol>
     {EntityTabs({
         navTabs: props.navTabs,

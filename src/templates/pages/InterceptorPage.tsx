@@ -15,4 +15,5 @@ export const InterceptorPage = (data: any): string =>
         showMethods: true,
         showProperties: true,
         showAccessors: true,
+        showJsdocBadges: true,
     });

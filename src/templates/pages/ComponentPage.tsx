@@ -18,6 +18,7 @@ import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { EntityTabs } from '../blocks/EntityTabs';
 import { highlightCode } from '../../app/engines/syntax-highlight.engine';
+import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 
 const escapeSimpleQuote = (text: string): string => {
     if (!text) return '';
@@ -174,6 +175,29 @@ const InfoContent = (data: any): string => {
             <p class="comment">{parseDescription(c.description, depth)}</p>
         </>)}
 
+        {(c.storybookUrl || c.figmaUrl || c.route) && (
+            <div class="cdx-external-links">
+                {c.storybookUrl && <a href={c.storybookUrl} target="_blank" rel="noopener noreferrer" class="cdx-ext-link"><span class="icon ion-ios-open"></span> Storybook</a>}
+                {c.figmaUrl && <a href={c.figmaUrl} target="_blank" rel="noopener noreferrer" class="cdx-ext-link"><span class="icon ion-ios-open"></span> Figma</a>}
+                {c.route && <span class="cdx-route-info"><span class="icon ion-ios-git-branch"></span> {c.route}</span>}
+            </div>
+        )}
+
+        {c.slots?.length > 0 && (<>
+            <h3>Content Slots</h3>
+            <table class="table table-sm table-hover">
+                <thead><tr><th>Slot</th><th>Description</th></tr></thead>
+                <tbody>
+                    {c.slots.map((slot: any) => (
+                        <tr>
+                            <td><code>{slot.name}</code></td>
+                            <td>{slot.description}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </>)}
+
         {isInfoSection('extends') && c.extends && (<>
             <p class="comment"><h3>{t('extends')}</h3></p>
             <p class="comment">{(c.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')}</p>
@@ -194,6 +218,12 @@ const InfoContent = (data: any): string => {
         })()}
 
         {ComponentMetadata(c)}
+
+        {data.relationships && BlockRelationshipGraph({
+            incoming: data.relationships.incoming,
+            outgoing: data.relationships.outgoing,
+            entityName: c.name,
+        })}
 
         {isInfoSection('index') && BlockIndex({
             properties: c.propertiesClass,
@@ -225,7 +255,14 @@ export const ComponentPage = (data: any): string => {
     return (<>
         <ol class="breadcrumb">
             <li class="breadcrumb-item">{t('components')}</li>
-            <li class={c.deprecated ? 'breadcrumb-item deprecated-name' : 'breadcrumb-item'}>{c.name}</li>
+            <li class={c.deprecated ? 'breadcrumb-item deprecated-name' : 'breadcrumb-item'}>
+                {c.name}
+                {c.standalone ? <span class="cdx-badge cdx-badge--standalone">Standalone</span> : ''}
+                {c.zoneless ? <span class="cdx-badge cdx-badge--zoneless">Zoneless</span> : ''}
+                {c.beta ? <span class="cdx-badge cdx-badge--beta">Beta</span> : ''}
+                {c.since ? <span class="cdx-badge cdx-badge--since">v{c.since}</span> : ''}
+                {c.breaking ? <span class="cdx-badge cdx-badge--breaking">Breaking {c.breaking}</span> : ''}
+            </li>
         </ol>
 
         <ul class="nav nav-tabs" role="tablist">
