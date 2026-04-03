@@ -29,7 +29,9 @@ import { MiscellaneousVariables } from '../../templates/pages/MiscellaneousVaria
 import { ModulePage } from '../../templates/pages/ModulePage';
 import { PipePage } from '../../templates/pages/PipePage';
 import { ComponentPage } from '../../templates/pages/ComponentPage';
+import { AppConfigPage } from '../../templates/pages/AppConfigPage';
 import { loadCustomTemplates, renderCustomTemplate } from './custom-template.engine';
+import DependenciesEngine from './dependencies.engine';
 
 /** Map page context to its custom template file name */
 const CONTEXT_TEMPLATE_MAP: Record<string, string> = {
@@ -136,7 +138,10 @@ export class HtmlEngine {
             case 'miscellaneous-enumerations':
                 return MiscellaneousEnumerations(data);
             case 'component':
+                data.relationships = DependenciesEngine.getRelationships(data.component?.name);
                 return ComponentPage(data);
+            case 'app-config':
+                return AppConfigPage(data);
             default:
                 return '';
         }

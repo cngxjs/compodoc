@@ -11,4 +11,5 @@ export const EntityDetailPage = (data: any): string =>
         navTabs: data.navTabs,
         disableFilePath: data.disableFilePath,
         showProperties: true,
+        showJsdocBadges: true,
     });

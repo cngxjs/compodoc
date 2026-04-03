@@ -151,7 +151,8 @@ export class AngularDependencies extends FrameworkDependencies {
                 typealiases: [],
                 enumerations: []
             },
-            routesTree: undefined
+            routesTree: undefined,
+            appConfig: []
         };
 
         const sourceFiles = this.program.getSourceFiles() || [];
@@ -575,12 +576,17 @@ export class AngularDependencies extends FrameworkDependencies {
                                 methods: IO.methods,
                                 deprecated: IO.deprecated,
                                 deprecationMessage: IO.deprecationMessage,
+                                category: IO.category || '',
                                 description: IO.description,
                                 rawdescription: IO.rawdescription,
                                 sourceCode: srcFile.getText(),
                                 exampleUrls: this.componentHelper.getComponentExampleUrls(
                                     srcFile.getText()
-                                )
+                                ),
+                                // Custom JSDoc tags
+                                ...(IO.beta && { beta: true }),
+                                ...(IO.since && { since: IO.since }),
+                                ...(IO.breaking && { breaking: IO.breaking }),
                             };
                             if (IO.constructor && !Configuration.mainData.disableConstructors) {
                                 injectableDeps.constructorObj = IO.constructor;
@@ -623,10 +629,14 @@ export class AngularDependencies extends FrameworkDependencies {
                                 type: 'pipe',
                                 deprecated: IO.deprecated,
                                 deprecationMessage: IO.deprecationMessage,
+                                category: IO.category || '',
                                 description: IO.description,
                                 rawdescription: IO.rawdescription,
                                 properties: IO.properties,
                                 methods: IO.methods,
+                                // Custom JSDoc tags
+                                ...(IO.beta && { beta: true }),
+                                ...(IO.since && { since: IO.since }),
                                 standalone: this.componentHelper.getComponentStandalone(
                                     props,
                                     srcFile
@@ -772,6 +782,20 @@ export class AngularDependencies extends FrameworkDependencies {
                             category,
                             description: this.visitEnumTypeAliasFunctionDeclarationDescription(node)
                         };
+                        // Detect factory function kind by naming convention
+                        const factoryKind = this.detectFactoryKind(name);
+                        if (factoryKind) {
+                            functionDep.factoryKind = factoryKind;
+                        }
+                        // Detect functional guard/resolver/interceptor from return type
+                        const functionalKind = this.detectFunctionalAngularKind(infos.returnType, name);
+                        if (functionalKind) {
+                            (functionDep as any).functionalKind = functionalKind;
+                        }
+                        // Custom JSDoc tags
+                        if (infos.signal) (functionDep as any).signal = true;
+                        if (infos.beta) (functionDep as any).beta = true;
+                        if (infos.since) (functionDep as any).since = infos.since;
                         if (infos.args) {
                             functionDep.args = infos.args;
                         }
@@ -1014,6 +1038,63 @@ export class AngularDependencies extends FrameworkDependencies {
                                     deps.rawdescription = rawDescription;
                                     deps.description = markedAcl(rawDescription);
                                 }
+                                // Detect ApplicationConfig declarations
+                                if (infos.type === 'ApplicationConfig' && infos.initializer) {
+                                    const providers = this.extractProviderCalls(infos.initializer);
+                                    const appConfigDep: any = {
+                                        name,
+                                        file,
+                                        type: 'app-config',
+                                        description: deps.description || '',
+                                        rawdescription: deps.rawdescription || '',
+                                        providers,
+                                        deprecated: deps.deprecated || false,
+                                        deprecationMessage: deps.deprecationMessage || '',
+                                        category: deps.category || '',
+                                        since: infos.since || '',
+                                    };
+                                    if (!isIgnore(variableNode)) {
+                                        if (!this.isSymbolAllowed(name, file)) {
+                                            logger.debug(`Skipping ApplicationConfig ${name} (not in public API)`);
+                                            return;
+                                        }
+                                        this.debug(appConfigDep);
+                                        if (!outputSymbols.appConfig) outputSymbols.appConfig = [];
+                                        outputSymbols.appConfig.push(appConfigDep);
+                                    }
+                                    return;
+                                }
+
+                                // Detect InjectionToken declarations
+                                if (this.isInjectionToken(infos.initializer)) {
+                                    const tokenDep: IInjectableDep = {
+                                        name,
+                                        id: 'injectable-' + name + '-' + crypto.createHash('sha512').update(name + file).digest('hex'),
+                                        file,
+                                        type: 'injectable',
+                                        properties: [],
+                                        methods: [],
+                                        deprecated: deps.deprecated || false,
+                                        deprecationMessage: deps.deprecationMessage || '',
+                                        category: deps.category || '',
+                                        description: deps.description || '',
+                                        rawdescription: deps.rawdescription || '',
+                                        sourceCode: '',
+                                        isToken: true,
+                                        tokenType: this.getInjectionTokenType(infos.initializer),
+                                        providedIn: this.getInjectionTokenProvidedIn(infos.initializer)
+                                    };
+                                    if (!isIgnore(variableNode)) {
+                                        if (!this.isSymbolAllowed(name, file)) {
+                                            logger.debug(`Skipping InjectionToken ${name} (not in public API)`);
+                                            return;
+                                        }
+                                        this.debug(tokenDep);
+                                        outputSymbols.injectables.push(tokenDep);
+                                    }
+                                    return;
+                                }
+
                                 if (isModuleWithProviders(variableNode)) {
                                     const routingInitializer = getModuleWithProviders(variableNode);
                                     RouterParserUtil.addModuleWithRoutes(
@@ -1231,6 +1312,151 @@ export class AngularDependencies extends FrameworkDependencies {
                 }
             }
         });
+        this.extractCustomTags(tags, result);
+    }
+
+    private extractCustomTags(tags: any[], result: { [key in string | number]: any }) {
+        for (const tag of tags) {
+            if (!tag.tagName || !tag.tagName.text) continue;
+            const name = tag.tagName.text;
+            const rawComment = tag.comment;
+            const comment = (typeof rawComment === 'string' ? rawComment : Array.isArray(rawComment) ? rawComment.map((c: any) => c.text || '').join('') : '').trim();
+
+            switch (name) {
+                case 'signal':
+                    result.signal = true;
+                    break;
+                case 'zoneless':
+                    result.zoneless = true;
+                    break;
+                case 'beta':
+                    result.beta = true;
+                    break;
+                case 'group':
+                    result.group = comment.split('\n')[0].trim();
+                    break;
+                case 'order':
+                    result.order = parseInt(comment, 10) || 0;
+                    break;
+                case 'since':
+                    result.since = comment.split('\n')[0].trim();
+                    break;
+                case 'breaking':
+                    result.breaking = comment.split('\n')[0].trim();
+                    break;
+                case 'route':
+                    result.route = comment.split('\n')[0].trim();
+                    break;
+                case 'storybook':
+                    result.storybookUrl = comment.split('\n')[0].trim();
+                    break;
+                case 'figma':
+                    result.figmaUrl = comment.split('\n')[0].trim();
+                    break;
+                case 'slot': {
+                    // @slot name - description
+                    if (!result.slots) result.slots = [];
+                    const parts = comment.match(/^(\S+)\s*-?\s*(.*)$/);
+                    if (parts) {
+                        result.slots.push({ name: parts[1], description: parts[2] || '' });
+                    } else if (comment) {
+                        result.slots.push({ name: comment, description: '' });
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Extract provider function calls from an ApplicationConfig initializer.
+     * Walks the `providers` array in the object literal and extracts call expressions.
+     */
+    private extractProviderCalls(initializer: any): Array<{ name: string; features: string[] }> {
+        const providers: Array<{ name: string; features: string[] }> = [];
+        if (!initializer || !ts.isObjectLiteralExpression(initializer)) return providers;
+
+        const providersProp = initializer.properties.find(
+            (p: any) => ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === 'providers'
+        );
+        if (!providersProp || !ts.isPropertyAssignment(providersProp)) return providers;
+        const arr = providersProp.initializer;
+        if (!ts.isArrayLiteralExpression(arr)) return providers;
+
+        for (const element of arr.elements) {
+            if (ts.isCallExpression(element)) {
+                const callName = element.expression.getText();
+                const features: string[] = [];
+
+                // Extract feature functions from arguments (e.g. withComponentInputBinding())
+                for (const arg of element.arguments) {
+                    if (ts.isCallExpression(arg)) {
+                        features.push(arg.expression.getText());
+                    }
+                }
+
+                providers.push({ name: callName, features });
+            } else if (ts.isSpreadElement(element) && ts.isCallExpression(element.expression)) {
+                providers.push({ name: element.expression.expression.getText(), features: [] });
+            }
+        }
+        return providers;
+    }
+
+    private isInjectionToken(initializer: any): boolean {
+        if (!initializer) return false;
+        // Match: new InjectionToken(...)
+        if (ts.isNewExpression(initializer)) {
+            const expr = initializer.expression;
+            if (expr && ts.isIdentifier(expr) && expr.text === 'InjectionToken') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private getInjectionTokenType(initializer: any): string {
+        if (!initializer || !ts.isNewExpression(initializer)) return '';
+        // Extract generic type argument: InjectionToken<SomeType>
+        if (initializer.typeArguments && initializer.typeArguments.length > 0) {
+            return initializer.typeArguments[0].getText();
+        }
+        return '';
+    }
+
+    private getInjectionTokenProvidedIn(initializer: any): string {
+        if (!initializer || !ts.isNewExpression(initializer)) return '';
+        // Second argument to InjectionToken constructor is the options object
+        const args = initializer.arguments;
+        if (args && args.length >= 2 && ts.isObjectLiteralExpression(args[1])) {
+            const providedInProp = args[1].properties.find(
+                (p: any) => ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === 'providedIn'
+            );
+            if (providedInProp && ts.isPropertyAssignment(providedInProp)) {
+                return providedInProp.initializer.getText();
+            }
+        }
+        return '';
+    }
+
+    private detectFunctionalAngularKind(returnType: string | undefined, name: string): string | undefined {
+        if (!returnType) return undefined;
+        const rt = returnType.trim();
+        // Check return type annotations
+        if (/CanActivateFn|CanActivate|CanDeactivate|CanMatch|CanLoad|boolean\s*\|\s*UrlTree/.test(rt)) return 'guard';
+        if (/ResolveFn|Resolve</.test(rt)) return 'resolver';
+        if (/HttpInterceptorFn|HttpHandlerFn/.test(rt)) return 'interceptor';
+        // Check variable type annotations (for arrow function exports)
+        if (/Guard/i.test(name) && /boolean|Observable<boolean>|Promise<boolean>/.test(rt)) return 'guard';
+        return undefined;
+    }
+
+    private detectFactoryKind(name: string): IFunctionDecDep['factoryKind'] | undefined {
+        if (/^provide[A-Z]/.test(name)) return 'provider';
+        if (/^with[A-Z]/.test(name)) return 'feature';
+        if (/^inject[A-Z]/.test(name)) return 'inject';
+        if (/^create[A-Z]/.test(name)) return 'factory';
+        return undefined;
     }
 
     private findExpressionByNameInExpressions(entryNode, name) {

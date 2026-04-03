@@ -52,6 +52,59 @@ export class ClassHelper {
                 }
             }
         });
+        this.extractCustomTags(tags, result);
+    }
+
+    private extractCustomTags(tags: any[], result: { [key in string | number]: any }) {
+        for (const tag of tags) {
+            if (!tag.tagName || !tag.tagName.text) continue;
+            const name = tag.tagName.text;
+            const rawComment = tag.comment;
+            const comment = (typeof rawComment === 'string' ? rawComment : Array.isArray(rawComment) ? rawComment.map((c: any) => c.text || '').join('') : '').trim();
+
+            switch (name) {
+                case 'signal':
+                    result.signal = true;
+                    break;
+                case 'zoneless':
+                    result.zoneless = true;
+                    break;
+                case 'beta':
+                    result.beta = true;
+                    break;
+                case 'group':
+                    result.group = comment.split('\n')[0].trim();
+                    break;
+                case 'order':
+                    result.order = parseInt(comment, 10) || 0;
+                    break;
+                case 'since':
+                    result.since = comment.split('\n')[0].trim();
+                    break;
+                case 'breaking':
+                    result.breaking = comment.split('\n')[0].trim();
+                    break;
+                case 'route':
+                    result.route = comment.split('\n')[0].trim();
+                    break;
+                case 'storybook':
+                    result.storybookUrl = comment.split('\n')[0].trim();
+                    break;
+                case 'figma':
+                    result.figmaUrl = comment.split('\n')[0].trim();
+                    break;
+                case 'slot': {
+                    if (!result.slots) result.slots = [];
+                    const parts = comment.match(/^(\S+)\s*-?\s*(.*)$/);
+                    const slotName = parts ? parts[1] : comment;
+                    const slotDesc = parts ? (parts[2] || '') : '';
+                    if (slotName && !result.slots.some((s: any) => s.name === slotName)) {
+                        result.slots.push({ name: slotName, description: slotDesc });
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -94,6 +147,46 @@ export class ClassHelper {
     /**
      * Initialize common fields for documented items
      */
+    /**
+     * Detect Angular signal primitives from a property's stringified default value.
+     * Returns the signal kind and optional extracted type.
+     */
+    private detectSignalKind(defaultValue: string): { kind: string; signalType?: string; required?: boolean } | undefined {
+        if (!defaultValue) return undefined;
+        const cleaned = defaultValue.replace(/\n/g, '');
+
+        // Order matters: check specific patterns before generic ones
+        const patterns: Array<{ pattern: RegExp; kind: string }> = [
+            { pattern: /^input\.required\s*<([^>]+)>\s*\(/, kind: 'input-signal' },
+            { pattern: /^input\s*(?:<([^>]+)>)?\s*\(/, kind: 'input-signal' },
+            { pattern: /^output\s*(?:<([^>]+)>)?\s*\(/, kind: 'output-signal' },
+            { pattern: /^model\s*(?:<([^>]+)>)?\s*\(/, kind: 'model' },
+            { pattern: /^model\.required\s*<([^>]+)>\s*\(/, kind: 'model' },
+            { pattern: /^linkedSignal\s*(?:<([^>]+)>)?\s*\(/, kind: 'linked-signal' },
+            { pattern: /^computed\s*(?:<([^>]+)>)?\s*\(/, kind: 'computed' },
+            { pattern: /^signal\s*(?:<([^>]+)>)?\s*\(/, kind: 'signal' },
+            { pattern: /^effect\s*\(/, kind: 'effect' },
+            { pattern: /^resource\s*(?:<([^>]+)>)?\s*\(/, kind: 'resource' },
+            { pattern: /^rxResource\s*(?:<([^>]+)>)?\s*\(/, kind: 'rx-resource' },
+            { pattern: /^viewChild\s*(?:<([^>]+)>)?\s*\(/, kind: 'view-child' },
+            { pattern: /^viewChildren\s*(?:<([^>]+)>)?\s*\(/, kind: 'view-children' },
+            { pattern: /^contentChild\s*(?:<([^>]+)>)?\s*\(/, kind: 'content-child' },
+            { pattern: /^contentChildren\s*(?:<([^>]+)>)?\s*\(/, kind: 'content-children' },
+            { pattern: /^inject\s*\(\s*([A-Z_]\w*)/, kind: 'inject' },
+        ];
+
+        for (const { pattern, kind } of patterns) {
+            const match = pattern.exec(cleaned);
+            if (match) {
+                const result: { kind: string; signalType?: string; required?: boolean } = { kind };
+                if (match[1]) result.signalType = match[1].trim();
+                if (cleaned.includes('.required')) result.required = true;
+                return result;
+            }
+        }
+        return undefined;
+    }
+
     private initializeDocumentationFields(): {
         deprecated: boolean;
         deprecationMessage: string;
@@ -558,9 +651,7 @@ export class ClassHelper {
                 if (jsdoctags && jsdoctags.length >= 1) {
                     const jsdoc = jsdoctags[0] as any;
                     if (jsdoc && jsdoc.tags) {
-                        const tempDeprecation = this.initializeDocumentationFields();
-                        this.checkForDeprecation(jsdoc.tags, tempDeprecation);
-                        deprecation = tempDeprecation;
+                        this.checkForDeprecation(jsdoc.tags, deprecation);
                         jsdoctags = markedtags(jsdoc.tags);
                     }
                 }
@@ -643,9 +734,7 @@ export class ClassHelper {
             }
             if (isDirective) {
                 return {
-                    deprecated: deprecation.deprecated,
-                    deprecationMessage: deprecation.deprecationMessage,
-                    category: deprecation.category,
+                    ...deprecation,
                     description,
                     rawdescription: rawdescription,
                     inputs: members.inputs,
@@ -667,8 +756,7 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated: deprecation.deprecated,
-                        deprecationMessage: deprecation.deprecationMessage,
+                        ...deprecation,
                         description,
                         rawdescription: rawdescription,
                         methods: members.methods,
@@ -687,8 +775,7 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated: deprecation.deprecated,
-                        deprecationMessage: deprecation.deprecationMessage,
+                        ...deprecation,
                         description,
                         rawdescription: rawdescription,
                         jsdoctags: jsdoctags,
@@ -701,8 +788,7 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated: deprecation.deprecated,
-                        deprecationMessage: deprecation.deprecationMessage,
+                        ...deprecation,
                         description,
                         rawdescription: rawdescription,
                         jsdoctags: jsdoctags,
@@ -712,8 +798,7 @@ export class ClassHelper {
             } else {
                 return [
                     {
-                        deprecated: deprecation.deprecated,
-                        deprecationMessage: deprecation.deprecationMessage,
+                        ...deprecation,
                         description,
                         rawdescription: rawdescription,
                         methods: members.methods,
@@ -732,9 +817,7 @@ export class ClassHelper {
         if (description) {
             return [
                 {
-                    deprecated: deprecation.deprecated,
-                    deprecationMessage: deprecation.deprecationMessage,
-                    category: deprecation.category,
+                    ...deprecation,
                     description,
                     rawdescription: rawdescription,
                     inputs: members.inputs,
@@ -755,9 +838,7 @@ export class ClassHelper {
         } else {
             return [
                 {
-                    deprecated: deprecation.deprecated,
-                    deprecationMessage: deprecation.deprecationMessage,
-                    category: deprecation.category,
+                    ...deprecation,
                     methods: members.methods,
                     inputs: members.inputs,
                     outputs: members.outputs,
@@ -1250,6 +1331,16 @@ export class ClassHelper {
 
         if (initializer && initializer.kind === SyntaxKind.ArrowFunction) {
             result.defaultValue = '() => {...}';
+        }
+
+        // Detect signal primitives from initializer
+        if (result.defaultValue) {
+            const signalKind = this.detectSignalKind(result.defaultValue);
+            if (signalKind) {
+                result.signalKind = signalKind.kind;
+                if (signalKind.signalType) result.type = signalKind.signalType;
+                if (signalKind.required) result.required = true;
+            }
         }
 
         if (typeof result.name === 'undefined' && (property.name as any).expression) {

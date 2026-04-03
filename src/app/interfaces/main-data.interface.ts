@@ -88,6 +88,9 @@ export interface MainDataInterface {
     publicApiOnly: string;
     publicApiExports: Map<string, Set<string>>;
     infoTabSections: string[];
+    stackblitz: boolean;
+    stackblitzTemplate: string;
+    appConfig: any[];
     categorizedComponents: Record<string, unknown[]>;
     categorizedDirectives: Record<string, unknown[]>;
     categorizedInjectables: Record<string, unknown[]>;

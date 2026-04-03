@@ -10,6 +10,25 @@ import {
 import { DefinedInRow } from './DefinedInRow';
 import { ParamsTable } from './ParamsTable';
 
+const signalKindLabel = (kind: string): string => ({
+    'signal': 'Signal',
+    'computed': 'Computed',
+    'linked-signal': 'LinkedSignal',
+    'effect': 'Effect',
+    'resource': 'Resource',
+    'rx-resource': 'RxResource',
+    'model': 'Model',
+    'input-signal': 'Input Signal',
+    'output-signal': 'Output Signal',
+    'view-child': 'ViewChild',
+    'view-children': 'ViewChildren',
+    'content-child': 'ContentChild',
+    'content-children': 'ContentChildren',
+    'inject': 'Inject',
+    'host-binding': 'Host',
+    'host-listener': 'Host',
+}[kind] || kind);
+
 type BlockPropertyProps = {
     readonly properties: any[];
     readonly file: string;
@@ -36,6 +55,8 @@ export const BlockProperty = (props: BlockPropertyProps): string => (
                                 ))}
                                 {p.optional && <span class="modifier">{t('optional')}</span>}
                                 <span class={p.deprecated ? 'deprecated-name' : ''}><b>{p.name}</b></span>
+                                {p.signalKind && <span class={`cdx-badge cdx-badge--${p.signalKind}`}>{signalKindLabel(p.signalKind)}</span>}
+                                {p.required && <span class="cdx-badge cdx-badge--factory">Required</span>}
                                 <a href={`#${p.name}`}><span class="icon ion-ios-link"></span></a>
                             </span>
                         </td>

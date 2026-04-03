@@ -32,6 +32,14 @@ export class DirectiveDepFactory {
             deprecationMessage: IO.deprecationMessage,
             category: IO.category || '',
 
+            // Custom JSDoc tags (Phase 4.6)
+            signal: IO.signal || false,
+            zoneless: IO.zoneless || false,
+            beta: IO.beta || false,
+            since: IO.since || '',
+            breaking: IO.breaking || '',
+            group: IO.group || '',
+
             hostBindings: IO.hostBindings,
             hostListeners: IO.hostListeners,
 
@@ -65,6 +73,40 @@ export class DirectiveDepFactory {
             directiveDeps.outputsClass = directiveDeps.outputsClass.concat(outputSignals)
             directiveDeps.propertiesClass = properties;
         }
+
+        // Parse host: {} metadata into structured hostBindings/hostListeners
+        const host = this.helper.getComponentHost(props);
+        if (host && typeof host === 'object') {
+            const hostEntries = host instanceof Map
+                ? Array.from(host.entries())
+                : Object.entries(host);
+
+            for (const [key, value] of hostEntries) {
+                const k = String(key).trim();
+                const v = String(value).trim();
+                if (k.startsWith('(') && k.endsWith(')')) {
+                    const eventName = k.slice(1, -1);
+                    directiveDeps.hostListeners.push({
+                        name: eventName,
+                        args: [],
+                        description: `host: { '(${eventName})': '${v}' }`,
+                        line: 0,
+                        signalKind: 'host-listener',
+                    });
+                } else if (k.startsWith('[') && k.endsWith(']')) {
+                    const bindingName = k.slice(1, -1);
+                    directiveDeps.hostBindings.push({
+                        name: bindingName,
+                        defaultValue: v,
+                        type: '',
+                        description: `host: { '${k}': '${v}' }`,
+                        line: 0,
+                        signalKind: 'host-binding',
+                    });
+                }
+            }
+        }
+
         return directiveDeps;
     }
 }
@@ -87,6 +129,14 @@ export interface IDirectiveDep extends IDep {
     deprecated: boolean;
     deprecationMessage: string;
     category?: string;
+
+    // Custom JSDoc tags
+    signal?: boolean;
+    zoneless?: boolean;
+    beta?: boolean;
+    since?: string;
+    breaking?: string;
+    group?: string;
 
     hostBindings: any;
     hostDirectives: any;

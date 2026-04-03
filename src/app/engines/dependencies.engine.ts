@@ -47,6 +47,10 @@ export class DependenciesEngine {
     public categorizedGuards: Record<string, IGuardDep[]> = {};
     public categorizedInterceptors: Record<string, IInterceptorDep[]> = {};
     public categorizedEntities: Record<string, IDep[]> = {};
+    public appConfig: any[] = [];
+    public rawStandaloneComponents: IComponentDep[] = [];
+    public rawStandaloneDirectives: IDirectiveDep[] = [];
+    public rawStandalonePipes: IPipeDep[] = [];
     public miscellaneous: MiscellaneousData = {
         variables: [],
         functions: [],
@@ -133,13 +137,49 @@ export class DependenciesEngine {
         this.interfaces = [...this.rawData.interfaces].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
         this.pipes = [...this.rawData.pipes].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
         this.classes = [...this.rawData.classes].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.appConfig = this.rawData.appConfig || [];
         this.miscellaneous = this.rawData.miscellaneous;
         this.prepareMiscellaneous();
         this.updateModulesDeclarationsExportsTypes();
+        this.inferStandaloneStatus();
         this.routes = this.rawData.routesTree;
         this.manageDuplicatesName();
         this.cleanRawModulesNames();
         this.prepareCategoryGroups();
+    }
+
+    private inferStandaloneStatus() {
+        // Collect all names declared in any NgModule
+        const declaredNames = new Set<string>();
+        this.modules.forEach((module: any) => {
+            if (module.declarations) {
+                module.declarations.forEach(d => declaredNames.add(d.name));
+            }
+        });
+
+        // Components: if explicitly standalone OR not declared in any module -> standalone
+        this.components.forEach((comp: any) => {
+            if (!comp.standalone && !declaredNames.has(comp.name)) {
+                comp.standalone = true;
+            }
+        });
+        this.rawStandaloneComponents = this.components.filter((c: any) => c.standalone);
+
+        // Directives: same logic
+        this.directives.forEach((dir: any) => {
+            if (!dir.standalone && !declaredNames.has(dir.name)) {
+                dir.standalone = true;
+            }
+        });
+        this.rawStandaloneDirectives = this.directives.filter((d: any) => d.standalone);
+
+        // Pipes: same logic
+        this.pipes.forEach((pipe: any) => {
+            if (!pipe.standalone && !declaredNames.has(pipe.name)) {
+                pipe.standalone = true;
+            }
+        });
+        this.rawStandalonePipes = this.pipes.filter((p: any) => p.standalone);
     }
 
     private cleanRawModulesNames() {
@@ -490,6 +530,62 @@ export class DependenciesEngine {
 
     public getMiscellaneous() {
         return this.miscellaneous;
+    }
+
+    /**
+     * Compute relationships for a given entity.
+     * Returns incoming (who uses this) and outgoing (what it depends on).
+     * Limited to MAX_NODES to avoid performance issues in large projects.
+     */
+    public getRelationships(entityName: string): { incoming: Array<{ name: string; type: string }>; outgoing: Array<{ name: string; type: string }> } {
+        const MAX_NODES = 50;
+        const incoming: Array<{ name: string; type: string }> = [];
+        const outgoing: Array<{ name: string; type: string }> = [];
+        const seen = new Set<string>();
+
+        // Check module declarations/imports for relationships
+        this.modules.forEach((mod: any) => {
+            const modDeclares = (mod.declarations ?? []).map((d: any) => d.name);
+            const modImports = (mod.imports ?? []).map((i: any) => i.name);
+            const modExports = (mod.exports ?? []).map((e: any) => e.name);
+
+            if (modDeclares.includes(entityName) || modImports.includes(entityName) || modExports.includes(entityName)) {
+                if (!seen.has(mod.name) && incoming.length < MAX_NODES) {
+                    incoming.push({ name: mod.name, type: 'module' });
+                    seen.add(mod.name);
+                }
+            }
+        });
+
+        // Check standalone component imports
+        const allComponents = [...this.components, ...this.directives, ...this.pipes] as any[];
+        allComponents.forEach((comp: any) => {
+            if (comp.name === entityName) {
+                // Outgoing: what this entity imports
+                (comp.imports ?? []).forEach((imp: any) => {
+                    if (!seen.has(imp.name) && outgoing.length < MAX_NODES) {
+                        outgoing.push({ name: imp.name, type: imp.type || 'dependency' });
+                        seen.add(imp.name);
+                    }
+                });
+                // Outgoing: providers
+                (comp.providers ?? []).forEach((prov: any) => {
+                    if (!seen.has(prov.name) && outgoing.length < MAX_NODES) {
+                        outgoing.push({ name: prov.name, type: 'provider' });
+                        seen.add(prov.name);
+                    }
+                });
+            } else {
+                // Incoming: other components that import this entity
+                const compImports = (comp.imports ?? []).map((i: any) => i.name);
+                if (compImports.includes(entityName) && !seen.has(comp.name) && incoming.length < MAX_NODES) {
+                    incoming.push({ name: comp.name, type: comp.type || 'component' });
+                    seen.add(comp.name);
+                }
+            }
+        });
+
+        return { incoming, outgoing };
     }
 }
 

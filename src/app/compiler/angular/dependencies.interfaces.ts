@@ -19,6 +19,10 @@ export interface IInjectableDep extends IDep {
     exampleUrls?;
     extends?;
 
+    isToken?: boolean;
+    tokenType?: string;
+    providedIn?: string;
+
     accessors?: Object;
     constructorObj?: Object;
     jsdoctags?: Array<string>;
@@ -97,6 +101,8 @@ export interface IFunctionDecDep extends IDep {
     deprecationMessage: string;
     category?: string;
     description: string;
+
+    factoryKind?: 'provider' | 'feature' | 'inject' | 'factory';
 
     returnType?: string;
     args?: Array<any>;

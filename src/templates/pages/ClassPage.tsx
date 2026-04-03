@@ -20,4 +20,5 @@ export const ClassPage = (data: any): string =>
         showProperties: true,
         showIndexSignatures: true,
         showAccessors: true,
+        showJsdocBadges: true,
     });
