@@ -1273,7 +1273,8 @@ export class AngularDependencies extends FrameworkDependencies {
         for (const tag of tags) {
             if (!tag.tagName || !tag.tagName.text) continue;
             const name = tag.tagName.text;
-            const comment = (tag.comment || '').trim();
+            const rawComment = tag.comment;
+            const comment = (typeof rawComment === 'string' ? rawComment : Array.isArray(rawComment) ? rawComment.map((c: any) => c.text || '').join('') : '').trim();
 
             switch (name) {
                 case 'signal':
