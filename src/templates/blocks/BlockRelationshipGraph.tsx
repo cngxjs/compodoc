@@ -21,7 +21,7 @@ const RelationshipList = (props: { items: RelationshipNode[]; title: string; ico
                 {props.items.map(item => (
                     <li>
                         {linkTypeHtml(item.name)}
-                        <span class="cdx-badge cdx-badge--since">{item.type}</span>
+                        <span class="cdx-badge cdx-badge--entity-type">{item.type}</span>
                     </li>
                 ))}
             </ul>

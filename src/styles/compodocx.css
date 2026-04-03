@@ -220,6 +220,12 @@
   background: hsl(280 35% 94%);
 }
 
+.cdx-badge--entity-type {
+  color: var(--color-cdx-text-secondary);
+  border: 1px solid var(--color-cdx-border);
+  background: transparent;
+}
+
 .cdx-badge--since {
   color: var(--color-cdx-text-secondary);
   border: 1px solid var(--color-cdx-border);
@@ -266,6 +272,12 @@
   color: hsl(280 45% 70%);
   border-color: hsl(280 25% 40%);
   background: hsl(280 20% 18%);
+}
+
+.dark .cdx-badge--entity-type {
+  color: var(--color-cdx-text-secondary);
+  border-color: var(--color-cdx-border);
+  background: transparent;
 }
 
 .dark .cdx-badge--since {

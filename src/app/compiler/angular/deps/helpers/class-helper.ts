@@ -96,10 +96,10 @@ export class ClassHelper {
                 case 'slot': {
                     if (!result.slots) result.slots = [];
                     const parts = comment.match(/^(\S+)\s*-?\s*(.*)$/);
-                    if (parts) {
-                        result.slots.push({ name: parts[1], description: parts[2] || '' });
-                    } else if (comment) {
-                        result.slots.push({ name: comment, description: '' });
+                    const slotName = parts ? parts[1] : comment;
+                    const slotDesc = parts ? (parts[2] || '') : '';
+                    if (slotName && !result.slots.some((s: any) => s.name === slotName)) {
+                        result.slots.push({ name: slotName, description: slotDesc });
                     }
                     break;
                 }
@@ -611,9 +611,7 @@ export class ClassHelper {
                 if (jsdoctags && jsdoctags.length >= 1) {
                     const jsdoc = jsdoctags[0] as any;
                     if (jsdoc && jsdoc.tags) {
-                        const tempDeprecation = this.initializeDocumentationFields();
-                        this.checkForDeprecation(jsdoc.tags, tempDeprecation);
-                        deprecation = tempDeprecation;
+                        this.checkForDeprecation(jsdoc.tags, deprecation);
                         jsdoctags = markedtags(jsdoc.tags);
                     }
                 }
@@ -696,9 +694,7 @@ export class ClassHelper {
             }
             if (isDirective) {
                 return {
-                    deprecated: deprecation.deprecated,
-                    deprecationMessage: deprecation.deprecationMessage,
-                    category: deprecation.category,
+                    ...deprecation,
                     description,
                     rawdescription: rawdescription,
                     inputs: members.inputs,
@@ -720,8 +716,7 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated: deprecation.deprecated,
-                        deprecationMessage: deprecation.deprecationMessage,
+                        ...deprecation,
                         description,
                         rawdescription: rawdescription,
                         methods: members.methods,
@@ -740,8 +735,7 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated: deprecation.deprecated,
-                        deprecationMessage: deprecation.deprecationMessage,
+                        ...deprecation,
                         description,
                         rawdescription: rawdescription,
                         jsdoctags: jsdoctags,
@@ -754,8 +748,7 @@ export class ClassHelper {
                     {
                         fileName,
                         className,
-                        deprecated: deprecation.deprecated,
-                        deprecationMessage: deprecation.deprecationMessage,
+                        ...deprecation,
                         description,
                         rawdescription: rawdescription,
                         jsdoctags: jsdoctags,
@@ -765,8 +758,7 @@ export class ClassHelper {
             } else {
                 return [
                     {
-                        deprecated: deprecation.deprecated,
-                        deprecationMessage: deprecation.deprecationMessage,
+                        ...deprecation,
                         description,
                         rawdescription: rawdescription,
                         methods: members.methods,
@@ -785,9 +777,7 @@ export class ClassHelper {
         if (description) {
             return [
                 {
-                    deprecated: deprecation.deprecated,
-                    deprecationMessage: deprecation.deprecationMessage,
-                    category: deprecation.category,
+                    ...deprecation,
                     description,
                     rawdescription: rawdescription,
                     inputs: members.inputs,
@@ -808,9 +798,7 @@ export class ClassHelper {
         } else {
             return [
                 {
-                    deprecated: deprecation.deprecated,
-                    deprecationMessage: deprecation.deprecationMessage,
-                    category: deprecation.category,
+                    ...deprecation,
                     methods: members.methods,
                     inputs: members.inputs,
                     outputs: members.outputs,

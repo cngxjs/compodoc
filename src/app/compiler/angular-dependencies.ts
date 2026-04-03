@@ -575,12 +575,17 @@ export class AngularDependencies extends FrameworkDependencies {
                                 methods: IO.methods,
                                 deprecated: IO.deprecated,
                                 deprecationMessage: IO.deprecationMessage,
+                                category: IO.category || '',
                                 description: IO.description,
                                 rawdescription: IO.rawdescription,
                                 sourceCode: srcFile.getText(),
                                 exampleUrls: this.componentHelper.getComponentExampleUrls(
                                     srcFile.getText()
-                                )
+                                ),
+                                // Custom JSDoc tags
+                                ...(IO.beta && { beta: true }),
+                                ...(IO.since && { since: IO.since }),
+                                ...(IO.breaking && { breaking: IO.breaking }),
                             };
                             if (IO.constructor && !Configuration.mainData.disableConstructors) {
                                 injectableDeps.constructorObj = IO.constructor;
@@ -623,10 +628,14 @@ export class AngularDependencies extends FrameworkDependencies {
                                 type: 'pipe',
                                 deprecated: IO.deprecated,
                                 deprecationMessage: IO.deprecationMessage,
+                                category: IO.category || '',
                                 description: IO.description,
                                 rawdescription: IO.rawdescription,
                                 properties: IO.properties,
                                 methods: IO.methods,
+                                // Custom JSDoc tags
+                                ...(IO.beta && { beta: true }),
+                                ...(IO.since && { since: IO.since }),
                                 standalone: this.componentHelper.getComponentStandalone(
                                     props,
                                     srcFile
@@ -777,6 +786,10 @@ export class AngularDependencies extends FrameworkDependencies {
                         if (factoryKind) {
                             functionDep.factoryKind = factoryKind;
                         }
+                        // Custom JSDoc tags
+                        if (infos.signal) (functionDep as any).signal = true;
+                        if (infos.beta) (functionDep as any).beta = true;
+                        if (infos.since) (functionDep as any).since = infos.since;
                         if (infos.args) {
                             functionDep.args = infos.args;
                         }

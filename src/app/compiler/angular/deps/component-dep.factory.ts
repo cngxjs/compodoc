@@ -43,6 +43,19 @@ export class ComponentDepFactory {
             deprecationMessage: IO.deprecationMessage,
             category: IO.category || '',
 
+            // Custom JSDoc tags (Phase 4.6)
+            signal: IO.signal || false,
+            zoneless: IO.zoneless || false,
+            beta: IO.beta || false,
+            since: IO.since || '',
+            breaking: IO.breaking || '',
+            route: IO.route || '',
+            group: IO.group || '',
+            order: IO.order || 0,
+            storybookUrl: IO.storybookUrl || '',
+            figmaUrl: IO.figmaUrl || '',
+            slots: IO.slots || [],
+
             hostBindings: IO.hostBindings,
             hostListeners: IO.hostListeners,
 
@@ -126,6 +139,19 @@ export interface IComponentDep extends IDep {
     deprecated: boolean;
     deprecationMessage: string;
     category?: string;
+
+    // Custom JSDoc tags
+    signal?: boolean;
+    zoneless?: boolean;
+    beta?: boolean;
+    since?: string;
+    breaking?: string;
+    route?: string;
+    group?: string;
+    order?: number;
+    storybookUrl?: string;
+    figmaUrl?: string;
+    slots?: Array<{ name: string; description: string }>;
 
     standalone: boolean;
     imports: Array<any>;

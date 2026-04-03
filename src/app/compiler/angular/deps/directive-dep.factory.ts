@@ -32,6 +32,14 @@ export class DirectiveDepFactory {
             deprecationMessage: IO.deprecationMessage,
             category: IO.category || '',
 
+            // Custom JSDoc tags (Phase 4.6)
+            signal: IO.signal || false,
+            zoneless: IO.zoneless || false,
+            beta: IO.beta || false,
+            since: IO.since || '',
+            breaking: IO.breaking || '',
+            group: IO.group || '',
+
             hostBindings: IO.hostBindings,
             hostListeners: IO.hostListeners,
 
@@ -87,6 +95,14 @@ export interface IDirectiveDep extends IDep {
     deprecated: boolean;
     deprecationMessage: string;
     category?: string;
+
+    // Custom JSDoc tags
+    signal?: boolean;
+    zoneless?: boolean;
+    beta?: boolean;
+    since?: string;
+    breaking?: string;
+    group?: string;
 
     hostBindings: any;
     hostDirectives: any;

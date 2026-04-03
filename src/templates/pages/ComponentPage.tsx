@@ -78,7 +78,7 @@ const ComponentMetadata = (c: any): string => {
         ) as string);
     }
 
-    if (c.entryComponents) {
+    if (c.entryComponents?.length > 0) {
         rows.push((
             <tr>
                 <td class="col-md-3">entryComponents</td>
