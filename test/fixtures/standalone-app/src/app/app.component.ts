@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { UserListComponent } from './components/user-list.component';
+import { RouterOutlet } from '@angular/router';
 import { GreetingPipe } from './components/greeting.pipe';
 
 /**
@@ -12,10 +12,10 @@ import { GreetingPipe } from './components/greeting.pipe';
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [UserListComponent, GreetingPipe],
+    imports: [RouterOutlet, GreetingPipe],
     template: `
         <h1>{{ 'World' | greeting }}</h1>
-        <app-user-list></app-user-list>
+        <router-outlet></router-outlet>
     `,
 })
 export class AppComponent {
