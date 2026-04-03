@@ -183,3 +183,50 @@ test.describe('Functions page', () => {
         expect(html).toContain('withCaching');
     });
 });
+
+// ─── Signal detection ────────────────────────────────────
+
+test.describe('Signal primitives', () => {
+    test('UserCardComponent properties show signal kind badges', async ({ page }) => {
+        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        const html = await page.content();
+        // signal() primitive
+        expect(html).toContain('cdx-badge--signal');
+        // computed()
+        expect(html).toContain('cdx-badge--computed');
+        // effect()
+        expect(html).toContain('cdx-badge--effect');
+    });
+
+    test('UserCardComponent input shows input-signal badge', async ({ page }) => {
+        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        const html = await page.content();
+        expect(html).toContain('cdx-badge--input-signal');
+    });
+
+    test('UserCardComponent output shows output-signal badge', async ({ page }) => {
+        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        const html = await page.content();
+        expect(html).toContain('cdx-badge--output-signal');
+    });
+
+    test('UserCardComponent shows viewChild signal query', async ({ page }) => {
+        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        const html = await page.content();
+        expect(html).toContain('cdx-badge--view-child');
+    });
+
+    test('UserCardComponent shows inject() DI badge', async ({ page }) => {
+        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        const html = await page.content();
+        expect(html).toContain('cdx-badge--inject');
+        expect(html).toContain('apiUrl');
+    });
+
+    test('required input shows Required badge', async ({ page }) => {
+        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        const html = await page.content();
+        // input.required<User>() should show Required
+        expect(html).toContain('Required');
+    });
+});
