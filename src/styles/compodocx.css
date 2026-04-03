@@ -878,25 +878,77 @@ body {
   font-family: var(--font-body);
 }
 
+/* Badge styles retained for backwards compat with custom templates */
 .cdx-cp .cdx-cp-badge--component  { background: var(--color-cdx-entity-component);  color: white; }
-.cdx-cp .cdx-cp-badge--service    { background: var(--color-cdx-entity-service);    color: hsl(220 20% 14%); }
-.cdx-cp .cdx-cp-badge--directive  { background: var(--color-cdx-entity-directive);  color: white; }
-.cdx-cp .cdx-cp-badge--pipe       { background: var(--color-cdx-entity-pipe);       color: white; }
-.cdx-cp .cdx-cp-badge--module     { background: var(--color-cdx-entity-module);     color: white; }
-.cdx-cp .cdx-cp-badge--class      { background: var(--color-cdx-entity-class);      color: white; }
-.cdx-cp .cdx-cp-badge--interface  { background: var(--color-cdx-entity-interface);  color: white; }
-.cdx-cp .cdx-cp-badge--guard      { background: var(--color-cdx-entity-guard);      color: white; }
-.cdx-cp .cdx-cp-badge--interceptor { background: var(--color-cdx-entity-interceptor); color: white; }
 .cdx-cp .cdx-cp-badge--other      { background: var(--color-cdx-border);            color: var(--color-cdx-text-secondary); }
+
+.cdx-cp .cdx-cp-close {
+  @apply flex items-center justify-center shrink-0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  color: var(--color-cdx-text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-cdx-sm);
+}
+.cdx-cp .cdx-cp-close:hover {
+  color: var(--color-cdx-text);
+  background: var(--color-cdx-bg-alt);
+}
+
+.cdx-cp .cdx-cp-result-icon {
+  flex-shrink: 0;
+  color: var(--color-cdx-text-muted);
+}
 
 .cdx-cp .cdx-cp-name {
   @apply truncate;
   font-family: var(--font-body);
+  flex: 1;
 }
 
-.cdx-cp .cdx-cp-empty {
+.cdx-cp .cdx-cp-type {
+  @apply shrink-0 text-xs;
+  color: var(--color-cdx-text-muted);
+  font-family: var(--font-body);
+}
+
+.cdx-cp .cdx-cp-highlight {
+  color: var(--color-cdx-primary);
+  background: transparent;
+  font-weight: 600;
+}
+
+.cdx-cp .cdx-cp-empty,
+.cdx-cp .cdx-cp-loading {
   @apply px-3 py-6 text-center text-sm;
   color: var(--color-cdx-text-muted);
+}
+
+.cdx-cp .cdx-cp-footer {
+  @apply flex items-center gap-4 px-4 py-2 text-xs;
+  border-top: 1px solid var(--color-cdx-border);
+  color: var(--color-cdx-text-muted);
+  font-family: var(--font-body);
+}
+
+.cdx-cp .cdx-cp-footer kbd {
+  @apply inline-block rounded px-1.5 py-0.5 text-xs;
+  border: 1px solid var(--color-cdx-border);
+  font-family: var(--font-code);
+  font-size: 10px;
+}
+
+/* Staggered result item animation */
+.cdx-cp .cdx-cp-item {
+  animation: cdx-cp-item-enter 150ms ease-out backwards;
+  animation-delay: calc(var(--i, 0) * 30ms);
+}
+
+@keyframes cdx-cp-item-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes cdx-cp-enter {

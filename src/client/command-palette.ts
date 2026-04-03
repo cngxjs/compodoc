@@ -7,6 +7,7 @@ const DIALOG_ID = 'cdx-command-palette';
 const INPUT_SELECTOR = '.cdx-cp-input';
 const LIST_SELECTOR = '.cdx-cp-results';
 const EMPTY_SELECTOR = '.cdx-cp-empty';
+const LOADING_SELECTOR = '.cdx-cp-loading';
 const THROTTLE_MS = 150;
 
 /** Entity type extracted from Pagefind page titles (e.g. "component - MyComponent") */
@@ -56,11 +57,26 @@ const entityClass = (type: EntityType | 'other'): string => {
     }
 };
 
-/** Parse entity type from Pagefind result title */
+/** Parse entity type from Pagefind result title.
+ *  Titles follow pattern: "EntityName - context - ProjectName" (from Layout.tsx pageTitle()).
+ *  Also handles legacy "type - EntityName" format. */
 const parseEntityType = (title: string): { type: EntityType | 'other'; name: string } => {
+    // Try new format: "EntityName - context - ProjectName"
+    const parts = title.split(' - ');
+    if (parts.length >= 3) {
+        const name = parts[0].trim();
+        const context = parts[1].trim().toLowerCase();
+        for (const t of ENTITY_TYPES) {
+            if (context === t || context === t + 's' || context.includes(t)) {
+                return { type: t, name };
+            }
+        }
+        // Context didn't match a known entity type (e.g. "coverage", "routes")
+        return { type: 'other', name };
+    }
+    // Try legacy format: "type - EntityName"
     const lower = title.toLowerCase();
     for (const t of ENTITY_TYPES) {
-        // Pagefind titles follow pattern: "type - EntityName" or "type - EntityName - ModuleName"
         if (lower.startsWith(t + ' - ') || lower.startsWith(t + 's - ')) {
             const name = title.substring(title.indexOf(' - ') + 3);
             return { type: t, name };
@@ -71,6 +87,48 @@ const parseEntityType = (title: string): { type: EntityType | 'other'; name: str
 
 /** Capitalize first letter */
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** Type label for display -- shows entity type like angular.dev */
+const typeLabel = (type: EntityType | 'other'): string => {
+    if (type === 'other') return 'Docs';
+    return cap(type === 'typealias' ? 'Type Alias' : type);
+};
+
+/** SVG icon per entity type (matches sidebar Icons.tsx) */
+const icon = (paths: string): string =>
+    `<svg class="cdx-cp-result-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+
+const RESULT_ICONS: Record<string, string> = {
+    component: icon('<path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/>'),
+    directive: icon('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'),
+    pipe: icon('<path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/>'),
+    module: icon('<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.84Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>'),
+    class: icon('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="m10 13-2 2 2 2"/><path d="m14 17 2-2-2-2"/>'),
+    injectable: icon('<path d="m18 2 4 4-4 4"/><path d="m6 22-4-4 4-4"/><path d="M22 6H10a4 4 0 0 0-4 4v4"/><path d="M2 18h12a4 4 0 0 0 4-4v-4"/>'),
+    service: icon('<path d="m18 2 4 4-4 4"/><path d="m6 22-4-4 4-4"/><path d="M22 6H10a4 4 0 0 0-4 4v4"/><path d="M2 18h12a4 4 0 0 0 4-4v-4"/>'),
+    interface: icon('<path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/>'),
+    guard: icon('<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'),
+    interceptor: icon('<path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/>'),
+    enum: icon('<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>'),
+    function: icon('<path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2H12"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.52 16h12.96"/>'),
+    variable: icon('<line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>'),
+    typealias: icon('<path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/>'),
+};
+
+const resultIcon = (type: EntityType | 'other'): string =>
+    RESULT_ICONS[type] ?? icon('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>');
+
+/** Highlight matched query terms in text */
+const highlightMatch = (text: string, query: string): string => {
+    if (!query.trim()) return escapeHtml(text);
+    const escaped = escapeHtml(text);
+    const terms = query.trim().split(/\s+/).filter(t => t.length > 1);
+    if (terms.length === 0) return escaped;
+
+    const pattern = terms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+    const re = new RegExp(`(${pattern})`, 'gi');
+    return escaped.replace(re, '<mark class="cdx-cp-highlight">$1</mark>');
+};
 
 interface SearchResult {
     readonly title: string;
@@ -93,20 +151,29 @@ const getList = (): HTMLElement | null => getDialog()?.querySelector(LIST_SELECT
 
 const getEmpty = (): HTMLElement | null => getDialog()?.querySelector(EMPTY_SELECTOR) ?? null;
 
+const getLoading = (): HTMLElement | null => getDialog()?.querySelector(LOADING_SELECTOR) ?? null;
+
 /** Load Pagefind lazily */
 const loadPagefind = async (): Promise<any> => {
     if (pagefind) return pagefind;
     if (window.location.protocol === 'file:') return null;
 
+    // Build absolute URL to pagefind based on page location (not module location)
     const depth = (window as any).COMPODOC_CURRENT_PAGE_DEPTH ?? 0;
-    const prefix = depth === 0 ? './' : '../'.repeat(depth);
+    const prefix = depth === 0 ? '' : '../'.repeat(depth);
+    const pagefindUrl = new URL(prefix + 'pagefind/pagefind.js', window.location.href).href;
+
+    const loading = getLoading();
+    if (loading) { loading.hidden = false; }
 
     try {
-        pagefind = await import(/* @vite-ignore */ prefix + 'pagefind/pagefind.js');
+        pagefind = await import(/* @vite-ignore */ pagefindUrl);
         await pagefind.init();
+        if (loading) { loading.hidden = true; }
         return pagefind;
     } catch (e) {
         console.warn('Search unavailable:', (e as Error).message);
+        if (loading) { loading.hidden = true; }
         return null;
     }
 };
@@ -119,7 +186,8 @@ const search = async (query: string) => {
 
     if (!query.trim()) {
         list.innerHTML = '';
-        empty.hidden = true;
+        empty.hidden = false;
+        empty.textContent = 'Start typing to see results';
         activeIndex = -1;
         return;
     }
@@ -155,13 +223,15 @@ const search = async (query: string) => {
     }
 
     empty.hidden = true;
+    const searchQuery = lastQuery;
     list.innerHTML = mapped
         .map(
             (r, i) => `
         <a href="${escapeAttr(r.url)}" class="cdx-cp-item${i === 0 ? ' cdx-cp-active' : ''}"
-           role="option" aria-selected="${i === 0}" data-index="${i}">
-            <span class="cdx-cp-badge cdx-cp-badge--${entityClass(r.type)}">${cap(r.type === 'other' ? 'page' : r.type)}</span>
-            <span class="cdx-cp-name">${escapeHtml(r.name)}</span>
+           role="option" aria-selected="${i === 0}" data-index="${i}" style="--i:${i}">
+            ${resultIcon(r.type)}
+            <span class="cdx-cp-name">${highlightMatch(r.name, searchQuery)}</span>
+            <span class="cdx-cp-type">${typeLabel(r.type)}</span>
         </a>
     `
         )
@@ -226,9 +296,15 @@ const open = () => {
     const list = getList();
     const empty = getEmpty();
     if (list) list.innerHTML = '';
-    if (empty) empty.hidden = true;
+    if (empty) {
+        empty.hidden = false;
+        empty.textContent = 'Start typing to see results';
+    }
     activeIndex = -1;
     lastQuery = '';
+
+    // Lazy-load Pagefind on first open
+    loadPagefind();
 };
 
 /** Close the command palette */
@@ -260,6 +336,9 @@ export const initCommandPalette = () => {
             close();
         }
     });
+
+    // X-button close
+    dialog.querySelector('.cdx-cp-close')?.addEventListener('click', () => close());
 
     // Close on Escape (native dialog behavior, but ensure cleanup)
     dialog.addEventListener('close', () => {

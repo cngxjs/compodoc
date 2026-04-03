@@ -79,11 +79,22 @@ const CommandPalette = () => (
                     autocomplete="off" spellcheck="false" role="combobox"
                     aria-expanded="true" aria-controls="cdx-cp-listbox"
                     aria-autocomplete="list" />
-                <kbd class="cdx-cp-kbd">Esc</kbd>
+                <button class="cdx-cp-close" aria-label="Close search" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>
+                    </svg>
+                </button>
             </div>
             <div class="cdx-cp-body" id="cdx-cp-listbox" role="listbox">
                 <div class="cdx-cp-results"></div>
-                <div class="cdx-cp-empty" hidden>No results</div>
+                <div class="cdx-cp-empty" hidden aria-live="polite">No results</div>
+                <div class="cdx-cp-loading" hidden aria-live="polite">Loading search...</div>
+            </div>
+            <div class="cdx-cp-footer">
+                <span><kbd>Enter</kbd> to select</span>
+                <span><kbd>Arrow Down</kbd> <kbd>Arrow Up</kbd> to navigate</span>
+                <span><kbd>Esc</kbd> to close</span>
             </div>
         </div>
     </dialog>
@@ -104,6 +115,16 @@ const DarkModeToggle = () => (
     </div>
 );
 
+/** Build a descriptive page title for browser tab + Pagefind indexing */
+const pageTitle = (data: PageData): string => {
+    const base = data.documentationMainName;
+    if (!data.context || data.context === 'readme' || data.context === 'getting-started') return base;
+    const name = data.name || data.filename || '';
+    if (!name) return base;
+    const ctx = data.context.replace(/-/g, ' ');
+    return `${name} - ${ctx} - ${base}`;
+};
+
 export const Layout = (props: LayoutProps): string => {
     const { data, content, menuHtml } = props;
     const r = (path: string) => relativeUrl(data.depth, path);
@@ -113,7 +134,7 @@ export const Layout = (props: LayoutProps): string => {
             <head>
                 <meta charset="utf-8" />
                 <meta http-equiv="x-ua-compatible" content="ie=edge" />
-                <title>{data.documentationMainName}</title>
+                <title>{pageTitle(data)}</title>
                 <meta name="description" content="" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <link rel="icon" type="image/x-icon" href={r('images/favicon.ico')} />
