@@ -1,6 +1,6 @@
 /**
  * Tab switching behavior.
- * Replaces tabs.js + bootstrap.native tab logic.
+ * Uses cdx-tabs tab bar and cdx-tab-panel panels.
  */
 
 export const initTabs = () => {
@@ -11,28 +11,26 @@ export const initTabs = () => {
             if (!targetId) return;
 
             // Deactivate all tabs in this group
-            const tabList = tab.closest('.nav-tabs, .nav, [role="tablist"]');
+            const tabList = tab.closest('.cdx-tabs, [role="tablist"]');
             if (tabList) {
                 tabList.querySelectorAll('[data-cdx-toggle="tab"]').forEach(t => {
                     t.classList.remove('active');
-                    t.parentElement?.classList.remove('active');
                 });
             }
 
-            // Deactivate all panes in this content area
-            const tabContent = document.querySelector(targetId)?.parentElement;
+            // Deactivate all panels in this content area
+            const targetPane = document.querySelector(targetId);
+            const tabContent = targetPane?.parentElement;
             if (tabContent) {
-                tabContent.querySelectorAll('.tab-pane').forEach(pane => {
-                    pane.classList.remove('active', 'in');
+                tabContent.querySelectorAll('.cdx-tab-panel').forEach(pane => {
+                    pane.classList.remove('active');
                 });
             }
 
-            // Activate selected tab and pane
+            // Activate selected tab and panel
             tab.classList.add('active');
-            tab.parentElement?.classList.add('active');
-            const pane = document.querySelector<HTMLElement>(targetId);
-            if (pane) {
-                pane.classList.add('active', 'in');
+            if (targetPane) {
+                targetPane.classList.add('active');
             }
         });
     });

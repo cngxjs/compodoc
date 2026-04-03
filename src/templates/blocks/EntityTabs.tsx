@@ -17,13 +17,13 @@ type EntityTabsProps = {
     readonly exampleUrls?: string[];
 };
 
-/** Render the shared nav-tabs + tab-content structure for entity detail pages. */
+/** Render the tab bar + tab panels for entity detail pages. */
 export const EntityTabs = (props: EntityTabsProps): string => (<>
-    <ul class="nav nav-tabs" role="tablist">
+    <ul class="cdx-tabs" role="tablist">
         {props.navTabs.map((tab, i) => (
-            <li class="nav-item">
+            <li>
                 <a href={tab.href}
-                    class={i === 0 ? 'nav-link active' : 'nav-link'}
+                    class={i === 0 ? 'active' : ''}
                     role="tab" id={`${tab.id}-tab`}
                     data-cdx-toggle="tab"
                     data-link={tab['data-link']}>{t(tab.label)}</a>
@@ -31,27 +31,27 @@ export const EntityTabs = (props: EntityTabsProps): string => (<>
         ))}
     </ul>
 
-    <div class="tab-content">
+    <div>
         {isTabEnabled(props.navTabs, 'info') && (
-            <div class={`tab-pane fade${isInitialTab(props.navTabs, 'info') ? ' active in' : ''}`} id="info">
+            <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'info') ? ' active' : ''}`} id="info">
                 {props.infoContent}
             </div>
         )}
 
         {isTabEnabled(props.navTabs, 'readme') && (
-            <div class={`tab-pane fade${isInitialTab(props.navTabs, 'readme') ? ' active in' : ''}`} id="readme">
+            <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'readme') ? ' active' : ''}`} id="readme">
                 <p>{props.readme}</p>
             </div>
         )}
 
         {isTabEnabled(props.navTabs, 'source') && (
-            <div class={`tab-pane fade${isInitialTab(props.navTabs, 'source') ? ' active in' : ''} tab-source-code`} id="source">
+            <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'source') ? ' active' : ''} tab-source-code`} id="source">
                 <div class="compodoc-sourcecode">{highlightCode(props.sourceCode ?? '', 'typescript')}</div>
             </div>
         )}
 
         {isTabEnabled(props.navTabs, 'example') && props.exampleUrls && (
-            <div class={`tab-pane fade${isInitialTab(props.navTabs, 'example') ? ' active in' : ''}`} id="example">
+            <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'example') ? ' active' : ''}`} id="example">
                 {props.exampleUrls.map(url => (
                     <iframe class="exampleContainer" src={url}>
                         <p>{t('no-iframes')}</p>

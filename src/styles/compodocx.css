@@ -329,6 +329,251 @@ body {
 }
 
 /* ----------------------------------------------------------------
+   Breadcrumb
+   ---------------------------------------------------------------- */
+
+.cdx-breadcrumb {
+  @apply flex items-center gap-1 text-sm;
+  list-style: none !important;
+  padding: 0;
+  margin: 0 0 1rem;
+  color: var(--color-cdx-text-muted);
+  font-family: var(--font-body);
+}
+
+.cdx-breadcrumb li + li::before {
+  content: '>';
+  margin-right: 0.5rem;
+  color: var(--color-cdx-text-muted);
+}
+
+.cdx-breadcrumb a {
+  color: var(--color-cdx-text-secondary);
+  text-decoration: none;
+}
+
+.cdx-breadcrumb a:hover {
+  color: var(--color-cdx-primary);
+  text-decoration: underline;
+}
+
+/* ----------------------------------------------------------------
+   Entity page header
+   ---------------------------------------------------------------- */
+
+.cdx-entity-header {
+  margin-bottom: 1.5rem;
+}
+
+.cdx-entity-header h1 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  margin: 0 0 0.5rem;
+  color: var(--color-cdx-text);
+}
+
+/* ----------------------------------------------------------------
+   Tab bar
+   ---------------------------------------------------------------- */
+
+.cdx-tabs {
+  @apply flex gap-0 border-b;
+  border-color: var(--color-cdx-border);
+  margin-bottom: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin-top: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cdx-tabs li {
+  list-style: none;
+}
+
+.cdx-tabs a {
+  @apply block px-4 py-2 text-sm font-semibold no-underline;
+  color: var(--color-cdx-text-muted);
+  border-bottom: 2px solid transparent;
+  transition: color var(--cdx-transition-fast), border-color var(--cdx-transition-fast);
+  white-space: nowrap;
+}
+
+.cdx-tabs a:hover {
+  color: var(--color-cdx-text);
+}
+
+.cdx-tabs a.active {
+  color: var(--color-cdx-primary);
+  border-bottom-color: var(--color-cdx-primary);
+}
+
+.cdx-tab-panel {
+  display: none;
+}
+
+.cdx-tab-panel.active {
+  display: block;
+}
+
+/* ----------------------------------------------------------------
+   Member cards (replaces table.table-bordered per member)
+   ---------------------------------------------------------------- */
+
+.cdx-member-card {
+  border: 1px solid var(--color-cdx-border);
+  border-radius: var(--radius-cdx-md);
+  margin-bottom: 0.75rem;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.cdx-member-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-cdx-md);
+}
+
+.cdx-member-card--deprecated {
+  border-left: 3px solid var(--color-cdx-deprecated);
+}
+
+.cdx-member-header {
+  @apply flex items-baseline justify-between gap-2 px-4 py-3;
+  border-bottom: 1px solid var(--color-cdx-border);
+  background: var(--color-cdx-bg-alt);
+  border-radius: var(--radius-cdx-md) var(--radius-cdx-md) 0 0;
+}
+
+.cdx-member-name {
+  font-weight: 600;
+  font-family: var(--font-code);
+  font-size: 0.9rem;
+  color: var(--color-cdx-text);
+  word-break: break-word;
+}
+
+.cdx-member-name a {
+  color: var(--color-cdx-text-muted);
+  text-decoration: none;
+  margin-left: 0.25rem;
+}
+
+.cdx-member-name a:hover {
+  color: var(--color-cdx-primary);
+}
+
+.cdx-member-type {
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  color: var(--color-cdx-text-secondary);
+  flex-shrink: 0;
+}
+
+.cdx-member-body {
+  @apply px-4 py-3;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-cdx-text-secondary);
+}
+
+.cdx-member-body > * + * {
+  margin-top: 0.5rem;
+}
+
+.cdx-member-body .io-description {
+  color: var(--color-cdx-text);
+}
+
+.cdx-member-body code {
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  color: var(--color-cdx-text);
+}
+
+.cdx-member-row {
+  @apply text-sm;
+  color: var(--color-cdx-text-secondary);
+}
+
+.cdx-member-row b,
+.cdx-member-row i {
+  color: var(--color-cdx-text-muted);
+  font-style: normal;
+}
+
+.cdx-member-row code {
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+}
+
+.cdx-member-deprecated {
+  color: var(--color-cdx-deprecated);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* ----------------------------------------------------------------
+   Params list (replaces table.params)
+   ---------------------------------------------------------------- */
+
+.cdx-params {
+  @apply text-sm;
+  margin: 0.5rem 0;
+}
+
+.cdx-params-header {
+  @apply flex gap-4 px-3 py-1.5 font-semibold text-xs uppercase;
+  color: var(--color-cdx-text-muted);
+  background: var(--color-cdx-bg-alt);
+  border-radius: var(--radius-cdx-sm) var(--radius-cdx-sm) 0 0;
+  border: 1px solid var(--color-cdx-border);
+  border-bottom: none;
+}
+
+.cdx-params-row {
+  @apply flex gap-4 px-3 py-2;
+  border: 1px solid var(--color-cdx-border);
+  border-top: none;
+  align-items: baseline;
+}
+
+.cdx-params-row:last-child {
+  border-radius: 0 0 var(--radius-cdx-sm) var(--radius-cdx-sm);
+}
+
+.cdx-params-name {
+  font-family: var(--font-code);
+  font-weight: 600;
+  min-width: 100px;
+  flex-shrink: 0;
+  color: var(--color-cdx-text);
+}
+
+.cdx-params-type {
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.cdx-params-opt {
+  min-width: 50px;
+  flex-shrink: 0;
+}
+
+.cdx-params-desc {
+  flex: 1;
+  color: var(--color-cdx-text);
+}
+
+/* Index list override for member cards context */
+.cdx-member-card .index-list {
+  list-style: none;
+  padding: 0;
+}
+
+/* ----------------------------------------------------------------
    Command Palette
    ---------------------------------------------------------------- */
 

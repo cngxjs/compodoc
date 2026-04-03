@@ -13,31 +13,28 @@ export const BlockInput = (props: BlockInputProps): string => (
     <section data-compodoc="block-inputs">
         <h3 id="inputs">{t('inputs')}</h3>
         {(props.element.inputsClass ?? []).map((inp: any) => (
-            <table class="table table-sm table-bordered">
-                <tbody>
-                    <tr>
-                        <td class="col-md-4">
-                            <span id={inp.name}></span>
-                            <b>{inp.name}</b>
-                            {inp.signalKind && <span class={`cdx-badge cdx-badge--${inp.signalKind}`}>{inp.signalKind === 'input-signal' ? 'Signal' : inp.signalKind === 'model' ? 'Model' : ''}</span>}
-                            {inp.required && <span class="cdx-badge cdx-badge--factory">Required</span>}
-                        </td>
-                    </tr>
-                    {inp.type && (
-                        <tr><td class="col-md-4"><i>{t('type')} : </i>{linkTypeHtml(inp.type)}</td></tr>
-                    )}
+            <article class="cdx-member-card" id={inp.name}>
+                <header class="cdx-member-header">
+                    <span class="cdx-member-name">
+                        {inp.name}
+                        {inp.signalKind && <span class={`cdx-badge cdx-badge--${inp.signalKind}`}>{inp.signalKind === 'input-signal' ? 'Signal' : inp.signalKind === 'model' ? 'Model' : ''}</span>}
+                        {inp.required && <span class="cdx-badge cdx-badge--factory">Required</span>}
+                    </span>
+                    {inp.type && <span class="cdx-member-type">{linkTypeHtml(inp.type)}</span>}
+                </header>
+                <div class="cdx-member-body">
                     {inp.required && (
-                        <tr><td class="col-md-4"><i>{t('required')} : </i>&nbsp;<b>{String(inp.required)}</b></td></tr>
+                        <div class="cdx-member-row"><i>{t('required')} : </i><b>{String(inp.required)}</b></div>
                     )}
                     {inp.defaultValue && (
-                        <tr><td class="col-md-4"><i>{t('default-value')} : </i><code>{inp.defaultValue}</code></td></tr>
+                        <div class="cdx-member-row"><i>{t('default-value')} : </i><code>{inp.defaultValue}</code></div>
                     )}
                     {DefinedInRow({ line: inp.line, file: props.element.file, inheritance: inp.inheritance, navTabs: props.navTabs })}
                     {inp.description && (
-                        <tr><td class="col-md-4"><div class="io-description">{parseDescription(inp.description, props.depth ?? 0)}</div></td></tr>
+                        <div class="io-description">{parseDescription(inp.description, props.depth ?? 0)}</div>
                     )}
-                </tbody>
-            </table>
+                </div>
+            </article>
         ))}
     </section>
 ) as string;

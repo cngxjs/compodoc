@@ -8,26 +8,22 @@ type DefinedInRowProps = {
     readonly navTabs?: any[];
 };
 
-/** Render "Inherited from" + "Defined in" rows for a block item. */
+/** Render "Inherited from" + "Defined in" rows for a member card. */
 export const DefinedInRow = (props: DefinedInRowProps): string => {
     if (!props.line || !isTabEnabled(props.navTabs, 'source')) return '';
 
     return (<>
         {props.inheritance && (
-            <tr>
-                <td class="col-md-4">
-                    <div class="io-line">{t('inherited-from')} {linkTypeHtml(props.inheritance.file)}</div>
-                </td>
-            </tr>
+            <div class="cdx-member-row">
+                {t('inherited-from')} {linkTypeHtml(props.inheritance.file)}
+            </div>
         )}
-        <tr>
-            <td class="col-md-4">
-                {props.inheritance ? (
-                    <div class="io-line">{t('defined-in')} {linkTypeHtml(props.inheritance.file, { withLine: true, line: props.line })}</div>
-                ) : (
-                    <div class="io-line">{t('defined-in')} <a href="" data-line={String(props.line)} class="link-to-prism">{props.file}:{props.line}</a></div>
-                )}
-            </td>
-        </tr>
+        <div class="cdx-member-row">
+            {props.inheritance ? (
+                <span>{t('defined-in')} {linkTypeHtml(props.inheritance.file, { withLine: true, line: props.line })}</span>
+            ) : (
+                <span>{t('defined-in')} <a href="" data-line={String(props.line)} class="link-to-prism">{props.file}:{props.line}</a></span>
+            )}
+        </div>
     </>) as string;
 };

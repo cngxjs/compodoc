@@ -21,24 +21,20 @@ type BlockIndexProps = {
 const IndexGroup = (props: { title: string; items: IndexItem[]; showModifiers?: boolean }): string => {
     if (!props.items?.length) return '';
     return (<>
-        <tr><td class="col-md-4"><h6><b>{t(props.title)}</b></h6></td></tr>
-        <tr>
-            <td class="col-md-4">
-                <ul class="index-list">
-                    {props.items.map(item => (
-                        <li>
-                            {props.showModifiers && (item.modifierKind ?? []).map((k: number) => (
-                                <span class="modifier">{modifKind(k)}</span>
-                            ))}
-                            {props.showModifiers && item.optional && (
-                                <span class="modifier">{t('optional')}</span>
-                            )}
-                            <a href={`#${item.name}`} class={item.deprecated ? 'deprecated-name' : ''}>{item.name}</a>
-                        </li>
+        <h6><b>{t(props.title)}</b></h6>
+        <ul class="index-list">
+            {props.items.map(item => (
+                <li>
+                    {props.showModifiers && (item.modifierKind ?? []).map((k: number) => (
+                        <span class="modifier">{modifKind(k)}</span>
                     ))}
-                </ul>
-            </td>
-        </tr>
+                    {props.showModifiers && item.optional && (
+                        <span class="modifier">{t('optional')}</span>
+                    )}
+                    <a href={`#${item.name}`} class={item.deprecated ? 'deprecated-name' : ''}>{item.name}</a>
+                </li>
+            ))}
+        </ul>
     </>) as string;
 };
 
@@ -48,8 +44,8 @@ export const BlockIndex = (props: BlockIndexProps): string => {
     return (
         <section data-compodoc="block-index">
             <h3 id="index">{t('index')}</h3>
-            <table class="table table-sm table-bordered index-table">
-                <tbody>
+            <article class="cdx-member-card">
+                <div class="cdx-member-body">
                     {IndexGroup({ title: 'properties', items: props.properties ?? [], showModifiers: true })}
                     {IndexGroup({ title: 'methods', items: props.methods ?? [], showModifiers: true })}
                     {IndexGroup({ title: 'inputs', items: props.inputs ?? [] })}
@@ -57,24 +53,20 @@ export const BlockIndex = (props: BlockIndexProps): string => {
                     {IndexGroup({ title: 'hostbindings', items: props.hostBindings ?? [] })}
                     {IndexGroup({ title: 'hostlisteners', items: props.hostListeners ?? [] })}
                     {accessorEntries.length > 0 && (<>
-                        <tr><td class="col-md-4"><h6><b>{t('accessors')}</b></h6></td></tr>
-                        <tr>
-                            <td class="col-md-4">
-                                <ul class="index-list">
-                                    {accessorEntries.map(([key, acc]) => (
-                                        <li>
-                                            {(acc.modifierKind ?? []).map((k: number) => (
-                                                <span class="modifier">{modifKind(k)}</span>
-                                            ))}
-                                            <a href={`#${key}`} class={acc.deprecated ? 'deprecated-name' : ''}>{key}</a>
-                                        </li>
+                        <h6><b>{t('accessors')}</b></h6>
+                        <ul class="index-list">
+                            {accessorEntries.map(([key, acc]) => (
+                                <li>
+                                    {(acc.modifierKind ?? []).map((k: number) => (
+                                        <span class="modifier">{modifKind(k)}</span>
                                     ))}
-                                </ul>
-                            </td>
-                        </tr>
+                                    <a href={`#${key}`} class={acc.deprecated ? 'deprecated-name' : ''}>{key}</a>
+                                </li>
+                            ))}
+                        </ul>
                     </>)}
-                </tbody>
-            </table>
+                </div>
+            </article>
         </section>
     ) as string;
 };

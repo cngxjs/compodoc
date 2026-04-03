@@ -9,7 +9,7 @@ type ParamsTableProps = {
     readonly showDefaultValue?: boolean;
 };
 
-/** Render a JSDoc @param table. Used by block-method, block-constructor, block-accessors etc. */
+/** Render a JSDoc @param list. */
 export const ParamsTable = (props: ParamsTableProps): string => {
     const tags = extractJsdocParams(props.jsdocTags);
     if (tags.length === 0) return '';
@@ -20,33 +20,29 @@ export const ParamsTable = (props: ParamsTableProps): string => {
 
     return (<>
         <b>{t('parameters')} :</b>
-        <table class="params">
-            <thead>
-                <tr>
-                    <td>{t('name')}</td>
-                    {hasType && <td>{t('type')}</td>}
-                    {props.showOptional !== false && <td>{t('optional')}</td>}
-                    {hasDefault && <td>{t('default-value')}</td>}
-                    {hasComment && <td>{t('description')}</td>}
-                </tr>
-            </thead>
-            <tbody>
-                {tags.map(tag => (
-                    <tr>
-                        {tag.name && <td>{tag.name}</td>}
-                        {hasType && <td>{tag.type ? linkTypeHtml(tag.type) : ''}</td>}
-                        {props.showOptional !== false && (
-                            <td>{tag.optional ? t('yes') : t('no')}</td>
-                        )}
-                        {hasDefault && (
-                            <td>{tag.defaultValue ? <code>{tag.defaultValue}</code> : ''}</td>
-                        )}
-                        {hasComment && (
-                            <td>{tag.comment ? parseDescription(tag.comment, props.depth) : ''}</td>
-                        )}
-                    </tr>
-                ))}
-            </tbody>
-        </table>
+        <div class="cdx-params">
+            <div class="cdx-params-header">
+                <span class="cdx-params-name">{t('name')}</span>
+                {hasType && <span class="cdx-params-type">{t('type')}</span>}
+                {props.showOptional !== false && <span class="cdx-params-opt">{t('optional')}</span>}
+                {hasDefault && <span class="cdx-params-opt">{t('default-value')}</span>}
+                {hasComment && <span class="cdx-params-desc">{t('description')}</span>}
+            </div>
+            {tags.map(tag => (
+                <div class="cdx-params-row">
+                    {tag.name && <span class="cdx-params-name">{tag.name}</span>}
+                    {hasType && <span class="cdx-params-type">{tag.type ? linkTypeHtml(tag.type) : ''}</span>}
+                    {props.showOptional !== false && (
+                        <span class="cdx-params-opt">{tag.optional ? t('yes') : t('no')}</span>
+                    )}
+                    {hasDefault && (
+                        <span class="cdx-params-opt">{tag.defaultValue ? <code>{tag.defaultValue}</code> : ''}</span>
+                    )}
+                    {hasComment && (
+                        <span class="cdx-params-desc">{tag.comment ? parseDescription(tag.comment, props.depth) : ''}</span>
+                    )}
+                </div>
+            ))}
+        </div>
     </>) as string;
 };

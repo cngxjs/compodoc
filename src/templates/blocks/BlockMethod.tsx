@@ -28,82 +28,66 @@ export const BlockMethod = (props: BlockMethodProps): string => (
             : <h3 id="methods">{t('methods')}</h3>
         }
         {props.methods.map(m => (
-            <table class="table table-sm table-bordered">
-                <tbody>
-                    <tr>
-                        <td class="col-md-4">
-                            <span id={m.name}></span>
-                            <span class="name">
-                                {(m.modifierKind ?? []).map((k: number) => (
-                                    <span class="modifier">{modifKind(k)}</span>
-                                ))}
-                                {m.optional && <span class="modifier">{t('optional')}</span>}
-                                <span class={m.deprecated ? 'deprecated-name' : ''}><b>{m.name}</b></span>
-                                <a href={`#${m.name}`}><span class="icon ion-ios-link"></span></a>
-                            </span>
-                        </td>
-                    </tr>
+            <article class={`cdx-member-card${m.deprecated ? ' cdx-member-card--deprecated' : ''}`} id={m.name}>
+                <header class="cdx-member-header">
+                    <span class="cdx-member-name">
+                        {(m.modifierKind ?? []).map((k: number) => (
+                            <span class="modifier">{modifKind(k)}</span>
+                        ))}
+                        {m.optional && <span class="modifier">{t('optional')}</span>}
+                        <span class={m.deprecated ? 'deprecated-name' : ''}>{m.name}</span>
+                        <a href={`#${m.name}`}><span class="icon ion-ios-link"></span></a>
+                    </span>
+                    {m.returnType && <span class="cdx-member-type">{linkTypeHtml(m.returnType)}</span>}
+                </header>
+                <div class="cdx-member-body">
                     {m.deprecated && (
-                        <tr><td class="col-md-4 deprecated">{m.deprecationMessage}</td></tr>
+                        <div class="cdx-member-deprecated">{m.deprecationMessage}</div>
                     )}
                     {m.argsDecorator && (
-                        <tr>
-                            <td class="col-md-4">
-                                <i>{t('arguments')} : </i><code>{m.argsDecorator.map((a: string) => `'${a}' `).join('')}</code>
-                            </td>
-                        </tr>
+                        <div class="cdx-member-row">
+                            <i>{t('arguments')} : </i><code>{m.argsDecorator.map((a: string) => `'${a}' `).join('')}</code>
+                        </div>
                     )}
-                    <tr>
-                        <td class="col-md-4">
-                            {m.modifierKind && <span class={`modifier-icon icon ion-ios-${modifIcon(m.modifierKind)}`}></span>}
-                            <code>{functionSignature(m)}</code>
-                        </td>
-                    </tr>
+                    <div class="cdx-member-row">
+                        {m.modifierKind && <span class={`modifier-icon icon ion-ios-${modifIcon(m.modifierKind)}`}></span>}
+                        <code>{functionSignature(m)}</code>
+                    </div>
                     {m.decorators && (
-                        <tr>
-                            <td class="col-md-4">
-                                <b>{t('decorators')} : </b><br />
-                                <code>{m.decorators.map((d: any) =>
-                                    d.stringifiedArguments ? `@${d.name}(${d.stringifiedArguments})` : `@${d.name}()`
-                                ).join('<br />')}</code>
-                            </td>
-                        </tr>
+                        <div class="cdx-member-row">
+                            <b>{t('decorators')} : </b>
+                            <code>{m.decorators.map((d: any) =>
+                                d.stringifiedArguments ? `@${d.name}(${d.stringifiedArguments})` : `@${d.name}()`
+                            ).join(', ')}</code>
+                        </div>
                     )}
                     {DefinedInRow({ line: m.line, file: props.file, inheritance: m.inheritance, navTabs: props.navTabs })}
                     {m.typeParameters?.length > 0 && (
-                        <tr>
-                            <td class="col-md-4">
-                                <b>{t('type-parameters')} :</b>
-                                <ul class="type-parameters">
-                                    {m.typeParameters.map((tp: string) => <li>{tp}</li>)}
-                                </ul>
-                            </td>
-                        </tr>
+                        <div class="cdx-member-row">
+                            <b>{t('type-parameters')} :</b>
+                            <ul class="type-parameters">
+                                {m.typeParameters.map((tp: string) => <li>{tp}</li>)}
+                            </ul>
+                        </div>
                     )}
-                    {(m.jsdoctags || m.returnType || m.description) && (
-                        <tr>
-                            <td class="col-md-4">
-                                {m.description && (
-                                    <div class="io-description">{parseDescription(m.description, props.depth ?? 0)}</div>
-                                )}
-                                {m.jsdoctags && hasJsdocParams(m.jsdoctags) && (
-                                    <div class="io-description">
-                                        {ParamsTable({ jsdocTags: m.jsdoctags, depth: props.depth ?? 0, showOptional: true, showDefaultValue: true })}
-                                    </div>
-                                )}
-                                {m.returnType && (<>
-                                    <div class="io-description">
-                                        <b>{t('returns')} : </b>{linkTypeHtml(m.returnType)}
-                                    </div>
-                                    {m.jsdoctags && (
-                                        <div class="io-description">{jsdocReturnsComment(m.jsdoctags)}</div>
-                                    )}
-                                </>)}
-                            </td>
-                        </tr>
+                    {m.description && (
+                        <div class="io-description">{parseDescription(m.description, props.depth ?? 0)}</div>
                     )}
-                </tbody>
-            </table>
+                    {m.jsdoctags && hasJsdocParams(m.jsdoctags) && (
+                        <div class="io-description">
+                            {ParamsTable({ jsdocTags: m.jsdoctags, depth: props.depth ?? 0, showOptional: true, showDefaultValue: true })}
+                        </div>
+                    )}
+                    {m.returnType && (<>
+                        <div class="io-description">
+                            <b>{t('returns')} : </b>{linkTypeHtml(m.returnType)}
+                        </div>
+                        {m.jsdoctags && (
+                            <div class="io-description">{jsdocReturnsComment(m.jsdoctags)}</div>
+                        )}
+                    </>)}
+                </div>
+            </article>
         ))}
     </section>
 ) as string;

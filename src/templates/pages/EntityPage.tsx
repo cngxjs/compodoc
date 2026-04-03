@@ -139,17 +139,21 @@ const InfoContent = (props: EntityInfoProps): string => {
 
 /** Generic entity detail page renderer. */
 export const renderEntityPage = (props: EntityInfoProps): string => (<>
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item">{t(props.breadcrumbLabel)}</li>
-        <li class={props.entity.deprecated ? 'breadcrumb-item deprecated-name' : 'breadcrumb-item'}>
-            {props.entity.name}
-            {props.showStandaloneBadge && props.entity.standalone ? <span class="cdx-badge cdx-badge--standalone">Standalone</span> : ''}
-            {props.showTokenBadge && props.entity.isToken ? <span class="cdx-badge cdx-badge--token">Token</span> : ''}
-            {props.showJsdocBadges && props.entity.beta ? <span class="cdx-badge cdx-badge--beta">Beta</span> : ''}
-            {props.showJsdocBadges && props.entity.since ? <span class="cdx-badge cdx-badge--since">v{props.entity.since}</span> : ''}
-            {props.showJsdocBadges && props.entity.breaking ? <span class="cdx-badge cdx-badge--breaking">Breaking {props.entity.breaking}</span> : ''}
-        </li>
-    </ol>
+    <nav aria-label="Breadcrumb">
+        <ol class="cdx-breadcrumb">
+            <li><a href={`${t(props.breadcrumbLabel).toLowerCase().replace(/\s+/g, '-')}.html`}>{t(props.breadcrumbLabel)}</a></li>
+            <li aria-current="page">
+                <span class={props.entity.deprecated ? 'deprecated-name' : ''}>
+                    {props.entity.name}
+                </span>
+                {props.showStandaloneBadge && props.entity.standalone ? <span class="cdx-badge cdx-badge--standalone">Standalone</span> : ''}
+                {props.showTokenBadge && props.entity.isToken ? <span class="cdx-badge cdx-badge--token">Token</span> : ''}
+                {props.showJsdocBadges && props.entity.beta ? <span class="cdx-badge cdx-badge--beta">Beta</span> : ''}
+                {props.showJsdocBadges && props.entity.since ? <span class="cdx-badge cdx-badge--since">v{props.entity.since}</span> : ''}
+                {props.showJsdocBadges && props.entity.breaking ? <span class="cdx-badge cdx-badge--breaking">Breaking {props.entity.breaking}</span> : ''}
+            </li>
+        </ol>
+    </nav>
     {EntityTabs({
         navTabs: props.navTabs,
         infoContent: InfoContent(props),
