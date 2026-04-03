@@ -53,6 +53,7 @@ const EntitySection = (props: {
     labelKey: string;
     hrefPrefix: string;
     mode: string;
+    overviewHref?: string;
 }): string => {
     if (!props.items?.length) return '';
     const p = px(props.mode);
@@ -61,11 +62,21 @@ const EntitySection = (props: {
 
     return (
         <li class="chapter">
-            <div class="simple menu-toggler" data-cdx-toggle="collapse" data-cdx-target={`#${id}`}>
-                <span class={`icon ${props.icon}`}></span>
-                <span>{t(props.labelKey)}</span>
-                <span class={`icon ${arrow(props.type)}`}></span>
-            </div>
+            {props.overviewHref ? (
+                <a data-type="chapter-link" href={props.overviewHref}>
+                    <div class="menu-toggler linked" data-cdx-toggle="collapse" data-cdx-target={`#${id}`}>
+                        <span class={`icon ${props.icon}`}></span>
+                        <span class="link-name">{t(props.labelKey)}</span>
+                        <span class={`icon ${arrow(props.type)}`}></span>
+                    </div>
+                </a>
+            ) : (
+                <div class="simple menu-toggler" data-cdx-toggle="collapse" data-cdx-target={`#${id}`}>
+                    <span class={`icon ${props.icon}`}></span>
+                    <span>{t(props.labelKey)}</span>
+                    <span class={`icon ${arrow(props.type)}`}></span>
+                </div>
+            )}
             <ul class={`links collapse${isToggled(props.type) ? ' in' : ''}`} id={id}>
                 {hasCats ? (
                     Object.entries(props.categorized!).map(([key, items]) => (
@@ -269,7 +280,7 @@ export const Menu = (props: MenuProps): string => {
                 )}
 
                 {/* Standalone entity sections */}
-                {aloneComponents.length > 0 && EntitySection({ items: aloneComponents, categorized: d.categorizedComponents, type: 'components', icon: 'ion-md-cog', labelKey: 'components', hrefPrefix: 'components', mode: m })}
+                {aloneComponents.length > 0 && EntitySection({ items: aloneComponents, categorized: d.categorizedComponents, type: 'components', icon: 'ion-md-cog', labelKey: 'components', hrefPrefix: 'components', mode: m, overviewHref: 'components.html' })}
                 {aloneEntities.length > 0 && EntitySection({ items: aloneEntities, type: 'entities', icon: 'ion-ios-apps', labelKey: 'entities', hrefPrefix: 'entities', mode: m })}
                 {aloneDirectives.length > 0 && EntitySection({ items: aloneDirectives, categorized: d.categorizedDirectives, type: 'directives', icon: 'ion-md-code-working', labelKey: 'directives', hrefPrefix: 'directives', mode: m })}
                 {d.classes?.length > 0 && EntitySection({ items: d.classes, categorized: d.categorizedClasses, type: 'classes', icon: 'ion-ios-paper', labelKey: 'classes', hrefPrefix: 'classes', mode: m })}

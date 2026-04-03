@@ -248,3 +248,44 @@ test.describe('Host metadata bindings', () => {
         expect(html).toContain('mouseleave');
     });
 });
+
+// ─── Components overview page ────────────────────────────
+
+test.describe('Components overview', () => {
+    test('components.html exists and shows component cards', async ({ page }) => {
+        await page.goto(`${BASE}/components.html`);
+        const html = await page.content();
+        expect(html).toContain('Components');
+        expect(html).toContain('AppComponent');
+        expect(html).toContain('UserCardComponent');
+        expect(html).toContain('UserListComponent');
+    });
+
+    test('components overview shows entity cards with badges', async ({ page }) => {
+        await page.goto(`${BASE}/components.html`);
+        const html = await page.content();
+        expect(html).toContain('cdx-entity-card');
+        expect(html).toContain('cdx-badge--standalone');
+    });
+
+    test('components overview shows directives section', async ({ page }) => {
+        await page.goto(`${BASE}/components.html`);
+        const html = await page.content();
+        expect(html).toContain('Directives');
+        expect(html).toContain('HighlightDirective');
+    });
+
+    test('components overview shows pipes section', async ({ page }) => {
+        await page.goto(`${BASE}/components.html`);
+        const html = await page.content();
+        expect(html).toContain('Pipes');
+        expect(html).toContain('GreetingPipe');
+    });
+
+    test('sidebar Components link navigates to overview', async ({ page }) => {
+        await page.goto(`${BASE}/components.html`);
+        const html = await page.content();
+        // Sidebar should have linked toggler pointing to components.html
+        expect(html).toContain('href="components.html"');
+    });
+});

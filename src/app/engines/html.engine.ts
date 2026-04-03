@@ -29,6 +29,7 @@ import { MiscellaneousVariables } from '../../templates/pages/MiscellaneousVaria
 import { ModulePage } from '../../templates/pages/ModulePage';
 import { PipePage } from '../../templates/pages/PipePage';
 import { ComponentPage } from '../../templates/pages/ComponentPage';
+import { ComponentsOverview } from '../../templates/pages/ComponentsOverview';
 import { loadCustomTemplates, renderCustomTemplate } from './custom-template.engine';
 import DependenciesEngine from './dependencies.engine';
 
@@ -139,6 +140,8 @@ export class HtmlEngine {
             case 'component':
                 data.relationships = DependenciesEngine.getRelationships(data.component?.name);
                 return ComponentPage(data);
+            case 'components-overview':
+                return ComponentsOverview(data);
             default:
                 return '';
         }
