@@ -21,6 +21,7 @@ const factoryKindLabel: Record<string, string> = {
 const FunctionBadges = (fn: any): string => {
     const badges: string[] = [];
     if (fn.factoryKind) badges.push(<span class="cdx-badge cdx-badge--factory">{factoryKindLabel[fn.factoryKind] || fn.factoryKind}</span> as string);
+    if (fn.functionalKind) badges.push(<span class="cdx-badge cdx-badge--standalone">{fn.functionalKind.charAt(0).toUpperCase() + fn.functionalKind.slice(1)}</span> as string);
     if (fn.beta) badges.push(<span class="cdx-badge cdx-badge--beta">Beta</span> as string);
     if (fn.since) badges.push(<span class="cdx-badge cdx-badge--since">v{fn.since}</span> as string);
     if (fn.signal) badges.push(<span class="cdx-badge cdx-badge--signal">Signal</span> as string);

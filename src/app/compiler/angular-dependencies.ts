@@ -786,6 +786,11 @@ export class AngularDependencies extends FrameworkDependencies {
                         if (factoryKind) {
                             functionDep.factoryKind = factoryKind;
                         }
+                        // Detect functional guard/resolver/interceptor from return type
+                        const functionalKind = this.detectFunctionalAngularKind(infos.returnType, name);
+                        if (functionalKind) {
+                            (functionDep as any).functionalKind = functionalKind;
+                        }
                         // Custom JSDoc tags
                         if (infos.signal) (functionDep as any).signal = true;
                         if (infos.beta) (functionDep as any).beta = true;
@@ -1369,6 +1374,18 @@ export class AngularDependencies extends FrameworkDependencies {
             }
         }
         return '';
+    }
+
+    private detectFunctionalAngularKind(returnType: string | undefined, name: string): string | undefined {
+        if (!returnType) return undefined;
+        const rt = returnType.trim();
+        // Check return type annotations
+        if (/CanActivateFn|CanActivate|CanDeactivate|CanMatch|CanLoad|boolean\s*\|\s*UrlTree/.test(rt)) return 'guard';
+        if (/ResolveFn|Resolve</.test(rt)) return 'resolver';
+        if (/HttpInterceptorFn|HttpHandlerFn/.test(rt)) return 'interceptor';
+        // Check variable type annotations (for arrow function exports)
+        if (/Guard/i.test(name) && /boolean|Observable<boolean>|Promise<boolean>/.test(rt)) return 'guard';
+        return undefined;
     }
 
     private detectFactoryKind(name: string): IFunctionDecDep['factoryKind'] | undefined {

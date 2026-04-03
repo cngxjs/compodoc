@@ -19,6 +19,8 @@ export const BlockInput = (props: BlockInputProps): string => (
                         <td class="col-md-4">
                             <span id={inp.name}></span>
                             <b>{inp.name}</b>
+                            {inp.signalKind && <span class={`cdx-badge cdx-badge--${inp.signalKind}`}>{inp.signalKind === 'input-signal' ? 'Signal' : inp.signalKind === 'model' ? 'Model' : ''}</span>}
+                            {inp.required && <span class="cdx-badge cdx-badge--factory">Required</span>}
                         </td>
                     </tr>
                     {inp.type && (

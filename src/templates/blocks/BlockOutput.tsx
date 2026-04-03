@@ -19,6 +19,7 @@ export const BlockOutput = (props: BlockOutputProps): string => (
                         <td class="col-md-4">
                             <span id={out.name}></span>
                             <b>{out.name}</b>
+                            {out.signalKind && <span class={`cdx-badge cdx-badge--${out.signalKind}`}>{out.signalKind === 'output-signal' ? 'Signal' : ''}</span>}
                         </td>
                     </tr>
                     {out.type && (

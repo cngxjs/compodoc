@@ -220,6 +220,49 @@
   background: hsl(280 35% 94%);
 }
 
+/* Signal primitive badges */
+.cdx-badge--signal, .cdx-badge--linked-signal {
+  color: hsl(210 60% 35%);
+  border: 1px solid hsl(210 50% 55%);
+  background: hsl(210 50% 94%);
+}
+
+.cdx-badge--computed {
+  color: hsl(270 50% 40%);
+  border: 1px solid hsl(270 40% 55%);
+  background: hsl(270 40% 94%);
+}
+
+.cdx-badge--effect {
+  color: hsl(45 70% 35%);
+  border: 1px solid hsl(45 60% 50%);
+  background: hsl(45 60% 94%);
+}
+
+.cdx-badge--resource, .cdx-badge--rx-resource {
+  color: hsl(190 55% 30%);
+  border: 1px solid hsl(190 45% 50%);
+  background: hsl(190 45% 94%);
+}
+
+.cdx-badge--input-signal, .cdx-badge--output-signal, .cdx-badge--model {
+  color: hsl(170 55% 30%);
+  border: 1px solid hsl(170 45% 48%);
+  background: hsl(170 45% 94%);
+}
+
+.cdx-badge--view-child, .cdx-badge--view-children, .cdx-badge--content-child, .cdx-badge--content-children {
+  color: hsl(30 60% 35%);
+  border: 1px solid hsl(30 50% 50%);
+  background: hsl(30 50% 94%);
+}
+
+.cdx-badge--inject {
+  color: hsl(320 45% 40%);
+  border: 1px solid hsl(320 35% 55%);
+  background: hsl(320 35% 94%);
+}
+
 .cdx-badge--entity-type {
   color: var(--color-cdx-text-secondary);
   border: 1px solid var(--color-cdx-border);
@@ -272,6 +315,28 @@
   color: hsl(280 45% 70%);
   border-color: hsl(280 25% 40%);
   background: hsl(280 20% 18%);
+}
+
+.dark .cdx-badge--signal, .dark .cdx-badge--linked-signal {
+  color: hsl(210 60% 70%); border-color: hsl(210 35% 40%); background: hsl(210 25% 18%);
+}
+.dark .cdx-badge--computed {
+  color: hsl(270 50% 70%); border-color: hsl(270 30% 40%); background: hsl(270 25% 18%);
+}
+.dark .cdx-badge--effect {
+  color: hsl(45 65% 65%); border-color: hsl(45 40% 35%); background: hsl(45 30% 16%);
+}
+.dark .cdx-badge--resource, .dark .cdx-badge--rx-resource {
+  color: hsl(190 50% 65%); border-color: hsl(190 30% 35%); background: hsl(190 25% 16%);
+}
+.dark .cdx-badge--input-signal, .dark .cdx-badge--output-signal, .dark .cdx-badge--model {
+  color: hsl(170 50% 65%); border-color: hsl(170 30% 35%); background: hsl(170 25% 16%);
+}
+.dark .cdx-badge--view-child, .dark .cdx-badge--view-children, .dark .cdx-badge--content-child, .dark .cdx-badge--content-children {
+  color: hsl(30 55% 65%); border-color: hsl(30 35% 35%); background: hsl(30 25% 16%);
+}
+.dark .cdx-badge--inject {
+  color: hsl(320 45% 70%); border-color: hsl(320 25% 40%); background: hsl(320 20% 18%);
 }
 
 .dark .cdx-badge--entity-type {
