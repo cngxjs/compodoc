@@ -1450,15 +1450,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             ? someComponents
             : DependenciesEngine.getComponents();
 
-        // Generate components overview page
-        Configuration.addPage({
-            name: 'components',
-            id: 'components',
-            context: 'components-overview',
-            depth: 0,
-            pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-        });
-
         return new Promise((mainPrepareComponentResolve, mainPrepareComponentReject) => {
             let i = 0;
             const len = Configuration.mainData.components.length;

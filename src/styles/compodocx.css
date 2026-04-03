@@ -263,21 +263,6 @@
   background: hsl(320 35% 94%);
 }
 
-/* Entity overview cards */
-.cdx-entity-card { border-left: 3px solid var(--color-cdx-border); }
-.cdx-entity-card--component { border-left-color: var(--color-cdx-entity-component); }
-.cdx-entity-card--directive { border-left-color: var(--color-cdx-entity-directive); }
-.cdx-entity-card--pipe { border-left-color: var(--color-cdx-entity-pipe); }
-.cdx-card-selector { @apply text-xs; color: var(--color-cdx-text-muted); }
-.cdx-card-description { @apply text-sm; color: var(--color-cdx-text-secondary); }
-.cdx-card-imports { @apply mt-1 text-xs; color: var(--color-cdx-text-muted); }
-
-/* Relationship section */
-.cdx-relationships { @apply flex flex-wrap gap-6; }
-.cdx-relationship-group { @apply min-w-48; }
-.cdx-relationship-list { @apply list-none p-0 m-0; }
-.cdx-relationship-list li { @apply py-1; }
-
 .cdx-badge--entity-type {
   color: var(--color-cdx-text-secondary);
   border: 1px solid var(--color-cdx-border);
