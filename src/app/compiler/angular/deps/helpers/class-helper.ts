@@ -52,6 +52,58 @@ export class ClassHelper {
                 }
             }
         });
+        this.extractCustomTags(tags, result);
+    }
+
+    private extractCustomTags(tags: any[], result: { [key in string | number]: any }) {
+        for (const tag of tags) {
+            if (!tag.tagName || !tag.tagName.text) continue;
+            const name = tag.tagName.text;
+            const comment = (tag.comment || '').trim();
+
+            switch (name) {
+                case 'signal':
+                    result.signal = true;
+                    break;
+                case 'zoneless':
+                    result.zoneless = true;
+                    break;
+                case 'beta':
+                    result.beta = true;
+                    break;
+                case 'group':
+                    result.group = comment.split('\n')[0].trim();
+                    break;
+                case 'order':
+                    result.order = parseInt(comment, 10) || 0;
+                    break;
+                case 'since':
+                    result.since = comment.split('\n')[0].trim();
+                    break;
+                case 'breaking':
+                    result.breaking = comment.split('\n')[0].trim();
+                    break;
+                case 'route':
+                    result.route = comment.split('\n')[0].trim();
+                    break;
+                case 'storybook':
+                    result.storybookUrl = comment.split('\n')[0].trim();
+                    break;
+                case 'figma':
+                    result.figmaUrl = comment.split('\n')[0].trim();
+                    break;
+                case 'slot': {
+                    if (!result.slots) result.slots = [];
+                    const parts = comment.match(/^(\S+)\s*-?\s*(.*)$/);
+                    if (parts) {
+                        result.slots.push({ name: parts[1], description: parts[2] || '' });
+                    } else if (comment) {
+                        result.slots.push({ name: comment, description: '' });
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     /**
