@@ -1,25 +1,18 @@
 /**
  * Sidebar collapse/expand behavior.
- * Shared state between desktop and mobile menus.
+ * Single sidebar DOM serves both desktop and mobile.
  * Default: all sections collapsed when no saved state exists.
  */
 
 const STORAGE_KEY = 'compodoc-sidebar-state';
 const ANIMATION_MS = 200;
 
-/** Normalize element ID to a shared state key (strip xs- prefix) */
-const stateKey = (id: string): string => id.replace(/^xs-/, '');
-
-/** Get the sibling element ID (desktop <-> mobile) */
-const siblingId = (id: string): string =>
-    id.startsWith('xs-') ? id.slice(3) : 'xs-' + id;
-
 const saveState = () => {
     try {
         const collapses = document.querySelectorAll<HTMLElement>('.menu .collapse[id]');
         const states: Record<string, boolean> = {};
         collapses.forEach(el => {
-            states[stateKey(el.id)] = el.classList.contains('in');
+            states[el.id] = el.classList.contains('in');
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
     } catch { /* localStorage blocked */ }
@@ -32,9 +25,7 @@ const restoreState = () => {
         const states: Record<string, boolean> = saved ? JSON.parse(saved) : {};
 
         document.querySelectorAll<HTMLElement>('.menu .collapse[id]').forEach(el => {
-            const key = stateKey(el.id);
-            // Default to closed if no saved state
-            const open = states[key] ?? false;
+            const open = states[el.id] ?? false;
             if (open) {
                 el.classList.add('in');
                 el.style.display = 'block';
@@ -44,26 +35,6 @@ const restoreState = () => {
             }
         });
     } catch { /* localStorage blocked or invalid JSON */ }
-};
-
-/** Apply open/closed state to an element without animation */
-const applyState = (el: HTMLElement, open: boolean) => {
-    if (open) {
-        el.classList.add('in');
-        el.style.display = 'block';
-    } else {
-        el.classList.remove('in');
-        el.style.display = 'none';
-    }
-    // Sync chevron
-    const toggler = document.querySelector(`[data-cdx-target="#${el.id}"]`);
-    if (toggler) {
-        const icon = toggler.querySelector('.ion-ios-arrow-up, .ion-ios-arrow-down');
-        if (icon) {
-            icon.classList.toggle('ion-ios-arrow-up', open);
-            icon.classList.toggle('ion-ios-arrow-down', !open);
-        }
-    }
 };
 
 const toggleCollapse = (targetId: string) => {
@@ -76,7 +47,7 @@ const toggleCollapse = (targetId: string) => {
         target.style.maxHeight = target.scrollHeight + 'px';
         requestAnimationFrame(() => {
             target.style.maxHeight = '0';
-            target.style.transition = `max-height ${ANIMATION_MS}ms ease`;
+            target.style.transition = `max-height ${ANIMATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`;
         });
         setTimeout(() => {
             target.classList.remove('in');
@@ -92,7 +63,7 @@ const toggleCollapse = (targetId: string) => {
         target.style.maxHeight = '0';
         requestAnimationFrame(() => {
             target.style.maxHeight = target.scrollHeight + 'px';
-            target.style.transition = `max-height ${ANIMATION_MS}ms ease`;
+            target.style.transition = `max-height ${ANIMATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`;
         });
         setTimeout(() => {
             target.style.maxHeight = '';
@@ -109,13 +80,6 @@ const toggleCollapse = (targetId: string) => {
             icon.classList.toggle('ion-ios-arrow-up');
             icon.classList.toggle('ion-ios-arrow-down');
         }
-    }
-
-    // Sync sibling (desktop <-> mobile) without animation
-    const id = targetId.replace('#', '');
-    const sibling = document.getElementById(siblingId(id));
-    if (sibling) {
-        applyState(sibling, !isOpen);
     }
 
     setTimeout(saveState, ANIMATION_MS + 50);
@@ -161,34 +125,86 @@ const syncChevrons = () => {
     });
 };
 
-/** Mobile hamburger menu toggle (data-cdx-mobile-toggle) */
+/* ----------------------------------------------------------------
+   Mobile sidebar slide-over
+   ---------------------------------------------------------------- */
+
+let sidebarEl: HTMLElement | null = null;
+let backdropEl: HTMLElement | null = null;
+let toggleBtn: HTMLElement | null = null;
+
+const isMobileSidebarOpen = (): boolean =>
+    sidebarEl?.classList.contains('cdx-sidebar--open') ?? false;
+
+const openMobileSidebar = () => {
+    if (!sidebarEl || !backdropEl) return;
+    sidebarEl.classList.add('cdx-sidebar--open');
+    backdropEl.style.display = 'block';
+    requestAnimationFrame(() => backdropEl!.classList.add('cdx-backdrop--visible'));
+    document.body.style.overflow = 'hidden';
+    toggleBtn?.setAttribute('aria-expanded', 'true');
+
+    // Focus the first focusable element in sidebar
+    const firstFocusable = sidebarEl.querySelector<HTMLElement>('a, button, input');
+    firstFocusable?.focus();
+};
+
+const closeMobileSidebar = () => {
+    if (!sidebarEl || !backdropEl) return;
+    sidebarEl.classList.remove('cdx-sidebar--open');
+    backdropEl.classList.remove('cdx-backdrop--visible');
+    document.body.style.overflow = '';
+    toggleBtn?.setAttribute('aria-expanded', 'false');
+
+    setTimeout(() => {
+        if (!isMobileSidebarOpen()) {
+            backdropEl!.style.display = 'none';
+        }
+    }, ANIMATION_MS);
+
+    // Return focus to hamburger
+    toggleBtn?.focus();
+};
+
 const bindMobileMenu = () => {
-    const menus: HTMLElement[] = [];
+    sidebarEl = document.getElementById('sidebar');
+    backdropEl = document.querySelector('.cdx-backdrop');
 
     document.querySelectorAll<HTMLElement>('[data-cdx-mobile-toggle]').forEach(btn => {
-        const targetId = btn.getAttribute('data-cdx-mobile-toggle');
-        if (!targetId) return;
-        const menu = document.querySelector<HTMLElement>(targetId);
-        if (!menu) return;
-        menus.push(menu);
-
+        toggleBtn = btn;
         btn.addEventListener('click', () => {
-            const isOpen = menu.style.display === 'block';
-            menu.style.display = isOpen ? 'none' : 'block';
-        });
-
-        menu.querySelectorAll('a[data-type]').forEach(link => {
-            link.addEventListener('click', () => {
-                menu.style.display = 'none';
-            });
+            if (isMobileSidebarOpen()) {
+                closeMobileSidebar();
+            } else {
+                openMobileSidebar();
+            }
         });
     });
 
-    // Close mobile menu when resizing to desktop
+    // Backdrop click closes sidebar
+    backdropEl?.addEventListener('click', closeMobileSidebar);
+
+    // Escape key closes sidebar
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isMobileSidebarOpen()) {
+            closeMobileSidebar();
+        }
+    });
+
+    // Close sidebar links (navigate)
+    sidebarEl?.querySelectorAll('a[data-type]').forEach(link => {
+        link.addEventListener('click', () => {
+            if (isMobileSidebarOpen()) {
+                closeMobileSidebar();
+            }
+        });
+    });
+
+    // Close mobile sidebar on resize to desktop
     const mq = window.matchMedia('(min-width: 768px)');
     mq.addEventListener('change', (e) => {
-        if (e.matches) {
-            menus.forEach(m => { m.style.display = 'none'; });
+        if (e.matches && isMobileSidebarOpen()) {
+            closeMobileSidebar();
         }
     });
 };

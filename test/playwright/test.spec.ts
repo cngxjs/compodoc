@@ -14,7 +14,7 @@ test.describe('Compodoc page', () => {
     test('should open menu for specific page', async ({ page }) => {
         await page.goto('/modules.html');
 
-        const menuModulesItem = await page.locator('.d-md-block.menu .menu-toggler').nth(0);
+        const menuModulesItem = await page.locator('#sidebar .menu-toggler').nth(0);
         await expect(menuModulesItem).toHaveClass(/linked/);
     });
 });

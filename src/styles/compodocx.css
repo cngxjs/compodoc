@@ -57,7 +57,7 @@
   --shadow-cdx-lg: 0 12px 32px hsl(220 20% 14% / 0.12);
 
   /* --- Layout --- */
-  --spacing-cdx-sidebar: 280px;
+  --spacing-cdx-sidebar: 300px;
 
   /* --- Radii --- */
   --radius-cdx-sm: 4px;
@@ -67,6 +67,265 @@
   /* --- Transitions --- */
   --cdx-transition-fast: 120ms ease;
   --cdx-transition-base: 200ms ease;
+}
+
+/* ----------------------------------------------------------------
+   Reduced motion
+   ---------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ----------------------------------------------------------------
+   Skip link
+   ---------------------------------------------------------------- */
+
+.cdx-skip-link {
+  @apply absolute z-[100] px-4 py-2 text-sm font-semibold;
+  top: -100%;
+  left: 1rem;
+  background: var(--color-cdx-primary);
+  color: white;
+  border-radius: var(--radius-cdx-md);
+}
+.cdx-skip-link:focus {
+  top: 1rem;
+}
+
+/* ----------------------------------------------------------------
+   Grid layout
+   ---------------------------------------------------------------- */
+
+body {
+  display: grid;
+  grid-template-columns: var(--spacing-cdx-sidebar) 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--color-cdx-bg);
+  color: var(--color-cdx-text);
+  font-family: var(--font-body);
+}
+
+/* ----------------------------------------------------------------
+   Mobile top bar
+   ---------------------------------------------------------------- */
+
+.cdx-topbar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  height: 50px;
+  grid-column: 1 / -1;
+  background: var(--color-cdx-bg-elevated);
+  border-bottom: 1px solid var(--color-cdx-border);
+  z-index: 20;
+}
+
+.cdx-topbar-brand {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-cdx-text);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cdx-mobile-toggle {
+  @apply flex items-center justify-center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: none;
+  color: var(--color-cdx-text);
+  cursor: pointer;
+  border-radius: var(--radius-cdx-md);
+}
+.cdx-mobile-toggle:hover {
+  background: var(--color-cdx-bg-alt);
+}
+
+/* ----------------------------------------------------------------
+   Sidebar
+   ---------------------------------------------------------------- */
+
+.cdx-sidebar {
+  grid-row: 1 / -1;
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--color-cdx-bg-elevated);
+  border-right: 1px solid var(--color-cdx-border);
+  z-index: 30;
+}
+
+.cdx-sidebar-footer {
+  margin-top: auto;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-cdx-border);
+}
+
+/* ----------------------------------------------------------------
+   Backdrop (mobile sidebar)
+   ---------------------------------------------------------------- */
+
+.cdx-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: hsl(220 20% 14% / 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.cdx-backdrop.cdx-backdrop--visible {
+  opacity: 1;
+}
+
+/* ----------------------------------------------------------------
+   Main content
+   ---------------------------------------------------------------- */
+
+.content {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  height: 100vh;
+  padding: 2rem;
+}
+
+.content-data {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* ----------------------------------------------------------------
+   Dark mode toggle (in sidebar footer)
+   ---------------------------------------------------------------- */
+
+.dark-mode-switch {
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  position: relative;
+  cursor: pointer;
+}
+
+.dark-mode-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.dark-mode-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: hsl(220 14% 80%);
+  border-radius: 28px;
+  transition: background-color 200ms ease;
+}
+
+.dark-mode-switch .slider:before {
+  position: absolute;
+  content: '';
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 200ms ease;
+}
+
+.dark-mode-switch input:checked + .slider {
+  background-color: var(--color-cdx-primary);
+}
+
+.dark-mode-switch input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+.dark-mode-switch .slider-icon {
+  position: absolute;
+  right: 5px;
+  top: 4px;
+  stroke: var(--color-cdx-text-muted);
+  transform: rotate(250deg);
+}
+
+/* ----------------------------------------------------------------
+   Responsive: mobile (<768px)
+   ---------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  body {
+    grid-template-columns: 1fr;
+    grid-template-rows: 50px 1fr;
+  }
+
+  .cdx-topbar {
+    display: flex;
+  }
+
+  .cdx-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 85vw;
+    max-width: 320px;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 200ms ease;
+    grid-row: auto;
+    grid-column: auto;
+  }
+
+  .cdx-sidebar.cdx-sidebar--open {
+    transform: translateX(0);
+  }
+
+  .cdx-backdrop.cdx-backdrop--visible {
+    display: block;
+    opacity: 1;
+  }
+
+  .content {
+    grid-column: 1;
+    grid-row: 2;
+    height: auto;
+    min-height: calc(100vh - 50px);
+    padding: 1rem;
+  }
+}
+
+/* ----------------------------------------------------------------
+   Focus rings (WCAG 2.1 AA)
+   ---------------------------------------------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--color-cdx-border-focus);
+  outline-offset: 2px;
 }
 
 /* ----------------------------------------------------------------

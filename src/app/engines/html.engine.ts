@@ -3,7 +3,6 @@ import * as path from 'path';
 import { logger } from '../../utils/logger';
 import FileEngine from './file.engine';
 import { Layout } from '../../templates/Layout';
-import { SearchInput } from '../../templates/components/SearchInput';
 import { CoverageBadge } from '../../templates/components/CoverageBadge';
 import { Menu } from '../../templates/components/Menu';
 import { Markdown } from '../../templates/pages/Markdown';
@@ -152,17 +151,13 @@ export class HtmlEngine {
         const content = this.renderTsxContent(data);
 
         // Check for custom menu override
-        const customMenu = renderCustomTemplate('menu', { ...data, menu: 'normal' });
-        const menuHtml = customMenu ?? Menu({ data, mode: 'normal' });
-        const customMenuMobile = renderCustomTemplate('menu', { ...data, menu: 'mobile' });
-        const menuHtmlMobile = customMenuMobile ?? Menu({ data, mode: 'mobile' });
+        const customMenu = renderCustomTemplate('menu', data);
+        const menuHtml = customMenu ?? Menu({ data });
 
         return Layout({
             data,
             content,
             menuHtml,
-            menuHtmlMobile,
-            searchInputHtml: SearchInput(),
         });
     }
 

@@ -21,8 +21,6 @@ type LayoutProps = {
     readonly data: PageData;
     readonly content: string;
     readonly menuHtml: string;
-    readonly menuHtmlMobile: string;
-    readonly searchInputHtml: string;
 };
 
 const IframeTrackingScript = `
@@ -72,7 +70,8 @@ const CommandPalette = () => (
         <div class="cdx-cp-panel">
             <div class="cdx-cp-header">
                 <svg class="cdx-cp-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
@@ -91,24 +90,26 @@ const CommandPalette = () => (
 ) as string;
 
 const DarkModeToggle = () => (
-    <label class="dark-mode-switch">
-        <input type="checkbox" />
-        <span class="slider">
-            <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000"
-                stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20"
-                xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
-            </svg>
-        </span>
-    </label>
+    <div class="cdx-sidebar-footer">
+        <label class="dark-mode-switch" aria-label="Toggle dark mode">
+            <input type="checkbox" />
+            <span class="slider">
+                <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000"
+                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20"
+                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                </svg>
+            </span>
+        </label>
+    </div>
 );
 
 export const Layout = (props: LayoutProps): string => {
-    const { data, content, menuHtml, menuHtmlMobile, searchInputHtml } = props;
+    const { data, content, menuHtml } = props;
     const r = (path: string) => relativeUrl(data.depth, path);
 
     return '<!doctype html>\n' + (
-        <html class="no-js" lang="">
+        <html class="no-js" lang="en">
             <head>
                 <meta charset="utf-8" />
                 <meta http-equiv="x-ua-compatible" content="ie=edge" />
@@ -118,11 +119,12 @@ export const Layout = (props: LayoutProps): string => {
                 <link rel="icon" type="image/x-icon" href={r('images/favicon.ico')} />
                 <script>{(`(function(){try{var d=localStorage.getItem('compodocx_darkmode-state');var dark=d!==null?d==='true':window.matchMedia('(prefers-color-scheme:dark)').matches;if(dark)document.documentElement.classList.add('dark')}catch(e){}}())`)}</script>
                 <style>{(`
-                    .menu .collapse.in { display: block !important; }
+                    .menu .collapse.in { display: block !important; visibility: visible !important; }
                     .menu .collapse:not(.in) { display: none !important; }
                 `)}</style>
                 <link rel="stylesheet" href={r('styles/style.css')} />
                 <link rel="stylesheet" href={r('styles/dark.css')} />
+                <link rel="stylesheet" href={r('styles/compodocx.css')} />
                 {data.theme && data.theme !== 'gitbook' && (
                     <link rel="stylesheet" href={r(`styles/${data.theme}.css`)} />
                 )}
@@ -131,35 +133,39 @@ export const Layout = (props: LayoutProps): string => {
                 <script type="module" src={r('js/compodocx.js')}></script>
                 <script>{(IframeTrackingScript)}</script>
 
-                <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
-                    <div class="d-flex">
-                        <a href={r('')} class="navbar-brand">{data.documentationMainName}</a>
-                        <button type="button" class="btn btn-default btn-menu ion-ios-menu"
-                            data-cdx-mobile-toggle="#mobile-menu"></button>
+                <a href="#main-content" class="cdx-skip-link">Skip to main content</a>
+
+                {/* Mobile top bar */}
+                <header class="cdx-topbar">
+                    <a href={r('')} class="cdx-topbar-brand">{data.documentationMainName}</a>
+                    <button type="button" class="cdx-mobile-toggle"
+                        aria-label="Open navigation" aria-expanded="false"
+                        data-cdx-mobile-toggle="#sidebar">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" aria-hidden="true">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </header>
+
+                {/* Sidebar backdrop (mobile) */}
+                <div class="cdx-backdrop" aria-hidden="true"></div>
+
+                {/* Sidebar */}
+                <nav class="cdx-sidebar menu" id="sidebar" aria-label="Documentation">
+                    {(menuHtml)}
+                    {!data.hideDarkModeToggle && <DarkModeToggle />}
+                </nav>
+
+                {/* Main content */}
+                <main id="main-content" class={`content ${data.context}`} tabindex="-1">
+                    <div class="content-data">
+                        {(content)}
                     </div>
-                </div>
-
-                <div class="xs-menu menu" id="mobile-menu">
-                    {!data.disableSearch && (searchInputHtml)}
-                    {(menuHtmlMobile)}
-                </div>
-
-                <div class="container-fluid main">
-                    <div class="row main">
-                        <div class="d-none d-md-block menu">
-                            {(menuHtml)}
-                        </div>
-                        {/* START CONTENT */}
-                        <div class={`content ${data.context}`}>
-                            <div class="content-data">
-                                {(content)}
-                            </div>
-                        </div>
-                        {/* END CONTENT */}
-                    </div>
-                </div>
-
-                {!data.hideDarkModeToggle && <DarkModeToggle />}
+                </main>
 
                 {!data.disableSearch && <CommandPalette />}
 
