@@ -47,6 +47,7 @@ export class DependenciesEngine {
     public categorizedGuards: Record<string, IGuardDep[]> = {};
     public categorizedInterceptors: Record<string, IInterceptorDep[]> = {};
     public categorizedEntities: Record<string, IDep[]> = {};
+    public appConfig: any[] = [];
     public rawStandaloneComponents: IComponentDep[] = [];
     public rawStandaloneDirectives: IDirectiveDep[] = [];
     public rawStandalonePipes: IPipeDep[] = [];
@@ -136,6 +137,7 @@ export class DependenciesEngine {
         this.interfaces = [...this.rawData.interfaces].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
         this.pipes = [...this.rawData.pipes].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
         this.classes = [...this.rawData.classes].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.appConfig = this.rawData.appConfig || [];
         this.miscellaneous = this.rawData.miscellaneous;
         this.prepareMiscellaneous();
         this.updateModulesDeclarationsExportsTypes();

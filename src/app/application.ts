@@ -1221,6 +1221,18 @@ export class Application {
     }
 
     public prepareMiscellaneous(someMisc?) {
+        // Generate app-config page if ApplicationConfig found
+        Configuration.mainData.appConfig = DependenciesEngine.appConfig;
+        if (Configuration.mainData.appConfig?.length > 0) {
+            Configuration.addPage({
+                name: 'app-config',
+                id: 'app-config',
+                context: 'app-config',
+                depth: 0,
+                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+            });
+        }
+
         logger.info('Prepare miscellaneous');
         Configuration.mainData.miscellaneous = someMisc
             ? someMisc

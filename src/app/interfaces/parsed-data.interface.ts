@@ -15,4 +15,5 @@ export interface ParsedData {
     aliases?;
     routes?;
     typescriptImports?;
+    appConfig?;
 }

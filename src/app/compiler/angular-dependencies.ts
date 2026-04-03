@@ -151,7 +151,8 @@ export class AngularDependencies extends FrameworkDependencies {
                 typealiases: [],
                 enumerations: []
             },
-            routesTree: undefined
+            routesTree: undefined,
+            appConfig: []
         };
 
         const sourceFiles = this.program.getSourceFiles() || [];
@@ -1037,6 +1038,33 @@ export class AngularDependencies extends FrameworkDependencies {
                                     deps.rawdescription = rawDescription;
                                     deps.description = markedAcl(rawDescription);
                                 }
+                                // Detect ApplicationConfig declarations
+                                if (infos.type === 'ApplicationConfig' && infos.initializer) {
+                                    const providers = this.extractProviderCalls(infos.initializer);
+                                    const appConfigDep: any = {
+                                        name,
+                                        file,
+                                        type: 'app-config',
+                                        description: deps.description || '',
+                                        rawdescription: deps.rawdescription || '',
+                                        providers,
+                                        deprecated: deps.deprecated || false,
+                                        deprecationMessage: deps.deprecationMessage || '',
+                                        category: deps.category || '',
+                                        since: infos.since || '',
+                                    };
+                                    if (!isIgnore(variableNode)) {
+                                        if (!this.isSymbolAllowed(name, file)) {
+                                            logger.debug(`Skipping ApplicationConfig ${name} (not in public API)`);
+                                            return;
+                                        }
+                                        this.debug(appConfigDep);
+                                        if (!outputSymbols.appConfig) outputSymbols.appConfig = [];
+                                        outputSymbols.appConfig.push(appConfigDep);
+                                    }
+                                    return;
+                                }
+
                                 // Detect InjectionToken declarations
                                 if (this.isInjectionToken(infos.initializer)) {
                                     const tokenDep: IInjectableDep = {
@@ -1338,6 +1366,41 @@ export class AngularDependencies extends FrameworkDependencies {
                 }
             }
         }
+    }
+
+    /**
+     * Extract provider function calls from an ApplicationConfig initializer.
+     * Walks the `providers` array in the object literal and extracts call expressions.
+     */
+    private extractProviderCalls(initializer: any): Array<{ name: string; features: string[] }> {
+        const providers: Array<{ name: string; features: string[] }> = [];
+        if (!initializer || !ts.isObjectLiteralExpression(initializer)) return providers;
+
+        const providersProp = initializer.properties.find(
+            (p: any) => ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === 'providers'
+        );
+        if (!providersProp || !ts.isPropertyAssignment(providersProp)) return providers;
+        const arr = providersProp.initializer;
+        if (!ts.isArrayLiteralExpression(arr)) return providers;
+
+        for (const element of arr.elements) {
+            if (ts.isCallExpression(element)) {
+                const callName = element.expression.getText();
+                const features: string[] = [];
+
+                // Extract feature functions from arguments (e.g. withComponentInputBinding())
+                for (const arg of element.arguments) {
+                    if (ts.isCallExpression(arg)) {
+                        features.push(arg.expression.getText());
+                    }
+                }
+
+                providers.push({ name: callName, features });
+            } else if (ts.isSpreadElement(element) && ts.isCallExpression(element.expression)) {
+                providers.push({ name: element.expression.expression.getText(), features: [] });
+            }
+        }
+        return providers;
     }
 
     private isInjectionToken(initializer: any): boolean {

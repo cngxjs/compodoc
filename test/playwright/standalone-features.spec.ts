@@ -248,3 +248,28 @@ test.describe('Host metadata bindings', () => {
         expect(html).toContain('mouseleave');
     });
 });
+
+// ─── App Configuration ───────────────────────────────────
+
+test.describe('App Configuration', () => {
+    test('app-config.html shows provider cards', async ({ page }) => {
+        await page.goto(`${BASE}/app-config.html`);
+        const html = await page.content();
+        expect(html).toContain('Application Configuration');
+        expect(html).toContain('provideRouter');
+        expect(html).toContain('cdx-provider-card');
+    });
+
+    test('provider features are shown as badges', async ({ page }) => {
+        await page.goto(`${BASE}/app-config.html`);
+        const html = await page.content();
+        expect(html).toContain('withComponentInputBinding');
+    });
+
+    test('sidebar shows App Configuration link', async ({ page }) => {
+        await page.goto(`${BASE}/index.html`);
+        const html = await page.content();
+        expect(html).toContain('app-config.html');
+        expect(html).toContain('App Configuration');
+    });
+});

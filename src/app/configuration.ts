@@ -97,6 +97,7 @@ export class Configuration implements ConfigurationInterface {
         infoTabSections: [],
         stackblitz: false,
         stackblitzTemplate: '',
+        appConfig: [],
         categorizedComponents: {},
         categorizedDirectives: {},
         categorizedInjectables: {},

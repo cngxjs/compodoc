@@ -208,6 +208,15 @@ export const Menu = (props: MenuProps): string => {
                     </ul>
                 </li>
 
+                {/* App Configuration */}
+                {d.appConfig?.length > 0 && (
+                    <li class="chapter">
+                        <a data-type="chapter-link" href="app-config.html">
+                            <span class="icon ion-ios-settings"></span>App Configuration
+                        </a>
+                    </li>
+                )}
+
                 {/* Additional Pages */}
                 {d.additionalPages?.length > 0 && (
                     <li class="chapter additional">

@@ -90,6 +90,7 @@ export interface MainDataInterface {
     infoTabSections: string[];
     stackblitz: boolean;
     stackblitzTemplate: string;
+    appConfig: any[];
     categorizedComponents: Record<string, unknown[]>;
     categorizedDirectives: Record<string, unknown[]>;
     categorizedInjectables: Record<string, unknown[]>;
