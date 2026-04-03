@@ -25,6 +25,8 @@ const signalKindLabel = (kind: string): string => ({
     'content-child': 'ContentChild',
     'content-children': 'ContentChildren',
     'inject': 'Inject',
+    'host-binding': 'Host',
+    'host-listener': 'Host',
 }[kind] || kind);
 
 type BlockPropertyProps = {

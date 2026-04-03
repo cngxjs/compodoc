@@ -230,3 +230,21 @@ test.describe('Signal primitives', () => {
         expect(html).toContain('Required');
     });
 });
+
+// ─── Host metadata ───────────────────────────────────────
+
+test.describe('Host metadata bindings', () => {
+    test('HighlightDirective shows host bindings from metadata', async ({ page }) => {
+        await page.goto(`${BASE}/directives/HighlightDirective.html`);
+        const html = await page.content();
+        expect(html).toContain('class.highlighted');
+        expect(html).toContain('attr.data-highlight');
+    });
+
+    test('HighlightDirective shows host listeners from metadata', async ({ page }) => {
+        await page.goto(`${BASE}/directives/HighlightDirective.html`);
+        const html = await page.content();
+        expect(html).toContain('mouseenter');
+        expect(html).toContain('mouseleave');
+    });
+});

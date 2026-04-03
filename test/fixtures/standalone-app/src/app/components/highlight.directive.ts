@@ -1,7 +1,7 @@
-import { Directive, ElementRef, HostListener } from '@angular/core';
+import { Directive, ElementRef, inject } from '@angular/core';
 
 /**
- * Highlights the host element on hover.
+ * Highlights the host element on hover using modern host metadata.
  *
  * @since 1.0.0
  * @zoneless
@@ -15,25 +15,25 @@ import { Directive, ElementRef, HostListener } from '@angular/core';
 @Directive({
     selector: '[appHighlight]',
     standalone: true,
+    host: {
+        '(mouseenter)': 'onMouseEnter()',
+        '(mouseleave)': 'onMouseLeave()',
+        '[class.highlighted]': 'isHighlighted',
+        '[attr.data-highlight]': '"true"',
+    },
 })
 export class HighlightDirective {
-    constructor(private el: ElementRef<HTMLElement>) {}
+    private readonly el = inject(ElementRef<HTMLElement>);
 
-    /**
-     * Apply highlight on mouse enter.
-     * @group Event Handlers
-     */
-    @HostListener('mouseenter')
+    isHighlighted = false;
+
     onMouseEnter(): void {
+        this.isHighlighted = true;
         this.el.nativeElement.style.backgroundColor = '#f0f0f0';
     }
 
-    /**
-     * Remove highlight on mouse leave.
-     * @group Event Handlers
-     */
-    @HostListener('mouseleave')
     onMouseLeave(): void {
+        this.isHighlighted = false;
         this.el.nativeElement.style.backgroundColor = '';
     }
 }

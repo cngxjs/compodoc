@@ -109,6 +109,40 @@ export class ComponentDepFactory {
             componentDep.propertiesClass = properties;
         }
 
+        // Parse host: {} metadata into structured hostBindings/hostListeners
+        if (componentDep.host && typeof componentDep.host === 'object') {
+            const hostEntries = componentDep.host instanceof Map
+                ? Array.from(componentDep.host.entries())
+                : Object.entries(componentDep.host);
+
+            for (const [key, value] of hostEntries) {
+                const k = String(key).trim();
+                const v = String(value).trim();
+                if (k.startsWith('(') && k.endsWith(')')) {
+                    // Event listener: (click) -> onClick()
+                    const eventName = k.slice(1, -1);
+                    componentDep.hostListeners.push({
+                        name: eventName,
+                        args: [],
+                        description: `host: { '(${eventName})': '${v}' }`,
+                        line: 0,
+                        signalKind: 'host-listener',
+                    });
+                } else if (k.startsWith('[') && k.endsWith(']')) {
+                    // Property/attribute/class binding: [class.active] -> isActive
+                    const bindingName = k.slice(1, -1);
+                    componentDep.hostBindings.push({
+                        name: bindingName,
+                        defaultValue: v,
+                        type: '',
+                        description: `host: { '${k}': '${v}' }`,
+                        line: 0,
+                        signalKind: 'host-binding',
+                    });
+                }
+            }
+        }
+
         return componentDep;
     }
 }
