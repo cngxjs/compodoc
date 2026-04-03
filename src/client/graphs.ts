@@ -32,18 +32,21 @@ const initLazyGraphs = () => {
     // Use it as IntersectionObserver root so elements inside it are detected.
     const scrollRoot = document.querySelector('.content') as HTMLElement | null;
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (!entry.isIntersecting) return;
-            const el = entry.target as HTMLObjectElement;
-            const src = el.getAttribute('lazy');
-            if (src) {
-                el.data = src;
-                el.removeAttribute('lazy');
-            }
-            observer.unobserve(el);
-        });
-    }, { root: scrollRoot, rootMargin: '200px' });
+    const observer = new IntersectionObserver(
+        entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                const el = entry.target as HTMLObjectElement;
+                const src = el.getAttribute('lazy');
+                if (src) {
+                    el.data = src;
+                    el.removeAttribute('lazy');
+                }
+                observer.unobserve(el);
+            });
+        },
+        { root: scrollRoot, rootMargin: '200px' }
+    );
 
     lazyEls.forEach(el => observer.observe(el));
 };
@@ -86,7 +89,7 @@ const initSvgPanZoom = async () => {
 
     const zoomBehavior = zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.5, 5])
-        .on('zoom', (event) => {
+        .on('zoom', event => {
             wrapperSelection.attr('transform', event.transform);
         });
 
@@ -98,17 +101,17 @@ const initSvgPanZoom = async () => {
     const reset = document.getElementById('reset');
     const fullscreen = document.getElementById('fullscreen');
 
-    zoomIn?.addEventListener('click', (e) => {
+    zoomIn?.addEventListener('click', e => {
         e.preventDefault();
         svgSelection.transition().duration(300).call(zoomBehavior.scaleBy, 1.3);
     });
 
-    zoomOut?.addEventListener('click', (e) => {
+    zoomOut?.addEventListener('click', e => {
         e.preventDefault();
         svgSelection.transition().duration(300).call(zoomBehavior.scaleBy, 0.7);
     });
 
-    reset?.addEventListener('click', (e) => {
+    reset?.addEventListener('click', e => {
         e.preventDefault();
         svgSelection.transition().duration(300).call(zoomBehavior.transform, zoomIdentity);
     });
@@ -123,14 +126,12 @@ const initSvgPanZoom = async () => {
                 container.style.height = originalContainerHeight;
                 svgEl.style.maxHeight = originalMaxHeight || '400px';
                 isFullscreen = false;
-                fullscreen.classList.remove('ion-md-close');
-                fullscreen.classList.add('ion-ios-resize');
+                fullscreen.setAttribute('aria-label', 'Fullscreen');
             } else {
                 container.style.height = '85vh';
                 svgEl.style.maxHeight = 'none';
                 isFullscreen = true;
-                fullscreen.classList.remove('ion-ios-resize');
-                fullscreen.classList.add('ion-md-close');
+                fullscreen.setAttribute('aria-label', 'Exit fullscreen');
             }
             svgEl.style.height = container.clientHeight + 'px';
             svgSelection.transition().duration(300).call(zoomBehavior.transform, zoomIdentity);
@@ -143,7 +144,11 @@ const initSvgPanZoom = async () => {
 // ──────────────────────────────────────────────
 
 const htmlEntities = (str: string): string =>
-    String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
 
 const initRoutesGraph = async () => {
     const target = document.getElementById('body-routes');
@@ -196,27 +201,27 @@ const initRoutesGraph = async () => {
         .attr('fill', 'none')
         .attr('stroke', '#ccc')
         .attr('stroke-width', 1.5)
-        .attr('d', linkHorizontal<any, any>()
-            .x((d: any) => d.y)
-            .y((d: any) => d.x)
+        .attr(
+            'd',
+            linkHorizontal<any, any>()
+                .x((d: any) => d.y)
+                .y((d: any) => d.x)
         );
 
     // Draw nodes
-    const node = g.selectAll('.node')
+    const node = g
+        .selectAll('.node')
         .data(root.descendants())
         .enter()
         .append('g')
         .attr('class', 'node')
         .attr('transform', (d: any) => `translate(${d.y},${d.x})`);
 
-    // Node icon
-    node.append('text')
-        .attr('font-family', 'Ionicons')
-        .attr('y', 5)
-        .attr('x', 0)
-        .attr('class', (d: any) => d.children ? 'icon has-children' : 'icon')
-        .attr('font-size', '15px')
-        .text('\uf183');
+    // Node marker
+    node.append('circle')
+        .attr('r', 5)
+        .attr('fill', (d: any) => d.children ? 'var(--color-cdx-primary, #3163d8)' : 'var(--color-cdx-entity-component, #36ab9b)')
+        .attr('class', (d: any) => (d.children ? 'icon has-children' : 'icon'));
 
     // Node text
     node.append('text')
@@ -267,7 +272,7 @@ const initRoutesGraph = async () => {
     const { zoom } = await loadD3();
     const zoomBehavior = zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.3, 3])
-        .on('zoom', (event) => {
+        .on('zoom', event => {
             g.attr('transform', event.transform);
         });
     svg.call(zoomBehavior);
@@ -302,8 +307,10 @@ const buildNodeLabel = (d: any): string => {
             label += `<tspan x="0" dy="1.4em"><a href="./modules/${moduleName}.html">${moduleName}</a></tspan>`;
         }
         if (d.canActivate) label += '<tspan x="0" dy="1.4em">&#10003; canActivate</tspan>';
-        if (d.canDeactivate) label += '<tspan x="0" dy="1.4em">&#215;&nbsp;&nbsp;canDeactivate</tspan>';
-        if (d.canActivateChild) label += '<tspan x="0" dy="1.4em">&#10003; canActivateChild</tspan>';
+        if (d.canDeactivate)
+            label += '<tspan x="0" dy="1.4em">&#215;&nbsp;&nbsp;canDeactivate</tspan>';
+        if (d.canActivateChild)
+            label += '<tspan x="0" dy="1.4em">&#10003; canActivateChild</tspan>';
         if (d.canLoad) label += '<tspan x="0" dy="1.4em">&#8594; canLoad</tspan>';
         if (d.redirectTo) label += `<tspan x="0" dy="1.4em">&rarr; ${d.redirectTo}</tspan>`;
         if (d.pathMatch) label += `<tspan x="0" dy="1.4em">&gt; ${d.pathMatch}</tspan>`;
@@ -387,15 +394,13 @@ const initDomTree = async () => {
         const width = Math.max(600, container.clientWidth);
         const height = Math.max(400, nodeCount * 50);
 
-        container.style.height = (document.querySelector('.content') as HTMLElement)?.offsetHeight - 140 + 'px';
+        container.style.height =
+            (document.querySelector('.content') as HTMLElement)?.offsetHeight - 140 + 'px';
 
         const treeLayout = tree<TreeNode>().size([width - 100, height - 100]);
         treeLayout(root);
 
-        const svg = select(container)
-            .append('svg')
-            .attr('width', width)
-            .attr('height', height);
+        const svg = select(container).append('svg').attr('width', width).attr('height', height);
 
         const g = svg.append('g').attr('transform', 'translate(50,30)');
 
@@ -408,19 +413,22 @@ const initDomTree = async () => {
             .attr('fill', 'none')
             .attr('stroke', '#ccc')
             .attr('stroke-width', 1.5)
-            .attr('d', linkVertical<any, any>()
-                .x((d: any) => d.x)
-                .y((d: any) => d.y)
+            .attr(
+                'd',
+                linkVertical<any, any>()
+                    .x((d: any) => d.x)
+                    .y((d: any) => d.y)
             );
 
         // Nodes
-        const node = g.selectAll('.tree-node')
+        const node = g
+            .selectAll('.tree-node')
             .data(root.descendants())
             .enter()
             .append('g')
             .attr('class', 'tree-node')
             .attr('transform', (d: any) => `translate(${d.x},${d.y})`)
-            .style('cursor', (d: any) => d.data.isComponent ? 'pointer' : 'default');
+            .style('cursor', (d: any) => (d.data.isComponent ? 'pointer' : 'default'));
 
         // Node circles
         node.append('ellipse')
@@ -441,14 +449,18 @@ const initDomTree = async () => {
             .attr('dy', 4)
             .attr('text-anchor', 'middle')
             .attr('font-size', '12px')
-            .attr('font-weight', (d: any) => (d.data.isComponent || d.data.isDirective) ? 'bold' : 'normal')
+            .attr('font-weight', (d: any) =>
+                d.data.isComponent || d.data.isDirective ? 'bold' : 'normal'
+            )
             .text((d: any) => d.data.name);
 
         // Click handler for component nodes
         node.on('click', (_event: any, d: any) => {
             if (d.data.isComponent && d.data.componentName) {
                 const current = window.location;
-                document.location.href = current.origin + current.pathname.replace(ACTUAL_COMPONENT.name, d.data.componentName);
+                document.location.href =
+                    current.origin +
+                    current.pathname.replace(ACTUAL_COMPONENT.name, d.data.componentName);
             }
         });
 

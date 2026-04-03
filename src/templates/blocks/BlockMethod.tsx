@@ -36,7 +36,7 @@ export const BlockMethod = (props: BlockMethodProps): string => (
                         ))}
                         {m.optional && <span class="modifier">{t('optional')}</span>}
                         <span class={m.deprecated ? 'deprecated-name' : ''}>{m.name}</span>
-                        <a href={`#${m.name}`}><span class="icon ion-ios-link"></span></a>
+                        <a href={`#${m.name}`} aria-label={`Link to ${m.name}`}>#</a>
                     </span>
                     {m.returnType && <span class="cdx-member-type">{linkTypeHtml(m.returnType)}</span>}
                 </header>
@@ -50,7 +50,6 @@ export const BlockMethod = (props: BlockMethodProps): string => (
                         </div>
                     )}
                     <div class="cdx-member-row">
-                        {m.modifierKind && <span class={`modifier-icon icon ion-ios-${modifIcon(m.modifierKind)}`}></span>}
                         <code>{functionSignature(m)}</code>
                     </div>
                     {m.decorators && (

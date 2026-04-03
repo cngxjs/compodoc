@@ -2,14 +2,20 @@ import Html from '@kitajs/html';
 import { t } from '../helpers';
 import { isToggled, getAloneElements, stripUrl } from '../helpers/menu-helpers';
 import { SearchInput } from './SearchInput';
+import {
+    IconHome, IconGrid, IconClass, IconList, IconEntity, IconSettings,
+    IconBook, IconModule, IconCube, IconGitBranch, IconBarChart, IconPodium,
+    IconComponent, IconDirective, IconInjectable, IconPipe, IconInterceptor,
+    IconGuard, IconInterface, IconChevronDown, IconChevronUp, iconFor,
+} from './Icons';
 
 type MenuProps = {
     readonly data: any;
 };
 
-/** Arrow icon based on toggle state */
-const arrow = (type: string): string =>
-    isToggled(type) ? 'ion-ios-arrow-up' : 'ion-ios-arrow-down';
+/** Chevron icon based on toggle state */
+const chevron = (type: string): string =>
+    isToggled(type) ? IconChevronUp('cdx-chevron') : IconChevronDown('cdx-chevron');
 
 /** Entity link href with duplicateName fallback */
 const entityHref = (prefix: string, item: any): string =>
@@ -39,13 +45,12 @@ const EntityLink = (props: { href: string; name: string; deprecated?: boolean; c
 
 /**
  * A collapsible chapter section with optional @category grouping.
- * Used for components, directives, classes, injectables, interceptors, guards, interfaces, pipes.
  */
 const EntitySection = (props: {
     items: any[];
     categorized?: Record<string, any[]>;
     type: string;
-    icon: string;
+    iconHtml: string;
     labelKey: string;
     hrefPrefix: string;
 }): string => {
@@ -56,9 +61,9 @@ const EntitySection = (props: {
     return (
         <li class="chapter">
             <div class="simple menu-toggler" data-cdx-toggle="collapse" data-cdx-target={`#${id}`}>
-                <span class={`icon ${props.icon}`}></span>
+                {props.iconHtml}
                 <span>{t(props.labelKey)}</span>
-                <span class={`icon ${arrow(props.type)}`}></span>
+                {chevron(props.type)}
             </div>
             <ul class={`links collapse${isToggled(props.type) ? ' in' : ''}`} id={id}>
                 {hasCats ? (
@@ -66,7 +71,7 @@ const EntitySection = (props: {
                         <li class="chapter inner">
                             <div class="simple menu-toggler" data-cdx-toggle="collapse" data-cdx-target={`#${props.type}-category-${key}`}>
                                 <span class="link-name">{key || 'Uncategorized'}</span>
-                                <span class="icon ion-ios-arrow-down"></span>
+                                {IconChevronDown('cdx-chevron')}
                             </div>
                             <ul class="links collapse in" id={`${props.type}-category-${key}`}>
                                 {items.map((item: any) => EntityLink({
@@ -101,7 +106,7 @@ const EntitySection = (props: {
 const ModuleSubSection = (props: {
     items: any[];
     type: string;
-    icon: string;
+    iconHtml: string;
     labelKey: string;
     hrefPrefix: string;
     moduleId: string;
@@ -112,9 +117,9 @@ const ModuleSubSection = (props: {
     return (
         <li class="chapter inner">
             <div class="simple menu-toggler" data-cdx-toggle="collapse" data-cdx-target={`#${id}`}>
-                <span class={`icon ${props.icon}`}></span>
+                {props.iconHtml}
                 <span>{t(props.labelKey)}</span>
-                <span class={`icon ${arrow(props.type)}`}></span>
+                {chevron(props.type)}
             </div>
             <ul class="links collapse" id={id}>
                 {props.items.map((item: any) => EntityLink({
@@ -157,19 +162,19 @@ export const Menu = (props: MenuProps): string => {
 
                 {/* Getting Started */}
                 <li class="chapter">
-                    <a data-type="chapter-link" href="index.html"><span class="icon ion-ios-home"></span>{t('getting-started')}</a>
+                    <a data-type="chapter-link" href="index.html">{IconHome()}{t('getting-started')}</a>
                     <ul class="links">
                         {!d.disableOverview && (
                             <li class="link">
                                 <a href={d.readme ? 'overview.html' : 'index.html'} data-type="chapter-link">
-                                    <span class="icon ion-ios-keypad"></span>{t('overview')}
+                                    {IconGrid()}{t('overview')}
                                 </a>
                             </li>
                         )}
                         {d.readme && (
                             <li class="link">
                                 <a href="index.html" data-type="chapter-link">
-                                    <span class="icon ion-ios-paper"></span>
+                                    {IconClass()}
                                     {d.disableOverview ? t('overview') : t('readme')}
                                 </a>
                             </li>
@@ -177,21 +182,21 @@ export const Menu = (props: MenuProps): string => {
                         {(d.markdowns ?? []).map((md: any) => (
                             <li class="link">
                                 <a href={md.name !== 'readme' ? `${md.name}.html` : 'index.html'} data-type="chapter-link">
-                                    <span class="icon ion-ios-paper"></span>{md.uppername}
+                                    {IconClass()}{md.uppername}
                                 </a>
                             </li>
                         ))}
                         {!d.disableDependencies && (d.packageDependencies || d.packagePeerDependencies) && (
                             <li class="link">
                                 <a href="dependencies.html" data-type="chapter-link">
-                                    <span class="icon ion-ios-list"></span>{t('dependencies')}
+                                    {IconList()}{t('dependencies')}
                                 </a>
                             </li>
                         )}
                         {!d.disableProperties && d.packageProperties && (
                             <li class="link">
                                 <a href="properties.html" data-type="chapter-link">
-                                    <span class="icon ion-ios-apps"></span>{t('properties')}
+                                    {IconEntity()}{t('properties')}
                                 </a>
                             </li>
                         )}
@@ -202,7 +207,7 @@ export const Menu = (props: MenuProps): string => {
                 {d.appConfig?.length > 0 && (
                     <li class="chapter">
                         <a data-type="chapter-link" href="app-config.html">
-                            <span class="icon ion-ios-settings"></span>App Configuration
+                            {IconSettings()}App Configuration
                         </a>
                     </li>
                 )}
@@ -210,19 +215,19 @@ export const Menu = (props: MenuProps): string => {
                 {/* Additional Pages */}
                 {d.additionalPages?.length > 0 && (
                     <li class="chapter additional">
-                        <div class="simple menu-toggler" data-cdx-toggle="collapse" data-cdx-target={`#additional-pages`}>
-                            <span class="icon ion-ios-book"></span>
+                        <div class="simple menu-toggler" data-cdx-toggle="collapse" data-cdx-target="#additional-pages">
+                            {IconBook()}
                             <span>{d.includesName}</span>
-                            <span class={`icon ${arrow('additionalPages')}`}></span>
+                            {chevron('additionalPages')}
                         </div>
-                        <ul class={`links collapse${isToggled('additionalPages') ? ' in' : ''}`} id={`additional-pages`}>
+                        <ul class={`links collapse${isToggled('additionalPages') ? ' in' : ''}`} id="additional-pages">
                             {d.additionalPages.map((page: any) =>
                                 page.children?.length > 0 && page.depth === 1 ? (
                                     <li class="chapter inner">
                                         <a data-type="chapter-link" href={`${page.path}/${page.filename}.html`} data-context-id="additional">
                                             <div class="menu-toggler linked" data-cdx-toggle="collapse" data-cdx-target={`#additional-page-${page.id}`}>
                                                 <span class="link-name">{page.name}</span>
-                                                <span class="icon ion-ios-arrow-down"></span>
+                                                {IconChevronDown('cdx-chevron')}
                                             </div>
                                         </a>
                                         <ul class="links collapse" id={`additional-page-${page.id}`}>
@@ -247,20 +252,20 @@ export const Menu = (props: MenuProps): string => {
                 {d.modules?.length > 0 && (
                     <li class="chapter modules">
                         <a data-type="chapter-link" href="modules.html">
-                            <div class="menu-toggler linked" data-cdx-toggle="collapse" data-cdx-target={`#modules-links`}>
-                                <span class="icon ion-ios-archive"></span>
+                            <div class="menu-toggler linked" data-cdx-toggle="collapse" data-cdx-target="#modules-links">
+                                {IconModule()}
                                 <span class="link-name">{t('modules')}</span>
-                                <span class={`icon ${arrow('modules')}`}></span>
+                                {chevron('modules')}
                             </div>
                         </a>
-                        <ul class={`links collapse${isToggled('modules') ? ' in' : ''}`} id={`modules-links`}>
+                        <ul class={`links collapse${isToggled('modules') ? ' in' : ''}`} id="modules-links">
                             {d.modules.map((mod: any) => (<>
                                 <li class="link">
                                     <a href={`modules/${mod.name}.html`} data-type="entity-link" class={mod.deprecated ? 'deprecated-name' : ''}>{mod.name}</a>
-                                    {ModuleSubSection({ items: mod.compodocLinks?.components, type: 'components', icon: 'ion-md-cog', labelKey: 'components', hrefPrefix: 'components', moduleId: mod.id })}
-                                    {ModuleSubSection({ items: mod.compodocLinks?.directives, type: 'directives', icon: 'ion-md-code-working', labelKey: 'directives', hrefPrefix: 'directives', moduleId: mod.id })}
-                                    {ModuleSubSection({ items: mod.compodocLinks?.injectables, type: 'injectables', icon: 'ion-md-arrow-round-down', labelKey: 'injectables', hrefPrefix: 'injectables', moduleId: mod.id })}
-                                    {ModuleSubSection({ items: mod.compodocLinks?.pipes, type: 'pipes', icon: 'ion-md-add', labelKey: 'pipes', hrefPrefix: 'pipes', moduleId: mod.id })}
+                                    {ModuleSubSection({ items: mod.compodocLinks?.components, type: 'components', iconHtml: IconComponent(), labelKey: 'components', hrefPrefix: 'components', moduleId: mod.id })}
+                                    {ModuleSubSection({ items: mod.compodocLinks?.directives, type: 'directives', iconHtml: IconDirective(), labelKey: 'directives', hrefPrefix: 'directives', moduleId: mod.id })}
+                                    {ModuleSubSection({ items: mod.compodocLinks?.injectables, type: 'injectables', iconHtml: IconInjectable(), labelKey: 'injectables', hrefPrefix: 'injectables', moduleId: mod.id })}
+                                    {ModuleSubSection({ items: mod.compodocLinks?.pipes, type: 'pipes', iconHtml: IconPipe(), labelKey: 'pipes', hrefPrefix: 'pipes', moduleId: mod.id })}
                                 </li>
                             </>))}
                         </ul>
@@ -268,25 +273,25 @@ export const Menu = (props: MenuProps): string => {
                 )}
 
                 {/* Standalone entity sections */}
-                {aloneComponents.length > 0 && EntitySection({ items: aloneComponents, categorized: d.categorizedComponents, type: 'components', icon: 'ion-md-cog', labelKey: 'components', hrefPrefix: 'components' })}
-                {aloneEntities.length > 0 && EntitySection({ items: aloneEntities, type: 'entities', icon: 'ion-ios-apps', labelKey: 'entities', hrefPrefix: 'entities' })}
-                {aloneDirectives.length > 0 && EntitySection({ items: aloneDirectives, categorized: d.categorizedDirectives, type: 'directives', icon: 'ion-md-code-working', labelKey: 'directives', hrefPrefix: 'directives' })}
-                {d.classes?.length > 0 && EntitySection({ items: d.classes, categorized: d.categorizedClasses, type: 'classes', icon: 'ion-ios-paper', labelKey: 'classes', hrefPrefix: 'classes' })}
-                {aloneInjectables.length > 0 && EntitySection({ items: aloneInjectables, categorized: d.categorizedInjectables, type: 'injectables', icon: 'ion-md-arrow-round-down', labelKey: 'injectables', hrefPrefix: 'injectables' })}
-                {d.interceptors?.length > 0 && EntitySection({ items: d.interceptors, categorized: d.categorizedInterceptors, type: 'interceptors', icon: 'ion-ios-swap', labelKey: 'interceptors', hrefPrefix: 'interceptors' })}
-                {d.guards?.length > 0 && EntitySection({ items: d.guards, categorized: d.categorizedGuards, type: 'guards', icon: 'ion-ios-lock', labelKey: 'guards', hrefPrefix: 'guards' })}
-                {d.interfaces?.length > 0 && EntitySection({ items: d.interfaces, categorized: d.categorizedInterfaces, type: 'interfaces', icon: 'ion-md-information-circle-outline', labelKey: 'interfaces', hrefPrefix: 'interfaces' })}
-                {alonePipes.length > 0 && EntitySection({ items: alonePipes, categorized: d.categorizedPipes, type: 'pipes', icon: 'ion-md-add', labelKey: 'pipes', hrefPrefix: 'pipes' })}
+                {aloneComponents.length > 0 && EntitySection({ items: aloneComponents, categorized: d.categorizedComponents, type: 'components', iconHtml: IconComponent(), labelKey: 'components', hrefPrefix: 'components' })}
+                {aloneEntities.length > 0 && EntitySection({ items: aloneEntities, type: 'entities', iconHtml: IconEntity(), labelKey: 'entities', hrefPrefix: 'entities' })}
+                {aloneDirectives.length > 0 && EntitySection({ items: aloneDirectives, categorized: d.categorizedDirectives, type: 'directives', iconHtml: IconDirective(), labelKey: 'directives', hrefPrefix: 'directives' })}
+                {d.classes?.length > 0 && EntitySection({ items: d.classes, categorized: d.categorizedClasses, type: 'classes', iconHtml: IconClass(), labelKey: 'classes', hrefPrefix: 'classes' })}
+                {aloneInjectables.length > 0 && EntitySection({ items: aloneInjectables, categorized: d.categorizedInjectables, type: 'injectables', iconHtml: IconInjectable(), labelKey: 'injectables', hrefPrefix: 'injectables' })}
+                {d.interceptors?.length > 0 && EntitySection({ items: d.interceptors, categorized: d.categorizedInterceptors, type: 'interceptors', iconHtml: IconInterceptor(), labelKey: 'interceptors', hrefPrefix: 'interceptors' })}
+                {d.guards?.length > 0 && EntitySection({ items: d.guards, categorized: d.categorizedGuards, type: 'guards', iconHtml: IconGuard(), labelKey: 'guards', hrefPrefix: 'guards' })}
+                {d.interfaces?.length > 0 && EntitySection({ items: d.interfaces, categorized: d.categorizedInterfaces, type: 'interfaces', iconHtml: IconInterface(), labelKey: 'interfaces', hrefPrefix: 'interfaces' })}
+                {alonePipes.length > 0 && EntitySection({ items: alonePipes, categorized: d.categorizedPipes, type: 'pipes', iconHtml: IconPipe(), labelKey: 'pipes', hrefPrefix: 'pipes' })}
 
                 {/* Miscellaneous */}
                 {d.miscellaneous && (
                     <li class="chapter">
-                        <div class="simple menu-toggler" data-cdx-toggle="collapse" data-cdx-target={`#miscellaneous-links`}>
-                            <span class="icon ion-ios-cube"></span>
+                        <div class="simple menu-toggler" data-cdx-toggle="collapse" data-cdx-target="#miscellaneous-links">
+                            {IconCube()}
                             <span>{t('miscellaneous')}</span>
-                            <span class={`icon ${arrow('miscellaneous')}`}></span>
+                            {chevron('miscellaneous')}
                         </div>
-                        <ul class={`links collapse${isToggled('miscellaneous') ? ' in' : ''}`} id={`miscellaneous-links`}>
+                        <ul class={`links collapse${isToggled('miscellaneous') ? ' in' : ''}`} id="miscellaneous-links">
                             {d.miscellaneous.enumerations?.length > 0 && (
                                 <li class="link"><a href="miscellaneous/enumerations.html" data-type="entity-link">{t('enums')}</a></li>
                             )}
@@ -306,21 +311,21 @@ export const Menu = (props: MenuProps): string => {
                 {/* Routes */}
                 {!d.disableRoutesGraph && d.routes && (
                     <li class="chapter">
-                        <a data-type="chapter-link" href="routes.html"><span class="icon ion-ios-git-branch"></span>{t('routes')}</a>
+                        <a data-type="chapter-link" href="routes.html">{IconGitBranch()}{t('routes')}</a>
                     </li>
                 )}
 
                 {/* Coverage */}
                 {!d.disableCoverage && (
                     <li class="chapter">
-                        <a data-type="chapter-link" href="coverage.html"><span class="icon ion-ios-stats"></span>{t('coverage-page-title')}</a>
+                        <a data-type="chapter-link" href="coverage.html">{IconBarChart()}{t('coverage-page-title')}</a>
                     </li>
                 )}
 
                 {/* Unit Test */}
                 {d.unitTestData && (
                     <li class="chapter">
-                        <a data-type="chapter-link" href="unit-test.html"><span class="icon ion-ios-podium"></span>{t('unit-test-coverage')}</a>
+                        <a data-type="chapter-link" href="unit-test.html">{IconPodium()}{t('unit-test-coverage')}</a>
                     </li>
                 )}
 

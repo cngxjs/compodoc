@@ -34,7 +34,7 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => (
                         ))}
                         {m.optional && <span class="modifier">{t('optional')}</span>}
                         <span class={m.deprecated ? 'deprecated-name' : ''}>{m.name}</span>
-                        <a href={`#${m.name}`}><span class="icon ion-ios-link"></span></a>
+                        <a href={`#${m.name}`} aria-label={`Link to ${m.name}`}>#</a>
                     </span>
                     {m.returnType && <span class="cdx-member-type">{linkTypeHtml(m.returnType)}</span>}
                 </header>

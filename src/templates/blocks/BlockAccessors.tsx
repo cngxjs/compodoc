@@ -73,7 +73,7 @@ export const BlockAccessors = (props: BlockAccessorsProps): string => (
                 <header class="cdx-member-header">
                     <span class="cdx-member-name">
                         {key}
-                        <a href={`#${key}`}><span class="icon ion-ios-link"></span></a>
+                        <a href={`#${key}`} aria-label={`Link to ${key}`}>#</a>
                     </span>
                 </header>
                 <div class="cdx-member-body">

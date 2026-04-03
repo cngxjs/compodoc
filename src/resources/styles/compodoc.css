@@ -37,7 +37,8 @@ a[href] { cursor: pointer; }
 }
 
 .menu ul.list li a {
-    display: block;
+    display: flex;
+    align-items: center;
     padding: 7px 15px;
     border-bottom: none;
     font-size: 13px;
@@ -71,6 +72,8 @@ a[href] { cursor: pointer; }
 .menu ul.list li.for-chapter5 { padding-left: 60px; }
 
 .menu ul.list li.chapter .simple {
+    display: flex;
+    align-items: center;
     padding: 7px 15px;
     font-size: 13px;
     position: relative;
@@ -108,7 +111,7 @@ a[href] { cursor: pointer; }
  * Icons
  */
 
-.glyphicon, .icon { margin-right: 10px; }
+/* Icons handled by cdx-icon in compodocx.css */
 
 /**
  * Copyright

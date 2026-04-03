@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import { t } from '../helpers';
+import { iconFor, IconSettings } from '../components/Icons';
 
 type ProviderCall = {
     readonly name: string;
@@ -26,7 +27,7 @@ const providerIcon = (name: string): string => {
 const ProviderCard = (provider: ProviderCall): string => (
     <div class="cdx-provider-card">
         <div class="cdx-provider-header">
-            <span class={`icon ${providerIcon(provider.name)}`}></span>
+            {iconFor(providerIcon(provider.name))}
             <code class="cdx-provider-name">{provider.name}()</code>
         </div>
         {provider.features.length > 0 && (

@@ -54,7 +54,7 @@ export const BlockProperty = (props: BlockPropertyProps): string => (
                         <span class={p.deprecated ? 'deprecated-name' : ''}>{p.name}</span>
                         {p.signalKind && <span class={`cdx-badge cdx-badge--${p.signalKind}`}>{signalKindLabel(p.signalKind)}</span>}
                         {p.required && <span class="cdx-badge cdx-badge--factory">Required</span>}
-                        <a href={`#${p.name}`}><span class="icon ion-ios-link"></span></a>
+                        <a href={`#${p.name}`} aria-label={`Link to ${p.name}`}>#</a>
                     </span>
                     {p.type && <span class="cdx-member-type">{linkTypeHtml(p.type)}</span>}
                 </header>

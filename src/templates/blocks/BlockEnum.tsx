@@ -22,7 +22,7 @@ export const BlockEnum = (props: BlockEnumProps): string => (
                 <header class="cdx-member-header">
                     <span class="cdx-member-name">
                         <span class={e.deprecated ? 'deprecated-name' : ''}>{e.name}</span>
-                        <a href={`#${e.name}`}><span class="icon ion-ios-link"></span></a>
+                        <a href={`#${e.name}`} aria-label={`Link to ${e.name}`}>#</a>
                     </span>
                 </header>
                 <div class="cdx-member-body">

@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import { linkTypeHtml, t } from '../helpers';
+import { IconArrowLeft, IconArrowRight } from '../components/Icons';
 
 type RelationshipNode = {
     readonly name: string;
@@ -12,11 +13,11 @@ type BlockRelationshipGraphProps = {
     readonly entityName: string;
 };
 
-const RelationshipList = (props: { items: RelationshipNode[]; title: string; icon: string }): string => {
+const RelationshipList = (props: { items: RelationshipNode[]; title: string; iconHtml: string }): string => {
     if (!props.items?.length) return '';
     return (
         <div class="cdx-relationship-group">
-            <h4><span class={`icon ${props.icon}`}></span> {props.title}</h4>
+            <h4>{props.iconHtml} {props.title}</h4>
             <ul class="cdx-relationship-list">
                 {props.items.map(item => (
                     <li>
@@ -36,8 +37,8 @@ export const BlockRelationshipGraph = (props: BlockRelationshipGraphProps): stri
         <section data-compodoc="block-relationships">
             <h3>{t('relationships') || 'Relationships'}</h3>
             <div class="cdx-relationships">
-                {RelationshipList({ items: props.incoming, title: 'Used by', icon: 'ion-ios-arrow-back' })}
-                {RelationshipList({ items: props.outgoing, title: 'Depends on', icon: 'ion-ios-arrow-forward' })}
+                {RelationshipList({ items: props.incoming, title: 'Used by', iconHtml: IconArrowLeft() })}
+                {RelationshipList({ items: props.outgoing, title: 'Depends on', iconHtml: IconArrowRight() })}
             </div>
         </section>
     ) as string;

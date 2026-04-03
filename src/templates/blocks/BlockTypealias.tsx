@@ -25,7 +25,7 @@ export const BlockTypealias = (props: BlockTypealiasProps): string => (
                 <header class="cdx-member-header">
                     <span class="cdx-member-name">
                         <span class={ta.deprecated ? 'deprecated-name' : ''}>{ta.name}</span>
-                        <a href={`#${ta.name}`}><span class="icon ion-ios-link"></span></a>
+                        <a href={`#${ta.name}`} aria-label={`Link to ${ta.name}`}>#</a>
                     </span>
                 </header>
                 <div class="cdx-member-body">
@@ -39,7 +39,6 @@ export const BlockTypealias = (props: BlockTypealiasProps): string => (
                         {ta.kind === 160 ? (
                             <code>{functionSignature(ta)}</code>
                         ) : (<>
-                            {ta.modifierKind && <span class={`modifier-icon icon ion-ios-${modifIconFromArray(ta.modifierKind)}`}></span>}
                             <code>{linkTypeHtml(ta.rawtype ?? '')}</code>
                         </>)}
                     </div>

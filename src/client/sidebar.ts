@@ -72,13 +72,12 @@ const toggleCollapse = (targetId: string) => {
         }, ANIMATION_MS);
     }
 
-    // Toggle arrow icon on the clicked toggler
+    // Toggle chevron rotation
     const toggler = document.querySelector(`[data-cdx-target="${targetId}"]`);
     if (toggler) {
-        const icon = toggler.querySelector('.ion-ios-arrow-up, .ion-ios-arrow-down');
-        if (icon) {
-            icon.classList.toggle('ion-ios-arrow-up');
-            icon.classList.toggle('ion-ios-arrow-down');
+        const chevron = toggler.querySelector('.cdx-chevron');
+        if (chevron) {
+            chevron.classList.toggle('cdx-chevron--open');
         }
     }
 
@@ -112,16 +111,15 @@ const bindTogglers = () => {
     });
 };
 
-/** Sync chevron icons with actual collapse state */
+/** Sync chevron rotation with actual collapse state */
 const syncChevrons = () => {
     document.querySelectorAll<HTMLElement>('.menu .collapse[id]').forEach(el => {
         const isOpen = el.classList.contains('in');
         const toggler = document.querySelector(`[data-cdx-target="#${el.id}"]`);
         if (!toggler) return;
-        const icon = toggler.querySelector('.ion-ios-arrow-up, .ion-ios-arrow-down');
-        if (!icon) return;
-        icon.classList.toggle('ion-ios-arrow-up', isOpen);
-        icon.classList.toggle('ion-ios-arrow-down', !isOpen);
+        const chevron = toggler.querySelector('.cdx-chevron');
+        if (!chevron) return;
+        chevron.classList.toggle('cdx-chevron--open', isOpen);
     });
 };
 

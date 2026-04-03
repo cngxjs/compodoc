@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import { t } from '../helpers';
+import { iconFor } from '../components/Icons';
 
 type OverviewCard = {
     readonly icon: string;
@@ -39,7 +40,7 @@ const Card = (props: OverviewCard): string => {
         <div class="col-sm-3">
             <div class="card text-center">
                 <div class="card-block">
-                    <h4 class="card-title"><span class={`icon ${props.icon}`}></span></h4>
+                    <h4 class="card-title">{iconFor(props.icon)}</h4>
                     <p class="card-text">{content}</p>
                     {props.subtitle && <p class="card-text"><small>{props.subtitle}</small></p>}
                 </div>
@@ -96,7 +97,7 @@ export const Overview = (props: OverviewProps): string => {
                 <div id="module-graph-svg">
                     {props.mainGraph}
                 </div>
-                <i id="fullscreen" class="icon ion-ios-resize module-graph-fullscreen-btn" aria-hidden="true"></i>
+                <button id="fullscreen" class="module-graph-fullscreen-btn" aria-label="Fullscreen">{iconFor('ion-ios-resize')}</button>
                 <div class="btn-group size-buttons">
                     <button id="zoom-in" class="btn btn-default btn-sm">{t('zoomin')}</button>
                     <button id="reset" class="btn btn-default btn-sm">{t('reset')}</button>

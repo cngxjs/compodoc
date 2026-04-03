@@ -2,6 +2,7 @@ import Html from '@kitajs/html';
 import { isInitialTab, isTabEnabled, parseDescription, relativeUrl, t } from '../helpers';
 import { BlockMethod } from '../blocks/BlockMethod';
 import { EntityTabs } from '../blocks/EntityTabs';
+import { IconInterface, IconMaximize } from '../components/Icons';
 
 const NG2_MODULES = ['BrowserModule', 'FormsModule', 'HttpModule', 'RouterModule'];
 const isAngularModule = (name: string): boolean => NG2_MODULES.some(m => name.includes(m));
@@ -19,7 +20,7 @@ const ModuleList = (props: {
     const base = relativeUrl(props.depth);
     return (
         <div class="col-sm-3">
-            <h3>{t(props.titleKey)}<a href={`https://angular.io/api/core/NgModule#${props.docsPath}`} target="_blank" rel="noopener noreferrer" title={`Official documentation about module ${props.docsPath}`}><span class="icon ion-ios-information-circle-outline"></span></a></h3>
+            <h3>{t(props.titleKey)}<a href={`https://angular.io/api/core/NgModule#${props.docsPath}`} target="_blank" rel="noopener noreferrer" title={`Official documentation about module ${props.docsPath}`}>{IconInterface()}</a></h3>
             <ul class="list-group">
                 {props.items.map(item => {
                     const href = props.buildHref(item, base);
@@ -92,7 +93,7 @@ export const ModulePage = (data: any): string => {
                 })}
                 {mod.schemas?.length > 0 && (
                     <div class="col-sm-3">
-                        <h3>{t('schemas')}<a href="https://angular.io/api/core/NgModule#schemas" target="_blank" rel="noopener noreferrer" title="Official documentation about module schemas"><span class="icon ion-ios-information-circle-outline"></span></a></h3>
+                        <h3>{t('schemas')}<a href="https://angular.io/api/core/NgModule#schemas" target="_blank" rel="noopener noreferrer" title="Official documentation about module schemas">{IconInterface()}</a></h3>
                         <ul class="list-group">
                             {mod.schemas.map((s: string) => (
                                 <li class="list-group-item">
@@ -117,7 +118,7 @@ export const ModulePage = (data: any): string => {
         {!data.disableGraph && mod.graph && (<>
             <div class="text-center module-graph-container">
                 <div id="module-graph-svg">{mod.graph}</div>
-                <i id="fullscreen" class="icon ion-ios-resize module-graph-fullscreen-btn" aria-hidden="true"></i>
+                <button id="fullscreen" class="module-graph-fullscreen-btn" aria-label="Fullscreen">{IconMaximize()}</button>
                 <div class="btn-group size-buttons">
                     <button id="zoom-in" class="btn btn-default btn-sm">{t('zoomin')}</button>
                     <button id="reset" class="btn btn-default btn-sm">{t('reset')}</button>

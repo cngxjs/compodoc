@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { IconExternalLink, IconGitBranch } from '../components/Icons';
 import {
     extractJsdocCodeExamples,
     isInfoSection,
@@ -177,9 +178,9 @@ const InfoContent = (data: any): string => {
 
         {(c.storybookUrl || c.figmaUrl || c.route) && (
             <div class="cdx-external-links">
-                {c.storybookUrl && <a href={c.storybookUrl} target="_blank" rel="noopener noreferrer" class="cdx-ext-link"><span class="icon ion-ios-open"></span> Storybook</a>}
-                {c.figmaUrl && <a href={c.figmaUrl} target="_blank" rel="noopener noreferrer" class="cdx-ext-link"><span class="icon ion-ios-open"></span> Figma</a>}
-                {c.route && <span class="cdx-route-info"><span class="icon ion-ios-git-branch"></span> {c.route}</span>}
+                {c.storybookUrl && <a href={c.storybookUrl} target="_blank" rel="noopener noreferrer" class="cdx-ext-link">{IconExternalLink()} Storybook</a>}
+                {c.figmaUrl && <a href={c.figmaUrl} target="_blank" rel="noopener noreferrer" class="cdx-ext-link">{IconExternalLink()} Figma</a>}
+                {c.route && <span class="cdx-route-info">{IconGitBranch()} {c.route}</span>}
             </div>
         )}
 
