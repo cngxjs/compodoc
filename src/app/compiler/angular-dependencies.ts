@@ -772,6 +772,11 @@ export class AngularDependencies extends FrameworkDependencies {
                             category,
                             description: this.visitEnumTypeAliasFunctionDeclarationDescription(node)
                         };
+                        // Detect factory function kind by naming convention
+                        const factoryKind = this.detectFactoryKind(name);
+                        if (factoryKind) {
+                            functionDep.factoryKind = factoryKind;
+                        }
                         if (infos.args) {
                             functionDep.args = infos.args;
                         }
@@ -1014,6 +1019,36 @@ export class AngularDependencies extends FrameworkDependencies {
                                     deps.rawdescription = rawDescription;
                                     deps.description = markedAcl(rawDescription);
                                 }
+                                // Detect InjectionToken declarations
+                                if (this.isInjectionToken(infos.initializer)) {
+                                    const tokenDep: IInjectableDep = {
+                                        name,
+                                        id: 'injectable-' + name + '-' + crypto.createHash('sha512').update(name + file).digest('hex'),
+                                        file,
+                                        type: 'injectable',
+                                        properties: [],
+                                        methods: [],
+                                        deprecated: deps.deprecated || false,
+                                        deprecationMessage: deps.deprecationMessage || '',
+                                        category: deps.category || '',
+                                        description: deps.description || '',
+                                        rawdescription: deps.rawdescription || '',
+                                        sourceCode: '',
+                                        isToken: true,
+                                        tokenType: this.getInjectionTokenType(infos.initializer),
+                                        providedIn: this.getInjectionTokenProvidedIn(infos.initializer)
+                                    };
+                                    if (!isIgnore(variableNode)) {
+                                        if (!this.isSymbolAllowed(name, file)) {
+                                            logger.debug(`Skipping InjectionToken ${name} (not in public API)`);
+                                            return;
+                                        }
+                                        this.debug(tokenDep);
+                                        outputSymbols.injectables.push(tokenDep);
+                                    }
+                                    return;
+                                }
+
                                 if (isModuleWithProviders(variableNode)) {
                                     const routingInitializer = getModuleWithProviders(variableNode);
                                     RouterParserUtil.addModuleWithRoutes(
@@ -1231,6 +1266,103 @@ export class AngularDependencies extends FrameworkDependencies {
                 }
             }
         });
+        this.extractCustomTags(tags, result);
+    }
+
+    private extractCustomTags(tags: any[], result: { [key in string | number]: any }) {
+        for (const tag of tags) {
+            if (!tag.tagName || !tag.tagName.text) continue;
+            const name = tag.tagName.text;
+            const comment = (tag.comment || '').trim();
+
+            switch (name) {
+                case 'signal':
+                    result.signal = true;
+                    break;
+                case 'zoneless':
+                    result.zoneless = true;
+                    break;
+                case 'beta':
+                    result.beta = true;
+                    break;
+                case 'group':
+                    result.group = comment.split('\n')[0].trim();
+                    break;
+                case 'order':
+                    result.order = parseInt(comment, 10) || 0;
+                    break;
+                case 'since':
+                    result.since = comment.split('\n')[0].trim();
+                    break;
+                case 'breaking':
+                    result.breaking = comment.split('\n')[0].trim();
+                    break;
+                case 'route':
+                    result.route = comment.split('\n')[0].trim();
+                    break;
+                case 'storybook':
+                    result.storybookUrl = comment.split('\n')[0].trim();
+                    break;
+                case 'figma':
+                    result.figmaUrl = comment.split('\n')[0].trim();
+                    break;
+                case 'slot': {
+                    // @slot name - description
+                    if (!result.slots) result.slots = [];
+                    const parts = comment.match(/^(\S+)\s*-?\s*(.*)$/);
+                    if (parts) {
+                        result.slots.push({ name: parts[1], description: parts[2] || '' });
+                    } else if (comment) {
+                        result.slots.push({ name: comment, description: '' });
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    private isInjectionToken(initializer: any): boolean {
+        if (!initializer) return false;
+        // Match: new InjectionToken(...)
+        if (ts.isNewExpression(initializer)) {
+            const expr = initializer.expression;
+            if (expr && ts.isIdentifier(expr) && expr.text === 'InjectionToken') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private getInjectionTokenType(initializer: any): string {
+        if (!initializer || !ts.isNewExpression(initializer)) return '';
+        // Extract generic type argument: InjectionToken<SomeType>
+        if (initializer.typeArguments && initializer.typeArguments.length > 0) {
+            return initializer.typeArguments[0].getText();
+        }
+        return '';
+    }
+
+    private getInjectionTokenProvidedIn(initializer: any): string {
+        if (!initializer || !ts.isNewExpression(initializer)) return '';
+        // Second argument to InjectionToken constructor is the options object
+        const args = initializer.arguments;
+        if (args && args.length >= 2 && ts.isObjectLiteralExpression(args[1])) {
+            const providedInProp = args[1].properties.find(
+                (p: any) => ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === 'providedIn'
+            );
+            if (providedInProp && ts.isPropertyAssignment(providedInProp)) {
+                return providedInProp.initializer.getText();
+            }
+        }
+        return '';
+    }
+
+    private detectFactoryKind(name: string): IFunctionDecDep['factoryKind'] | undefined {
+        if (/^provide[A-Z]/.test(name)) return 'provider';
+        if (/^with[A-Z]/.test(name)) return 'feature';
+        if (/^inject[A-Z]/.test(name)) return 'inject';
+        if (/^create[A-Z]/.test(name)) return 'factory';
+        return undefined;
     }
 
     private findExpressionByNameInExpressions(entryNode, name) {
