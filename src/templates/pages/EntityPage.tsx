@@ -64,12 +64,12 @@ const InfoContent = (props: EntityInfoProps): string => {
             <p class="comment">{parseDescription(e.description, props.depth)}</p>
         </>)}
 
-        {isInfoSection('extends') && props.showExtends !== false && e.extends && (<>
+        {isInfoSection('extends') && props.showExtends !== false && e.extends?.length > 0 && (<>
             <p class="comment"><h3>{t('extends')}</h3></p>
             <p class="comment">{(e.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')}</p>
         </>)}
 
-        {isInfoSection('extends') && props.showExtends !== false && e.implements && (<>
+        {isInfoSection('extends') && props.showExtends !== false && e.implements?.length > 0 && (<>
             <p class="comment"><h3>{t('implements')}</h3></p>
             <p class="comment">{(e.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')}</p>
         </>)}
@@ -103,35 +103,35 @@ const InfoContent = (props: EntityInfoProps): string => {
             BlockConstructor({ constructor: e.constructorObj, file: e.file, depth: props.depth, navTabs: props.navTabs })
         )}
 
-        {isInfoSection('inputs') && props.showInputs !== false && e.inputsClass && (
+        {isInfoSection('inputs') && props.showInputs !== false && e.inputsClass?.length > 0 && (
             BlockInput({ element: e, file: e.file, depth: props.depth, navTabs: props.navTabs })
         )}
 
-        {isInfoSection('outputs') && props.showOutputs !== false && e.outputsClass && (
+        {isInfoSection('outputs') && props.showOutputs !== false && e.outputsClass?.length > 0 && (
             BlockOutput({ element: e, file: e.file, depth: props.depth, navTabs: props.navTabs })
         )}
 
-        {isInfoSection('hostBindings') && props.showHostBindings !== false && e.hostBindings && (
+        {isInfoSection('hostBindings') && props.showHostBindings !== false && e.hostBindings?.length > 0 && (
             BlockProperty({ properties: e.hostBindings, file: e.file, title: 'HostBindings', depth: props.depth, navTabs: props.navTabs })
         )}
 
-        {isInfoSection('hostListeners') && props.showHostListeners !== false && e.hostListeners && (
+        {isInfoSection('hostListeners') && props.showHostListeners !== false && e.hostListeners?.length > 0 && (
             BlockHostListener({ methods: e.hostListeners, file: e.file, title: 'HostListeners', depth: props.depth, navTabs: props.navTabs })
         )}
 
-        {isInfoSection('methods') && props.showMethods !== false && (e.methodsClass ?? e.methods) && (
+        {isInfoSection('methods') && props.showMethods !== false && (e.methodsClass ?? e.methods)?.length > 0 && (
             BlockMethod({ methods: e.methodsClass ?? e.methods, file: e.file, depth: props.depth, navTabs: props.navTabs })
         )}
 
-        {isInfoSection('properties') && props.showProperties !== false && (e.propertiesClass ?? e.properties) && (
+        {isInfoSection('properties') && props.showProperties !== false && (e.propertiesClass ?? e.properties)?.length > 0 && (
             BlockProperty({ properties: e.propertiesClass ?? e.properties, file: e.file, depth: props.depth, navTabs: props.navTabs })
         )}
 
-        {isInfoSection('indexSignatures') && props.showIndexSignatures !== false && e.indexSignatures && (
+        {isInfoSection('indexSignatures') && props.showIndexSignatures !== false && e.indexSignatures?.length > 0 && (
             BlockIndexSignatures({ indexables: e.indexSignatures, file: e.file, depth: props.depth, navTabs: props.navTabs })
         )}
 
-        {isInfoSection('accessors') && props.showAccessors !== false && e.accessors && (
+        {isInfoSection('accessors') && props.showAccessors !== false && e.accessors && Object.keys(e.accessors).length > 0 && (
             BlockAccessors({ accessors: e.accessors, file: e.file, depth: props.depth, navTabs: props.navTabs })
         )}
     </>) as string;

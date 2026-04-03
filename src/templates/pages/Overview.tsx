@@ -99,9 +99,9 @@ export const Overview = (props: OverviewProps): string => {
                 </div>
                 <button id="fullscreen" class="module-graph-fullscreen-btn" aria-label="Fullscreen">{iconFor('ion-ios-resize')}</button>
                 <div class="btn-group size-buttons">
-                    <button id="zoom-in" class="btn btn-default btn-sm">{t('zoomin')}</button>
-                    <button id="reset" class="btn btn-default btn-sm">{t('reset')}</button>
-                    <button id="zoom-out" class="btn btn-default btn-sm">{t('zoomout')}</button>
+                    <button id="zoom-in" class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
+                    <button id="reset" class="cdx-btn cdx-btn--sm">{t('reset')}</button>
+                    <button id="zoom-out" class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
                 </div>
             </div>
         )}

@@ -41,6 +41,16 @@ const IndexGroup = (props: { title: string; items: IndexItem[]; showModifiers?: 
 export const BlockIndex = (props: BlockIndexProps): string => {
     const accessorEntries = props.accessors ? Object.entries(props.accessors) : [];
 
+    const hasContent = (props.properties?.length ?? 0) > 0
+        || (props.methods?.length ?? 0) > 0
+        || (props.inputs?.length ?? 0) > 0
+        || (props.outputs?.length ?? 0) > 0
+        || (props.hostBindings?.length ?? 0) > 0
+        || (props.hostListeners?.length ?? 0) > 0
+        || accessorEntries.length > 0;
+
+    if (!hasContent) return '';
+
     return (
         <section data-compodoc="block-index">
             <h3 id="index">{t('index')}</h3>

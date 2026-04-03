@@ -57,14 +57,16 @@ const ComponentMetadata = (c: any): string => {
 
     const rows: string[] = [];
     const field = (label: string, value: unknown, isCode = true) => {
-        if (value) rows.push(MetadataField({ label, value: String(value), isCode }));
+        if (value != null && value !== '' && (!Array.isArray(value) || value.length > 0)) {
+            rows.push(MetadataField({ label, value: String(value), isCode }));
+        }
     };
 
     field('animations', c.animations);
     field('changeDetection', c.changeDetection);
     field('encapsulation', c.encapsulation);
 
-    if (c.hostDirectives) {
+    if (c.hostDirectives?.length > 0) {
         rows.push((
             <tr>
                 <td class="col-md-3">{t('hostdirectives')}</td>
@@ -79,7 +81,7 @@ const ComponentMetadata = (c: any): string => {
         ) as string);
     }
 
-    if (c.entryComponents?.length > 0) {
+    if (c.entryComponents?.length > 0) {  // already guarded
         rows.push((
             <tr>
                 <td class="col-md-3">entryComponents</td>
@@ -94,7 +96,7 @@ const ComponentMetadata = (c: any): string => {
     field('moduleId', c.moduleId);
     if (c.hasOwnProperty('preserveWhitespaces')) field('preserveWhitespaces', c.preserveWhitespaces);
 
-    if (c.providers) {
+    if (c.providers?.length > 0) {
         rows.push((
             <tr>
                 <td class="col-md-3">providers</td>
@@ -107,7 +109,7 @@ const ComponentMetadata = (c: any): string => {
     field('selector', c.selector);
     if (c.standalone) field('standalone', String(c.standalone));
 
-    if (c.imports) {
+    if (c.imports?.length > 0) {
         rows.push((
             <tr>
                 <td class="col-md-3">imports</td>
@@ -116,9 +118,9 @@ const ComponentMetadata = (c: any): string => {
         ) as string);
     }
 
-    if (c.styleUrls) rows.push(MetadataField({ label: 'styleUrls', value: breakComma(c.styleUrls) }));
-    field('styles', c.styles);
-    if (c.template) {
+    if (c.styleUrls?.length > 0) rows.push(MetadataField({ label: 'styleUrls', value: breakComma(c.styleUrls) }));
+    if (c.styles?.length > 0) field('styles', c.styles);
+    if (c.template && c.template.trim()) {
         rows.push((
             <tr>
                 <td class="col-md-3">template</td>
@@ -128,7 +130,7 @@ const ComponentMetadata = (c: any): string => {
     }
     field('templateUrl', c.templateUrl);
 
-    if (c.viewProviders) {
+    if (c.viewProviders?.length > 0) {
         rows.push((
             <tr>
                 <td class="col-md-3">viewProviders</td>

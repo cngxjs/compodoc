@@ -68,8 +68,14 @@ const reinitPage = async () => {
 };
 
 /** Update sidebar active state */
-const updateActiveLink = (url: string) => {
+const updateActiveLink = (url: string, clickedAnchor: HTMLAnchorElement | null = null) => {
     document.querySelectorAll('.menu a.active').forEach(a => a.classList.remove('active'));
+
+    // If we know exactly which sidebar link was clicked, use it directly
+    if (clickedAnchor?.closest('.menu')) {
+        clickedAnchor.classList.add('active');
+        return;
+    }
 
     const pathname = new URL(url, window.location.origin).pathname;
     // Normalize: "/" -> "index.html", "/components/Foo.html" -> "components/Foo.html"
@@ -158,7 +164,7 @@ const completeProgress = () => {
 };
 
 /** Navigate to a new page via fetch */
-const navigate = async (url: string, pushState = true) => {
+const navigate = async (url: string, pushState = true, clickedAnchor: HTMLAnchorElement | null = null) => {
     try {
         showProgress();
 
@@ -207,7 +213,7 @@ const navigate = async (url: string, pushState = true) => {
 
         // Fix sidebar links for new page depth and update active state
         fixMenuLinks();
-        updateActiveLink(url);
+        updateActiveLink(url, clickedAnchor);
 
         // Scroll to top or to anchor
         const hash = new URL(url, window.location.origin).hash;
@@ -247,7 +253,9 @@ export const initRouter = () => {
         if (!href || href === '#') return;
 
         e.preventDefault();
-        navigate(href);
+        // If clicked link is in sidebar, pass it as the active hint
+        const sidebarAnchor = anchor.closest('.menu') ? anchor : null;
+        navigate(href, true, sidebarAnchor as HTMLAnchorElement | null);
     });
 
     // Handle browser back/forward
