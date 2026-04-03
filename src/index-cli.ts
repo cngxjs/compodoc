@@ -207,6 +207,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 'Max search results on the results page. To show all results, set to 0',
                 String(COMPODOC_DEFAULTS.maxSearchResults)
             )
+            .option('--stackblitz', 'Enable StackBlitz integration for examples')
+            .option(
+                '--stackblitzTemplate [template]',
+                'StackBlitz project template ID for examples'
+            )
             .allowExcessArguments()
             .parse(process.argv);
 
@@ -690,6 +695,20 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
 
         if (programOptions.maxSearchResults) {
             Configuration.mainData.maxSearchResults = programOptions.maxSearchResults;
+        }
+
+        if (configFile.stackblitz) {
+            Configuration.mainData.stackblitz = configFile.stackblitz;
+        }
+        if (programOptions.stackblitz) {
+            Configuration.mainData.stackblitz = true;
+        }
+
+        if (configFile.stackblitzTemplate) {
+            Configuration.mainData.stackblitzTemplate = configFile.stackblitzTemplate;
+        }
+        if (programOptions.stackblitzTemplate) {
+            Configuration.mainData.stackblitzTemplate = programOptions.stackblitzTemplate;
         }
 
         if (configFile.files) {

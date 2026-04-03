@@ -95,6 +95,8 @@ export class Configuration implements ConfigurationInterface {
         publicApiOnly: '',
         publicApiExports: new Map<string, Set<string>>(),
         infoTabSections: [],
+        stackblitz: false,
+        stackblitzTemplate: '',
         categorizedComponents: {},
         categorizedDirectives: {},
         categorizedInjectables: {},

@@ -53,4 +53,6 @@ export interface ConfigurationFileInterface {
     include;
     publicApiOnly: string;
     infoTabSections: string[];
+    stackblitz: boolean;
+    stackblitzTemplate: string;
 }
