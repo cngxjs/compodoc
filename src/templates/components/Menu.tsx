@@ -19,14 +19,25 @@ const arrow = (type: string): string =>
 const entityHref = (prefix: string, item: any): string =>
     `${prefix}/${item.duplicateName ?? item.name}.html`;
 
+/** Inline badge for entity type indicators */
+const Badge = (props: { label: string; cssClass: string }): string => (
+    <span class={`cdx-badge ${props.cssClass}`}>{props.label}</span>
+) as string;
+
 /** Render a single entity link */
-const EntityLink = (props: { href: string; name: string; deprecated?: boolean; context?: string; contextId?: string }): string => (
+const EntityLink = (props: { href: string; name: string; deprecated?: boolean; context?: string; contextId?: string; standalone?: boolean; isToken?: boolean; beta?: boolean; factoryKind?: string }): string => (
     <li class="link">
         <a href={props.href}
             data-type="entity-link"
             data-context={props.context}
             data-context-id={props.contextId}
-            class={props.deprecated ? 'deprecated-name' : ''}>{props.name}</a>
+            class={props.deprecated ? 'deprecated-name' : ''}>
+            {props.name}
+            {props.standalone ? Badge({ label: 'Standalone', cssClass: 'cdx-badge--standalone' }) : ''}
+            {props.isToken ? Badge({ label: 'Token', cssClass: 'cdx-badge--token' }) : ''}
+            {props.beta ? Badge({ label: 'Beta', cssClass: 'cdx-badge--beta' }) : ''}
+            {props.factoryKind ? Badge({ label: props.factoryKind, cssClass: `cdx-badge--factory` }) : ''}
+        </a>
     </li>
 ) as string;
 
@@ -68,6 +79,10 @@ const EntitySection = (props: {
                                     href: entityHref(props.hrefPrefix, item),
                                     name: item.name,
                                     deprecated: item.deprecated,
+                                    standalone: item.standalone,
+                                    isToken: item.isToken,
+                                    beta: item.beta,
+                                    factoryKind: item.factoryKind,
                                 }))}
                             </ul>
                         </li>
@@ -77,6 +92,10 @@ const EntitySection = (props: {
                         href: entityHref(props.hrefPrefix, item),
                         name: item.name,
                         deprecated: item.deprecated,
+                        standalone: item.standalone,
+                        isToken: item.isToken,
+                        beta: item.beta,
+                        factoryKind: item.factoryKind,
                     }))
                 )}
             </ul>
