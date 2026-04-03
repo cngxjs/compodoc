@@ -123,7 +123,6 @@ export const Layout = (props: LayoutProps): string => {
                     .menu .collapse:not(.in) { display: none !important; }
                 `)}</style>
                 <link rel="stylesheet" href={r('styles/style.css')} />
-                <link rel="stylesheet" href={r('styles/dark.css')} />
                 <link rel="stylesheet" href={r('styles/compodocx.css')} />
                 {data.theme && data.theme !== 'gitbook' && (
                     <link rel="stylesheet" href={r(`styles/${data.theme}.css`)} />
