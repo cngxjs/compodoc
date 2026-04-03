@@ -48,3 +48,6 @@ tmp/
 /playwright/.cache/
 
 .angular/
+
+# Playwright MCP snapshots
+.playwright-mcp/
