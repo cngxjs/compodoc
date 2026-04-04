@@ -38,54 +38,65 @@ export default defineConfig({
     projects: [
         {
             name: 'chromium',
-            use: { ...devices['Desktop Chrome'] }
+            use: { ...devices['Desktop Chrome'] },
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts'],
         },
 
         {
             name: 'chrome',
-            use: { ...devices['Desktop Chrome'], channel: 'chrome' }
+            use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts'],
         },
 
         {
             name: 'firefox',
-            use: { ...devices['Desktop Firefox'] }
+            use: { ...devices['Desktop Firefox'] },
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts'],
         },
 
         {
             name: 'webkit',
-            use: { ...devices['Desktop Safari'] }
+            use: { ...devices['Desktop Safari'] },
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts'],
         },
 
         {
             name: 'Microsoft Edge',
-            use: { ...devices['Desktop Edge'], channel: 'msedge' }
-        }
+            use: { ...devices['Desktop Edge'], channel: 'msedge' },
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts'],
+        },
 
-        /* Test against mobile viewports. */
-        // {
-        //   name: 'Mobile Chrome',
-        //   use: { ...devices['Pixel 5'] },
-        // },
-        // {
-        //   name: 'Mobile Safari',
-        //   use: { ...devices['iPhone 12'] },
-        // },
+        /* todomvc-ng2 fixture tests (empty states, etc.) — uses port 4001 */
+        {
+            name: 'todomvc',
+            use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:4001' },
+            testMatch: ['**/empty-states.spec.ts'],
+        },
 
-        /* Test against branded browsers. */
-        // {
-        //   name: 'Microsoft Edge',
-        //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-        // },
-        // {
-        //   name: 'Google Chrome',
-        //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-        // },
+        /* standalone-app fixture tests — uses port 4002 */
+        {
+            name: 'standalone',
+            use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:4002' },
+            testMatch: ['**/standalone-features.spec.ts'],
+        },
     ],
 
-    /* Run your local dev server before starting the tests */
-    webServer: {
-        command: 'npm run test:simple-doc',
-        url: 'http://localhost:4000',
-        reuseExistingServer: !process.env.CI
-    }
+    /* Run local dev servers before starting the tests */
+    webServer: [
+        {
+            command: 'npm run test:simple-doc',
+            url: 'http://localhost:4000',
+            reuseExistingServer: !process.env.CI,
+        },
+        {
+            command: 'npm run test:todomvc-doc',
+            url: 'http://localhost:4001',
+            reuseExistingServer: !process.env.CI,
+        },
+        {
+            command: 'npm run test:standalone-doc',
+            url: 'http://localhost:4002',
+            reuseExistingServer: !process.env.CI,
+        },
+    ]
 });
