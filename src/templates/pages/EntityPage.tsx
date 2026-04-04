@@ -205,7 +205,8 @@ const InfoContent = (props: EntityInfoProps): string => {
                     constructor: e.constructorObj,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs
+                    navTabs: props.navTabs,
+                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
                 })}
 
             {isInfoSection('inputs') &&
@@ -215,7 +216,8 @@ const InfoContent = (props: EntityInfoProps): string => {
                     element: e,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs
+                    navTabs: props.navTabs,
+                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
                 })}
 
             {isInfoSection('outputs') &&
@@ -225,7 +227,8 @@ const InfoContent = (props: EntityInfoProps): string => {
                     element: e,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs
+                    navTabs: props.navTabs,
+                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
                 })}
 
             {isInfoSection('hostBindings') &&
@@ -236,7 +239,8 @@ const InfoContent = (props: EntityInfoProps): string => {
                     file: e.file,
                     title: 'HostBindings',
                     depth: props.depth,
-                    navTabs: props.navTabs
+                    navTabs: props.navTabs,
+                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
                 })}
 
             {isInfoSection('hostListeners') &&
@@ -247,7 +251,8 @@ const InfoContent = (props: EntityInfoProps): string => {
                     file: e.file,
                     title: 'HostListeners',
                     depth: props.depth,
-                    navTabs: props.navTabs
+                    navTabs: props.navTabs,
+                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
                 })}
 
             {isInfoSection('methods') &&
@@ -257,7 +262,8 @@ const InfoContent = (props: EntityInfoProps): string => {
                     methods: e.methodsClass ?? e.methods,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs
+                    navTabs: props.navTabs,
+                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
                 })}
 
             {isInfoSection('properties') &&
@@ -267,7 +273,8 @@ const InfoContent = (props: EntityInfoProps): string => {
                     properties: e.propertiesClass ?? e.properties,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs
+                    navTabs: props.navTabs,
+                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
                 })}
 
             {isInfoSection('indexSignatures') &&
@@ -288,7 +295,8 @@ const InfoContent = (props: EntityInfoProps): string => {
                     accessors: e.accessors,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs
+                    navTabs: props.navTabs,
+                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
                 })}
         </>
     ) as string;

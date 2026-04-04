@@ -360,14 +360,15 @@ const InfoContent = (data: any): string => {
                     constructor: c.constructorObj,
                     file: c.file,
                     depth,
-                    navTabs: data.navTabs
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
                 })}
             {isInfoSection('inputs') &&
                 c.inputsClass?.length > 0 &&
-                BlockInput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
+                BlockInput({ element: c, file: c.file, depth, navTabs: data.navTabs, entityColor: 'component' })}
             {isInfoSection('outputs') &&
                 c.outputsClass?.length > 0 &&
-                BlockOutput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
+                BlockOutput({ element: c, file: c.file, depth, navTabs: data.navTabs, entityColor: 'component' })}
             {isInfoSection('hostBindings') &&
                 c.hostBindings?.length > 0 &&
                 BlockProperty({
@@ -375,7 +376,8 @@ const InfoContent = (data: any): string => {
                     file: c.file,
                     title: 'HostBindings',
                     depth,
-                    navTabs: data.navTabs
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
                 })}
             {isInfoSection('hostListeners') &&
                 c.hostListeners?.length > 0 &&
@@ -384,7 +386,8 @@ const InfoContent = (data: any): string => {
                     file: c.file,
                     title: 'HostListeners',
                     depth,
-                    navTabs: data.navTabs
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
                 })}
             {isInfoSection('methods') &&
                 c.methodsClass?.length > 0 &&
@@ -392,7 +395,8 @@ const InfoContent = (data: any): string => {
                     methods: c.methodsClass,
                     file: c.file,
                     depth,
-                    navTabs: data.navTabs
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
                 })}
             {isInfoSection('properties') &&
                 c.propertiesClass?.length > 0 &&
@@ -400,7 +404,8 @@ const InfoContent = (data: any): string => {
                     properties: c.propertiesClass,
                     file: c.file,
                     depth,
-                    navTabs: data.navTabs
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
                 })}
             {isInfoSection('accessors') &&
                 c.accessors && Object.keys(c.accessors).length > 0 &&
@@ -408,7 +413,8 @@ const InfoContent = (data: any): string => {
                     accessors: c.accessors,
                     file: c.file,
                     depth,
-                    navTabs: data.navTabs
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
                 })}
         </>
     ) as string;

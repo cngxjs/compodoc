@@ -16,6 +16,7 @@ type BlockAccessorsProps = {
     readonly file: string;
     readonly depth?: number;
     readonly navTabs?: any[];
+    readonly entityColor?: string;
 };
 
 const SignatureBlock = (props: {
@@ -55,7 +56,7 @@ const SignatureBlock = (props: {
             );
         })()}
         {sig.returnType && (<>
-            <div class="io-description">
+            <div class="cdx-member-returns">
                 <b>{t('returns')} : </b>{linkTypeHtml(sig.returnType)}
             </div>
             {sig.jsdoctags && (
@@ -65,22 +66,25 @@ const SignatureBlock = (props: {
     </>) as string;
 };
 
-export const BlockAccessors = (props: BlockAccessorsProps): string => (
-    <section data-compodoc="block-accessors">
-        <h3 id="accessors">{t('accessors')}</h3>
-        {Object.entries(props.accessors).map(([key, acc]) => (
-            <article class="cdx-member-card" id={key}>
-                <header class="cdx-member-header">
-                    <span class="cdx-member-name">
-                        {key}
-                        <a href={`#${key}`} aria-label={`Link to ${key}`}>#</a>
-                    </span>
-                </header>
-                <div class="cdx-member-body">
-                    {SignatureBlock({ label: 'get', sig: acc.getSignature, file: props.file, depth: props.depth ?? 0, navTabs: props.navTabs })}
-                    {SignatureBlock({ label: 'set', sig: acc.setSignature, file: props.file, depth: props.depth ?? 0, navTabs: props.navTabs })}
-                </div>
-            </article>
-        ))}
-    </section>
-) as string;
+export const BlockAccessors = (props: BlockAccessorsProps): string => {
+    return (
+        <section data-compodoc="block-accessors">
+            <h3 id="accessors">{t('accessors')}</h3>
+            {Object.entries(props.accessors).map(([key, acc]) => (
+                <article class="cdx-member-card" id={key}>
+
+                    <header class="cdx-member-header">
+                        <span class="cdx-member-name">
+                            <span class="cdx-member-name-text">{key}</span>
+                            <a href={`#${key}`} class="cdx-member-permalink" aria-label={`Link to ${key}`}>#</a>
+                        </span>
+                    </header>
+                    <div class="cdx-member-body">
+                        {SignatureBlock({ label: 'get', sig: acc.getSignature, file: props.file, depth: props.depth ?? 0, navTabs: props.navTabs })}
+                        {SignatureBlock({ label: 'set', sig: acc.setSignature, file: props.file, depth: props.depth ?? 0, navTabs: props.navTabs })}
+                    </div>
+                </article>
+            ))}
+        </section>
+    ) as string;
+};

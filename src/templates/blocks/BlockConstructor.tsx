@@ -15,6 +15,7 @@ type BlockConstructorProps = {
     readonly file: string;
     readonly depth?: number;
     readonly navTabs?: any[];
+    readonly entityColor?: string;
 };
 
 export const BlockConstructor = (props: BlockConstructorProps): string => {
@@ -23,16 +24,17 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
         <section data-compodoc="block-constructor">
             <h3 id="constructor">{t('constructor')}</h3>
             <article class="cdx-member-card">
-                <header class="cdx-member-header">
-                    <span class="cdx-member-name">
-                        {ctor.modifierKind && ctor.modifierKind.map((k: number) => (
-                            <span class="modifier">{modifKind(k)}</span>
-                        ))}
-                        constructor
-                    </span>
-                </header>
-                <div class="cdx-member-body">
-                    <div class="cdx-member-row"><code>{functionSignature(ctor)}</code></div>
+                <div class="cdx-member-body" style="border-top: none; padding-top: 16px;">
+                    {ctor.modifierKind && ctor.modifierKind.length > 0 && (
+                        <div class="cdx-member-row">
+                            {ctor.modifierKind.map((k: number) => (
+                                <span class="modifier">{modifKind(k)}</span>
+                            ))}
+                        </div>
+                    )}
+                    <div class="cdx-member-signature">
+                        <code>{functionSignature(ctor)}</code>
+                    </div>
                     {ctor.line && isTabEnabled(props.navTabs, 'source') && (
                         <div class="cdx-member-row">
                             {t('defined-in')} <a href="" data-line={String(ctor.line)} class="link-to-prism">{props.file}:{ctor.line}</a>

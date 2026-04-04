@@ -19,6 +19,10 @@ export { shortUrl } from './short-url';
 export { isInfoSection, isInitialTab, isTabEnabled } from './tab-helpers';
 export { t } from './i18n';
 
+/** Check if a member has private or protected modifiers (SyntaxKind 123 = Private, 124 = Protected). */
+export const isInternalMember = (modifierKind?: number[]): boolean =>
+    (modifierKind ?? []).some(k => k === 123 || k === 124);
+
 /** A readme that is only a heading (no paragraphs, lists, code blocks) is treated as empty. */
 export const isReadmeEmpty = (readme: string | undefined): boolean => {
     if (!readme) return true;
