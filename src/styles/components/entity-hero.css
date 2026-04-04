@@ -1,0 +1,151 @@
+/* Entity page hero — diagonal gradient with entity-color tint + decorative icon */
+
+.cdx-entity-hero {
+    position: relative;
+    padding: 24px 32px 16px;
+    overflow: hidden;
+    border-radius: var(--cdx-radius-lg, 12px);
+    margin: 16px 0 0;
+    background: var(--color-cdx-bg-alt);
+}
+
+/* Diagonal gradient layer — light mode */
+.cdx-entity-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--cdx-hero-color, transparent) 0%, transparent 70%);
+    opacity: 0.12;
+    pointer-events: none;
+}
+
+/* Dark mode: stronger tint + glow */
+.dark .cdx-entity-hero {
+    background: var(--color-cdx-bg-alt);
+}
+
+.dark .cdx-entity-hero::before {
+    opacity: 0.2;
+    background: linear-gradient(135deg, var(--cdx-hero-color, transparent) 0%, transparent 55%);
+}
+
+/* Dark mode: glow effect */
+.dark .cdx-entity-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 150px color-mix(in srgb, var(--cdx-hero-color, transparent) 12%, transparent);
+    pointer-events: none;
+}
+
+/* Decorative entity icon — large, positioned top-right */
+.cdx-entity-hero-watermark {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 180px;
+    height: 180px;
+    opacity: 0.15;
+    color: var(--cdx-hero-color);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.cdx-entity-hero-watermark svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Light mode: slightly more visible */
+.cdx-entity-hero-watermark {
+    opacity: 0.12;
+}
+
+/* Dark mode: more vibrant */
+.dark .cdx-entity-hero-watermark {
+    opacity: 0.2;
+}
+
+/* Breadcrumb inside hero */
+.cdx-entity-hero .cdx-breadcrumb {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 8px;
+}
+
+/* Entity name — plain text, no badges inline */
+.cdx-entity-hero-name {
+    position: relative;
+    z-index: 1;
+    font-size: var(--cdx-text-3xl, 1.875rem);
+    font-weight: 700;
+    color: var(--color-cdx-text);
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Badges row — separate line below entity name */
+.cdx-entity-hero-badges {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0 0;
+}
+
+/* Context line (selector, providedIn, extends, etc.) */
+.cdx-entity-hero-context {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-code, 'JetBrains Mono', ui-monospace, monospace);
+    font-size: var(--cdx-text-sm, 0.8125rem);
+    color: var(--color-cdx-text-muted);
+    margin: 0;
+}
+
+/* Tab bar below hero — spacing */
+.cdx-tab-bar {
+    margin-top: 12px;
+    margin-bottom: 20px;
+}
+
+/* Responsive — container queries on .content-data (container-name: content) */
+@container content (max-width: 500px) {
+    .cdx-entity-hero {
+        padding: 16px 16px 12px;
+    }
+
+    .cdx-entity-hero-name {
+        font-size: var(--cdx-text-2xl, 1.5rem);
+    }
+
+    /* Hide status badges (standalone, beta, etc.) on narrow — keep entity type badge */
+    .cdx-entity-hero-name .cdx-badge--standalone,
+    .cdx-entity-hero-name .cdx-badge--token,
+    .cdx-entity-hero-name .cdx-badge--beta,
+    .cdx-entity-hero-name .cdx-badge--since,
+    .cdx-entity-hero-name .cdx-badge--breaking,
+    .cdx-entity-hero-name .cdx-badge--zoneless {
+        display: none;
+    }
+
+    .cdx-entity-hero-watermark {
+        width: 90px;
+        height: 90px;
+        top: 0;
+        right: 0;
+    }
+
+}
+
+@container content (max-width: 350px) {
+    .cdx-entity-hero-name {
+        font-size: var(--cdx-text-xl, 1.25rem);
+    }
+
+    .cdx-entity-hero-watermark {
+        display: none;
+    }
+}

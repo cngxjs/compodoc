@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "./components/empty-state.css";
+@import "./components/entity-hero.css";
+@import "./components/tab-bar.css";
 
 @source "../templates/**/*.hbs";
 @source "../templates/**/*.tsx";
@@ -457,6 +459,9 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100%;
+  max-width: 860px;
+  container-type: inline-size;
+  container-name: content;
 }
 
 /* ----------------------------------------------------------------
@@ -651,55 +656,8 @@ body {
    Tab bar
    ---------------------------------------------------------------- */
 
-.cdx-tabs {
-  @apply flex gap-0 border-b;
-  border-color: var(--color-cdx-border);
-  margin-bottom: 1.5rem;
-  list-style: none;
-  padding: 0;
-  margin-top: 0;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  position: relative;
-}
-
-.cdx-tabs li {
-  list-style: none;
-}
-
-.cdx-tabs a {
-  @apply block px-4 py-2 text-sm font-semibold no-underline;
-  color: var(--color-cdx-text-muted);
-  border-bottom: 2px solid transparent;
-  transition: color var(--cdx-transition-fast), border-color var(--cdx-transition-fast);
-  white-space: nowrap;
-}
-
-.cdx-tabs a:hover {
-  color: var(--color-cdx-text);
-}
-
-.cdx-tabs a.active {
-  color: var(--color-cdx-primary);
-  border-bottom-color: transparent;
-}
-
-.cdx-tabs a:focus-visible {
-  outline: 2px solid var(--color-cdx-primary);
-  outline-offset: -2px;
-  border-radius: 4px 4px 0 0;
-}
-
-.cdx-tabs-underline {
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  height: 2px;
-  background: var(--color-cdx-primary);
-  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1), width 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-  opacity: 0;
-}
+/* Legacy cdx-tabs removed — replaced by .cdx-tab-bar pill bar (see components/tab-bar.css)
+   Sliding underline removed — pills use active fill instead. */
 
 .cdx-tab-panel {
   display: none;
@@ -1201,11 +1159,16 @@ body {
   background: hsl(320 35% 94%);
 }
 
-.cdx-badge--entity-type {
-  color: var(--color-cdx-text-secondary);
-  border: 1px solid var(--color-cdx-border);
-  background: transparent;
-}
+/* Entity type badges — filled with entity color */
+.cdx-badge--entity-component { background: var(--color-cdx-entity-component); color: white; border: none; }
+.cdx-badge--entity-directive { background: var(--color-cdx-entity-directive); color: white; border: none; }
+.cdx-badge--entity-pipe { background: var(--color-cdx-entity-pipe); color: white; border: none; }
+.cdx-badge--entity-module { background: var(--color-cdx-entity-module); color: white; border: none; }
+.cdx-badge--entity-class { background: var(--color-cdx-entity-class); color: white; border: none; }
+.cdx-badge--entity-interface { background: var(--color-cdx-entity-interface); color: white; border: none; }
+.cdx-badge--entity-guard { background: var(--color-cdx-entity-guard); color: white; border: none; }
+.cdx-badge--entity-interceptor { background: var(--color-cdx-entity-interceptor); color: white; border: none; }
+.cdx-badge--entity-injectable { background: var(--color-cdx-entity-service); color: var(--color-cdx-text); border: none; }
 
 .cdx-badge--since {
   color: var(--color-cdx-text-secondary);
@@ -1277,11 +1240,16 @@ body {
   color: hsl(320 45% 70%); border-color: hsl(320 25% 40%); background: hsl(320 20% 18%);
 }
 
-.dark .cdx-badge--entity-type {
-  color: var(--color-cdx-text-secondary);
-  border-color: var(--color-cdx-border);
-  background: transparent;
-}
+/* Dark mode entity badges: use desaturated entity colors from theme */
+.dark .cdx-badge--entity-component { background: var(--color-cdx-entity-component); }
+.dark .cdx-badge--entity-directive { background: var(--color-cdx-entity-directive); }
+.dark .cdx-badge--entity-pipe { background: var(--color-cdx-entity-pipe); }
+.dark .cdx-badge--entity-module { background: var(--color-cdx-entity-module); }
+.dark .cdx-badge--entity-class { background: var(--color-cdx-entity-class); }
+.dark .cdx-badge--entity-interface { background: var(--color-cdx-entity-interface); }
+.dark .cdx-badge--entity-guard { background: var(--color-cdx-entity-guard); }
+.dark .cdx-badge--entity-interceptor { background: var(--color-cdx-entity-interceptor); }
+.dark .cdx-badge--entity-injectable { background: var(--color-cdx-entity-service); color: var(--color-cdx-text); }
 
 .dark .cdx-badge--since {
   color: var(--color-cdx-text-secondary);
@@ -1435,7 +1403,17 @@ th[role='columnheader'].statements:not(.no-sort):after { margin-left: 10px; }
 .content ol { list-style-type: decimal; margin-top: 0; padding-left: 20px; margin-bottom: 16px; }
 .content ol.cdx-breadcrumb { list-style: none !important; padding-left: 0; margin-bottom: 1rem; }
 .content ul { list-style: disc; margin-top: 0; padding-left: 20px; margin-bottom: 16px; }
-.content ul.cdx-tabs { list-style: none !important; padding-left: 0; margin-bottom: 1.5rem; }
+.content ul.cdx-tab-bar { list-style: none !important; padding-left: 0; margin-top: 16px; }
+
+/* Sidebar badges — single-letter compact badges */
+#sidebar .cdx-badge {
+  font-size: 9px;
+  padding: 1px 5px;
+  line-height: 1.2;
+  letter-spacing: 0;
+  min-width: 16px;
+  text-align: center;
+}
 .content ul.list-group { padding-left: 0; }
 .content ul.list-group li.list-group-item a { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .content ul ul { list-style-type: circle; }
