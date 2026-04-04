@@ -39,38 +39,38 @@ export default defineConfig({
         {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts'],
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts'],
         },
 
         {
             name: 'chrome',
             use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts'],
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts'],
         },
 
         {
             name: 'firefox',
             use: { ...devices['Desktop Firefox'] },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts'],
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts'],
         },
 
         {
             name: 'webkit',
             use: { ...devices['Desktop Safari'] },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts'],
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts'],
         },
 
         {
             name: 'Microsoft Edge',
             use: { ...devices['Desktop Edge'], channel: 'msedge' },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts'],
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts'],
         },
 
         /* todomvc-ng2 fixture tests (empty states, etc.) — uses port 4001 */
         {
             name: 'todomvc',
             use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:4001' },
-            testMatch: ['**/empty-states.spec.ts'],
+            testMatch: ['**/empty-states.spec.ts', '**/entity-hero.spec.ts'],
         },
 
         /* standalone-app fixture tests — uses port 4002 */

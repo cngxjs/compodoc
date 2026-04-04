@@ -43,16 +43,16 @@ test.describe('Sidebar', () => {
 test.describe('Component page', () => {
     test('breadcrumb shows Standalone badge', async ({ page }) => {
         await page.goto('/components/AppComponent.html');
-        const badge = page.locator('.cdx-breadcrumb .cdx-badge--standalone');
+        const badge = page.locator('.cdx-entity-hero-badges .cdx-badge--standalone');
         expect(await badge.count()).toBe(1);
         expect(await badge.textContent()).toBe('Standalone');
     });
 
     test('UserCardComponent: beta and since badges', async ({ page }) => {
         await page.goto('/components/UserCardComponent.html');
-        expect(await page.locator('.cdx-breadcrumb .cdx-badge--beta').count()).toBe(1);
-        expect(await page.locator('.cdx-breadcrumb .cdx-badge--since').count()).toBe(1);
-        expect(await page.locator('.cdx-breadcrumb .cdx-badge--since').textContent()).toContain('v1.0.0');
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--beta').count()).toBe(1);
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--since').count()).toBe(1);
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--since').textContent()).toContain('v1.0.0');
     });
 
     test('UserCardComponent: content slots section', async ({ page }) => {
@@ -72,7 +72,7 @@ test.describe('Component page', () => {
 
     test('UserListComponent: zoneless badge', async ({ page }) => {
         await page.goto('/components/UserListComponent.html');
-        const badge = page.locator('.cdx-breadcrumb .cdx-badge--zoneless');
+        const badge = page.locator('.cdx-entity-hero-badges .cdx-badge--zoneless');
         expect(await badge.count()).toBe(1);
         expect(await badge.textContent()).toBe('Zoneless');
     });
@@ -99,7 +99,7 @@ test.describe('Component page', () => {
 test.describe('Directive page', () => {
     test('HighlightDirective: standalone badge', async ({ page }) => {
         await page.goto('/directives/HighlightDirective.html');
-        expect(await page.locator('.cdx-breadcrumb .cdx-badge--standalone').count()).toBe(1);
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--standalone').count()).toBe(1);
     });
 });
 
@@ -108,7 +108,7 @@ test.describe('Directive page', () => {
 test.describe('Pipe page', () => {
     test('GreetingPipe: standalone badge', async ({ page }) => {
         await page.goto('/pipes/GreetingPipe.html');
-        expect(await page.locator('.cdx-breadcrumb .cdx-badge--standalone').count()).toBe(1);
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--standalone').count()).toBe(1);
     });
 });
 
@@ -117,7 +117,7 @@ test.describe('Pipe page', () => {
 test.describe('Injectable page', () => {
     test('API_BASE_URL: token badge in breadcrumb', async ({ page }) => {
         await page.goto('/injectables/API_BASE_URL.html');
-        expect(await page.locator('.cdx-breadcrumb .cdx-badge--token').count()).toBe(1);
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--token').count()).toBe(1);
     });
 
     test('API_BASE_URL: token metadata shows type and providedIn', async ({ page }) => {
@@ -133,7 +133,7 @@ test.describe('Injectable page', () => {
 
     test('FEATURE_FLAGS: token badge', async ({ page }) => {
         await page.goto('/injectables/FEATURE_FLAGS.html');
-        expect(await page.locator('.cdx-breadcrumb .cdx-badge--token').count()).toBe(1);
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--token').count()).toBe(1);
     });
 });
 
