@@ -2,7 +2,6 @@ import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.inte
 
 import DependenciesEngine from '../dependencies.engine';
 
-import AngularVersionUtil from '../../../utils/angular-version.util';
 import ExtendsMerger from '../../../utils/extends-merger.util';
 import BasicTypeUtil from '../../../utils/basic-type.util';
 
@@ -21,9 +20,6 @@ export class LinkTypeHelper implements IHtmlEngineHelper {
             }
         }
 
-        const angularDocPrefix = AngularVersionUtil.prefixOfficialDoc(
-            Configuration.mainData.angularVersion
-        );
         if (_result) {
             context.type = {
                 raw: name,
@@ -66,7 +62,7 @@ export class LinkTypeHelper implements IHtmlEngineHelper {
                 }
                 context.type.target = '_self';
             } else {
-                context.type.href = `https://${angularDocPrefix}angular.io/${_result.data.path}`;
+                context.type.href = `https://angular.dev/${_result.data.path}`;
                 context.type.target = '_blank';
             }
 

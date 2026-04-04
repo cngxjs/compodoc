@@ -1,5 +1,4 @@
 import DependenciesEngine from '../../app/engines/dependencies.engine';
-import AngularVersionUtil from '../../utils/angular-version.util';
 import ExtendsMerger from '../../utils/extends-merger.util';
 import BasicTypeUtil from '../../utils/basic-type.util';
 import Configuration from '../../app/configuration';
@@ -50,12 +49,9 @@ export const resolveType = (name: string, indexKey?: string): ResolvedType | nul
             return { ...resolved, href, indexKey: indexKey ?? '' };
         }
 
-        const angularDocPrefix = AngularVersionUtil.prefixOfficialDoc(
-            Configuration.mainData.angularVersion
-        );
         return {
             ...resolved,
-            href: `https://${angularDocPrefix}angular.io/${result.data.path}`,
+            href: `https://angular.dev/${result.data.path}`,
             target: '_blank',
         };
     }

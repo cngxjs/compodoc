@@ -6,9 +6,7 @@ const escapeHtml = (str: string): string =>
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;');
-import AngularVersionUtil from '../../utils/angular-version.util';
 import BasicTypeUtil from '../../utils/basic-type.util';
-import Configuration from '../../app/configuration';
 
 const miscSubtypeToPage: Record<string, string> = {
     enum: 'enumerations',
@@ -33,11 +31,7 @@ function resolveTypeLink(typeName: string): string | null {
             const href = buildHrefForInternalType(result.data);
             return `<a href="${href}" target="_self">${escapeHtml(typeName)}</a>`;
         }
-        const path = AngularVersionUtil.getApiLink(
-            result.data,
-            Configuration.mainData.angularVersion
-        );
-        return `<a href="${path}" target="_blank">${escapeHtml(typeName)}</a>`;
+        return `<a href="https://angular.dev/${result.data.path}" target="_blank">${escapeHtml(typeName)}</a>`;
     }
     if (BasicTypeUtil.isKnownType(typeName)) {
         const url = BasicTypeUtil.getTypeUrl(typeName);
