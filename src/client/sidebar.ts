@@ -72,13 +72,15 @@ const toggleCollapse = (targetId: string) => {
         }, ANIMATION_MS);
     }
 
-    // Toggle chevron rotation
+    // Toggle chevron rotation + aria-expanded
     const toggler = document.querySelector(`[data-cdx-target="${targetId}"]`);
     if (toggler) {
         const chevron = toggler.querySelector('.cdx-chevron');
         if (chevron) {
             chevron.classList.toggle('cdx-chevron--open');
         }
+        const wasOpen = toggler.getAttribute('aria-expanded') === 'true';
+        toggler.setAttribute('aria-expanded', String(!wasOpen));
     }
 
     setTimeout(saveState, ANIMATION_MS + 50);
@@ -111,15 +113,15 @@ const bindTogglers = () => {
     });
 };
 
-/** Sync chevron rotation with actual collapse state */
+/** Sync chevron rotation and aria-expanded with actual collapse state */
 const syncChevrons = () => {
     document.querySelectorAll<HTMLElement>('.menu .collapse[id]').forEach(el => {
         const isOpen = el.classList.contains('in');
         const toggler = document.querySelector(`[data-cdx-target="#${el.id}"]`);
         if (!toggler) return;
         const chevron = toggler.querySelector('.cdx-chevron');
-        if (!chevron) return;
-        chevron.classList.toggle('cdx-chevron--open', isOpen);
+        if (chevron) chevron.classList.toggle('cdx-chevron--open', isOpen);
+        toggler.setAttribute('aria-expanded', String(isOpen));
     });
 };
 
@@ -179,6 +181,9 @@ const bindMobileMenu = () => {
         });
     });
 
+    // Close button
+    sidebarEl?.querySelector('.cdx-sidebar-close')?.addEventListener('click', closeMobileSidebar);
+
     // Backdrop click closes sidebar
     backdropEl?.addEventListener('click', closeMobileSidebar);
 
@@ -196,6 +201,24 @@ const bindMobileMenu = () => {
                 closeMobileSidebar();
             }
         });
+    });
+
+    // Focus trap: cycle Tab within sidebar when mobile overlay is open
+    sidebarEl?.addEventListener('keydown', (e) => {
+        if (e.key !== 'Tab' || !isMobileSidebarOpen()) return;
+        const focusable = sidebarEl!.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
     });
 
     // Close mobile sidebar on resize to desktop

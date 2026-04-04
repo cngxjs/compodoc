@@ -378,6 +378,22 @@ body {
   z-index: 30;
 }
 
+.cdx-sidebar-close {
+  display: none;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--color-cdx-text-muted);
+  border-radius: 4px;
+  z-index: 5;
+}
+.cdx-sidebar-close:hover { color: var(--color-cdx-text); background: var(--color-cdx-bg-alt); }
+.cdx-sidebar-close:focus-visible { outline: 2px solid var(--color-cdx-primary); outline-offset: -2px; }
+
 .cdx-sidebar-footer {
   margin-top: auto;
   padding: 0.75rem 1rem;
@@ -506,6 +522,8 @@ body {
     grid-column: auto;
   }
 
+  .cdx-sidebar-close { display: block; }
+
   .cdx-sidebar.cdx-sidebar--open {
     transform: translateX(0);
   }
@@ -617,6 +635,7 @@ body {
   margin-top: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  position: relative;
 }
 
 .cdx-tabs li {
@@ -637,7 +656,24 @@ body {
 
 .cdx-tabs a.active {
   color: var(--color-cdx-primary);
-  border-bottom-color: var(--color-cdx-primary);
+  border-bottom-color: transparent;
+}
+
+.cdx-tabs a:focus-visible {
+  outline: 2px solid var(--color-cdx-primary);
+  outline-offset: -2px;
+  border-radius: 4px 4px 0 0;
+}
+
+.cdx-tabs-underline {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--color-cdx-primary);
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1), width 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  opacity: 0;
 }
 
 .cdx-tab-panel {
@@ -1206,6 +1242,17 @@ a[href] { cursor: pointer; }
 .menu ul.list li.chapter.additional .inner ul.links { padding-left: 20px; }
 .menu .title { padding: 8px 0; }
 .menu-toggler { cursor: pointer; }
+button.menu-toggler {
+  @apply w-full text-left bg-transparent border-0 p-0 m-0;
+  font: inherit;
+  color: inherit;
+  outline: none;
+}
+button.menu-toggler:focus-visible {
+  outline: 2px solid var(--color-cdx-primary);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
 .menu a { color: var(--color-cdx-text-secondary); }
 
 /* Copyright */

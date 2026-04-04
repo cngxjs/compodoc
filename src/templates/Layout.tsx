@@ -42,72 +42,119 @@ const PageGlobals = (props: { data: PageData }) => {
     const pageUrl = data.filename ? `${data.filename}.html` : `${data.name}.html`;
     return (
         <script>
-            {(`
+            {`
                 var COMPODOC_CURRENT_PAGE_DEPTH = ${data.depth};
                 var COMPODOC_CURRENT_PAGE_CONTEXT = '${data.context}';
                 var COMPODOC_CURRENT_PAGE_URL = '${pageUrl}';
                 ${!data.disableSearch ? `var MAX_SEARCH_RESULTS = ${data.maxSearchResults ?? 15};` : ''}
-            `)}
+            `}
         </script>
     );
 };
 
 const GoogleAnalytics = (props: { gaID: string; gaSite: string }) => (
     <script>
-        {(`
+        {`
             (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
                 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
                     m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
             })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
             ga('create', '${props.gaID}', '${props.gaSite}');
             ga('send', 'pageview');
-        `)}
+        `}
     </script>
 );
 
-const CommandPalette = () => (
-    <dialog id="cdx-command-palette" class="cdx-cp" aria-label="Search documentation">
-        <div class="cdx-cp-panel">
-            <div class="cdx-cp-header">
-                <svg class="cdx-cp-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    aria-hidden="true">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input class="cdx-cp-input" type="text" placeholder="Search documentation..."
-                    autocomplete="off" spellcheck="false" role="combobox"
-                    aria-expanded="true" aria-controls="cdx-cp-listbox"
-                    aria-autocomplete="list" />
-                <button class="cdx-cp-close" aria-label="Close search" type="button">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>
+const CommandPalette = () =>
+    (
+        <dialog id="cdx-command-palette" class="cdx-cp" aria-label="Search documentation">
+            <div class="cdx-cp-panel">
+                <div class="cdx-cp-header">
+                    <svg
+                        class="cdx-cp-icon"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                    >
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                </button>
+                    <input
+                        class="cdx-cp-input"
+                        type="text"
+                        placeholder="Search documentation..."
+                        autocomplete="off"
+                        spellcheck="false"
+                        role="combobox"
+                        aria-expanded="true"
+                        aria-controls="cdx-cp-listbox"
+                        aria-autocomplete="list"
+                    />
+                    <button class="cdx-cp-close" aria-label="Close search" type="button">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                        >
+                            <path d="M18 6 6 18"></path>
+                            <path d="m6 6 12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="cdx-cp-body" id="cdx-cp-listbox" role="listbox">
+                    <div class="cdx-cp-results"></div>
+                    <div class="cdx-cp-empty" hidden aria-live="polite">
+                        No results
+                    </div>
+                    <div class="cdx-cp-loading" hidden aria-live="polite">
+                        Loading search...
+                    </div>
+                </div>
+                <div class="cdx-cp-footer">
+                    <span>
+                        <kbd>Enter</kbd> to select
+                    </span>
+                    <span>
+                        <kbd>Arrow Down</kbd> <kbd>Arrow Up</kbd> to navigate
+                    </span>
+                    <span>
+                        <kbd>Esc</kbd> to close
+                    </span>
+                </div>
             </div>
-            <div class="cdx-cp-body" id="cdx-cp-listbox" role="listbox">
-                <div class="cdx-cp-results"></div>
-                <div class="cdx-cp-empty" hidden aria-live="polite">No results</div>
-                <div class="cdx-cp-loading" hidden aria-live="polite">Loading search...</div>
-            </div>
-            <div class="cdx-cp-footer">
-                <span><kbd>Enter</kbd> to select</span>
-                <span><kbd>Arrow Down</kbd> <kbd>Arrow Up</kbd> to navigate</span>
-                <span><kbd>Esc</kbd> to close</span>
-            </div>
-        </div>
-    </dialog>
-) as string;
+        </dialog>
+    ) as string;
 
 const DarkModeToggle = () => (
     <div class="cdx-sidebar-footer">
         <label class="dark-mode-switch" aria-label="Toggle dark mode">
             <input type="checkbox" />
             <span class="slider">
-                <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000"
-                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20"
-                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <svg
+                    class="slider-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    height="20"
+                    stroke="#000"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                >
                     <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
                 </svg>
             </span>
@@ -118,10 +165,11 @@ const DarkModeToggle = () => (
 /** Build a descriptive page title for browser tab + Pagefind indexing */
 const pageTitle = (data: PageData): string => {
     const base = data.documentationMainName;
-    if (!data.context || data.context === 'readme' || data.context === 'getting-started') return base;
+    if (!data.context || data.context === 'readme' || data.context === 'getting-started')
+        return base;
     const name = data.name || data.filename || '';
     if (!name) return base;
-    const ctx = data.context.replace(/-/g, ' ');
+    const ctx = data.context.replaceAll('-', ' ');
     return `${name} - ${ctx} - ${base}`;
 };
 
@@ -129,7 +177,8 @@ export const Layout = (props: LayoutProps): string => {
     const { data, content, menuHtml } = props;
     const r = (path: string) => relativeUrl(data.depth, path);
 
-    return '<!doctype html>\n' + (
+    return ('<!doctype html>\n' +
+    (
         <html class="no-js" lang="en">
             <head>
                 <meta charset="utf-8" />
@@ -138,11 +187,11 @@ export const Layout = (props: LayoutProps): string => {
                 <meta name="description" content="" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <link rel="icon" type="image/x-icon" href={r('images/favicon.ico')} />
-                <script>{(`(function(){try{var d=localStorage.getItem('compodocx_darkmode-state');var dark=d!==null?d==='true':window.matchMedia('(prefers-color-scheme:dark)').matches;if(dark)document.documentElement.classList.add('dark')}catch(e){}}())`)}</script>
-                <style>{(`
+                <script>{`(function(){try{var d=localStorage.getItem('compodocx_darkmode-state');var dark=d!==null?d==='true':window.matchMedia('(prefers-color-scheme:dark)').matches;if(dark)document.documentElement.classList.add('dark')}catch(e){}}())`}</script>
+                <style>{`
                     .menu .collapse.in { display: block !important; visibility: visible !important; }
                     .menu .collapse:not(.in) { display: none !important; }
-                `)}</style>
+                `}</style>
                 <link rel="stylesheet" href={r('styles/style.css')} />
                 <link rel="stylesheet" href={r('styles/compodocx.css')} />
                 {data.theme && !['gitbook', 'default'].includes(data.theme) && (
@@ -151,20 +200,38 @@ export const Layout = (props: LayoutProps): string => {
             </head>
             <body>
                 <script type="module" src={r('js/compodocx.js')}></script>
-                <script>{(IframeTrackingScript)}</script>
+                <script>{IframeTrackingScript}</script>
 
-                <a href="#main-content" class="cdx-skip-link">Skip to main content</a>
-                <div class="cdx-progress"><div class="cdx-progress-bar"></div></div>
+                <a href="#main-content" class="cdx-skip-link">
+                    Skip to main content
+                </a>
+                <div class="cdx-progress">
+                    <div class="cdx-progress-bar"></div>
+                </div>
 
                 {/* Mobile top bar */}
                 <header class="cdx-topbar">
-                    <a href={r('')} class="cdx-topbar-brand">{data.documentationMainName}</a>
-                    <button type="button" class="cdx-mobile-toggle"
-                        aria-label="Open navigation" aria-expanded="false"
-                        data-cdx-mobile-toggle="#sidebar">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" aria-hidden="true">
+                    <a href={r('')} class="cdx-topbar-brand">
+                        {data.documentationMainName}
+                    </a>
+                    <button
+                        type="button"
+                        class="cdx-mobile-toggle"
+                        aria-label="Open navigation"
+                        aria-expanded="false"
+                        data-cdx-mobile-toggle="#sidebar"
+                    >
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                        >
                             <line x1="3" y1="12" x2="21" y2="12"></line>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
                             <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -177,15 +244,29 @@ export const Layout = (props: LayoutProps): string => {
 
                 {/* Sidebar */}
                 <nav class="cdx-sidebar menu" id="sidebar" aria-label="Documentation">
-                    {(menuHtml)}
+                    <button class="cdx-sidebar-close" type="button" aria-label="Close navigation">
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                        >
+                            <path d="M18 6 6 18"></path>
+                            <path d="m6 6 12 12"></path>
+                        </svg>
+                    </button>
+                    {menuHtml}
                     {!data.hideDarkModeToggle && <DarkModeToggle />}
                 </nav>
 
                 {/* Main content */}
                 <main id="main-content" class={`content ${data.context}`} tabindex="-1">
-                    <div class="content-data">
-                        {(content)}
-                    </div>
+                    <div class="content-data">{content}</div>
                 </main>
 
                 {!data.disableSearch && <CommandPalette />}
@@ -195,5 +276,5 @@ export const Layout = (props: LayoutProps): string => {
                 {data.gaID && <GoogleAnalytics gaID={data.gaID} gaSite={data.gaSite!} />}
             </body>
         </html>
-    ) as string;
+    )) as string;
 };

@@ -69,11 +69,15 @@ const reinitPage = async () => {
 
 /** Update sidebar active state */
 const updateActiveLink = (url: string, clickedAnchor: HTMLAnchorElement | null = null) => {
-    document.querySelectorAll('.menu a.active').forEach(a => a.classList.remove('active'));
+    document.querySelectorAll('.menu a.active').forEach(a => {
+        a.classList.remove('active');
+        a.removeAttribute('aria-current');
+    });
 
     // If we know exactly which sidebar link was clicked, use it directly
     if (clickedAnchor?.closest('.menu')) {
         clickedAnchor.classList.add('active');
+        clickedAnchor.setAttribute('aria-current', 'page');
         return;
     }
 
@@ -104,6 +108,7 @@ const updateActiveLink = (url: string, clickedAnchor: HTMLAnchorElement | null =
 
     if (bestMatch) {
         (bestMatch as HTMLAnchorElement).classList.add('active');
+        (bestMatch as HTMLAnchorElement).setAttribute('aria-current', 'page');
     }
 };
 
