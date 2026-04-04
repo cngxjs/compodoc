@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { IconExternalLink, IconGitBranch } from '../components/Icons';
+import { IconComponent, IconExternalLink, IconGitBranch } from '../components/Icons';
 import {
     extractJsdocCodeExamples,
     isInfoSection,
@@ -422,27 +422,29 @@ export const ComponentPage = (data: any): string => {
 
     return (
         <>
-            <ol class="cdx-breadcrumb">
-                <li class="">{t('components')}</li>
-                <li class={c.deprecated ? 'deprecated-name' : ''}>
-                    {c.name}
-                    {c.standalone ? (
-                        <span class="cdx-badge cdx-badge--standalone">Standalone</span>
-                    ) : (
-                        ''
-                    )}
+            <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-entity-component)">
+                <div class="cdx-entity-hero-watermark" aria-hidden="true">{IconComponent()}</div>
+                <nav aria-label="Breadcrumb">
+                    <ol class="cdx-breadcrumb">
+                        <li>{t('components')}</li>
+                        <li aria-current="page">{c.name}</li>
+                    </ol>
+                </nav>
+                <h1 class="cdx-entity-hero-name">
+                    <span class={c.deprecated ? 'deprecated-name' : ''}>{c.name}</span>
+                </h1>
+                <div class="cdx-entity-hero-badges">
+                    <span class="cdx-badge cdx-badge--entity-component">Component</span>
+                    {c.standalone ? <span class="cdx-badge cdx-badge--standalone">Standalone</span> : ''}
                     {c.zoneless ? <span class="cdx-badge cdx-badge--zoneless">Zoneless</span> : ''}
                     {c.beta ? <span class="cdx-badge cdx-badge--beta">Beta</span> : ''}
                     {c.since ? <span class="cdx-badge cdx-badge--since">v{c.since}</span> : ''}
-                    {c.breaking ? (
-                        <span class="cdx-badge cdx-badge--breaking">Breaking {c.breaking}</span>
-                    ) : (
-                        ''
-                    )}
-                </li>
-            </ol>
+                    {c.breaking ? <span class="cdx-badge cdx-badge--breaking">Breaking {c.breaking}</span> : ''}
+                </div>
+                {c.selector ? <p class="cdx-entity-hero-context">{c.selector}</p> : ''}
+            </div>
 
-            <ul class="cdx-tabs" role="tablist">
+            <ul class="cdx-tab-bar" role="tablist">
                 {navTabs.map((tab: any, i: number) => (
                     <li role="presentation">
                         <a

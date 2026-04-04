@@ -21,7 +21,7 @@ type EntityTabsProps = {
 
 /** Render the tab bar + tab panels for entity detail pages. */
 export const EntityTabs = (props: EntityTabsProps): string => (<>
-    <ul class="cdx-tabs" role="tablist">
+    <ul class="cdx-tab-bar" role="tablist">
         {props.navTabs.map((tab, i) => (
             <li role="presentation">
                 <a href={tab.href}

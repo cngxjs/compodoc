@@ -66,14 +66,10 @@ const EntityLink = (props: {
                 class={props.deprecated ? 'deprecated-name' : ''}
             >
                 {props.name}
-                {props.standalone
-                    ? Badge({ label: 'Standalone', cssClass: 'cdx-badge--standalone' })
-                    : ''}
-                {props.isToken ? Badge({ label: 'Token', cssClass: 'cdx-badge--token' }) : ''}
-                {props.beta ? Badge({ label: 'Beta', cssClass: 'cdx-badge--beta' }) : ''}
-                {props.factoryKind
-                    ? Badge({ label: props.factoryKind, cssClass: `cdx-badge--factory` })
-                    : ''}
+                {props.standalone ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' }) : ''}
+                {props.isToken ? Badge({ label: 'T', cssClass: 'cdx-badge--token' }) : ''}
+                {props.beta ? Badge({ label: 'B', cssClass: 'cdx-badge--beta' }) : ''}
+                {props.factoryKind ? Badge({ label: props.factoryKind.charAt(0).toUpperCase(), cssClass: 'cdx-badge--factory' }) : ''}
             </a>
         </li>
     ) as string;

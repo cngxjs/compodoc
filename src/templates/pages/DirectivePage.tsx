@@ -77,6 +77,7 @@ export const DirectivePage = (data: any): string =>
         showMethods: true,
         showProperties: true,
         showAccessors: true,
+        contextLine: data.directive?.selector,
         showStandaloneBadge: true,
         showJsdocBadges: true,
     });

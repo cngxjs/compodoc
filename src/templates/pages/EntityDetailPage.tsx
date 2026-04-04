@@ -10,6 +10,7 @@ export const EntityDetailPage = (data: any): string =>
         depth: data.depth,
         navTabs: data.navTabs,
         disableFilePath: data.disableFilePath,
+        contextLine: undefined,
         showProperties: true,
         showJsdocBadges: true,
     });

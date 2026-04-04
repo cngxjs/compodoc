@@ -44,6 +44,7 @@ export const PipePage = (data: any): string =>
         metadataHtml: PipeMetadata(data.pipe),
         showMethods: true,
         showProperties: true,
+        contextLine: data.pipe?.name ? '{{ value | ' + data.pipe.name + ' }}' : undefined,
         showStandaloneBadge: true,
         showJsdocBadges: true,
     });

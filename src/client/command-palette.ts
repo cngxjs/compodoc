@@ -231,7 +231,7 @@ const search = async (query: string) => {
            role="option" aria-selected="${i === 0}" data-index="${i}" style="--i:${i}">
             ${resultIcon(r.type)}
             <span class="cdx-cp-name">${highlightMatch(r.name, searchQuery)}</span>
-            <span class="cdx-cp-type">${typeLabel(r.type)}</span>
+            <span class="${entityClass(r.type) !== 'other' ? `cdx-badge cdx-badge--entity-${entityClass(r.type)}` : ''} cdx-cp-type">${typeLabel(r.type)}</span>
         </a>
     `
         )

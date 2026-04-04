@@ -35,6 +35,7 @@ export const InjectablePage = (data: any): string =>
         showMethods: true,
         showProperties: true,
         showAccessors: true,
+        contextLine: data.injectable?.providedIn ? 'providedIn: ' + JSON.stringify(data.injectable.providedIn) : undefined,
         showTokenBadge: true,
         showJsdocBadges: true,
         metadataHtml: TokenMetadata(data.injectable),
