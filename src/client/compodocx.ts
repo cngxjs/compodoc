@@ -6,6 +6,7 @@ import { initRouter } from './router';
 import { initCommandPalette } from './command-palette';
 import { initGraphs } from './graphs';
 import { initStackblitz } from './stackblitz';
+// import { initToc } from './toc';
 
 // Theme must run before DOMContentLoaded to prevent flash
 initTheme();
@@ -18,4 +19,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initCommandPalette();
     initGraphs();
     initStackblitz();
+    // initToc(); // TODO: enable when ToC styling is finalized
 });

@@ -62,6 +62,10 @@ const initSvgPanZoom = async () => {
     const svgEl = container.querySelector('svg');
     if (!svgEl) return;
 
+    // A11y: mark graph as decorative image with label
+    svgEl.setAttribute('role', 'img');
+    svgEl.setAttribute('aria-label', 'Module dependency graph');
+
     const { zoom, select, zoomIdentity } = await loadD3();
 
     const svgSelection = select(svgEl);
@@ -95,11 +99,15 @@ const initSvgPanZoom = async () => {
 
     svgSelection.call(zoomBehavior);
 
-    // Wire zoom buttons
+    // Wire zoom buttons + a11y labels
     const zoomIn = document.getElementById('zoom-in');
     const zoomOut = document.getElementById('zoom-out');
     const reset = document.getElementById('reset');
     const fullscreen = document.getElementById('fullscreen');
+
+    zoomIn?.setAttribute('aria-label', 'Zoom in');
+    zoomOut?.setAttribute('aria-label', 'Zoom out');
+    reset?.setAttribute('aria-label', 'Reset zoom');
 
     zoomIn?.addEventListener('click', e => {
         e.preventDefault();
@@ -188,7 +196,9 @@ const initRoutesGraph = async () => {
         .append('svg')
         .attr('id', 'main')
         .attr('width', width + 40)
-        .attr('height', height + 40);
+        .attr('height', height + 40)
+        .attr('role', 'img')
+        .attr('aria-label', 'Application routes graph');
 
     const g = svg.append('g').attr('transform', 'translate(20,20)');
 
@@ -383,7 +393,7 @@ const initDomTree = async () => {
 
     const treeTab = document.getElementById('tree-tab');
 
-    const { select, tree, hierarchy, linkVertical } = await loadD3();
+    const { select, tree, hierarchy, linkVertical, zoom, zoomIdentity } = await loadD3();
 
     const renderTree = () => {
         container.innerHTML = '';
@@ -391,16 +401,21 @@ const initDomTree = async () => {
         const root = hierarchy(data);
 
         const nodeCount = root.descendants().length;
-        const width = Math.max(600, container.clientWidth);
-        const height = Math.max(400, nodeCount * 50);
+        const layoutWidth = Math.max(600, nodeCount * 80);
+        const layoutHeight = Math.max(400, nodeCount * 50);
 
-        container.style.height =
-            (document.querySelector('.content') as HTMLElement)?.offsetHeight - 140 + 'px';
-
-        const treeLayout = tree<TreeNode>().size([width - 100, height - 100]);
+        const treeLayout = tree<TreeNode>().size([layoutWidth - 100, layoutHeight - 100]);
         treeLayout(root);
 
-        const svg = select(container).append('svg').attr('width', width).attr('height', height);
+        // Use viewBox for responsive sizing + D3 zoom for pan/zoom
+        const svg = select(container).append('svg')
+            .attr('role', 'img')
+            .attr('aria-label', 'Component DOM tree')
+            .style('width', '100%')
+            .style('height', '450px')
+            .style('border', '1px solid var(--color-cdx-border)')
+            .style('border-radius', '6px')
+            .style('cursor', 'grab');
 
         const g = svg.append('g').attr('transform', 'translate(50,30)');
 
@@ -464,11 +479,29 @@ const initDomTree = async () => {
             }
         });
 
-        // Resize SVG to fit
+        // Enable D3 zoom + fit to view
         const gNode = g.node();
         if (gNode) {
             const bbox = gNode.getBBox();
-            svg.attr('width', bbox.width + 100).attr('height', bbox.height + 60);
+            const svgWidth = container.clientWidth;
+            const svgHeight = 450;
+            const pad = 20;
+
+            const zoomBehavior = zoom<SVGSVGElement, unknown>()
+                .scaleExtent([0.2, 4])
+                .on('zoom', event => {
+                    g.attr('transform', event.transform);
+                });
+            svg.call(zoomBehavior);
+
+            // Calculate scale to fit entire tree with padding
+            const scale = Math.min(
+                svgWidth / (bbox.width + pad * 2),
+                svgHeight / (bbox.height + pad * 2)
+            ) * 0.85;
+            const tx = (svgWidth - bbox.width * scale) / 2 - bbox.x * scale;
+            const ty = (svgHeight - bbox.height * scale) / 2 - bbox.y * scale;
+            svg.call(zoomBehavior.transform, zoomIdentity.translate(tx, ty).scale(scale));
         }
     };
 
@@ -478,6 +511,15 @@ const initDomTree = async () => {
     // Re-render when tree tab is clicked
     treeTab?.addEventListener('click', () => {
         setTimeout(renderTree, 200);
+    });
+
+    // Re-render on resize (debounced)
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (container.offsetParent) renderTree();
+        }, 250);
     });
 };
 

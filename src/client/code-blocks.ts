@@ -4,8 +4,19 @@
  */
 
 export const initCodeBlocks = () => {
-    // Add copy buttons to all code blocks
+    // Add a11y attributes and copy buttons to all code blocks
     document.querySelectorAll<HTMLElement>('.compodoc-sourcecode pre').forEach(pre => {
+        // A11y: make code blocks focusable and labelled
+        if (!pre.hasAttribute('role')) {
+            pre.setAttribute('tabindex', '0');
+            pre.setAttribute('role', 'region');
+            pre.setAttribute('aria-label', 'Source code');
+        }
+        // Hide line numbers from screen readers
+        pre.querySelectorAll('.line-number, .line-numbers-rows span').forEach(el => {
+            el.setAttribute('aria-hidden', 'true');
+        });
+
         // Skip if already has a copy button
         if (pre.querySelector('.cdx-code-copy')) return;
 

@@ -7,6 +7,7 @@
 import { initTabs } from './tabs';
 import { initCodeBlocks } from './code-blocks';
 import { initGraphs } from './graphs';
+// import { initToc } from './toc';
 
 const CONTENT_SELECTOR = '.content-data';
 
@@ -65,6 +66,7 @@ const reinitPage = async () => {
     initTabs();
     initCodeBlocks();
     initGraphs();
+    // initToc();
 };
 
 /** Update sidebar active state */

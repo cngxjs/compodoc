@@ -15,8 +15,9 @@ const applyDarkMode = (dark: boolean) => {
     document.querySelectorAll<HTMLInputElement>('.dark-mode-switch input').forEach(el => {
         el.checked = dark;
     });
-    document.querySelectorAll('.dark-mode-switch').forEach(el => {
+    document.querySelectorAll<HTMLElement>('.dark-mode-switch').forEach(el => {
         el.classList.toggle('dark', dark);
+        el.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
     });
     try {
         localStorage.setItem(STORAGE_KEY, String(dark));
