@@ -211,7 +211,7 @@ export const Menu = (props: MenuProps): string => {
                     {d.customLogo ? (
                         <a href="index.html" data-type="index-link">
                             <img
-                                alt=""
+                                alt={d.documentationMainName}
                                 class="img-responsive"
                                 data-type="custom-logo"
                                 data-src={stripUrl('images/', d.customLogo)}
@@ -225,7 +225,7 @@ export const Menu = (props: MenuProps): string => {
                 </li>
 
                 <li class="divider"></li>
-                {!d.disableSearch && SearchInput()}
+                {!d.disableSearch && <li class="search-wrapper">{SearchInput()}</li>}
 
                 {/* Getting Started */}
                 <li class="chapter">
@@ -322,6 +322,7 @@ export const Menu = (props: MenuProps): string => {
                                         >
                                             <div
                                                 class="menu-toggler linked"
+                                                role="button"
                                                 data-cdx-toggle="collapse"
                                                 data-cdx-target={`#additional-page-${page.id}`}
                                                 aria-expanded="false"
@@ -375,6 +376,7 @@ export const Menu = (props: MenuProps): string => {
                         <a data-type="chapter-link" href="modules.html">
                             <div
                                 class="menu-toggler linked"
+                                role="button"
                                 data-cdx-toggle="collapse"
                                 data-cdx-target="#modules-links"
                                 aria-expanded={isToggled('modules') ? 'true' : 'false'}
@@ -624,12 +626,14 @@ export const Menu = (props: MenuProps): string => {
                                         data-src="images/compodoc-vectorise-inverted.png"
                                         class="img-responsive"
                                         data-type="compodoc-logo"
+                                        alt="Compodoc logo"
                                     />
                                 ) : (
                                     <img
                                         data-src="images/compodoc-vectorise.png"
                                         class="img-responsive"
                                         data-type="compodoc-logo"
+                                        alt="Compodoc logo"
                                     />
                                 )}
                             </a>

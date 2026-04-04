@@ -21,7 +21,7 @@ type BlockIndexProps = {
 const IndexGroup = (props: { title: string; items: IndexItem[]; showModifiers?: boolean }): string => {
     if (!props.items?.length) return '';
     return (<>
-        <h6><b>{t(props.title)}</b></h6>
+        <h4><b>{t(props.title)}</b></h4>
         <ul class="index-list">
             {props.items.map(item => (
                 <li>
@@ -63,7 +63,7 @@ export const BlockIndex = (props: BlockIndexProps): string => {
                     {IndexGroup({ title: 'hostbindings', items: props.hostBindings ?? [] })}
                     {IndexGroup({ title: 'hostlisteners', items: props.hostListeners ?? [] })}
                     {accessorEntries.length > 0 && (<>
-                        <h6><b>{t('accessors')}</b></h6>
+                        <h4><b>{t('accessors')}</b></h4>
                         <ul class="index-list">
                             {accessorEntries.map(([key, acc]) => (
                                 <li>

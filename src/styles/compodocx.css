@@ -18,7 +18,7 @@
   /* --- Text hierarchy --- */
   --color-cdx-text:           hsl(220 20% 14%);
   --color-cdx-text-secondary: hsl(220 12% 44%);
-  --color-cdx-text-muted:     hsl(220 10% 62%);
+  --color-cdx-text-muted:     hsl(220 10% 46%);
   --color-cdx-text-inverse:   hsl(220 16% 96%);
 
   /* --- Primary accent --- */
@@ -1449,7 +1449,7 @@ table.params td { padding: 4px; border: solid 1px var(--color-cdx-border); }
 table.params td p { margin: 0; }
 
 /* Modifiers */
-.modifier { background: #9a9a9a; padding: 1px 5px; color: white; border-radius: 4px; }
+.modifier { background: #636363; padding: 1px 5px; color: white; border-radius: 4px; }
 .modifier:empty { display: none; }
 
 /* Routes graph */
