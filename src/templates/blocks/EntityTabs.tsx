@@ -1,6 +1,8 @@
 import Html from '@kitajs/html';
-import { isInitialTab, isTabEnabled, t } from '../helpers';
+import { extractReadmeHeadings, isInitialTab, isReadmeEmpty, isTabEnabled, t } from '../helpers';
 import { highlightCode } from '../../app/engines/syntax-highlight.engine';
+import { EmptyState } from '../components/EmptyState';
+import { EmptyIconBook, EmptyIconFile } from '../components/EmptyStateIcons';
 
 type Tab = {
     readonly id: string;
@@ -45,14 +47,20 @@ export const EntityTabs = (props: EntityTabsProps): string => (<>
         {isTabEnabled(props.navTabs, 'readme') && (
             <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'readme') ? ' active' : ''}`}
                 id="readme" role="tabpanel" aria-labelledby="readme-tab">
-                <p>{props.readme}</p>
+                {isReadmeEmpty(props.readme)
+                    ? <>{extractReadmeHeadings(props.readme)}{EmptyState({ icon: EmptyIconBook(), title: t('empty-readme-title'), description: t('empty-readme-desc'), variant: 'full' })}</>
+                    : <p>{props.readme}</p>
+                }
             </div>
         )}
 
         {isTabEnabled(props.navTabs, 'source') && (
             <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'source') ? ' active' : ''} tab-source-code`}
                 id="source" role="tabpanel" aria-labelledby="source-tab">
-                <div class="compodoc-sourcecode">{highlightCode(props.sourceCode ?? '', 'typescript')}</div>
+                {props.sourceCode
+                    ? <div class="compodoc-sourcecode">{highlightCode(props.sourceCode, 'typescript')}</div>
+                    : EmptyState({ icon: EmptyIconFile(), title: t('empty-source-title'), description: t('empty-source-desc'), variant: 'full' })
+                }
             </div>
         )}
 

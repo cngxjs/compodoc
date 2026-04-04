@@ -8,6 +8,8 @@ import {
     linkTypeHtml,
     parseDescription,
     relativeUrl,
+    extractReadmeHeadings,
+    isReadmeEmpty,
     t
 } from '../helpers';
 import { BlockAccessors } from '../blocks/BlockAccessors';
@@ -19,6 +21,8 @@ import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
+import { EmptyState } from '../components/EmptyState';
+import { EmptyIconBook, EmptyIconHtml, EmptyIconPalette, EmptyIconTree } from '../components/EmptyStateIcons';
 
 const escapeSimpleQuote = (text: string): string => {
     if (!text) return '';
@@ -359,13 +363,13 @@ const InfoContent = (data: any): string => {
                     navTabs: data.navTabs
                 })}
             {isInfoSection('inputs') &&
-                c.inputsClass &&
+                c.inputsClass?.length > 0 &&
                 BlockInput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
             {isInfoSection('outputs') &&
-                c.outputsClass &&
+                c.outputsClass?.length > 0 &&
                 BlockOutput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
             {isInfoSection('hostBindings') &&
-                c.hostBindings &&
+                c.hostBindings?.length > 0 &&
                 BlockProperty({
                     properties: c.hostBindings,
                     file: c.file,
@@ -374,7 +378,7 @@ const InfoContent = (data: any): string => {
                     navTabs: data.navTabs
                 })}
             {isInfoSection('hostListeners') &&
-                c.hostListeners &&
+                c.hostListeners?.length > 0 &&
                 BlockMethod({
                     methods: c.hostListeners,
                     file: c.file,
@@ -383,7 +387,7 @@ const InfoContent = (data: any): string => {
                     navTabs: data.navTabs
                 })}
             {isInfoSection('methods') &&
-                c.methodsClass &&
+                c.methodsClass?.length > 0 &&
                 BlockMethod({
                     methods: c.methodsClass,
                     file: c.file,
@@ -391,7 +395,7 @@ const InfoContent = (data: any): string => {
                     navTabs: data.navTabs
                 })}
             {isInfoSection('properties') &&
-                c.propertiesClass &&
+                c.propertiesClass?.length > 0 &&
                 BlockProperty({
                     properties: c.propertiesClass,
                     file: c.file,
@@ -399,7 +403,7 @@ const InfoContent = (data: any): string => {
                     navTabs: data.navTabs
                 })}
             {isInfoSection('accessors') &&
-                c.accessors &&
+                c.accessors && Object.keys(c.accessors).length > 0 &&
                 BlockAccessors({
                     accessors: c.accessors,
                     file: c.file,
@@ -477,7 +481,10 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="readme-tab"
                     >
-                        <p>{c.readme}</p>
+                        {isReadmeEmpty(c.readme)
+                            ? <>{extractReadmeHeadings(c.readme)}{EmptyState({ icon: EmptyIconBook(), title: t('empty-readme-title'), description: t('empty-readme-desc'), variant: 'full' })}</>
+                            : <p>{c.readme}</p>
+                        }
                     </div>
                 )}
 
@@ -501,9 +508,10 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="templateData-tab"
                     >
-                        <pre class="line-numbers">
-                            <code class="language-html">{c.templateData}</code>
-                        </pre>
+                        {c.templateData?.trim()
+                            ? <pre class="line-numbers"><code class="language-html">{c.templateData}</code></pre>
+                            : EmptyState({ icon: EmptyIconHtml(), title: t('empty-template-title'), description: t('empty-template-desc'), variant: 'full' })
+                        }
                     </div>
                 )}
 
@@ -514,8 +522,8 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="styleData-tab"
                     >
-                        {c.styleUrlsData?.length > 0 &&
-                            c.styleUrlsData.map((s: any) => (
+                        {c.styleUrlsData?.length > 0
+                            ? c.styleUrlsData.map((s: any) => (
                                 <>
                                     <p class="comment">
                                         <code>{s.styleUrl}</code>
@@ -524,12 +532,16 @@ export const ComponentPage = (data: any): string => {
                                         <code class="language-scss">{s.data}</code>
                                     </pre>
                                 </>
-                            ))}
+                            ))
+                            : ''}
                         {c.stylesData && c.stylesData !== '' && (
                             <pre class="line-numbers">
                                 <code class="language-scss">{c.stylesData}</code>
                             </pre>
                         )}
+                        {!(c.styleUrlsData?.length > 0) && !(c.stylesData && c.stylesData !== '') &&
+                            EmptyState({ icon: EmptyIconPalette(), title: t('empty-styles-title'), description: t('empty-styles-desc'), variant: 'full' })
+                        }
                     </div>
                 )}
 
@@ -540,7 +552,11 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="tree-tab"
                     >
-                        <div id="tree-container"></div>
+                        <div id="tree-container">
+                            {!(c.template || c.templateData) &&
+                                EmptyState({ icon: EmptyIconTree(), title: t('empty-dom-tree-title'), description: t('empty-dom-tree-desc'), variant: 'full' })
+                            }
+                        </div>
                         <div class="tree-legend">
                             <div class="title">
                                 <b>{t('legend')}</b>

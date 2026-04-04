@@ -17,6 +17,8 @@ import { BlockMethod } from '../blocks/BlockMethod';
 import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { EntityTabs } from '../blocks/EntityTabs';
+import { EmptyState } from '../components/EmptyState';
+import { EmptyIconDocument } from '../components/EmptyStateIcons';
 
 /**
  * Shared info-tab sections for class-like entities
@@ -46,8 +48,38 @@ export type EntityInfoProps = {
     readonly showJsdocBadges?: boolean;
 };
 
+const hasMembers = (e: any): boolean =>
+    !!(e.constructorObj ||
+       e.inputsClass?.length ||
+       e.outputsClass?.length ||
+       e.hostBindings?.length ||
+       e.hostListeners?.length ||
+       (e.methodsClass ?? e.methods)?.length ||
+       (e.propertiesClass ?? e.properties)?.length ||
+       e.indexSignatures?.length ||
+       (e.accessors && Object.keys(e.accessors).length) ||
+       e.description ||
+       e.extends?.length ||
+       e.implements?.length);
+
 const InfoContent = (props: EntityInfoProps): string => {
     const e = props.entity;
+
+    if (!hasMembers(e)) {
+        return (<>
+            {isInfoSection('file') && !props.disableFilePath && (<>
+                <p class="comment"><h3>{t('file')}</h3></p>
+                <p class="comment"><code>{e.file}</code></p>
+            </>)}
+            {EmptyState({
+                icon: EmptyIconDocument(),
+                title: t('empty-entity-title'),
+                description: t('empty-entity-desc', { entityType: t(props.entityKey) }),
+                variant: 'page',
+            })}
+        </>) as string;
+    }
+
     return (<>
         {isInfoSection('file') && !props.disableFilePath && (<>
             <p class="comment"><h3>{t('file')}</h3></p>

@@ -18,3 +18,17 @@ export { relativeUrl } from './relative-url';
 export { shortUrl } from './short-url';
 export { isInfoSection, isInitialTab, isTabEnabled } from './tab-helpers';
 export { t } from './i18n';
+
+/** A readme that is only a heading (no paragraphs, lists, code blocks) is treated as empty. */
+export const isReadmeEmpty = (readme: string | undefined): boolean => {
+    if (!readme) return true;
+    const stripped = readme.replace(/<h[1-6][^>]*>.*?<\/h[1-6]>/gi, '').replace(/<[^>]+>/g, '').trim();
+    return stripped.length === 0;
+};
+
+/** Extract heading HTML from readme (shown above empty state when readme is heading-only). */
+export const extractReadmeHeadings = (readme: string | undefined): string => {
+    if (!readme) return '';
+    const headings = readme.match(/<h[1-6][^>]*>.*?<\/h[1-6]>/gi);
+    return headings ? headings.join('') : '';
+};

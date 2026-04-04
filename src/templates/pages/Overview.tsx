@@ -1,6 +1,8 @@
 import Html from '@kitajs/html';
 import { t } from '../helpers';
 import { iconFor } from '../components/Icons';
+import { EmptyState } from '../components/EmptyState';
+import { EmptyIconDashboard } from '../components/EmptyStateIcons';
 
 type OverviewCard = {
     readonly icon: string;
@@ -106,9 +108,10 @@ export const Overview = (props: OverviewProps): string => {
             </div>
         )}
         <div class="tab-content overview">
-            <div class="row">
-                {cards.map(card => Card(card))}
-            </div>
+            {cards.length > 0
+                ? <div class="row">{cards.map(card => Card(card))}</div>
+                : EmptyState({ icon: EmptyIconDashboard(), title: t('empty-overview-title'), description: t('empty-overview-desc'), action: { label: t('empty-overview-action'), href: 'https://compodocx.dev/guide/getting-started' }, variant: 'page' })
+            }
         </div>
     </>) as string;
 };
