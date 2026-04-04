@@ -1,0 +1,104 @@
+/* Empty state component — three variants: compact, full, page */
+
+/* --- Base --- */
+.cdx-empty-state {
+    @apply text-center;
+    color: var(--color-cdx-text-muted);
+}
+
+/* --- Compact: inline row for member sections --- */
+.cdx-empty-state--compact {
+    @apply flex items-center gap-2 rounded-md px-3;
+    height: 40px;
+    background: var(--color-cdx-bg-alt);
+    font-size: var(--cdx-text-sm, 0.8125rem);
+}
+
+/* --- Full: centered column for empty tabs/listings --- */
+.cdx-empty-state--full {
+    @apply flex flex-col items-center justify-center;
+    padding: 48px 24px;
+}
+
+/* --- Page: fills content area for bare pages --- */
+.cdx-empty-state--page {
+    @apply flex flex-col items-center justify-center;
+    min-height: 400px;
+}
+
+/* --- Icon sizing per variant --- */
+.cdx-empty-state-icon {
+    color: var(--color-cdx-text-muted);
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.cdx-empty-state--compact .cdx-empty-state-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.cdx-empty-state--full .cdx-empty-state-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+}
+
+.cdx-empty-state--page .cdx-empty-state-icon {
+    width: 80px;
+    height: 80px;
+    padding: 20px;
+    margin-bottom: 24px;
+    background: var(--color-cdx-bg-alt);
+    border-radius: 9999px;
+}
+
+/* --- Title --- */
+.cdx-empty-state-title {
+    font-weight: 600;
+    color: var(--color-cdx-text-secondary);
+    margin: 0;
+}
+
+.cdx-empty-state--full .cdx-empty-state-title {
+    font-size: var(--cdx-text-lg, 1.125rem);
+}
+
+.cdx-empty-state--page .cdx-empty-state-title {
+    font-size: var(--cdx-text-2xl, 1.5rem);
+}
+
+/* --- Description --- */
+.cdx-empty-state-description {
+    color: var(--color-cdx-text-muted);
+    max-width: 360px;
+    margin: 8px 0 0;
+}
+
+/* --- Action link/button --- */
+.cdx-empty-state-action {
+    color: var(--color-cdx-primary);
+    margin-top: 12px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.cdx-empty-state-action:hover {
+    color: var(--color-cdx-primary-hover);
+    text-decoration: underline;
+}
+
+.cdx-empty-state--page .cdx-empty-state-action {
+    @apply rounded-md px-4 py-2;
+    border: 1px solid var(--color-cdx-primary);
+}
+
+.cdx-empty-state--page .cdx-empty-state-action:hover {
+    background: var(--color-cdx-primary-subtle);
+    text-decoration: none;
+}
+
+/* --- Dark mode: page icon circle uses elevated bg --- */
+.dark .cdx-empty-state--page .cdx-empty-state-icon {
+    background: var(--color-cdx-bg-elevated);
+}
