@@ -200,7 +200,7 @@ const initRoutesGraph = async () => {
         .append('path')
         .attr('class', 'link')
         .attr('fill', 'none')
-        .attr('stroke', '#ccc')
+        .attr('stroke', 'var(--color-cdx-border, #ccc)')
         .attr('stroke-width', 1.5)
         .attr(
             'd',
@@ -228,6 +228,16 @@ const initRoutesGraph = async () => {
         )
         .attr('class', (d: any) => (d.children ? 'icon has-children' : 'icon'));
 
+    // Native SVG tooltip
+    node.append('title').text((d: any) => {
+        const parts = [d.data.path || d.data.name];
+        if (d.data.component) parts.push(`Component: ${d.data.component}`);
+        if (d.data.module) parts.push(`Module: ${d.data.module}`);
+        if (d.data.guarded) parts.push('Guarded');
+        if (d.data.redirectTo) parts.push(`→ ${d.data.redirectTo}`);
+        return parts.join('\n');
+    });
+
     // Node text
     node.append('text')
         .attr('x', 0)
@@ -237,16 +247,16 @@ const initRoutesGraph = async () => {
         .attr('text-anchor', 'start')
         .html((d: any) => buildNodeLabel(d.data));
 
-    // Lazy load icon
+    // Route indicator icons (unicode, replaces Ionicons)
     node.append('text')
         .attr('y', 45)
         .attr('x', -18)
-        .attr('font-family', 'Ionicons')
         .attr('class', 'icon')
-        .attr('font-size', '15px')
+        .attr('font-size', '13px')
+        .attr('fill', 'var(--color-cdx-text-muted, #888)')
         .text((d: any) => {
-            if (d.data.loadChildren || d.data.loadComponent) return '\uf4c1';
-            if (d.data.guarded) return '\uf1b0';
+            if (d.data.loadChildren || d.data.loadComponent) return '\u21BB'; // ↻ lazy
+            if (d.data.guarded) return '\u26A0'; // ⚠ guarded
             return '';
         });
 
@@ -260,8 +270,8 @@ const initRoutesGraph = async () => {
             rect.setAttribute('height', String(bbox.height));
             rect.setAttribute('x', String(bbox.x));
             rect.setAttribute('y', String(bbox.y));
-            rect.style.fill = 'white';
-            rect.style.fillOpacity = '0.75';
+            rect.style.fill = 'var(--color-cdx-bg, white)';
+            rect.style.fillOpacity = '0.85';
             this.insertBefore(rect, text);
         });
     });
@@ -407,7 +417,8 @@ const initDomTree = async () => {
             .style('width', '100%')
             .style('height', '450px')
             .style('border', '1px solid var(--color-cdx-border)')
-            .style('border-radius', '6px')
+            .style('border-radius', 'var(--radius-cdx-lg, 12px)')
+            .style('background', 'var(--color-cdx-bg-alt)')
             .style('cursor', 'grab');
 
         const g = svg.append('g').attr('transform', 'translate(50,30)');
@@ -419,7 +430,7 @@ const initDomTree = async () => {
             .append('path')
             .attr('class', 'tree-link')
             .attr('fill', 'none')
-            .attr('stroke', '#ccc')
+            .attr('stroke', 'var(--color-cdx-border, #ccc)')
             .attr('stroke-width', 1.5)
             .attr(
                 'd',
@@ -438,7 +449,7 @@ const initDomTree = async () => {
             .attr('transform', (d: any) => `translate(${d.x},${d.y})`)
             .style('cursor', (d: any) => (d.data.isComponent ? 'pointer' : 'default'));
 
-        // Node circles
+        // Node ellipses — entity-color tokens
         node.append('ellipse')
             .attr('rx', (d: any) => {
                 const label = d.data.name;
@@ -446,19 +457,31 @@ const initDomTree = async () => {
             })
             .attr('ry', 15)
             .attr('fill', (d: any) => {
-                if (d.data.isComponent) return '#FB7E81';
-                if (d.data.isDirective) return '#FF9800';
-                return '#D2E5FF';
+                if (d.data.isComponent) return 'var(--color-cdx-entity-component, #14b8a6)';
+                if (d.data.isDirective) return 'var(--color-cdx-entity-directive, #7c3aed)';
+                return 'var(--color-cdx-bg-elevated, #D2E5FF)';
             })
-            .attr('stroke', '#ccc');
+            .attr('stroke', 'var(--color-cdx-border, #ccc)');
 
-        // Node labels
+        // Native SVG tooltip
+        node.append('title').text((d: any) => {
+            if (d.data.isComponent && d.data.componentName) return `${d.data.name} (${d.data.componentName})`;
+            if (d.data.isDirective && d.data.componentName) return `${d.data.name} [${d.data.componentName}]`;
+            return d.data.name;
+        });
+
+        // Node labels — white on colored entity nodes, dark on plain HTML
         node.append('text')
             .attr('dy', 4)
             .attr('text-anchor', 'middle')
             .attr('font-size', '12px')
+            .attr('fill', (d: any) =>
+                d.data.isComponent || d.data.isDirective
+                    ? 'white'
+                    : 'var(--color-cdx-text, #1a1a2e)'
+            )
             .attr('font-weight', (d: any) =>
-                d.data.isComponent || d.data.isDirective ? 'bold' : 'normal'
+                d.data.isComponent || d.data.isDirective ? '600' : 'normal'
             )
             .text((d: any) => d.data.name);
 
