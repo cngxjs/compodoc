@@ -97,6 +97,8 @@
 /* ---- Metadata card ---- */
 
 .cdx-metadata-card {
+  display: grid;
+  grid-template-columns: max-content 1fr;
   border: 1px solid var(--color-cdx-border);
   border-radius: var(--radius-cdx-lg);
   background: var(--color-cdx-bg-alt);
@@ -107,7 +109,8 @@
 
 .cdx-metadata-row {
   display: grid;
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
   gap: 0 16px;
   padding: 8px 20px;
   align-items: baseline;
