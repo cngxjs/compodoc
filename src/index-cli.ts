@@ -212,6 +212,15 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 '--stackblitzTemplate [template]',
                 'StackBlitz project template ID for examples'
             )
+            .option(
+                '--groupBy [strategy]',
+                'Sidebar grouping strategy: folder, category, none (default: auto-detect)'
+            )
+            .option(
+                '--groupDepth [depth]',
+                'Max folder depth for group names',
+                '2'
+            )
             .allowExcessArguments()
             .parse(process.argv);
 
@@ -722,6 +731,20 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.stackblitzTemplate) {
             Configuration.mainData.stackblitzTemplate = programOptions.stackblitzTemplate;
+        }
+
+        if (configFile.groupBy) {
+            Configuration.mainData.groupBy = configFile.groupBy;
+        }
+        if (programOptions.groupBy) {
+            Configuration.mainData.groupBy = programOptions.groupBy;
+        }
+
+        if (configFile.groupDepth) {
+            Configuration.mainData.groupDepth = Number(configFile.groupDepth);
+        }
+        if (programOptions.groupDepth && programOptions.groupDepth !== '2') {
+            Configuration.mainData.groupDepth = Number(programOptions.groupDepth);
         }
 
         if (configFile.files) {

@@ -101,5 +101,7 @@ export interface MainDataInterface {
     categorizedGuards: Record<string, unknown[]>;
     categorizedInterceptors: Record<string, unknown[]>;
     categorizedEntities: Record<string, unknown[]>;
+    groupBy: 'folder' | 'category' | 'none' | '';
+    groupDepth: number;
     generatedAt: string;
 }

@@ -108,6 +108,8 @@ export class Configuration implements ConfigurationInterface {
         categorizedGuards: {},
         categorizedInterceptors: {},
         categorizedEntities: {},
+        groupBy: '',
+        groupDepth: 2,
         generatedAt: ''
     };
 

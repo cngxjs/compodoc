@@ -1,3 +1,4 @@
+import Configuration from '../configuration';
 import { MiscellaneousData } from '../interfaces/miscellaneous-data.interface';
 import { ParsedData } from '../interfaces/parsed-data.interface';
 import { RouteInterface } from '../interfaces/routes.interface';
@@ -22,6 +23,30 @@ import traverse from 'neotraverse/legacy';
 import { IComponentDep } from '../compiler/angular/deps/component-dep.factory';
 import { IDirectiveDep } from '../compiler/angular/deps/directive-dep.factory';
 import { IModuleDep } from '../compiler/angular/deps/module-dep.factory';
+
+function deriveGroupKey(filePath: string, maxDepth: number): string {
+    if (!filePath) return '';
+
+    // Normalize path separators
+    let rel = filePath.replace(/\\/g, '/');
+
+    // Strip everything up to and including a known app root marker
+    for (const marker of ['src/app/', 'src/', 'app/', 'lib/']) {
+        const idx = rel.indexOf(marker);
+        if (idx !== -1) {
+            rel = rel.slice(idx + marker.length);
+            break;
+        }
+    }
+
+    // Take parent directory segments (exclude filename)
+    const segments = rel.split('/').slice(0, -1);
+    if (segments.length === 0) return '';
+
+    // Limit to maxDepth
+    const groupSegments = segments.slice(0, maxDepth);
+    return groupSegments.join('/');
+}
 
 export class DependenciesEngine {
     public rawData: ParsedData;
@@ -456,24 +481,56 @@ export class DependenciesEngine {
         this.miscellaneous.groupedTypeAliases = this.miscellaneous.typealiases.reduce((groups, item) => { (groups[item.file] ??= []).push(item); return groups; }, {});
     }
 
-    private groupByCategory(items: any[]): { [category: string]: any[] } {
-        const hasAnyCategory = items.some(item => item.category && item.category !== '');
-        if (!hasAnyCategory) {
-            return {};
+    private groupByStrategy(items: any[], strategy: string, depth: number): Record<string, any[]> {
+        if (strategy === 'none' || !strategy) return {};
+
+        if (strategy === 'category') {
+            const hasAnyCategory = items.some(item => item.category && item.category !== '');
+            if (!hasAnyCategory) return {};
+            return items.reduce((groups, item) => {
+                const k = item.category || '';
+                (groups[k] ??= []).push(item);
+                return groups;
+            }, {} as Record<string, any[]>);
         }
-        return items.reduce((groups, item) => { const k = item.category || ''; (groups[k] ??= []).push(item); return groups; }, {});
+
+        // strategy === 'folder'
+        const groups: Record<string, any[]> = {};
+        for (const item of items) {
+            // Explicit @category always wins
+            if (item.category && item.category !== '') {
+                (groups[item.category] ??= []).push(item);
+                continue;
+            }
+            const key = deriveGroupKey(item.file, depth);
+            if (key) {
+                (groups[key] ??= []).push(item);
+            }
+        }
+
+        // Fold single-item groups into flat list
+        const folded: Record<string, any[]> = {};
+        for (const [key, groupItems] of Object.entries(groups)) {
+            if (groupItems.length > 1) {
+                folded[key] = groupItems;
+            }
+        }
+
+        return Object.keys(folded).length > 0 ? folded : {};
     }
 
     private prepareCategoryGroups() {
-        this.categorizedComponents = this.groupByCategory(this.components as any[]);
-        this.categorizedDirectives = this.groupByCategory(this.directives as any[]);
-        this.categorizedInjectables = this.groupByCategory(this.injectables as any[]);
-        this.categorizedPipes = this.groupByCategory(this.pipes as any[]);
-        this.categorizedClasses = this.groupByCategory(this.classes as any[]);
-        this.categorizedInterfaces = this.groupByCategory(this.interfaces as any[]);
-        this.categorizedGuards = this.groupByCategory(this.guards as any[]);
-        this.categorizedInterceptors = this.groupByCategory(this.interceptors as any[]);
-        this.categorizedEntities = this.groupByCategory(this.entities as any[]);
+        const strategy = Configuration.mainData.groupBy;
+        const depth = Configuration.mainData.groupDepth;
+        this.categorizedComponents = this.groupByStrategy(this.components as any[], strategy, depth);
+        this.categorizedDirectives = this.groupByStrategy(this.directives as any[], strategy, depth);
+        this.categorizedInjectables = this.groupByStrategy(this.injectables as any[], strategy, depth);
+        this.categorizedPipes = this.groupByStrategy(this.pipes as any[], strategy, depth);
+        this.categorizedClasses = this.groupByStrategy(this.classes as any[], strategy, depth);
+        this.categorizedInterfaces = this.groupByStrategy(this.interfaces as any[], strategy, depth);
+        this.categorizedGuards = this.groupByStrategy(this.guards as any[], strategy, depth);
+        this.categorizedInterceptors = this.groupByStrategy(this.interceptors as any[], strategy, depth);
+        this.categorizedEntities = this.groupByStrategy(this.entities as any[], strategy, depth);
     }
 
     public getModule(name: string) {

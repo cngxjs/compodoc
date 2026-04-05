@@ -55,4 +55,6 @@ export interface ConfigurationFileInterface {
     infoTabSections: string[];
     stackblitz: boolean;
     stackblitzTemplate: string;
+    groupBy: 'folder' | 'category' | 'none';
+    groupDepth: number;
 }

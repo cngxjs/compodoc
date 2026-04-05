@@ -494,6 +494,12 @@ export class Application {
 
         const dependenciesData = crawler.getDependencies();
 
+        // Auto-detect groupBy if not explicitly set by user
+        if (!Configuration.mainData.groupBy) {
+            const hasModules = dependenciesData.modules && dependenciesData.modules.length > 0;
+            Configuration.mainData.groupBy = hasModules ? 'none' : 'folder';
+        }
+
         DependenciesEngine.init(dependenciesData);
 
         // Inject category groupings for sidebar navigation (used by menu partial)
