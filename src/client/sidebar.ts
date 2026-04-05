@@ -25,7 +25,9 @@ const restoreState = () => {
         const states: Record<string, boolean> = saved ? JSON.parse(saved) : {};
 
         document.querySelectorAll<HTMLElement>('.menu .collapse[id]').forEach(el => {
-            const open = states[el.id] ?? false;
+            // Category sub-groups (inside .chapter.inner) default to open
+            const isSubGroup = el.closest('.chapter.inner') !== null;
+            const open = states[el.id] ?? isSubGroup;
             if (open) {
                 el.classList.add('in');
                 el.style.display = 'block';
@@ -38,7 +40,9 @@ const restoreState = () => {
 };
 
 const toggleCollapse = (targetId: string) => {
-    const target = document.querySelector<HTMLElement>(targetId);
+    // Use getElementById to handle IDs with special chars (e.g. slashes from folder paths)
+    const id = targetId.startsWith('#') ? targetId.slice(1) : targetId;
+    const target = document.getElementById(id) as HTMLElement | null;
     if (!target) return;
 
     const isOpen = target.classList.contains('in');
@@ -97,6 +101,7 @@ const bindTogglers = () => {
 
             if (toggler.classList.contains('simple')) {
                 e.preventDefault();
+                e.stopPropagation();
                 toggleCollapse(target);
             } else if (link && toggler.classList.contains('linked')) {
                 if (clickedEl.classList.contains('link-name')) {

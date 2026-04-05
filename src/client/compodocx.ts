@@ -12,7 +12,7 @@ import { initCoverage } from './coverage';
 // Theme must run before DOMContentLoaded to prevent flash
 initTheme();
 
-document.addEventListener('DOMContentLoaded', () => {
+const init = () => {
     initSidebar();
     initTabs();
     initCodeBlocks();
@@ -22,4 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initStackblitz();
     initCoverage();
     // initToc(); // TODO: enable when ToC styling is finalized
-});
+};
+
+// ESM modules are deferred — DOMContentLoaded may have already fired
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
