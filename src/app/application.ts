@@ -2551,7 +2551,53 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         logger.info('Template playground CSS generated');
     }
 
+    /**
+     * Build the standalone component dependency graph from all components
+     * that have standalone: true and imports.
+     */
+    private buildDependencyGraph() {
+        const components = Configuration.mainData.components as any[] ?? [];
+        const directives = Configuration.mainData.directives as any[] ?? [];
+        const pipes = Configuration.mainData.pipes as any[] ?? [];
+        const modules = Configuration.mainData.modules as any[] ?? [];
+        const injectables = Configuration.mainData.injectables as any[] ?? [];
+
+        // Build a name→type+url lookup for all known entities
+        const entityMap = new Map<string, { type: string; url?: string }>();
+        for (const c of components) entityMap.set(c.name, { type: 'component', url: `./components/${c.name}.html` });
+        for (const d of directives) entityMap.set(d.name, { type: 'directive', url: `./directives/${d.name}.html` });
+        for (const p of pipes) entityMap.set(p.name, { type: 'pipe', url: `./pipes/${p.name}.html` });
+        for (const m of modules) entityMap.set(m.name, { type: 'module', url: `./modules/${m.name}.html` });
+        for (const s of injectables) entityMap.set(s.name, { type: 'injectable', url: `./injectables/${s.name}.html` });
+
+        const nodeSet = new Set<string>();
+        const edges: Array<{ source: string; target: string }> = [];
+
+        for (const comp of components) {
+            if (!comp.standalone || !comp.imports?.length) continue;
+            nodeSet.add(comp.name);
+            for (const imp of comp.imports) {
+                const impName = typeof imp === 'string' ? imp : imp.name;
+                if (!impName) continue;
+                nodeSet.add(impName);
+                edges.push({ source: comp.name, target: impName });
+            }
+        }
+
+        const nodes = Array.from(nodeSet).map(name => {
+            const info = entityMap.get(name);
+            return {
+                name,
+                type: info?.type ?? 'module',
+                url: info?.url
+            };
+        });
+
+        Configuration.mainData.dependencyGraph = { nodes, edges };
+    }
+
     public processPages() {
+        this.buildDependencyGraph();
         Configuration.mainData.generatedAt = new Date().toISOString();
         const pages = [...Configuration.pages].sort((a, b) => a.name.localeCompare(b.name));
 

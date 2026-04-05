@@ -27,6 +27,7 @@ type OverviewProps = {
     readonly angularVersion?: string;
     readonly generatedAt?: string;
     readonly documentationMainName?: string;
+    readonly dependencyGraph?: { nodes: any[]; edges: any[] };
 };
 
 const hasAnyEntities = (props: OverviewProps): boolean =>
@@ -48,6 +49,8 @@ const hasAnyEntities = (props: OverviewProps): boolean =>
 export const Overview = (props: OverviewProps): string => {
     const hasModules = (props.modules?.length ?? 0) > 0;
     const showGraph = !props.disableGraph && !props.disableMainGraph && hasModules;
+    const hasDepGraph = (props.dependencyGraph?.nodes?.length ?? 0) > 0;
+    const showDepGraph = !props.disableGraph && !hasModules && hasDepGraph;
 
     return (
         <>
@@ -78,6 +81,19 @@ export const Overview = (props: OverviewProps): string => {
                     </div>
                 </div>
             )}
+
+            {/* 2b. Dependency Graph (standalone apps without NgModules) */}
+            {showDepGraph && (<>
+                <script>{`window.DEPENDENCY_GRAPH = ${JSON.stringify(props.dependencyGraph)};`}</script>
+                <div class="text-center module-graph-container">
+                    <div id="dependency-graph-container"></div>
+                    <div class="btn-group size-buttons">
+                        <button id="dep-zoom-in" class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
+                        <button id="dep-reset" class="cdx-btn cdx-btn--sm">{t('reset')}</button>
+                        <button id="dep-zoom-out" class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
+                    </div>
+                </div>
+            </>)}
 
             {/* 3. Stats Grid or Empty State */}
             {hasAnyEntities(props)

@@ -322,6 +322,35 @@ export const ComponentPage = (data: any): string => {
     const depth = data.depth;
     const base = relativeUrl(depth);
     const navTabs = data.navTabs;
+    const hasStandaloneImports = c.standalone && c.imports?.length > 0;
+
+    // Build per-component dependency subgraph (center node + its imports)
+    const componentDepGraph = hasStandaloneImports ? (() => {
+        const allComponents = data.components as any[] ?? [];
+        const allDirectives = data.directives as any[] ?? [];
+        const allPipes = data.pipes as any[] ?? [];
+        const allModules = data.modules as any[] ?? [];
+        const allInjectables = data.injectables as any[] ?? [];
+        const entityMap = new Map<string, { type: string; url?: string }>();
+        for (const x of allComponents) entityMap.set(x.name, { type: 'component', url: `${base}components/${x.name}.html` });
+        for (const x of allDirectives) entityMap.set(x.name, { type: 'directive', url: `${base}directives/${x.name}.html` });
+        for (const x of allPipes) entityMap.set(x.name, { type: 'pipe', url: `${base}pipes/${x.name}.html` });
+        for (const x of allModules) entityMap.set(x.name, { type: 'module', url: `${base}modules/${x.name}.html` });
+        for (const x of allInjectables) entityMap.set(x.name, { type: 'injectable', url: `${base}injectables/${x.name}.html` });
+        const nodes = [
+            { name: c.name, type: 'component', url: undefined },
+            ...c.imports.map((imp: any) => {
+                const n = typeof imp === 'string' ? imp : imp.name;
+                const info = entityMap.get(n);
+                return { name: n, type: info?.type ?? 'module', url: info?.url };
+            })
+        ];
+        const edges = c.imports.map((imp: any) => ({
+            source: c.name,
+            target: typeof imp === 'string' ? imp : imp.name
+        }));
+        return { nodes, edges };
+    })() : null;
 
     return (
         <>
@@ -371,6 +400,21 @@ export const ComponentPage = (data: any): string => {
                         </a>
                     </li>
                 ))}
+                {hasStandaloneImports && (
+                    <li role="presentation">
+                        <a
+                            href="#dependencies"
+                            role="tab"
+                            id="dependencies-tab"
+                            aria-selected="false"
+                            aria-controls="dependencies"
+                            tabindex="-1"
+                            data-cdx-toggle="tab"
+                        >
+                            {t('dependencies')}
+                        </a>
+                    </li>
+                )}
             </ul>
 
             <div>
@@ -488,6 +532,17 @@ export const ComponentPage = (data: any): string => {
                     </div>
                 )}
 
+                {hasStandaloneImports && (
+                    <div
+                        class={`cdx-tab-panel`}
+                        id="dependencies"
+                        role="tabpanel"
+                        aria-labelledby="dependencies-tab"
+                    >
+                        <div id="dependency-graph-container"></div>
+                    </div>
+                )}
+
                 {isTabEnabled(navTabs, 'example') && c.exampleUrls && (
                     <div
                         class={`cdx-tab-panel${isInitialTab(navTabs, 'example') ? ' active' : ''}`}
@@ -509,6 +564,7 @@ export const ComponentPage = (data: any): string => {
     window.COMPONENTS = [${(data.components ?? []).map((comp: any) => `{'name': '${comp.name}', 'selector': '${comp.selector}'}`).join(',')}];
     window.DIRECTIVES = [${(data.directives ?? []).map((dir: any) => `{'name': '${dir.name}', 'selector': '${dir.selector}'}`).join(',')}];
     window.ACTUAL_COMPONENT = {'name': '${data.name}'};
+    ${componentDepGraph ? `window.DEPENDENCY_GRAPH = ${JSON.stringify(componentDepGraph)};` : ''}
 `}</script>
         </>
     ) as string;
