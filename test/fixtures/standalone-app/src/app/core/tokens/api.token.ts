@@ -3,7 +3,6 @@ import { InjectionToken } from '@angular/core';
 /**
  * Base URL for the API.
  * @since 1.0.0
- * @category Configuration
  */
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL', {
     providedIn: 'root',
@@ -14,6 +13,5 @@ export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL', {
  * Feature flags for the application.
  * @beta
  * @since 1.1.0
- * @breaking 2.0
  */
 export const FEATURE_FLAGS = new InjectionToken<Record<string, boolean>>('FEATURE_FLAGS');

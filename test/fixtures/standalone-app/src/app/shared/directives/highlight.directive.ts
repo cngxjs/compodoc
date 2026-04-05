@@ -1,11 +1,10 @@
 import { Directive, ElementRef, inject } from '@angular/core';
 
 /**
- * Highlights the host element on hover using modern host metadata.
+ * Highlights the host element on hover.
  *
  * @since 1.0.0
  * @zoneless
- * @group UI Directives
  *
  * @example
  * ```html
@@ -19,12 +18,10 @@ import { Directive, ElementRef, inject } from '@angular/core';
         '(mouseenter)': 'onMouseEnter()',
         '(mouseleave)': 'onMouseLeave()',
         '[class.highlighted]': 'isHighlighted',
-        '[attr.data-highlight]': '"true"',
     },
 })
 export class HighlightDirective {
     private readonly el = inject(ElementRef<HTMLElement>);
-
     isHighlighted = false;
 
     onMouseEnter(): void {

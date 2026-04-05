@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { API_BASE_URL } from '../tokens/api.token';
+import { API_BASE_URL } from '../../core/tokens/api.token';
 
 /**
  * Settings page component.
