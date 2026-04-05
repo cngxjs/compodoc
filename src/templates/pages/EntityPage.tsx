@@ -314,13 +314,7 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">{meta.icon()}</div>
                 <nav aria-label="Breadcrumb">
                     <ol class="cdx-breadcrumb">
-                        <li>
-                            <a
-                                href={`${t(props.breadcrumbLabel).toLowerCase().replaceAll(/\s+/g, '-')}.html`}
-                            >
-                                {t(props.breadcrumbLabel)}
-                            </a>
-                        </li>
+                        <li>{t(props.breadcrumbLabel)}</li>
                         <li aria-current="page">{e.name}</li>
                     </ol>
                 </nav>

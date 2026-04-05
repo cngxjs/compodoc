@@ -15,7 +15,7 @@ export { oneParameterHas } from './one-parameter-has';
 export { parseDescription } from './parse-description';
 export { parseProperty } from './parse-property';
 export { relativeUrl } from './relative-url';
-export { shortUrl } from './short-url';
+export { shortUrl, shortPath } from './short-url';
 export { isInfoSection, isInitialTab, isTabEnabled } from './tab-helpers';
 export { t } from './i18n';
 

@@ -259,6 +259,34 @@
 .cdx-index-indicator--hostlistener { background: var(--color-cdx-entity-interceptor); }
 .cdx-index-indicator--indexsignature { background: var(--color-cdx-entity-guard); }
 
+/* ---- Miscellaneous filter (reuses coverage filter styles) ---- */
+
+.cdx-misc-filter {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+/* Miscellaneous kind indicators */
+.cdx-index-indicator--function  { background: var(--color-cdx-entity-function); }
+.cdx-index-indicator--variable  { background: var(--color-cdx-entity-service); }
+.cdx-index-indicator--typealias { background: var(--color-cdx-entity-typealias); }
+.cdx-index-indicator--enum      { background: var(--color-cdx-entity-enum); }
+
+/* ---- A11y: focus-visible on index entries ---- */
+
+.cdx-index-entry:focus-visible {
+  outline: 2px solid var(--color-cdx-primary);
+  outline-offset: 1px;
+}
+
+/* ---- A11y: touch targets on narrow viewports ---- */
+
+@container (max-width: 500px) {
+  .cdx-index-entry {
+    padding: 8px 10px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cdx-index-entry {
     transition: none;

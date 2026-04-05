@@ -1,7 +1,8 @@
 import Html from '@kitajs/html';
-import { t } from '../helpers';
+import { shortPath } from '../helpers';
 import { BlockMethod } from '../blocks/BlockMethod';
 import { IndexMisc } from '../blocks/IndexMisc';
+import { MiscHero } from '../blocks/MiscHero';
 
 type MiscFunctionsProps = {
     readonly miscellaneous: {
@@ -30,23 +31,22 @@ const FunctionBadges = (fn: any): string => {
 
 export const MiscellaneousFunctions = (props: MiscFunctionsProps): string => (
     <>
-        <ol class="cdx-breadcrumb">
-            <li class="">{t('miscellaneous')}</li>
-            <li class="">{t('functions')}</li>
-        </ol>
-        {IndexMisc({ list: props.miscellaneous.functions })}
-        {Object.entries(props.miscellaneous.groupedFunctions).map(([key, methods]) => (<>
-            <h3>{key}</h3>
-            {(methods as any[]).map(fn => FunctionBadges(fn)).join('') ? (
-                <div class="cdx-function-badges">
-                    {(methods as any[]).map(fn => fn.factoryKind || fn.beta || fn.since || fn.signal ? (
-                        <div class="cdx-function-badge-row">
-                            <code>{fn.name}</code> {FunctionBadges(fn)}
-                        </div>
-                    ) : '').join('')}
-                </div>
-            ) : ''}
-            {BlockMethod({ methods, title: '', file: '', depth: props.depth })}
-        </>))}
+        {MiscHero({ kind: 'function', count: props.miscellaneous.functions.length })}
+        {IndexMisc({ list: props.miscellaneous.functions, kind: 'function' })}
+        {Object.entries(props.miscellaneous.groupedFunctions).map(([key, methods]) => (
+            <div class="cdx-content-section">
+                <h3 class="cdx-section-heading" title={key}>{shortPath(key)}</h3>
+                {(methods as any[]).map(fn => FunctionBadges(fn)).join('') ? (
+                    <div class="cdx-function-badges">
+                        {(methods as any[]).map(fn => fn.factoryKind || fn.beta || fn.since || fn.signal ? (
+                            <div class="cdx-function-badge-row">
+                                <code>{fn.name}</code> {FunctionBadges(fn)}
+                            </div>
+                        ) : '').join('')}
+                    </div>
+                ) : ''}
+                {BlockMethod({ methods, title: '', file: '', depth: props.depth })}
+            </div>
+        ))}
     </>
 ) as string;

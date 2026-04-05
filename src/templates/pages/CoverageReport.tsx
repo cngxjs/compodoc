@@ -1,5 +1,5 @@
 import { Html } from '@kitajs/html';
-import { t } from '../helpers';
+import { t, shortPath } from '../helpers';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconChart } from '../components/EmptyStateIcons';
 
@@ -90,16 +90,6 @@ const coverageFillClass = (pct: number): string => {
     if (pct <= 33) return 'cdx-coverage-fill--low';
     if (pct <= 66) return 'cdx-coverage-fill--medium';
     return 'cdx-coverage-fill--high';
-};
-
-/* ---- Shorten file path to last meaningful segments ---- */
-
-const shortPath = (filePath: string): string => {
-    const parts = filePath.replace(/\\/g, '/').split('/');
-    // Find first "src" segment and show from there; fallback to last 3 segments
-    const srcIdx = parts.lastIndexOf('src');
-    if (srcIdx >= 0) return parts.slice(srcIdx).join('/');
-    return parts.length <= 3 ? parts.join('/') : parts.slice(-3).join('/');
 };
 
 /* ---- File link builder ---- */

@@ -154,6 +154,21 @@ export const IconArchive = () =>
         '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>'
     );
 
+// --- Miscellaneous kind icons ---
+export const IconFunction = () =>
+    svg(
+        '<path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 0 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/>'
+    ); // link/chain — standalone function
+export const IconVariable = () =>
+    svg('<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M8 8h8"/>');
+    // box with lines — variable/constant
+export const IconTypealias = () =>
+    svg('<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/>');
+    // T-shape — type alias
+export const IconEnum = () =>
+    svg('<line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/>');
+    // hash # — enumeration (named constants)
+
 /**
  * Map legacy Ionicon class names to Lucide icon functions.
  * Used during migration; call iconFor('ion-ios-home') to get the SVG string.

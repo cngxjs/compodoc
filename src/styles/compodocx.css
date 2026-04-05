@@ -45,6 +45,7 @@
   --color-cdx-entity-function:    #65a30d;  /* lime */
   --color-cdx-entity-variable:    #64748b;  /* slate */
   --color-cdx-entity-typealias:   #6366f1;  /* indigo */
+  --color-cdx-entity-enum:        #c2410c;  /* dark orange — WCAG AA on white */
 
   /* --- Feedback --- */
   --color-cdx-deprecated: hsl(38 92% 50%);
@@ -1025,6 +1026,7 @@ body {
 .cdx-badge--entity-function { background: var(--color-cdx-entity-function); color: white; border: none; }
 .cdx-badge--entity-variable { background: var(--color-cdx-entity-variable); color: white; border: none; }
 .cdx-badge--entity-typealias { background: var(--color-cdx-entity-typealias); color: white; border: none; }
+.cdx-badge--entity-enum { background: var(--color-cdx-entity-enum); color: white; border: none; }
 
 .cdx-badge--since {
   color: var(--color-cdx-text-secondary);
@@ -1109,6 +1111,7 @@ body {
 .dark .cdx-badge--entity-function { background: var(--color-cdx-entity-function); }
 .dark .cdx-badge--entity-variable { background: var(--color-cdx-entity-variable); }
 .dark .cdx-badge--entity-typealias { background: var(--color-cdx-entity-typealias); }
+.dark .cdx-badge--entity-enum { background: var(--color-cdx-entity-enum); }
 
 .dark .cdx-badge--since {
   color: var(--color-cdx-text-secondary);
@@ -1364,6 +1367,7 @@ ul.properties-list { list-style: none; padding-left: 0; }
   --color-cdx-entity-function:    #84cc16;  /* lime light */
   --color-cdx-entity-variable:    #94a3b8;  /* slate light */
   --color-cdx-entity-typealias:   #818cf8;  /* indigo light */
+  --color-cdx-entity-enum:        #fb923c;  /* orange light */
 
   --color-cdx-border:        hsl(225 14% 20%);
   --color-cdx-border-strong: hsl(225 14% 28%);
