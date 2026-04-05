@@ -5,4 +5,4 @@ type MarkdownProps = {
 };
 
 export const Markdown = (props: MarkdownProps): string =>
-    (props.markdown ?? '') as string;
+    (<div class="cdx-prose">{props.markdown ?? ''}</div>) as string;
