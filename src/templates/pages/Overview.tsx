@@ -85,6 +85,12 @@ export const Overview = (props: OverviewProps): string => {
             {/* 2b. Dependency Graph (standalone apps without NgModules) */}
             {showDepGraph && (<>
                 <script>{`window.DEPENDENCY_GRAPH = ${JSON.stringify(props.dependencyGraph)};`}</script>
+                {/* A11y: text alternative for screen readers (network graphs are inaccessible) */}
+                <ul class="sr-only" aria-label="Component dependency list">
+                    {props.dependencyGraph!.edges.map((e: any) => (
+                        <li>{e.source} imports {e.target}</li>
+                    ))}
+                </ul>
                 <div class="text-center module-graph-container">
                     <div id="dependency-graph-container"></div>
                     <div class="btn-group size-buttons">

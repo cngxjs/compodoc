@@ -539,6 +539,12 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="dependencies-tab"
                     >
+                        {/* A11y: text alternative for screen readers */}
+                        <ul class="sr-only" aria-label="Component dependency list">
+                            {c.imports.map((imp: any) => (
+                                <li>{c.name} imports {typeof imp === 'string' ? imp : imp.name}</li>
+                            ))}
+                        </ul>
                         <div class="module-graph-container">
                             <div id="dependency-graph-container"></div>
                             <div class="btn-group size-buttons">

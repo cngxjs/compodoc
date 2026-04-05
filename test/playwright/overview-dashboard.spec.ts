@@ -238,4 +238,74 @@ test.describe('Overview Dashboard', () => {
             }
         });
     });
+
+    test.describe('Module Graph Styling', () => {
+        test('module graph SVG has role=img and aria-label', async ({ page }) => {
+            await page.goto('/overview.html');
+            const svg = page.locator('#module-graph-svg svg');
+            await expect(svg).toBeVisible();
+            await expect(svg).toHaveAttribute('role', 'img');
+            await expect(svg).toHaveAttribute('aria-label', 'Module dependency graph');
+        });
+
+        test('zoom buttons are present', async ({ page }) => {
+            await page.goto('/overview.html');
+            await expect(page.locator('#zoom-in')).toBeVisible();
+            await expect(page.locator('#reset')).toBeVisible();
+            await expect(page.locator('#zoom-out')).toBeVisible();
+        });
+
+        test('fullscreen button is present', async ({ page }) => {
+            await page.goto('/overview.html');
+            await expect(page.locator('#fullscreen')).toBeVisible();
+        });
+
+        test('no dependency graph on NgModule app', async ({ page }) => {
+            await page.goto('/overview.html');
+            await expect(page.locator('#dependency-graph-container')).toHaveCount(0);
+        });
+    });
+
+    test.describe('Routes Graph Styling', () => {
+        test('routes graph SVG has role=img and aria-label', async ({ page }) => {
+            await page.goto('/routes.html');
+            const svg = page.locator('#body-routes svg');
+            await expect(svg).toBeVisible();
+            await expect(svg).toHaveAttribute('role', 'img');
+            await expect(svg).toHaveAttribute('aria-label', 'Application routes graph');
+        });
+
+        test('route nodes have native SVG title tooltips', async ({ page }) => {
+            await page.goto('/routes.html');
+            const titles = page.locator('#body-routes svg .node title');
+            expect(await titles.count()).toBeGreaterThanOrEqual(1);
+        });
+
+        test('no Ionicons font reference', async ({ page }) => {
+            await page.goto('/routes.html');
+            const html = await page.content();
+            expect(html).not.toContain('Ionicons');
+        });
+    });
+
+    test.describe('DOM Tree Styling', () => {
+        test('DOM tree nodes use entity-color tokens', async ({ page }) => {
+            await page.goto('/components/TodoComponent.html');
+            await page.getByRole('tab', { name: 'DOM Tree' }).click();
+            // Wait for D3 render
+            await page.waitForSelector('#tree-container svg', { timeout: 5000 });
+            const ellipses = page.locator('#tree-container ellipse');
+            expect(await ellipses.count()).toBeGreaterThanOrEqual(1);
+        });
+
+        test('tree legend uses entity-color classes', async ({ page }) => {
+            await page.goto('/components/TodoComponent.html');
+            await page.getByRole('tab', { name: 'DOM Tree' }).click();
+            const legend = page.locator('.tree-legend');
+            await expect(legend).toBeVisible();
+            await expect(legend.locator('.component')).toBeVisible();
+            await expect(legend.locator('.directive')).toBeVisible();
+            await expect(legend.locator('.htmlelement')).toBeVisible();
+        });
+    });
 });

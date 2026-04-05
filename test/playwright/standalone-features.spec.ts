@@ -250,3 +250,119 @@ test.describe('App Configuration', () => {
         expect(html).toContain('App Configuration');
     });
 });
+
+// ─── Dependency Graph ───────────────────────────────────
+
+test.describe('Dependency Graph — Overview', () => {
+    test('dependency graph container present (standalone app, no modules)', async ({ page }) => {
+        await page.goto('/overview.html');
+        const container = page.locator('#dependency-graph-container');
+        await expect(container).toBeVisible();
+    });
+
+    test('SVG rendered with role=img and aria-label', async ({ page }) => {
+        await page.goto('/overview.html');
+        const svg = page.locator('#dependency-graph-container svg');
+        await expect(svg).toBeVisible();
+        await expect(svg).toHaveAttribute('role', 'img');
+        await expect(svg).toHaveAttribute('aria-label', 'Standalone component dependency graph');
+    });
+
+    test('graph has entity-colored nodes', async ({ page }) => {
+        await page.goto('/overview.html');
+        const circles = page.locator('#dependency-graph-container circle');
+        expect(await circles.count()).toBeGreaterThanOrEqual(3);
+    });
+
+    test('graph has arrow markers on edges', async ({ page }) => {
+        await page.goto('/overview.html');
+        const marker = page.locator('#dependency-graph-container marker#dep-arrow');
+        await expect(marker).toHaveCount(1);
+    });
+
+    test('zoom buttons present', async ({ page }) => {
+        await page.goto('/overview.html');
+        await expect(page.locator('#dep-zoom-in')).toBeVisible();
+        await expect(page.locator('#dep-reset')).toBeVisible();
+        await expect(page.locator('#dep-zoom-out')).toBeVisible();
+    });
+
+    test('entity-color legend present', async ({ page }) => {
+        await page.goto('/overview.html');
+        const legend = page.locator('.cdx-graph-legend');
+        await expect(legend).toBeVisible();
+        const items = legend.locator('.cdx-graph-legend-item');
+        expect(await items.count()).toBeGreaterThanOrEqual(5);
+    });
+
+    test('a11y: screen reader text alternative lists dependencies', async ({ page }) => {
+        await page.goto('/overview.html');
+        const srList = page.locator('ul.sr-only[aria-label="Component dependency list"]');
+        await expect(srList).toHaveCount(1);
+        const items = srList.locator('li');
+        expect(await items.count()).toBeGreaterThanOrEqual(2);
+        const text = await srList.textContent();
+        expect(text).toContain('imports');
+    });
+
+    test('no module graph shown on standalone app overview', async ({ page }) => {
+        await page.goto('/overview.html');
+        await expect(page.locator('#module-graph-svg')).toHaveCount(0);
+    });
+
+    test('cursor: grab on graph SVG', async ({ page }) => {
+        await page.goto('/overview.html');
+        const svg = page.locator('#dependency-graph-container svg');
+        const cursor = await svg.evaluate(el => getComputedStyle(el).cursor);
+        expect(cursor).toBe('grab');
+    });
+});
+
+test.describe('Dependency Graph — Component Tab', () => {
+    test('Dependencies tab visible for standalone component with imports', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        const tab = page.getByRole('tab', { name: 'Dependencies' });
+        await expect(tab).toBeVisible();
+    });
+
+    test('Dependencies tab not shown for components without imports', async ({ page }) => {
+        await page.goto('/components/SettingsComponent.html');
+        const tab = page.getByRole('tab', { name: 'Dependencies' });
+        await expect(tab).toHaveCount(0);
+    });
+
+    test('clicking Dependencies tab shows graph', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        await page.getByRole('tab', { name: 'Dependencies' }).click();
+        const svg = page.locator('#dependency-graph-container svg');
+        await expect(svg).toBeVisible();
+    });
+
+    test('per-component graph has clickable nodes', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        await page.getByRole('tab', { name: 'Dependencies' }).click();
+        const nodes = page.locator('#dependency-graph-container .dep-node');
+        expect(await nodes.count()).toBeGreaterThanOrEqual(2);
+    });
+
+    test('per-component a11y text alternative', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        const srList = page.locator('#dependencies ul.sr-only');
+        await expect(srList).toHaveCount(1);
+        const text = await srList.textContent();
+        expect(text).toContain('UserCardComponent imports');
+    });
+
+    test('per-component legend present', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        await page.getByRole('tab', { name: 'Dependencies' }).click();
+        const legend = page.locator('#dependencies .cdx-graph-legend');
+        await expect(legend).toBeVisible();
+    });
+
+    test('per-component zoom buttons present', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        await page.getByRole('tab', { name: 'Dependencies' }).click();
+        await expect(page.locator('#dep-zoom-in')).toBeVisible();
+    });
+});
