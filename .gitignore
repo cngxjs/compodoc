@@ -11,6 +11,9 @@ node_modules
 .idea/
 .vscode/
 
+# Internal design docs (local only)
+.internal/
+
 # Optional npm cache directory
 .npm
 
