@@ -172,6 +172,10 @@ export class ClassHelper {
             { pattern: /^viewChildren\s*(?:<([^>]+)>)?\s*\(/, kind: 'view-children' },
             { pattern: /^contentChild\s*(?:<([^>]+)>)?\s*\(/, kind: 'content-child' },
             { pattern: /^contentChildren\s*(?:<([^>]+)>)?\s*\(/, kind: 'content-children' },
+            { pattern: /^afterRenderEffect\s*\(/, kind: 'after-render-effect' },
+            { pattern: /^afterEveryRender\s*\(/, kind: 'after-every-render' },
+            { pattern: /^afterNextRender\s*\(/, kind: 'after-next-render' },
+            { pattern: /^afterRender\s*\(/, kind: 'after-render' },
             { pattern: /^inject\s*\(\s*([A-Z_]\w*)/, kind: 'inject' },
         ];
 

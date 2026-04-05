@@ -25,6 +25,10 @@ const signalKindLabel = (kind: string): string => ({
     'content-child': 'ContentChild',
     'content-children': 'ContentChildren',
     'inject': 'Inject',
+    'after-render': 'afterRender',
+    'after-next-render': 'afterNextRender',
+    'after-every-render': 'afterEveryRender',
+    'after-render-effect': 'afterRenderEffect',
     'host-binding': 'Host',
     'host-listener': 'Host',
 }[kind] || kind);
