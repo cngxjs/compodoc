@@ -5,6 +5,7 @@
 @import "./components/member-card.css";
 @import "./components/content-sections.css";
 @import "./components/coverage.css";
+@import "./components/overview.css";
 
 @source "../templates/**/*.hbs";
 @source "../templates/**/*.tsx";

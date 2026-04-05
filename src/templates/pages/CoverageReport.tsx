@@ -1,5 +1,5 @@
 import { Html } from '@kitajs/html';
-import { t, shortPath } from '../helpers';
+import { t, shortPath, computeCoverageStats } from '../helpers';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconChart } from '../components/EmptyStateIcons';
 
@@ -241,10 +241,7 @@ export const CoverageReport = (props: CoverageReportProps): string => {
     });
 
     // Compute stats
-    const total = files.length;
-    const documented = files.filter(f => f.coveragePercent === 100).length;
-    const undocumented = files.filter(f => f.coveragePercent === 0).length;
-    const partial = total - documented - undocumented;
+    const { total, documented, partial, undocumented } = computeCoverageStats(files);
 
     return (
         <>

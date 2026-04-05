@@ -2552,6 +2552,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
     }
 
     public processPages() {
+        Configuration.mainData.generatedAt = new Date().toISOString();
         const pages = [...Configuration.pages].sort((a, b) => a.name.localeCompare(b.name));
 
         logger.info('Process pages');

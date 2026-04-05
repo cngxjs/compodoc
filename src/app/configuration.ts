@@ -106,7 +106,8 @@ export class Configuration implements ConfigurationInterface {
         categorizedInterfaces: {},
         categorizedGuards: {},
         categorizedInterceptors: {},
-        categorizedEntities: {}
+        categorizedEntities: {},
+        generatedAt: ''
     };
 
     private static instance: Configuration;

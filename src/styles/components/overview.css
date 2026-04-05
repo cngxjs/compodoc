@@ -1,0 +1,187 @@
+/* ── Overview Dashboard ── */
+
+.cdx-overview-hero-name {
+    @apply break-words;
+}
+
+.cdx-overview-stats {
+    @apply max-w-[860px];
+}
+
+/* ── Graph spacing ── */
+
+.module-graph-container {
+    @apply mt-6 mb-2;
+}
+
+/* ── KPI Row ── */
+
+.cdx-overview-kpi-row {
+    container-type: inline-size;
+    @apply grid gap-4 mt-6 mb-8;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+@container (max-width: 500px) {
+    .cdx-overview-kpi-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.cdx-overview-kpi {
+    @apply flex flex-col items-center justify-center text-center py-6 px-4 rounded-2xl no-underline;
+    background: var(--color-cdx-bg-elevated);
+}
+
+a.cdx-overview-kpi {
+    @apply cursor-pointer;
+    color: var(--color-cdx-text) !important;
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+}
+
+a.cdx-overview-kpi:hover {
+    @apply no-underline;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.1);
+}
+
+:is(.dark) a.cdx-overview-kpi:hover {
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+}
+
+.cdx-overview-kpi:focus-visible {
+    @apply outline-2 outline-offset-2 outline-[var(--color-cdx-primary)];
+}
+
+.cdx-overview-kpi-value {
+    @apply text-[2.5rem] font-bold leading-none mb-1;
+}
+
+.cdx-overview-kpi-label {
+    @apply text-sm text-[var(--cdx-text-muted)] mb-2;
+}
+
+.cdx-overview-kpi-fraction {
+    @apply text-xs text-[var(--cdx-text-muted)] mt-2;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Coverage KPI: donut centered */
+.cdx-overview-kpi--coverage {
+    @apply gap-0;
+}
+
+.cdx-overview-kpi--coverage .cdx-overview-kpi-label {
+    @apply mb-0 mt-2;
+}
+
+/* ── Donut ── */
+
+.cdx-overview-donut {
+    @apply w-[80px] h-[80px];
+}
+
+.cdx-overview-donut-pct {
+    @apply text-base font-bold;
+    fill: var(--color-cdx-text);
+}
+
+/* ── Adoption bars (inside KPI tiles) ── */
+
+.cdx-overview-adoption-bar {
+    @apply w-full h-1.5 rounded-full overflow-hidden mt-2;
+    max-width: 100px;
+    background: rgb(128 128 128 / 0.15);
+}
+
+.cdx-overview-adoption-fill {
+    @apply h-full rounded-full bg-[var(--color-cdx-primary)];
+}
+
+/* ── Section headings ── */
+
+.cdx-overview-section-heading {
+    @apply text-xs font-semibold uppercase tracking-wider text-[var(--cdx-text-muted)] mb-3;
+}
+
+/* ── Entity Chips ── */
+
+.cdx-overview-inventory {
+    @apply pt-6 border-t border-[var(--cdx-border)] flex flex-wrap gap-6;
+}
+
+.cdx-overview-chip-group {
+    @apply flex flex-col gap-2;
+}
+
+.cdx-overview-chips {
+    @apply flex flex-wrap gap-2;
+}
+
+.cdx-overview-chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm no-underline;
+    color: var(--color-cdx-text);
+    background: var(--color-cdx-bg-elevated);
+}
+
+a.cdx-overview-chip {
+    @apply cursor-pointer;
+    color: var(--color-cdx-text) !important;
+    transition: transform 150ms ease-out;
+}
+
+a.cdx-overview-chip:hover {
+    @apply no-underline;
+    transform: translateY(-1px);
+}
+
+.cdx-overview-chip:focus-visible {
+    @apply outline-2 outline-offset-1 outline-[var(--color-cdx-primary)];
+}
+
+.cdx-overview-chip-icon {
+    @apply w-4 h-4 flex-shrink-0;
+}
+
+.cdx-overview-chip-icon svg {
+    @apply block w-full h-full;
+}
+
+.cdx-overview-chip-icon svg {
+    @apply w-full h-full;
+}
+
+.cdx-overview-chip-count {
+    @apply font-bold;
+    font-variant-numeric: tabular-nums;
+}
+
+.cdx-overview-chip-label {
+    @apply text-[var(--cdx-text-muted)];
+}
+
+.cdx-overview-chip-sub {
+    @apply text-xs text-[var(--cdx-text-muted)] ml-0.5;
+}
+
+/* ── Responsive (KPI values scale down at 2-col) ── */
+
+@container (max-width: 500px) {
+    .cdx-overview-kpi-value {
+        @apply text-[1.75rem];
+    }
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+    a.cdx-overview-kpi,
+    a.cdx-overview-chip {
+        transition: none;
+    }
+
+    a.cdx-overview-kpi:hover,
+    a.cdx-overview-chip:hover {
+        transform: none;
+    }
+}
