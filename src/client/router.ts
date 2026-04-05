@@ -7,6 +7,7 @@
 import { initTabs } from './tabs';
 import { initCodeBlocks } from './code-blocks';
 import { initGraphs } from './graphs';
+import { initCoverage } from './coverage';
 // import { initToc } from './toc';
 
 const CONTENT_SELECTOR = '.content-data';
@@ -66,6 +67,7 @@ const reinitPage = async () => {
     initTabs();
     initCodeBlocks();
     initGraphs();
+    initCoverage();
     // initToc();
 };
 

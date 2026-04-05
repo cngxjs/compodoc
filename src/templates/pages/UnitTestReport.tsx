@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { relativeUrl, t } from '../helpers';
+import { t } from '../helpers';
 
 type CoverageMetric = {
     readonly coveragePercent: number;
@@ -38,7 +38,6 @@ const fileLink = (f: UnitTestFile): string | null => {
 };
 
 export const UnitTestReport = (props: UnitTestReportProps): string => {
-    const base = relativeUrl(props.data.depth);
     return (<>
         <ol class="cdx-breadcrumb">
             <li class="">{t('unit-test-coverage')}</li>
@@ -79,8 +78,5 @@ export const UnitTestReport = (props: UnitTestReportProps): string => {
             </tbody>
         </table>
 
-        <script src={`${base}js/libs/tablesort.min.js`}></script>
-        <script src={`${base}js/libs/tablesort.number.min.js`}></script>
-        <script>{'new Tablesort(document.getElementById(\'coverage-table\'));'}</script>
     </>) as string;
 };

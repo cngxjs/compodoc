@@ -14,14 +14,11 @@ test.describe('Empty States', () => {
             await expect(emptyState.locator('.cdx-empty-state-icon')).toBeVisible();
         });
 
-        test('page empty state shows file path above', async ({ page }) => {
+        test('page empty state shows file path in hero', async ({ page }) => {
             await page.goto('/classes/Tada.html');
 
-            const info = page.locator('#info');
-            const fileHeading = info.locator('h3', { hasText: 'File' });
-            await expect(fileHeading).toBeVisible();
-
-            const filePath = info.locator('code');
+            const filePath = page.locator('.cdx-entity-hero-file');
+            await expect(filePath).toBeVisible();
             await expect(filePath).toContainText('.ts');
         });
     });
