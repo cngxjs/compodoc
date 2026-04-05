@@ -6,7 +6,7 @@ export {
     extractJsdocExamples,
     extractJsdocParams,
     hasJsdocParams,
-    jsdocReturnsComment,
+    jsdocReturnsComment
 } from './jsdoc';
 export { linkTypeHtml, resolveType } from './link-type';
 export { modifIcon, modifIconFromArray } from './modif-icon';
@@ -26,7 +26,10 @@ export const isInternalMember = (modifierKind?: number[]): boolean =>
 /** A readme that is only a heading (no paragraphs, lists, code blocks) is treated as empty. */
 export const isReadmeEmpty = (readme: string | undefined): boolean => {
     if (!readme) return true;
-    const stripped = readme.replace(/<h[1-6][^>]*>.*?<\/h[1-6]>/gi, '').replace(/<[^>]+>/g, '').trim();
+    const stripped = readme
+        .replaceAll(/<h[1-6][^>]*>.*?<\/h[1-6]>/gi, '')
+        .replaceAll(/<[^>]+>/g, '')
+        .trim();
     return stripped.length === 0;
 };
 

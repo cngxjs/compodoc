@@ -20,10 +20,7 @@ const loadD3 = async (): Promise<D3Module> => {
     return d3;
 };
 
-// ──────────────────────────────────────────────
 // Lazy SVG loading (replaces lazy-load-graphs.js)
-// ──────────────────────────────────────────────
-
 const initLazyGraphs = () => {
     const lazyEls = document.querySelectorAll<HTMLObjectElement>('[lazy]');
     if (lazyEls.length === 0) return;
@@ -51,10 +48,7 @@ const initLazyGraphs = () => {
     lazyEls.forEach(el => observer.observe(el));
 };
 
-// ──────────────────────────────────────────────
 // SVG pan-zoom (replaces svg-pan-zoom lib)
-// ──────────────────────────────────────────────
-
 const initSvgPanZoom = async () => {
     const container = document.getElementById('module-graph-svg');
     if (!container) return;
@@ -147,10 +141,7 @@ const initSvgPanZoom = async () => {
     }
 };
 
-// ──────────────────────────────────────────────
 // Routes graph (replaces routes.js + D3 v3)
-// ──────────────────────────────────────────────
-
 const htmlEntities = (str: string): string =>
     String(str)
         .replaceAll('&', '&amp;')
@@ -230,7 +221,11 @@ const initRoutesGraph = async () => {
     // Node marker
     node.append('circle')
         .attr('r', 5)
-        .attr('fill', (d: any) => d.children ? 'var(--color-cdx-primary, #3163d8)' : 'var(--color-cdx-entity-component, #36ab9b)')
+        .attr('fill', (d: any) =>
+            d.children
+                ? 'var(--color-cdx-primary, #3163d8)'
+                : 'var(--color-cdx-entity-component, #36ab9b)'
+        )
         .attr('class', (d: any) => (d.children ? 'icon has-children' : 'icon'));
 
     // Node text
@@ -288,7 +283,7 @@ const initRoutesGraph = async () => {
     svg.call(zoomBehavior);
 };
 
-/** Build the label HTML for a route node */
+// Build the label HTML for a route node
 const buildNodeLabel = (d: any): string => {
     let label = '';
     if (d.kind === 'module') {
@@ -329,10 +324,7 @@ const buildNodeLabel = (d: any): string => {
     return label;
 };
 
-// ──────────────────────────────────────────────
 // DOM tree (replaces tree.js + vis-network)
-// ──────────────────────────────────────────────
-
 interface TreeNode {
     name: string;
     type: string;
@@ -342,7 +334,7 @@ interface TreeNode {
     children: TreeNode[];
 }
 
-/** Parse HTML template string into a tree structure */
+//Parse HTML template string into a tree structure
 const parseTemplate = (html: string): TreeNode => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -408,7 +400,8 @@ const initDomTree = async () => {
         treeLayout(root);
 
         // Use viewBox for responsive sizing + D3 zoom for pan/zoom
-        const svg = select(container).append('svg')
+        const svg = select(container)
+            .append('svg')
             .attr('role', 'img')
             .attr('aria-label', 'Component DOM tree')
             .style('width', '100%')
@@ -472,7 +465,7 @@ const initDomTree = async () => {
         // Click handler for component nodes
         node.on('click', (_event: any, d: any) => {
             if (d.data.isComponent && d.data.componentName) {
-                const current = window.location;
+                const current = globalThis.location;
                 document.location.href =
                     current.origin +
                     current.pathname.replace(ACTUAL_COMPONENT.name, d.data.componentName);
@@ -495,10 +488,9 @@ const initDomTree = async () => {
             svg.call(zoomBehavior);
 
             // Calculate scale to fit entire tree with padding
-            const scale = Math.min(
-                svgWidth / (bbox.width + pad * 2),
-                svgHeight / (bbox.height + pad * 2)
-            ) * 0.85;
+            const scale =
+                Math.min(svgWidth / (bbox.width + pad * 2), svgHeight / (bbox.height + pad * 2)) *
+                0.85;
             const tx = (svgWidth - bbox.width * scale) / 2 - bbox.x * scale;
             const ty = (svgHeight - bbox.height * scale) / 2 - bbox.y * scale;
             svg.call(zoomBehavior.transform, zoomIdentity.translate(tx, ty).scale(scale));
@@ -522,10 +514,6 @@ const initDomTree = async () => {
         }, 250);
     });
 };
-
-// ──────────────────────────────────────────────
-// Public API
-// ──────────────────────────────────────────────
 
 export const initGraphs = () => {
     // Lazy SVG loading runs synchronously (IntersectionObserver)

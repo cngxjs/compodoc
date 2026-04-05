@@ -8,6 +8,7 @@ const escapeHtml = (str: string): string =>
         .replaceAll('"', '&quot;');
 import BasicTypeUtil from '../../utils/basic-type.util';
 
+// TODO: Refactor this helper to be more modular and testable, and to handle more complex type scenarios (e.g., generics, unions, intersections).
 const miscSubtypeToPage: Record<string, string> = {
     enum: 'enumerations',
     function: 'functions',
@@ -33,6 +34,7 @@ function resolveTypeLink(typeName: string): string | null {
         }
         return `<a href="https://angular.dev/${result.data.path}" target="_blank">${escapeHtml(typeName)}</a>`;
     }
+    //TODO: go awai from mdn
     if (BasicTypeUtil.isKnownType(typeName)) {
         const url = BasicTypeUtil.getTypeUrl(typeName);
         return `<a href="${url}" target="_blank">${escapeHtml(typeName)}</a>`;
