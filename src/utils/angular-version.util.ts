@@ -34,7 +34,7 @@ export class AngularVersionUtil {
         return _result;
     }
 
-    public getApiLink(api: IAngularApi, _angularVersion?: string): string {
+    public getApiLink(api: IAngularApi): string {
         return `https://angular.dev/${api.path}`;
     }
 }

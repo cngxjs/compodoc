@@ -57,6 +57,5 @@ export interface IAngularApi {
     path: string;
     docType: string;
     stability: string;
-    secure: string;
-    barrel: string;
+    securityRisk: boolean;
 }
