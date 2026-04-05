@@ -539,7 +539,36 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="dependencies-tab"
                     >
-                        <div id="dependency-graph-container"></div>
+                        <div class="module-graph-container">
+                            <div id="dependency-graph-container"></div>
+                            <div class="btn-group size-buttons">
+                                <button id="dep-zoom-in" class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
+                                <button id="dep-reset" class="cdx-btn cdx-btn--sm">{t('reset')}</button>
+                                <button id="dep-zoom-out" class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
+                            </div>
+                        </div>
+                        <div class="cdx-graph-legend" style="margin-top: 0.75rem">
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-component)"></span>
+                                <span>{t('component')}</span>
+                            </div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-directive)"></span>
+                                <span>{t('directive')}</span>
+                            </div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-pipe)"></span>
+                                <span>{t('pipe')}</span>
+                            </div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-module)"></span>
+                                <span>{t('module')}</span>
+                            </div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-service)"></span>
+                                <span>{t('injectable')}</span>
+                            </div>
+                        </div>
                     </div>
                 )}
 

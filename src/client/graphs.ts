@@ -599,7 +599,21 @@ const initDependencyGraph = async () => {
 
     const g = svg.append('g');
 
-    // Draw links
+    // Arrow marker for directed edges (source imports target)
+    svg.append('defs').append('marker')
+        .attr('id', 'dep-arrow')
+        .attr('viewBox', '0 -4 8 8')
+        .attr('refX', 12)
+        .attr('refY', 0)
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', 'M0,-4L8,0L0,4Z')
+        .attr('fill', 'var(--color-cdx-text-muted, #6b7280)')
+        .attr('fill-opacity', 0.6);
+
+    // Draw links with arrows
     const link = g.selectAll('.dep-link')
         .data(links)
         .enter()
@@ -607,7 +621,8 @@ const initDependencyGraph = async () => {
         .attr('class', 'dep-link')
         .attr('stroke', 'var(--color-cdx-text-muted, #6b7280)')
         .attr('stroke-opacity', 0.55)
-        .attr('stroke-width', 1.5);
+        .attr('stroke-width', 1.5)
+        .attr('marker-end', 'url(#dep-arrow)');
 
     // Draw nodes
     const node = g.selectAll('.dep-node')
@@ -647,21 +662,29 @@ const initDependencyGraph = async () => {
         .force('center', forceCenter(width / 2, height / 2))
         .force('collide', forceCollide().radius((d: any) => d.r + 4));
 
+    // Shorten link endpoint to stop at target node edge (for arrow visibility)
+    const updateLinks = () => {
+        link.each(function (this: SVGLineElement, d: any) {
+            const dx = d.target.x - d.source.x;
+            const dy = d.target.y - d.source.y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            const targetR = d.target.r ?? 8;
+            const offset = targetR + 6; // node radius + arrow marker size
+            this.setAttribute('x1', d.source.x);
+            this.setAttribute('y1', d.source.y);
+            this.setAttribute('x2', d.target.x - (dx / dist) * offset);
+            this.setAttribute('y2', d.target.y - (dy / dist) * offset);
+        });
+    };
+
     if (reducedMotion) {
-        // Skip animation — compute final positions synchronously
         simulation.stop();
         for (let i = 0; i < 300; i++) simulation.tick();
-        link.attr('x1', (d: any) => d.source.x)
-            .attr('y1', (d: any) => d.source.y)
-            .attr('x2', (d: any) => d.target.x)
-            .attr('y2', (d: any) => d.target.y);
+        updateLinks();
         node.attr('transform', (d: any) => `translate(${d.x},${d.y})`);
     } else {
         simulation.on('tick', () => {
-            link.attr('x1', (d: any) => d.source.x)
-                .attr('y1', (d: any) => d.source.y)
-                .attr('x2', (d: any) => d.target.x)
-                .attr('y2', (d: any) => d.target.y);
+            updateLinks();
             node.attr('transform', (d: any) => `translate(${d.x},${d.y})`);
         });
     }
