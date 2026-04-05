@@ -21,7 +21,8 @@ import { EmptyState } from '../components/EmptyState';
 import { EmptyIconDocument } from '../components/EmptyStateIcons';
 import {
     IconComponent, IconDirective, IconPipe, IconModule, IconClass,
-    IconInterface, IconGuard, IconInterceptor, IconInjectable, IconEntity
+    IconInterface, IconGuard, IconInterceptor, IconInjectable, IconEntity,
+    IconFile
 } from '../components/Icons';
 
 /** Map entity key to CSS color variable, badge class, and watermark icon */
@@ -84,22 +85,44 @@ const hasMembers = (e: any): boolean =>
         e.implements?.length
     );
 
+/** Render extends/implements as metadata card rows for entities without decorator metadata */
+const ExtendsMetadataCard = (e: any): string => {
+    const hasExtends = e.extends?.length > 0;
+    const hasImplements = e.implements?.length > 0;
+    if (!hasExtends && !hasImplements) return '';
+
+    return (
+        <section class="cdx-content-section" data-compodoc="block-metadata">
+            <h3 class="cdx-section-heading">{t('metadata')}</h3>
+            <dl class="cdx-metadata-card">
+                {hasExtends && (
+                    <div class="cdx-metadata-row">
+                        <dt class="cdx-metadata-label">extends</dt>
+                        <dd class="cdx-metadata-value">
+                            {(e.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')}
+                        </dd>
+                    </div>
+                )}
+                {hasImplements && (
+                    <div class="cdx-metadata-row">
+                        <dt class="cdx-metadata-label">implements</dt>
+                        <dd class="cdx-metadata-value">
+                            {(e.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')}
+                        </dd>
+                    </div>
+                )}
+            </dl>
+        </section>
+    ) as string;
+};
+
 const InfoContent = (props: EntityInfoProps): string => {
     const e = props.entity;
+    const entityColor = props.entityKey === 'classe' ? 'class' : props.entityKey;
 
     if (!hasMembers(e)) {
         return (
             <>
-                {isInfoSection('file') && !props.disableFilePath && (
-                    <>
-                        <p class="comment">
-                            <h3>{t('file')}</h3>
-                        </p>
-                        <p class="comment">
-                            <code>{e.file}</code>
-                        </p>
-                    </>
-                )}
                 {EmptyState({
                     icon: EmptyIconDocument(),
                     title: t('empty-entity-title'),
@@ -112,80 +135,48 @@ const InfoContent = (props: EntityInfoProps): string => {
 
     return (
         <>
-            {isInfoSection('file') && !props.disableFilePath && (
-                <>
-                    <p class="comment">
-                        <h3>{t('file')}</h3>
-                    </p>
-                    <p class="comment">
-                        <code>{e.file}</code>
-                    </p>
-                </>
-            )}
-
+            {/* 1. Deprecation banner */}
             {isInfoSection('deprecated') && e.deprecated && (
-                <>
-                    <p class="comment">
-                        <h3 class="deprecated">{t('deprecated')}</h3>
-                    </p>
-                    <p class="comment">{e.deprecationMessage}</p>
-                </>
+                <div class="cdx-deprecation-banner" role="alert">
+                    <strong>{t('deprecated')}</strong>
+                    <span>{e.deprecationMessage}</span>
+                </div>
             )}
 
+            {/* 2. Description */}
             {isInfoSection('description') && e.description && (
-                <>
-                    <p class="comment">
-                        <h3>{t('description')}</h3>
-                    </p>
-                    <p class="comment">{parseDescription(e.description, props.depth)}</p>
-                </>
+                <section class="cdx-content-section">
+                    <h3 class="cdx-section-heading">{t('description')}</h3>
+                    <div class="cdx-prose">{parseDescription(e.description, props.depth)}</div>
+                </section>
             )}
 
-            {isInfoSection('extends') && props.showExtends !== false && e.extends?.length > 0 && (
-                <>
-                    <p class="comment">
-                        <h3>{t('extends')}</h3>
-                    </p>
-                    <p class="comment">
-                        {(e.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')}
-                    </p>
-                </>
-            )}
-
-            {isInfoSection('extends') &&
-                props.showExtends !== false &&
-                e.implements?.length > 0 && (
-                    <>
-                        <p class="comment">
-                            <h3>{t('implements')}</h3>
-                        </p>
-                        <p class="comment">
-                            {(e.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')}
-                        </p>
-                    </>
-                )}
-
+            {/* 3. Examples */}
             {isInfoSection('examples') &&
                 e.jsdoctags &&
                 (() => {
                     const examples = extractJsdocCodeExamples(e.jsdoctags);
                     if (examples.length === 0) return '';
                     return (
-                        <>
-                            <p class="comment">
-                                <h3>{t('example')}</h3>
-                            </p>
+                        <section class="cdx-content-section">
+                            <h3 class="cdx-section-heading">{t('example')}</h3>
                             <div class="io-description">
                                 {examples.map(ex => (
                                     <div>{ex.comment}</div>
                                 ))}
                             </div>
-                        </>
+                        </section>
                     );
                 })()}
 
-            {props.metadataHtml}
+            {/* 4. Metadata (from entity-specific page) or extends/implements card */}
+            {props.metadataHtml
+                ? props.metadataHtml
+                : (isInfoSection('extends') && props.showExtends !== false
+                    ? ExtendsMetadataCard(e)
+                    : '')}
 
+            {/* 5. Index */}
             {isInfoSection('index') &&
                 props.showIndex !== false &&
                 BlockIndex({
@@ -195,9 +186,11 @@ const InfoContent = (props: EntityInfoProps): string => {
                     outputs: e.outputsClass,
                     hostBindings: e.hostBindings,
                     hostListeners: e.hostListeners,
-                    accessors: e.accessors
+                    accessors: e.accessors,
+                    indexSignatures: e.indexSignatures
                 })}
 
+            {/* 6. Constructor */}
             {isInfoSection('constructor') &&
                 props.showConstructor !== false &&
                 e.constructorObj &&
@@ -206,9 +199,10 @@ const InfoContent = (props: EntityInfoProps): string => {
                     file: e.file,
                     depth: props.depth,
                     navTabs: props.navTabs,
-                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
+                    entityColor
                 })}
 
+            {/* 7. Inputs */}
             {isInfoSection('inputs') &&
                 props.showInputs !== false &&
                 e.inputsClass?.length > 0 &&
@@ -217,9 +211,10 @@ const InfoContent = (props: EntityInfoProps): string => {
                     file: e.file,
                     depth: props.depth,
                     navTabs: props.navTabs,
-                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
+                    entityColor
                 })}
 
+            {/* 8. Outputs */}
             {isInfoSection('outputs') &&
                 props.showOutputs !== false &&
                 e.outputsClass?.length > 0 &&
@@ -228,9 +223,10 @@ const InfoContent = (props: EntityInfoProps): string => {
                     file: e.file,
                     depth: props.depth,
                     navTabs: props.navTabs,
-                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
+                    entityColor
                 })}
 
+            {/* 9. Host Bindings */}
             {isInfoSection('hostBindings') &&
                 props.showHostBindings !== false &&
                 e.hostBindings?.length > 0 &&
@@ -240,9 +236,10 @@ const InfoContent = (props: EntityInfoProps): string => {
                     title: 'HostBindings',
                     depth: props.depth,
                     navTabs: props.navTabs,
-                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
+                    entityColor
                 })}
 
+            {/* 10. Host Listeners */}
             {isInfoSection('hostListeners') &&
                 props.showHostListeners !== false &&
                 e.hostListeners?.length > 0 &&
@@ -252,9 +249,10 @@ const InfoContent = (props: EntityInfoProps): string => {
                     title: 'HostListeners',
                     depth: props.depth,
                     navTabs: props.navTabs,
-                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
+                    entityColor
                 })}
 
+            {/* 11. Methods */}
             {isInfoSection('methods') &&
                 props.showMethods !== false &&
                 (e.methodsClass ?? e.methods)?.length > 0 &&
@@ -263,9 +261,10 @@ const InfoContent = (props: EntityInfoProps): string => {
                     file: e.file,
                     depth: props.depth,
                     navTabs: props.navTabs,
-                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
+                    entityColor
                 })}
 
+            {/* 12. Properties */}
             {isInfoSection('properties') &&
                 props.showProperties !== false &&
                 (e.propertiesClass ?? e.properties)?.length > 0 &&
@@ -274,9 +273,10 @@ const InfoContent = (props: EntityInfoProps): string => {
                     file: e.file,
                     depth: props.depth,
                     navTabs: props.navTabs,
-                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
+                    entityColor
                 })}
 
+            {/* 13. Index Signatures */}
             {isInfoSection('indexSignatures') &&
                 props.showIndexSignatures !== false &&
                 e.indexSignatures?.length > 0 &&
@@ -287,6 +287,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                     navTabs: props.navTabs
                 })}
 
+            {/* 14. Accessors */}
             {isInfoSection('accessors') &&
                 props.showAccessors !== false &&
                 e.accessors &&
@@ -296,7 +297,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                     file: e.file,
                     depth: props.depth,
                     navTabs: props.navTabs,
-                    entityColor: props.entityKey === 'classe' ? 'class' : props.entityKey
+                    entityColor
                 })}
         </>
     ) as string;
@@ -338,6 +339,12 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                     <p class="cdx-entity-hero-context">{props.contextLine}</p>
                 ) : (
                     ''
+                )}
+                {!props.disableFilePath && e.file && (
+                    <p class="cdx-entity-hero-file" aria-label="Source file">
+                        {IconFile()}
+                        <span>{e.file}</span>
+                    </p>
                 )}
             </div>
             {EntityTabs({

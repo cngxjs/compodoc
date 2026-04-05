@@ -3,6 +3,7 @@
 @import "./components/entity-hero.css";
 @import "./components/tab-bar.css";
 @import "./components/member-card.css";
+@import "./components/content-sections.css";
 
 @source "../templates/**/*.hbs";
 @source "../templates/**/*.tsx";

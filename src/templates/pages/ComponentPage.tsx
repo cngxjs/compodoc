@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { IconComponent, IconExternalLink, IconGitBranch } from '../components/Icons';
+import { IconComponent, IconExternalLink, IconFile, IconGitBranch } from '../components/Icons';
 import {
     extractJsdocCodeExamples,
     isInfoSection,
@@ -46,160 +46,90 @@ const breakComma = (text: string): string => {
     return escaped.replaceAll(',', ',<br>');
 };
 
-type MetadataRow = { label: string; value: string; isCode?: boolean };
+const MetadataRow = (label: string, value: string, isBlock = false): string =>
+    (<div class={`cdx-metadata-row${isBlock ? ' cdx-metadata-row--block' : ''}`}>
+        <dt class="cdx-metadata-label">{label}</dt>
+        <dd class="cdx-metadata-value">{value}</dd>
+    </div>) as string;
 
-const MetadataField = (props: MetadataRow): string =>
-    (
-        <tr>
-            <td class="col-md-3">{props.label}</td>
-            <td class="col-md-9">
-                {props.isCode !== false ? <code>{props.value}</code> : props.value}
-            </td>
-        </tr>
-    ) as string;
+const MetadataCodeRow = (label: string, value: string): string =>
+    MetadataRow(label, `<code>${value}</code>`);
 
 const ComponentMetadata = (c: any): string => {
     if (!isInfoSection('metadata')) return '';
 
     const rows: string[] = [];
-    const field = (label: string, value: unknown, isCode = true) => {
+    const codeField = (label: string, value: unknown) => {
         if (value != null && value !== '' && (!Array.isArray(value) || value.length > 0)) {
-            rows.push(MetadataField({ label, value: String(value), isCode }));
+            rows.push(MetadataCodeRow(label, String(value)));
         }
     };
 
-    field('animations', c.animations);
-    field('changeDetection', c.changeDetection);
-    field('encapsulation', c.encapsulation);
+    codeField('selector', c.selector);
+    if (c.standalone) codeField('standalone', String(c.standalone));
+
+    if (c.imports?.length > 0) {
+        rows.push(MetadataRow('imports', c.imports.map((imp: any) => linkTypeHtml(imp.name)).join(' ')));
+    }
+
+    if (c.providers?.length > 0) {
+        rows.push(MetadataRow('providers', c.providers.map((p: any) => linkTypeHtml(p.name)).join(' ')));
+    }
+
+    if (c.viewProviders?.length > 0) {
+        rows.push(MetadataRow('viewProviders', c.viewProviders.map((vp: any) => linkTypeHtml(vp.name)).join(' ')));
+    }
+
+    codeField('changeDetection', c.changeDetection);
+    codeField('encapsulation', c.encapsulation);
+    codeField('animations', c.animations);
+    codeField('exportAs', c.exportAs);
+    if (c.host) rows.push(MetadataRow('host', `<code>${formatObject(c.host)}</code>`));
+    codeField('interpolation', c.interpolation);
+    codeField('moduleId', c.moduleId);
+    if (c.hasOwnProperty('preserveWhitespaces'))
+        codeField('preserveWhitespaces', c.preserveWhitespaces);
+    codeField('queries', c.queries);
 
     if (c.hostDirectives?.length > 0) {
-        rows.push(
-            (
-                <tr>
-                    <td class="col-md-3">{t('hostdirectives')}</td>
-                    <td class="col-md-9">
-                        {c.hostDirectives.map((hd: any) => (
-                            <>
-                                {linkTypeHtml(hd.name)}
-                                <br />
-                                {hd.inputs?.length > 0 && (
-                                    <div>
-                                        <i>&nbsp;{t('inputs')}</i> : {hd.inputs.join(' ')}
-                                    </div>
-                                )}
-                                {hd.outputs?.length > 0 && (
-                                    <div>
-                                        <i>&nbsp;{t('outputs')}</i> : {hd.outputs.join(' ')}
-                                    </div>
-                                )}
-                            </>
-                        ))}
-                    </td>
-                </tr>
-            ) as string
-        );
+        rows.push(MetadataRow(t('hostdirectives'), c.hostDirectives.map((hd: any) => {
+            let html = linkTypeHtml(hd.name);
+            if (hd.inputs?.length > 0) html += ` <span class="cdx-metadata-label">${t('inputs')}:</span> ${hd.inputs.join(', ')}`;
+            if (hd.outputs?.length > 0) html += ` <span class="cdx-metadata-label">${t('outputs')}:</span> ${hd.outputs.join(', ')}`;
+            return html;
+        }).join(' ')));
     }
 
     if (c.entryComponents?.length > 0) {
-        // already guarded
-        rows.push(
-            (
-                <tr>
-                    <td class="col-md-3">entryComponents</td>
-                    <td class="col-md-9">
-                        {c.entryComponents.map((ec: any) => linkTypeHtml(ec.name)).join(' ')}
-                    </td>
-                </tr>
-            ) as string
-        );
+        rows.push(MetadataRow('entryComponents', c.entryComponents.map((ec: any) => linkTypeHtml(ec.name)).join(' ')));
     }
 
-    field('exportAs', c.exportAs);
-    if (c.host) rows.push(MetadataField({ label: 'host', value: formatObject(c.host) }));
-    field('interpolation', c.interpolation);
-    field('moduleId', c.moduleId);
-    if (c.hasOwnProperty('preserveWhitespaces'))
-        field('preserveWhitespaces', c.preserveWhitespaces);
+    codeField('templateUrl', c.templateUrl);
+    if (c.styleUrls?.length > 0) codeField('styleUrls', breakComma(c.styleUrls));
 
-    if (c.providers?.length > 0) {
-        rows.push(
-            (
-                <tr>
-                    <td class="col-md-3">providers</td>
-                    <td class="col-md-9">
-                        {c.providers.map((p: any) => linkTypeHtml(p.name)).join(' ')}
-                    </td>
-                </tr>
-            ) as string
-        );
+    // Extends / Implements folded into metadata
+    if (c.extends?.length > 0) {
+        rows.push(MetadataRow('extends', (c.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')));
+    }
+    if (c.implements?.length > 0) {
+        rows.push(MetadataRow('implements', (c.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')));
     }
 
-    field('queries', c.queries);
-    field('selector', c.selector);
-    if (c.standalone) field('standalone', String(c.standalone));
-
-    if (c.imports?.length > 0) {
-        rows.push(
-            (
-                <tr>
-                    <td class="col-md-3">imports</td>
-                    <td class="col-md-9">
-                        {c.imports.map((imp: any) => linkTypeHtml(imp.name)).join(' ')}
-                    </td>
-                </tr>
-            ) as string
-        );
-    }
-
-    if (c.styleUrls?.length > 0)
-        rows.push(MetadataField({ label: 'styleUrls', value: breakComma(c.styleUrls) }));
-    if (c.styles?.length > 0) field('styles', c.styles);
-    if (c.template?.trim()) {
-        rows.push(
-            (
-                <tr>
-                    <td class="col-md-3">template</td>
-                    <td class="col-md-9">
-                        <pre class="line-numbers">
-                            <code class="language-html">{c.template}</code>
-                        </pre>
-                    </td>
-                </tr>
-            ) as string
-        );
-    }
-    field('templateUrl', c.templateUrl);
-
-    if (c.viewProviders?.length > 0) {
-        rows.push(
-            (
-                <tr>
-                    <td class="col-md-3">viewProviders</td>
-                    <td class="col-md-9">
-                        <code>
-                            {c.viewProviders.map((vp: any) => linkTypeHtml(vp.name)).join(' ')}
-                        </code>
-                    </td>
-                </tr>
-            ) as string
-        );
-    }
-
-    field('tag', c.tag);
-    field('styleUrl', c.styleUrl);
-    field('shadow', c.shadow);
-    field('scoped', c.scoped);
-    field('assetsDir', c.assetsDir);
-    field('assetsDirs', c.assetsDirs);
+    codeField('tag', c.tag);
+    codeField('styleUrl', c.styleUrl);
+    codeField('shadow', c.shadow);
+    codeField('scoped', c.scoped);
+    codeField('assetsDir', c.assetsDir);
+    codeField('assetsDirs', c.assetsDirs);
 
     if (rows.length === 0) return '';
 
     return (
-        <section data-compodoc="block-metadata">
-            <h3>{t('metadata')}</h3>
-            <table class="table table-sm table-hover metadata">
-                <tbody>{rows.join('')}</tbody>
-            </table>
+        <section class="cdx-content-section" data-compodoc="block-metadata">
+            <h3 class="cdx-section-heading">{t('metadata')}</h3>
+            <dl class="cdx-metadata-card">
+                {rows.join('')}
+            </dl>
         </section>
     ) as string;
 };
@@ -210,35 +140,41 @@ const InfoContent = (data: any): string => {
 
     return (
         <>
-            {isInfoSection('file') && !data.disableFilePath && (
-                <>
-                    <p class="comment">
-                        <h3>{t('file')}</h3>
-                    </p>
-                    <p class="comment">
-                        <code>{c.file}</code>
-                    </p>
-                </>
-            )}
-
+            {/* 1. Deprecation banner */}
             {isInfoSection('deprecated') && c.deprecated && (
-                <>
-                    <p class="comment">
-                        <h3 class="deprecated">{t('deprecated')}</h3>
-                    </p>
-                    <p class="comment">{c.deprecationMessage}</p>
-                </>
+                <div class="cdx-deprecation-banner" role="alert">
+                    <strong>{t('deprecated')}</strong>
+                    <span>{c.deprecationMessage}</span>
+                </div>
             )}
 
+            {/* 2. Description */}
             {isInfoSection('description') && c.description && (
-                <>
-                    <p class="comment">
-                        <h3>{t('description')}</h3>
-                    </p>
-                    <p class="comment">{parseDescription(c.description, depth)}</p>
-                </>
+                <section class="cdx-content-section">
+                    <h3 class="cdx-section-heading">{t('description')}</h3>
+                    <div class="cdx-prose">{parseDescription(c.description, depth)}</div>
+                </section>
             )}
 
+            {/* 3. Examples */}
+            {isInfoSection('examples') &&
+                c.jsdoctags &&
+                (() => {
+                    const examples = extractJsdocCodeExamples(c.jsdoctags);
+                    if (examples.length === 0) return '';
+                    return (
+                        <section class="cdx-content-section">
+                            <h3 class="cdx-section-heading">{t('example')}</h3>
+                            <div class="io-description">
+                                {examples.map(ex => (
+                                    <div>{ex.comment}</div>
+                                ))}
+                            </div>
+                        </section>
+                    );
+                })()}
+
+            {/* 4. External links */}
             {(c.storybookUrl || c.figmaUrl || c.route) && (
                 <div class="cdx-external-links">
                     {c.storybookUrl && (
@@ -269,9 +205,13 @@ const InfoContent = (data: any): string => {
                 </div>
             )}
 
+            {/* 5. Metadata card (includes extends/implements) */}
+            {ComponentMetadata(c)}
+
+            {/* 6. Content Slots */}
             {c.slots?.length > 0 && (
-                <>
-                    <h3>Content Slots</h3>
+                <section class="cdx-content-section">
+                    <h3 class="cdx-section-heading">Content Slots</h3>
                     <table class="table table-sm table-hover">
                         <thead>
                             <tr>
@@ -290,51 +230,8 @@ const InfoContent = (data: any): string => {
                             ))}
                         </tbody>
                     </table>
-                </>
+                </section>
             )}
-
-            {isInfoSection('extends') && c.extends && (
-                <>
-                    <p class="comment">
-                        <h3>{t('extends')}</h3>
-                    </p>
-                    <p class="comment">
-                        {(c.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')}
-                    </p>
-                </>
-            )}
-
-            {isInfoSection('extends') && c.implements && (
-                <>
-                    <p class="comment">
-                        <h3>{t('implements')}</h3>
-                    </p>
-                    <p class="comment">
-                        {(c.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')}
-                    </p>
-                </>
-            )}
-
-            {isInfoSection('examples') &&
-                c.jsdoctags &&
-                (() => {
-                    const examples = extractJsdocCodeExamples(c.jsdoctags);
-                    if (examples.length === 0) return '';
-                    return (
-                        <>
-                            <p class="comment">
-                                <h3>{t('example')}</h3>
-                            </p>
-                            <div class="io-description">
-                                {examples.map(ex => (
-                                    <div>{ex.comment}</div>
-                                ))}
-                            </div>
-                        </>
-                    );
-                })()}
-
-            {ComponentMetadata(c)}
 
             {data.relationships &&
                 BlockRelationshipGraph({
@@ -448,6 +345,12 @@ export const ComponentPage = (data: any): string => {
                     {c.breaking ? <span class="cdx-badge cdx-badge--breaking">Breaking {c.breaking}</span> : ''}
                 </div>
                 {c.selector ? <p class="cdx-entity-hero-context">{c.selector}</p> : ''}
+                {!data.disableFilePath && c.file && (
+                    <p class="cdx-entity-hero-file" aria-label="Source file">
+                        {IconFile()}
+                        <span>{c.file}</span>
+                    </p>
+                )}
             </div>
 
             <ul class="cdx-tab-bar" role="tablist">
