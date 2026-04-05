@@ -23,7 +23,8 @@ import {
     IconGuard,
     IconInterface,
     IconChevronDown,
-    IconChevronUp
+    IconChevronUp,
+    IconChevronRight
 } from './Icons';
 
 type MenuProps = {
@@ -105,21 +106,50 @@ const EntitySection = (props: {
             </button>
             <ul class={`links collapse${isToggled(props.type) ? ' in' : ''}`} id={id}>
                 {hasCats
-                    ? Object.entries(props.categorized!).map(([key, items]) => (
-                          <li class="chapter inner">
-                              <button
-                                  class="simple menu-toggler"
-                                  type="button"
-                                  data-cdx-toggle="collapse"
-                                  data-cdx-target={`#${props.type}-category-${key}`}
-                                  aria-expanded="true"
-                                  aria-controls={`${props.type}-category-${key}`}
-                              >
-                                  <span class="link-name">{key || 'Uncategorized'}</span>
-                                  {IconChevronDown('cdx-chevron')}
-                              </button>
-                              <ul class="links collapse in" id={`${props.type}-category-${key}`}>
-                                  {items.map((item: any) =>
+                    ? (() => {
+                          const groupedNames = new Set(
+                              Object.values(props.categorized!).flat().map((i: any) => i.name)
+                          );
+                          const ungrouped = props.items.filter(i => !groupedNames.has(i.name));
+                          return (
+                              <>
+                                  {Object.entries(props.categorized!).map(([key, items]) => (
+                                      <li class="chapter inner">
+                                          <button
+                                              class="simple menu-toggler"
+                                              type="button"
+                                              data-cdx-toggle="collapse"
+                                              data-cdx-target={`#${props.type}-category-${key}`}
+                                              aria-expanded="true"
+                                              aria-controls={`${props.type}-category-${key}`}
+                                          >
+                                              <span class="link-name">
+                                                  {key || 'Uncategorized'}
+                                              </span>
+                                              <span class="cdx-badge cdx-badge--count">
+                                                  {items.length}
+                                              </span>
+                                              {IconChevronRight('cdx-chevron')}
+                                          </button>
+                                          <ul
+                                              class="links collapse in"
+                                              id={`${props.type}-category-${key}`}
+                                          >
+                                              {items.map((item: any) =>
+                                                  EntityLink({
+                                                      href: entityHref(props.hrefPrefix, item),
+                                                      name: item.name,
+                                                      deprecated: item.deprecated,
+                                                      standalone: item.standalone,
+                                                      isToken: item.isToken,
+                                                      beta: item.beta,
+                                                      factoryKind: item.factoryKind
+                                                  })
+                                              )}
+                                          </ul>
+                                      </li>
+                                  ))}
+                                  {ungrouped.map(item =>
                                       EntityLink({
                                           href: entityHref(props.hrefPrefix, item),
                                           name: item.name,
@@ -130,9 +160,9 @@ const EntitySection = (props: {
                                           factoryKind: item.factoryKind
                                       })
                                   )}
-                              </ul>
-                          </li>
-                      ))
+                              </>
+                          );
+                      })()
                     : props.items.map(item =>
                           EntityLink({
                               href: entityHref(props.hrefPrefix, item),
