@@ -8,6 +8,7 @@ import { initTabs } from './tabs';
 import { initCodeBlocks } from './code-blocks';
 import { initGraphs } from './graphs';
 import { initCoverage } from './coverage';
+import { expandToActive } from './sidebar';
 // import { initToc } from './toc';
 
 const CONTENT_SELECTOR = '.content-data';
@@ -223,6 +224,7 @@ const navigate = async (url: string, pushState = true, clickedAnchor: HTMLAnchor
         // Fix sidebar links for new page depth and update active state
         fixMenuLinks();
         updateActiveLink(url, clickedAnchor);
+        expandToActive();
 
         // Scroll to top or to anchor
         const hash = new URL(url, window.location.origin).hash;

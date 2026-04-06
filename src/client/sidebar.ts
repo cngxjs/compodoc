@@ -228,7 +228,7 @@ const bindMobileMenu = () => {
     });
 
     // Close mobile sidebar on resize to desktop
-    const mq = window.matchMedia('(min-width: 768px)');
+    const mq = window.matchMedia('(min-width: 1024px)');
     mq.addEventListener('change', (e) => {
         if (e.matches && isMobileSidebarOpen()) {
             closeMobileSidebar();
@@ -236,10 +236,70 @@ const bindMobileMenu = () => {
     });
 };
 
+/** Clear all contains-active indicators */
+const clearContainsActive = () => {
+    document.querySelectorAll('.cdx-contains-active').forEach(el => {
+        el.classList.remove('cdx-contains-active');
+    });
+};
+
+/**
+ * Force-open all ancestor .collapse elements of the active link,
+ * mark collapsed ancestors with contains-active indicator,
+ * and scroll the active link into view.
+ */
+export const expandToActive = () => {
+    clearContainsActive();
+
+    const active = document.querySelector<HTMLElement>(
+        '.menu a.active[data-type="entity-link"], .menu a.active[data-type="chapter-link"]'
+    );
+    if (!active) return;
+
+    // Walk up the DOM, force-open every .collapse ancestor
+    let parent = active.closest('.collapse') as HTMLElement | null;
+    while (parent) {
+        if (!parent.classList.contains('in')) {
+            parent.classList.add('in');
+            parent.style.display = 'block';
+        }
+        // Sync the toggler chevron for this collapse
+        const toggler = document.querySelector(`[data-cdx-target="#${parent.id}"]`);
+        if (toggler) {
+            const chevron = toggler.querySelector('.cdx-chevron');
+            if (chevron) chevron.classList.toggle('cdx-chevron--open', true);
+            toggler.setAttribute('aria-expanded', 'true');
+        }
+        parent = parent.parentElement?.closest('.collapse') as HTMLElement | null;
+    }
+
+    // Mark collapsed ancestors that contain the active entity
+    // (for groups that remain collapsed after state restore)
+    let ancestor = active.closest('.chapter.inner') as HTMLElement | null;
+    while (ancestor) {
+        const collapse = ancestor.querySelector(':scope > ul.links.collapse');
+        if (collapse && !collapse.classList.contains('in')) {
+            const toggler = ancestor.querySelector(':scope > .menu-toggler');
+            if (toggler) toggler.classList.add('cdx-contains-active');
+        }
+        ancestor = ancestor.parentElement?.closest('.chapter.inner') as HTMLElement | null;
+    }
+
+    // Scroll active link into view without jarring jump
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    active.scrollIntoView({
+        block: 'nearest',
+        behavior: prefersReducedMotion ? 'instant' : 'smooth'
+    });
+
+    saveState();
+};
+
 export const initSidebar = () => {
     bindTogglers();
     restoreState();
     syncChevrons();
+    expandToActive();
     bindMobileMenu();
 };
 
