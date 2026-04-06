@@ -24,7 +24,14 @@ import { IComponentDep } from '../compiler/angular/deps/component-dep.factory';
 import { IDirectiveDep } from '../compiler/angular/deps/directive-dep.factory';
 import { IModuleDep } from '../compiler/angular/deps/module-dep.factory';
 
-function deriveGroupKey(filePath: string, maxDepth: number): string {
+export interface GroupNode {
+    name: string;       // segment name (single folder)
+    fullPath: string;   // e.g. "features/admin"
+    items: any[];       // entities directly in this folder
+    children: GroupNode[];
+}
+
+function deriveGroupKey(filePath: string): string {
     if (!filePath) return '';
 
     // Normalize path separators
@@ -39,13 +46,61 @@ function deriveGroupKey(filePath: string, maxDepth: number): string {
         }
     }
 
-    // Take parent directory segments (exclude filename)
+    // Take parent directory segments (exclude filename) — full path, no truncation
     const segments = rel.split('/').slice(0, -1);
     if (segments.length === 0) return '';
 
-    // Limit to maxDepth
-    const groupSegments = segments.slice(0, maxDepth);
-    return groupSegments.join('/');
+    return segments.join('/');
+}
+
+/**
+ * Convert flat `Record<string, items[]>` into a GroupNode tree.
+ * Mirrors the actual folder structure — no path compression.
+ */
+export function buildGroupTree(groups: Record<string, any[]>): GroupNode[] {
+    interface TrieNode {
+        name: string;
+        fullPath: string;
+        items: any[];
+        children: Map<string, TrieNode>;
+    }
+
+    const root: TrieNode = { name: '', fullPath: '', items: [], children: new Map() };
+
+    for (const [key, items] of Object.entries(groups)) {
+        const segments = key.split('/');
+        let current = root;
+        let pathSoFar = '';
+        for (const seg of segments) {
+            pathSoFar = pathSoFar ? `${pathSoFar}/${seg}` : seg;
+            if (!current.children.has(seg)) {
+                current.children.set(seg, {
+                    name: seg,
+                    fullPath: pathSoFar,
+                    items: [],
+                    children: new Map()
+                });
+            }
+            current = current.children.get(seg)!;
+        }
+        current.items = items;
+    }
+
+    const toGroupNodes = (node: TrieNode): GroupNode[] => {
+        const result: GroupNode[] = [];
+        for (const child of node.children.values()) {
+            result.push({
+                name: child.name,
+                fullPath: child.fullPath,
+                items: child.items,
+                children: toGroupNodes(child)
+            });
+        }
+        result.sort((a, b) => a.name.localeCompare(b.name));
+        return result;
+    };
+
+    return toGroupNodes(root);
 }
 
 export class DependenciesEngine {
@@ -481,7 +536,7 @@ export class DependenciesEngine {
         this.miscellaneous.groupedTypeAliases = this.miscellaneous.typealiases.reduce((groups, item) => { (groups[item.file] ??= []).push(item); return groups; }, {});
     }
 
-    private groupByStrategy(items: any[], strategy: string, depth: number): Record<string, any[]> {
+    private groupByStrategy(items: any[], strategy: string): Record<string, any[]> {
         if (strategy === 'none' || !strategy) return {};
 
         if (strategy === 'category') {
@@ -502,35 +557,26 @@ export class DependenciesEngine {
                 (groups[item.category] ??= []).push(item);
                 continue;
             }
-            const key = deriveGroupKey(item.file, depth);
+            const key = deriveGroupKey(item.file);
             if (key) {
                 (groups[key] ??= []).push(item);
             }
         }
 
-        // Fold single-item groups into flat list
-        const folded: Record<string, any[]> = {};
-        for (const [key, groupItems] of Object.entries(groups)) {
-            if (groupItems.length > 1) {
-                folded[key] = groupItems;
-            }
-        }
-
-        return Object.keys(folded).length > 0 ? folded : {};
+        return Object.keys(groups).length > 0 ? groups : {};
     }
 
     private prepareCategoryGroups() {
         const strategy = Configuration.mainData.groupBy;
-        const depth = Configuration.mainData.groupDepth;
-        this.categorizedComponents = this.groupByStrategy(this.components as any[], strategy, depth);
-        this.categorizedDirectives = this.groupByStrategy(this.directives as any[], strategy, depth);
-        this.categorizedInjectables = this.groupByStrategy(this.injectables as any[], strategy, depth);
-        this.categorizedPipes = this.groupByStrategy(this.pipes as any[], strategy, depth);
-        this.categorizedClasses = this.groupByStrategy(this.classes as any[], strategy, depth);
-        this.categorizedInterfaces = this.groupByStrategy(this.interfaces as any[], strategy, depth);
-        this.categorizedGuards = this.groupByStrategy(this.guards as any[], strategy, depth);
-        this.categorizedInterceptors = this.groupByStrategy(this.interceptors as any[], strategy, depth);
-        this.categorizedEntities = this.groupByStrategy(this.entities as any[], strategy, depth);
+        this.categorizedComponents = this.groupByStrategy(this.components as any[], strategy);
+        this.categorizedDirectives = this.groupByStrategy(this.directives as any[], strategy);
+        this.categorizedInjectables = this.groupByStrategy(this.injectables as any[], strategy);
+        this.categorizedPipes = this.groupByStrategy(this.pipes as any[], strategy);
+        this.categorizedClasses = this.groupByStrategy(this.classes as any[], strategy);
+        this.categorizedInterfaces = this.groupByStrategy(this.interfaces as any[], strategy);
+        this.categorizedGuards = this.groupByStrategy(this.guards as any[], strategy);
+        this.categorizedInterceptors = this.groupByStrategy(this.interceptors as any[], strategy);
+        this.categorizedEntities = this.groupByStrategy(this.entities as any[], strategy);
     }
 
     public getModule(name: string) {
