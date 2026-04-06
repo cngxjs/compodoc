@@ -969,9 +969,32 @@ body {
   margin-left: 0.25rem;
 }
 
-/* Hierarchical folder group nesting depth */
+/* Hierarchical folder group nesting —
+   Folder labels indent per depth (via margin-left on the <li>).
+   Entity links pull back flush-left to the section edge. */
 .chapter.inner {
-  padding-left: calc(var(--depth, 0) * 0.75rem);
+  margin-left: 6px;
+}
+
+/* Group header: muted uppercase label */
+.chapter.inner > .menu-toggler .link-name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-cdx-text-muted);
+}
+
+/* Entity links: negative margin pulls back to section left edge.
+   --depth tells us how deep we are, so we undo depth*6px of
+   accumulated margin from parent .chapter.inner elements. */
+.chapter.inner > ul.links {
+  margin-left: calc((var(--depth, 0) + 1) * -6px);
+  padding-left: 20px;
+}
+.chapter.inner ul.links li.link a {
+  padding: 7px 15px;
+  font-size: 13px;
 }
 
 .cdx-badge--signal {
@@ -1199,8 +1222,7 @@ a[href] { cursor: pointer; }
 .menu ul.list li.chapter .simple {
   display: flex; align-items: center; padding: 7px 15px; font-size: 13px; position: relative;
 }
-.menu ul.list li.chapter .inner .simple { padding-left: 35px; }
-.menu ul.list li.chapter .inner ul.links { padding-left: 40px; }
+/* Inner group button/links padding handled by --depth rules above */
 .menu ul.list li.chapter.additional .inner ul.links { padding-left: 20px; }
 .menu .title { padding: 8px 0; }
 .menu-toggler { cursor: pointer; }
