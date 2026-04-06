@@ -25,17 +25,17 @@ import { IDirectiveDep } from '../compiler/angular/deps/directive-dep.factory';
 import { IModuleDep } from '../compiler/angular/deps/module-dep.factory';
 
 export interface GroupNode {
-    name: string;       // segment name (single folder)
-    fullPath: string;   // e.g. "features/admin"
-    items: any[];       // entities directly in this folder
+    name: string; // segment name (single folder)
+    fullPath: string; // e.g. "features/admin"
+    items: any[]; // entities directly in this folder
     children: GroupNode[];
 }
 
-function deriveGroupKey(filePath: string): string {
+function deriveGroupKey(filePath: string, maxDepth: number): string {
     if (!filePath) return '';
 
     // Normalize path separators
-    let rel = filePath.replace(/\\/g, '/');
+    let rel = filePath.replaceAll('\\', '/');
 
     // Strip everything up to and including a known app root marker
     for (const marker of ['src/app/', 'src/', 'app/', 'lib/']) {
@@ -46,11 +46,13 @@ function deriveGroupKey(filePath: string): string {
         }
     }
 
-    // Take parent directory segments (exclude filename) — full path, no truncation
+    // Take parent directory segments (exclude filename)
     const segments = rel.split('/').slice(0, -1);
     if (segments.length === 0) return '';
 
-    return segments.join('/');
+    // Truncate at maxDepth — items from deeper folders merge into
+    // the last allowed group (e.g. depth 2: features/admin/ui/settings → features/admin)
+    return segments.slice(0, maxDepth).join('/');
 }
 
 /**
@@ -205,18 +207,42 @@ export class DependenciesEngine {
             }
         });
         this.rawData = data;
-        this.modules = [...this.rawData.modules].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
-        this.rawModulesForOverview = [...data.modulesForGraph].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
-        this.rawModules = [...data.modulesForGraph].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
-        this.components = [...this.rawData.components].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
-        this.entities = [...this.rawData.entities].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
-        this.directives = [...this.rawData.directives].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
-        this.injectables = [...this.rawData.injectables].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
-        this.interceptors = [...this.rawData.interceptors].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
-        this.guards = [...this.rawData.guards].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
-        this.interfaces = [...this.rawData.interfaces].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
-        this.pipes = [...this.rawData.pipes].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
-        this.classes = [...this.rawData.classes].sort((a, b) => (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase()));
+        this.modules = [...this.rawData.modules].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.rawModulesForOverview = [...data.modulesForGraph].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.rawModules = [...data.modulesForGraph].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.components = [...this.rawData.components].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.entities = [...this.rawData.entities].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.directives = [...this.rawData.directives].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.injectables = [...this.rawData.injectables].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.interceptors = [...this.rawData.interceptors].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.guards = [...this.rawData.guards].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.interfaces = [...this.rawData.interfaces].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.pipes = [...this.rawData.pipes].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.classes = [...this.rawData.classes].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
         this.appConfig = this.rawData.appConfig || [];
         this.miscellaneous = this.rawData.miscellaneous;
         this.prepareMiscellaneous();
@@ -343,7 +369,9 @@ export class DependenciesEngine {
 
     private manageDuplicatesName() {
         const processDuplicates = (element, index, array) => {
-            const elementsWithSameName = array.filter(el => (el as any).name === (element as any).name);
+            const elementsWithSameName = array.filter(
+                el => (el as any).name === (element as any).name
+            );
             if (elementsWithSameName.length > 1) {
                 // First element is the reference for duplicates
                 for (let i = 1; i < elementsWithSameName.length; i++) {
@@ -437,7 +465,9 @@ export class DependenciesEngine {
         }
         if (updatedData.interceptors.length > 0) {
             updatedData.interceptors.forEach((interceptor: IInterceptorDep) => {
-                const _index = this.interceptors.findIndex(i => (i as any).name === interceptor.name);
+                const _index = this.interceptors.findIndex(
+                    i => (i as any).name === interceptor.name
+                );
                 this.interceptors[_index] = interceptor;
             });
         }
@@ -470,32 +500,32 @@ export class DependenciesEngine {
          */
         if (updatedData.miscellaneous.variables.length > 0) {
             updatedData.miscellaneous.variables.forEach((variable: any) => {
-                const _index = this.miscellaneous.variables.findIndex(v =>
-                    v.name === variable.name && v.file === variable.file
+                const _index = this.miscellaneous.variables.findIndex(
+                    v => v.name === variable.name && v.file === variable.file
                 );
                 this.miscellaneous.variables[_index] = variable;
             });
         }
         if (updatedData.miscellaneous.functions.length > 0) {
             updatedData.miscellaneous.functions.forEach((func: IFunctionDecDep) => {
-                const _index = this.miscellaneous.functions.findIndex(f =>
-                    f.name === func.name && f.file === func.file
+                const _index = this.miscellaneous.functions.findIndex(
+                    f => f.name === func.name && f.file === func.file
                 );
                 this.miscellaneous.functions[_index] = func;
             });
         }
         if (updatedData.miscellaneous.typealiases.length > 0) {
             updatedData.miscellaneous.typealiases.forEach((typealias: ITypeAliasDecDep) => {
-                const _index = this.miscellaneous.typealiases.findIndex(t =>
-                    t.name === typealias.name && t.file === typealias.file
+                const _index = this.miscellaneous.typealiases.findIndex(
+                    t => t.name === typealias.name && t.file === typealias.file
                 );
                 this.miscellaneous.typealiases[_index] = typealias;
             });
         }
         if (updatedData.miscellaneous.enumerations.length > 0) {
             updatedData.miscellaneous.enumerations.forEach((enumeration: IEnumDecDep) => {
-                const _index = this.miscellaneous.enumerations.findIndex(e =>
-                    e.name === enumeration.name && e.file === enumeration.file
+                const _index = this.miscellaneous.enumerations.findIndex(
+                    e => e.name === enumeration.name && e.file === enumeration.file
                 );
                 this.miscellaneous.enumerations[_index] = enumeration;
             });
@@ -530,23 +560,50 @@ export class DependenciesEngine {
         this.miscellaneous.enumerations.sort(getNamesCompareFn());
         this.miscellaneous.typealiases.sort(getNamesCompareFn());
         // group each subgoup by file
-        this.miscellaneous.groupedVariables = this.miscellaneous.variables.reduce((groups, item) => { (groups[item.file] ??= []).push(item); return groups; }, {});
-        this.miscellaneous.groupedFunctions = this.miscellaneous.functions.reduce((groups, item) => { (groups[item.file] ??= []).push(item); return groups; }, {});
-        this.miscellaneous.groupedEnumerations = this.miscellaneous.enumerations.reduce((groups, item) => { (groups[item.file] ??= []).push(item); return groups; }, {});
-        this.miscellaneous.groupedTypeAliases = this.miscellaneous.typealiases.reduce((groups, item) => { (groups[item.file] ??= []).push(item); return groups; }, {});
+        this.miscellaneous.groupedVariables = this.miscellaneous.variables.reduce(
+            (groups, item) => {
+                (groups[item.file] ??= []).push(item);
+                return groups;
+            },
+            {}
+        );
+        this.miscellaneous.groupedFunctions = this.miscellaneous.functions.reduce(
+            (groups, item) => {
+                (groups[item.file] ??= []).push(item);
+                return groups;
+            },
+            {}
+        );
+        this.miscellaneous.groupedEnumerations = this.miscellaneous.enumerations.reduce(
+            (groups, item) => {
+                (groups[item.file] ??= []).push(item);
+                return groups;
+            },
+            {}
+        );
+        this.miscellaneous.groupedTypeAliases = this.miscellaneous.typealiases.reduce(
+            (groups, item) => {
+                (groups[item.file] ??= []).push(item);
+                return groups;
+            },
+            {}
+        );
     }
 
-    private groupByStrategy(items: any[], strategy: string): Record<string, any[]> {
+    private groupByStrategy(items: any[], strategy: string, depth: number): Record<string, any[]> {
         if (strategy === 'none' || !strategy) return {};
 
         if (strategy === 'category') {
             const hasAnyCategory = items.some(item => item.category && item.category !== '');
             if (!hasAnyCategory) return {};
-            return items.reduce((groups, item) => {
-                const k = item.category || '';
-                (groups[k] ??= []).push(item);
-                return groups;
-            }, {} as Record<string, any[]>);
+            return items.reduce(
+                (groups, item) => {
+                    const k = item.category || '';
+                    (groups[k] ??= []).push(item);
+                    return groups;
+                },
+                {} as Record<string, any[]>
+            );
         }
 
         // strategy === 'folder'
@@ -557,7 +614,7 @@ export class DependenciesEngine {
                 (groups[item.category] ??= []).push(item);
                 continue;
             }
-            const key = deriveGroupKey(item.file);
+            const key = deriveGroupKey(item.file, depth);
             if (key) {
                 (groups[key] ??= []).push(item);
             }
@@ -568,15 +625,36 @@ export class DependenciesEngine {
 
     private prepareCategoryGroups() {
         const strategy = Configuration.mainData.groupBy;
-        this.categorizedComponents = this.groupByStrategy(this.components as any[], strategy);
-        this.categorizedDirectives = this.groupByStrategy(this.directives as any[], strategy);
-        this.categorizedInjectables = this.groupByStrategy(this.injectables as any[], strategy);
-        this.categorizedPipes = this.groupByStrategy(this.pipes as any[], strategy);
-        this.categorizedClasses = this.groupByStrategy(this.classes as any[], strategy);
-        this.categorizedInterfaces = this.groupByStrategy(this.interfaces as any[], strategy);
-        this.categorizedGuards = this.groupByStrategy(this.guards as any[], strategy);
-        this.categorizedInterceptors = this.groupByStrategy(this.interceptors as any[], strategy);
-        this.categorizedEntities = this.groupByStrategy(this.entities as any[], strategy);
+        const depth = Configuration.mainData.groupDepth;
+        this.categorizedComponents = this.groupByStrategy(
+            this.components as any[],
+            strategy,
+            depth
+        );
+        this.categorizedDirectives = this.groupByStrategy(
+            this.directives as any[],
+            strategy,
+            depth
+        );
+        this.categorizedInjectables = this.groupByStrategy(
+            this.injectables as any[],
+            strategy,
+            depth
+        );
+        this.categorizedPipes = this.groupByStrategy(this.pipes as any[], strategy, depth);
+        this.categorizedClasses = this.groupByStrategy(this.classes as any[], strategy, depth);
+        this.categorizedInterfaces = this.groupByStrategy(
+            this.interfaces as any[],
+            strategy,
+            depth
+        );
+        this.categorizedGuards = this.groupByStrategy(this.guards as any[], strategy, depth);
+        this.categorizedInterceptors = this.groupByStrategy(
+            this.interceptors as any[],
+            strategy,
+            depth
+        );
+        this.categorizedEntities = this.groupByStrategy(this.entities as any[], strategy, depth);
     }
 
     public getModule(name: string) {
@@ -640,7 +718,10 @@ export class DependenciesEngine {
      * Returns incoming (who uses this) and outgoing (what it depends on).
      * Limited to MAX_NODES to avoid performance issues in large projects.
      */
-    public getRelationships(entityName: string): { incoming: Array<{ name: string; type: string }>; outgoing: Array<{ name: string; type: string }> } {
+    public getRelationships(entityName: string): {
+        incoming: Array<{ name: string; type: string }>;
+        outgoing: Array<{ name: string; type: string }>;
+    } {
         const MAX_NODES = 50;
         const incoming: Array<{ name: string; type: string }> = [];
         const outgoing: Array<{ name: string; type: string }> = [];
@@ -652,7 +733,11 @@ export class DependenciesEngine {
             const modImports = (mod.imports ?? []).map((i: any) => i.name);
             const modExports = (mod.exports ?? []).map((e: any) => e.name);
 
-            if (modDeclares.includes(entityName) || modImports.includes(entityName) || modExports.includes(entityName)) {
+            if (
+                modDeclares.includes(entityName) ||
+                modImports.includes(entityName) ||
+                modExports.includes(entityName)
+            ) {
                 if (!seen.has(mod.name) && incoming.length < MAX_NODES) {
                     incoming.push({ name: mod.name, type: 'module' });
                     seen.add(mod.name);
@@ -681,7 +766,11 @@ export class DependenciesEngine {
             } else {
                 // Incoming: other components that import this entity
                 const compImports = (comp.imports ?? []).map((i: any) => i.name);
-                if (compImports.includes(entityName) && !seen.has(comp.name) && incoming.length < MAX_NODES) {
+                if (
+                    compImports.includes(entityName) &&
+                    !seen.has(comp.name) &&
+                    incoming.length < MAX_NODES
+                ) {
                     incoming.push({ name: comp.name, type: comp.type || 'component' });
                     seen.add(comp.name);
                 }
