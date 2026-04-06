@@ -1,5 +1,3 @@
-/* ── Overview Dashboard ── */
-
 .cdx-overview-hero-name {
     @apply break-words;
 }
@@ -8,13 +6,9 @@
     @apply max-w-[860px];
 }
 
-/* ── Graph spacing ── */
-
 .module-graph-container {
     @apply mt-6 mb-2;
 }
-
-/* ── KPI Row ── */
 
 .cdx-overview-kpi-row {
     container-type: inline-size;
@@ -36,7 +30,9 @@
 a.cdx-overview-kpi {
     @apply cursor-pointer;
     color: var(--color-cdx-text) !important;
-    transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+    transition:
+        transform 200ms ease-out,
+        box-shadow 200ms ease-out;
 }
 
 a.cdx-overview-kpi:hover {
@@ -66,7 +62,6 @@ a.cdx-overview-kpi:hover {
     font-variant-numeric: tabular-nums;
 }
 
-/* Coverage KPI: donut centered */
 .cdx-overview-kpi--coverage {
     @apply gap-0;
 }
@@ -74,8 +69,6 @@ a.cdx-overview-kpi:hover {
 .cdx-overview-kpi--coverage .cdx-overview-kpi-label {
     @apply mb-0 mt-2;
 }
-
-/* ── Donut ── */
 
 .cdx-overview-donut {
     @apply w-[80px] h-[80px];
@@ -85,8 +78,6 @@ a.cdx-overview-kpi:hover {
     @apply text-base font-bold;
     fill: var(--color-cdx-text);
 }
-
-/* ── Adoption bars (inside KPI tiles) ── */
 
 .cdx-overview-adoption-bar {
     @apply w-full h-1.5 rounded-full overflow-hidden mt-2;
@@ -98,13 +89,9 @@ a.cdx-overview-kpi:hover {
     @apply h-full rounded-full bg-[var(--color-cdx-primary)];
 }
 
-/* ── Section headings ── */
-
 .cdx-overview-section-heading {
     @apply text-xs font-semibold uppercase tracking-wider text-[var(--cdx-text-muted)] mb-3;
 }
-
-/* ── Entity Chips ── */
 
 .cdx-overview-inventory {
     @apply pt-6 border-t border-[var(--cdx-border)] flex flex-wrap gap-6;
@@ -164,15 +151,11 @@ a.cdx-overview-chip:hover {
     @apply text-xs text-[var(--cdx-text-muted)] ml-0.5;
 }
 
-/* ── Responsive (KPI values scale down at 2-col) ── */
-
 @container (max-width: 500px) {
     .cdx-overview-kpi-value {
         @apply text-[1.75rem];
     }
 }
-
-/* ── Reduced motion ── */
 
 @media (prefers-reduced-motion: reduce) {
     a.cdx-overview-kpi,

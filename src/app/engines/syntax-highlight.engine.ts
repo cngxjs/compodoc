@@ -55,15 +55,11 @@ export interface HighlightOptions {
     lang?: string;
     /** 'source' adds line numbers + data attributes; 'snippet' is compact. */
     mode?: 'source' | 'snippet';
-    /** Entity index for type reference linking. When provided, type names matching known entities get data-entity spans. */
+    /** Entity index for cross-linking type names to their doc pages. */
     entityIndex?: Record<string, { href: string; kind: string }>;
 }
 
-/**
- * Initialize the Shiki highlighter singleton.
- * Must be called once before any highlight calls (async because Shiki loads WASM).
- * Uses dynamic import() to avoid ESM/CJS warnings.
- */
+/** Initialize the Shiki highlighter singleton. Call once before any highlight calls. */
 export async function initHighlighter(): Promise<void> {
     if (highlighter) return;
     const { createHighlighter } = await import('shiki');
@@ -76,9 +72,6 @@ export async function initHighlighter(): Promise<void> {
 /**
  * Highlight source code and return an HTML string.
  * Falls back to escaped plain text if the highlighter is not initialized.
- *
- * When mode is 'source', adds line numbers, fold regions, and member markers.
- * When mode is 'snippet' (default), renders compact without line numbers.
  */
 export function highlightCode(code: string, optionsOrLang?: HighlightOptions | string): string {
     const opts: HighlightOptions = typeof optionsOrLang === 'string'
@@ -120,15 +113,11 @@ export function highlightCode(code: string, optionsOrLang?: HighlightOptions | s
 // Fold region detection (text scanning, no AST required)
 // ---------------------------------------------------------------------------
 
-/**
- * Detect foldable regions in TypeScript/JavaScript source code.
- * Returns import blocks and decorator metadata blocks.
- */
+/** Detect foldable import blocks and decorator metadata blocks. */
 export function detectFoldRegions(code: string): FoldRegion[] {
     const lines = code.split('\n');
     const regions: FoldRegion[] = [];
 
-    // --- Imports block ---
     let importStart = -1;
     let importEnd = -1;
     let importCount = 0;
@@ -139,7 +128,6 @@ export function detectFoldRegions(code: string): FoldRegion[] {
             if (importStart === -1) importStart = i;
             importEnd = i;
             importCount++;
-            // Handle multi-line imports
             if (!trimmed.includes(';') && !trimmed.endsWith("';") && !trimmed.endsWith('";')) {
                 for (let j = i + 1; j < lines.length; j++) {
                     importEnd = j;
@@ -147,7 +135,7 @@ export function detectFoldRegions(code: string): FoldRegion[] {
                 }
             }
         } else if (importStart !== -1 && trimmed !== '' && !trimmed.startsWith('//') && !trimmed.startsWith('/*') && !trimmed.startsWith('*')) {
-            break; // End of imports block (non-empty, non-comment line)
+            break;
         }
     }
 
@@ -155,12 +143,11 @@ export function detectFoldRegions(code: string): FoldRegion[] {
         regions.push({
             kind: 'imports',
             label: `${importCount} imports`,
-            startLine: importStart + 1, // 1-based
+            startLine: importStart + 1,
             endLine: importEnd + 1
         });
     }
 
-    // --- Decorator blocks ---
     const decoratorPattern = /^@(Component|Directive|NgModule|Injectable|Pipe)\s*\(\s*\{/;
     for (let i = 0; i < lines.length; i++) {
         const trimmed = lines[i].trim();
@@ -209,10 +196,7 @@ const MEMBER_PATTERNS: Array<{ pattern: RegExp; kind: string }> = [
     { pattern: /^\s+(?:readonly\s+)?(\w+)\s*[=:;]/, kind: 'property' },
 ];
 
-/**
- * Detect class members and type declarations for breadcrumb navigation.
- * Simple line-by-line pattern matching — intentionally not a full parser.
- */
+/** Detect class members and type declarations. Line-by-line patterns, not a full parser. */
 export function detectMembers(code: string): MemberInfo[] {
     const lines = code.split('\n');
     const members: MemberInfo[] = [];
@@ -223,7 +207,6 @@ export function detectMembers(code: string): MemberInfo[] {
             const match = lines[i].match(pattern);
             if (match) {
                 const name = match[1];
-                // Skip common noise
                 if (['if', 'for', 'while', 'switch', 'return', 'const', 'let', 'var', 'import', 'from', 'type'].includes(name)) continue;
 
                 if (kind === 'class' || kind === 'interface' || kind === 'enum') {
@@ -232,7 +215,7 @@ export function detectMembers(code: string): MemberInfo[] {
                 } else if (currentClass) {
                     members.push({ name: `${currentClass}.${name}`, kind, line: i + 1 });
                 }
-                break; // First match wins per line
+                break;
             }
         }
     }
@@ -244,9 +227,7 @@ export function detectMembers(code: string): MemberInfo[] {
 // Shiki transformers
 // ---------------------------------------------------------------------------
 
-/**
- * Adds line number spans and data-cdx-line-nr to each line.
- */
+/** Shiki transformer: prepend line-number spans to each line. */
 function lineNumberTransformer(): ShikiTransformer {
     return {
         line(hast: HastElement, line: number) {
@@ -268,10 +249,7 @@ function lineNumberTransformer(): ShikiTransformer {
     };
 }
 
-/**
- * Adds data-cdx-member attributes on lines where members are declared.
- * Used by the client-side breadcrumb bar.
- */
+/** Shiki transformer: tag member-declaration lines for breadcrumb tracking. */
 function memberMarkerTransformer(members: MemberInfo[]): ShikiTransformer {
     const memberByLine = new Map(members.map(m => [m.line, m]));
 
@@ -286,10 +264,7 @@ function memberMarkerTransformer(members: MemberInfo[]): ShikiTransformer {
     };
 }
 
-/**
- * Post-processes the Shiki HTML output to wrap fold regions in <details> elements.
- * Uses the next line's marker (or </code>) to find the boundary of each region.
- */
+/** Shiki postprocessor: wrap fold regions in <details> elements. */
 function foldRegionPostprocessor(regions: FoldRegion[]): ShikiTransformer {
     if (regions.length === 0) return {};
 
@@ -297,7 +272,7 @@ function foldRegionPostprocessor(regions: FoldRegion[]): ShikiTransformer {
         postprocess(html: string) {
             let result = html;
 
-            // Process regions in reverse order so string offsets don't shift
+            // reverse order so string offsets stay valid
             const sorted = [...regions].sort((a, b) => b.startLine - a.startLine);
 
             for (const region of sorted) {
@@ -307,19 +282,15 @@ function foldRegionPostprocessor(regions: FoldRegion[]): ShikiTransformer {
                 const startIdx = result.indexOf(startMarker);
                 if (startIdx === -1) continue;
 
-                // Find the <span that contains the start line attribute
                 const tagStart = result.lastIndexOf('<span', startIdx);
                 if (tagStart === -1) continue;
 
-                // Find the start of the NEXT line after the region (or end of code block)
                 let lineEnd: number;
                 const nextIdx = result.indexOf(nextLineMarker, startIdx);
                 if (nextIdx !== -1) {
-                    // Find the <span that starts the next line
                     lineEnd = result.lastIndexOf('<span', nextIdx);
                     if (lineEnd === -1) continue;
                 } else {
-                    // No next line -- region goes to end of code block
                     lineEnd = result.indexOf('</code>', startIdx);
                     if (lineEnd === -1) continue;
                 }

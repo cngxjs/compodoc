@@ -15,7 +15,6 @@ pre {
   font-size: 0.8125rem;
   line-height: 1.6;
 
-  /* Thin themed scrollbar */
   scrollbar-width: thin;
   scrollbar-color: hsl(220 10% 50% / 0.4) transparent;
 }
@@ -39,7 +38,6 @@ pre code {
   line-height: inherit;
 }
 
-/* Non-Shiki code blocks (JSDoc examples, inline templates) */
 pre.line-numbers {
   background: var(--color-cdx-bg-code-block);
   color: hsl(220 14% 80%);
@@ -55,7 +53,7 @@ pre.line-numbers code {
   word-break: break-word;
 }
 
-/* Shiki dual-theme support — dark mode needs !important to override inline color/bg */
+/* dark mode !important overrides Shiki's inline color/bg */
 .shiki span {
   background-color: transparent;
 }
@@ -88,7 +86,6 @@ pre.line-numbers code {
   margin: 0;
 }
 
-/* File header bar */
 .cdx-source-header {
   @apply flex items-center justify-between;
   padding: 6px 12px;
@@ -103,7 +100,6 @@ pre.line-numbers code {
   background: hsl(225 16% 12%);
 }
 
-/* Line numbers (injected by Shiki transformer in source mode) */
 .cdx-line-number {
   display: inline-block;
   width: 3.5ch;
@@ -120,7 +116,6 @@ pre.line-numbers code {
   color: var(--color-cdx-text-secondary);
 }
 
-/* Line hover */
 .compodoc-sourcecode .line:hover {
   background: hsl(220 20% 14% / 0.06);
   transition: background 80ms ease;
@@ -130,7 +125,6 @@ pre.line-numbers code {
   background: hsl(220 16% 90% / 0.06);
 }
 
-/* Line highlight (permalink target) */
 .cdx-line-highlight {
   background: hsl(48 96% 53% / 0.25) !important;
 }
@@ -140,7 +134,6 @@ pre.line-numbers code {
   outline: 1px solid hsl(48 90% 60% / 0.3);
 }
 
-/* Line flash animation (link-to-source navigation) */
 .cdx-line-flash {
   animation: cdx-line-pulse 0.5s ease;
 }
@@ -181,7 +174,6 @@ pre.line-numbers code {
   opacity: 1;
 }
 
-/* Custom disclosure marker */
 .cdx-fold-summary::before {
   content: '\25B6'; /* right-pointing triangle */
   display: inline-block;
@@ -194,7 +186,6 @@ pre.line-numbers code {
   transform: rotate(90deg);
 }
 
-/* Hide default marker in webkit/blink */
 .cdx-fold-summary::-webkit-details-marker {
   display: none;
 }
@@ -234,8 +225,6 @@ pre.line-numbers code {
   color: var(--color-cdx-primary);
   text-decoration: underline;
 }
-
-/* Overflow: native scrollbar only, no gradient indicator */
 
 /* --- Copy button --- */
 
@@ -285,7 +274,6 @@ pre:hover .cdx-code-copy,
   padding: 0.75rem;
 }
 
-/* Language label chip (top-right corner, subtle) */
 .cdx-code-lang-chip {
   position: absolute;
   top: 0;
@@ -302,19 +290,15 @@ pre:hover .cdx-code-copy,
   user-select: none;
 }
 
-/* Fade chip when copy button appears on hover */
 pre:hover > .cdx-code-lang-chip {
   opacity: 0;
   transition: opacity var(--cdx-transition-fast);
 }
 
-/* Expandable snippet (>10 lines) */
 .cdx-code-expandable {
   @apply relative overflow-hidden;
   max-height: 240px;
 }
-
-/* No gradient overlay — clean cutoff with button only */
 
 .cdx-code-expand-btn {
   @apply absolute w-full text-center cursor-pointer;

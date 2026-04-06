@@ -1,7 +1,3 @@
-/**
- * Build an entity index mapping entity names to their documentation page URLs.
- * Used for symbol hover tooltips and cross-linking in source code views.
- */
 
 export interface EntityIndexEntry {
     href: string;
@@ -29,10 +25,7 @@ const ENTITY_COLLECTIONS: Array<{ key: string; path: string; kind: string }> = [
     { key: 'interceptors', path: 'interceptors', kind: 'interceptor' },
 ];
 
-/**
- * Build the entity index from mainData.
- * Call after all entities have been collected (before processPages rendering).
- */
+/** Build the entity index from mainData. Call after entity collection, before rendering. */
 export function buildEntityIndex(mainData: Record<string, unknown>): EntityIndex {
     const index: EntityIndex = {};
 
@@ -52,7 +45,6 @@ export function buildEntityIndex(mainData: Record<string, unknown>): EntityIndex
         }
     }
 
-    // Miscellaneous entities (functions, variables, type aliases, enumerations)
     const misc = mainData['miscellaneous'] as Record<string, EntityLike[]> | undefined;
     if (misc) {
         const miscKinds: Array<{ key: string; kind: string }> = [

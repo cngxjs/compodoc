@@ -35,7 +35,6 @@ export class MarkdownEngine {
             try {
                 highlighted = highlightCode(code, { lang: language, mode: 'snippet' });
             } catch {
-                // Fallback to escaped plain text if Shiki can't handle the language
                 highlighted = `<pre class="shiki"><code>${this.escape(code)}</code></pre>`;
             }
             return `<b>${I18nEngine.translate(

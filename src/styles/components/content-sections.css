@@ -1,297 +1,296 @@
-/* ----------------------------------------------------------------
-   Content sections — visual hierarchy for entity Info tab
-   Spec: .internal/content-sections-design.md
-   ---------------------------------------------------------------- */
-
-/* ---- Hero file path ---- */
-
 .cdx-entity-hero-file {
-  @apply flex items-center gap-1.5;
-  font-family: var(--font-code);
-  font-size: 0.8rem;
-  color: var(--color-cdx-text-muted);
-  margin-top: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    @apply flex items-center gap-1.5;
+    font-family: var(--font-code);
+    font-size: 0.8rem;
+    color: var(--color-cdx-text-muted);
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .cdx-entity-hero-file svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  opacity: 0.6;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    opacity: 0.6;
 }
 
 @container (max-width: 500px) {
-  .cdx-entity-hero-file {
-    display: none;
-  }
+    .cdx-entity-hero-file {
+        display: none;
+    }
 }
 
-/* ---- Deprecation banner ---- */
-
 .cdx-deprecation-banner {
-  border-left: 3px solid var(--color-cdx-entity-service);
-  background: color-mix(in srgb, var(--color-cdx-entity-service) 6%, var(--color-cdx-bg));
-  padding: 12px 16px;
-  border-radius: var(--radius-cdx-md);
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
+    border-left: 3px solid var(--color-cdx-entity-service);
+    background: color-mix(in srgb, var(--color-cdx-entity-service) 6%, var(--color-cdx-bg));
+    padding: 12px 16px;
+    border-radius: var(--radius-cdx-md);
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
 }
 
 .cdx-deprecation-banner strong {
-  font-weight: 600;
-  margin-right: 8px;
+    font-weight: 600;
+    margin-right: 8px;
 }
 
 .dark .cdx-deprecation-banner {
-  background: color-mix(in srgb, var(--color-cdx-entity-service) 10%, var(--color-cdx-bg));
+    background: color-mix(in srgb, var(--color-cdx-entity-service) 10%, var(--color-cdx-bg));
 }
-
-/* ---- Prose container ---- */
-
 .cdx-prose {
-  font-size: 0.9375rem;
-  line-height: 1.65;
-  color: var(--color-cdx-text);
-  max-width: 72ch;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: var(--color-cdx-text);
+    max-width: 72ch;
 }
 
 .cdx-prose > p {
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
 }
 
 .cdx-prose > p:last-child {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .cdx-prose a {
-  color: var(--color-cdx-primary);
+    color: var(--color-cdx-primary);
 }
 
 .cdx-prose a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
-/* ---- Section headings ---- */
-
 .cdx-section-heading {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-cdx-text);
-  margin-top: 3rem;
-  margin-bottom: 1.25rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-cdx-border);
-  letter-spacing: -0.01em;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-cdx-text);
+    margin-top: 3rem;
+    margin-bottom: 1.25rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-cdx-border);
+    letter-spacing: -0.01em;
 }
 
 .cdx-content-section:first-child > .cdx-section-heading {
-  margin-top: 0;
-  padding-top: 0;
-  border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
 }
 
-/* ---- Metadata card ---- */
-
 .cdx-metadata-card {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  border: 1px solid var(--color-cdx-border);
-  border-radius: var(--radius-cdx-lg);
-  background: var(--color-cdx-bg-alt);
-  padding: 4px 0;
-  overflow: hidden;
-  margin: 0;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-lg);
+    background: var(--color-cdx-bg-alt);
+    padding: 4px 0;
+    overflow: hidden;
+    margin: 0;
 }
 
 .cdx-metadata-row {
-  display: grid;
-  grid-template-columns: subgrid;
-  grid-column: 1 / -1;
-  gap: 0 16px;
-  padding: 8px 20px;
-  align-items: baseline;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-cdx-border) 50%, transparent);
-  transition: background 150ms ease;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    gap: 0 16px;
+    padding: 8px 20px;
+    align-items: baseline;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-cdx-border) 50%, transparent);
+    transition: background 150ms ease;
 }
 
 .cdx-metadata-row:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .cdx-metadata-row:hover {
-  background: color-mix(in srgb, var(--color-cdx-border) 8%, transparent);
+    background: color-mix(in srgb, var(--color-cdx-border) 8%, transparent);
 }
 
 .dark .cdx-metadata-row:hover {
-  background: color-mix(in srgb, var(--color-cdx-border) 12%, transparent);
+    background: color-mix(in srgb, var(--color-cdx-border) 12%, transparent);
 }
 
 .cdx-metadata-label {
-  font-family: var(--font-code);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--color-cdx-text-muted);
-  margin: 0;
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-cdx-text-muted);
+    margin: 0;
 }
 
 .cdx-metadata-value {
-  font-size: 0.875rem;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  align-items: baseline;
+    font-size: 0.875rem;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    align-items: baseline;
 }
 
 .cdx-metadata-value code {
-  font-family: var(--font-code);
-  font-size: 0.8125rem;
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
 }
 
 /* When value has multi-line code (template/styles), stack label above */
 .cdx-metadata-row--block {
-  grid-template-columns: 1fr;
+    grid-template-columns: 1fr;
 }
 
 @container (max-width: 500px) {
-  .cdx-metadata-row {
-    grid-template-columns: 1fr;
-  }
+    .cdx-metadata-row {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cdx-metadata-row {
-    transition: none;
-  }
+    .cdx-metadata-row {
+        transition: none;
+    }
 }
 
-/* ---- Index ---- */
-
 .cdx-index {
-  border: 1px solid var(--color-cdx-border);
-  border-radius: var(--radius-cdx-lg);
-  padding: 16px 20px;
-  background: var(--color-cdx-bg-alt);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-lg);
+    padding: 16px 20px;
+    background: var(--color-cdx-bg-alt);
 }
 
 .cdx-index-group {
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
 }
 
 .cdx-index-group:last-child {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .cdx-index-group-label {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-cdx-text-muted);
-  margin: 0 0 6px;
-  padding-bottom: 4px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-cdx-text-muted);
+    margin: 0 0 6px;
+    padding-bottom: 4px;
 }
 
 .cdx-index-entries {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 2px 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 2px 16px;
 }
 
 .cdx-index-entry {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 6px;
-  border-radius: 4px;
-  font-family: var(--font-code);
-  font-size: 0.8125rem;
-  color: var(--color-cdx-text);
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 150ms ease;
-  overflow: hidden;
-  min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    color: var(--color-cdx-text);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 150ms ease;
+    overflow: hidden;
+    min-width: 0;
 }
 
 .cdx-index-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .cdx-index-entry:hover {
-  background: color-mix(in srgb, var(--color-cdx-primary) 8%, transparent);
+    background: color-mix(in srgb, var(--color-cdx-primary) 8%, transparent);
 }
 
 .dark .cdx-index-entry:hover {
-  background: color-mix(in srgb, var(--color-cdx-primary) 12%, transparent);
+    background: color-mix(in srgb, var(--color-cdx-primary) 12%, transparent);
 }
 
 .cdx-index-entry--deprecated .cdx-index-name {
-  text-decoration: line-through;
-  opacity: 0.6;
+    text-decoration: line-through;
+    opacity: 0.6;
 }
-
-/* Single-letter type indicator */
 
 .cdx-index-indicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: white;
-  flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
 }
 
-.cdx-index-indicator--property    { background: var(--color-cdx-entity-class); }
-.cdx-index-indicator--method      { background: var(--color-cdx-entity-module); }
-.cdx-index-indicator--input       { background: var(--color-cdx-entity-component); }
-.cdx-index-indicator--output      { background: var(--color-cdx-entity-pipe); }
-.cdx-index-indicator--accessor    { background: var(--color-cdx-entity-interface); }
-.cdx-index-indicator--constructor { background: var(--color-cdx-text-muted); }
-.cdx-index-indicator--hostbinding { background: var(--color-cdx-entity-directive); }
-.cdx-index-indicator--hostlistener { background: var(--color-cdx-entity-interceptor); }
-.cdx-index-indicator--indexsignature { background: var(--color-cdx-entity-guard); }
-
-/* ---- Miscellaneous filter (reuses coverage filter styles) ---- */
+.cdx-index-indicator--property {
+    background: var(--color-cdx-entity-class);
+}
+.cdx-index-indicator--method {
+    background: var(--color-cdx-entity-module);
+}
+.cdx-index-indicator--input {
+    background: var(--color-cdx-entity-component);
+}
+.cdx-index-indicator--output {
+    background: var(--color-cdx-entity-pipe);
+}
+.cdx-index-indicator--accessor {
+    background: var(--color-cdx-entity-interface);
+}
+.cdx-index-indicator--constructor {
+    background: var(--color-cdx-text-muted);
+}
+.cdx-index-indicator--hostbinding {
+    background: var(--color-cdx-entity-directive);
+}
+.cdx-index-indicator--hostlistener {
+    background: var(--color-cdx-entity-interceptor);
+}
+.cdx-index-indicator--indexsignature {
+    background: var(--color-cdx-entity-guard);
+}
 
 .cdx-misc-filter {
-  position: relative;
-  margin-bottom: 1rem;
+    position: relative;
+    margin-bottom: 1rem;
 }
 
-/* Miscellaneous kind indicators */
-.cdx-index-indicator--function  { background: var(--color-cdx-entity-function); }
-.cdx-index-indicator--variable  { background: var(--color-cdx-entity-service); }
-.cdx-index-indicator--typealias { background: var(--color-cdx-entity-typealias); }
-.cdx-index-indicator--enum      { background: var(--color-cdx-entity-enum); }
-
-/* ---- A11y: focus-visible on index entries ---- */
+.cdx-index-indicator--function {
+    background: var(--color-cdx-entity-function);
+}
+.cdx-index-indicator--variable {
+    background: var(--color-cdx-entity-service);
+}
+.cdx-index-indicator--typealias {
+    background: var(--color-cdx-entity-typealias);
+}
+.cdx-index-indicator--enum {
+    background: var(--color-cdx-entity-enum);
+}
 
 .cdx-index-entry:focus-visible {
-  outline: 2px solid var(--color-cdx-primary);
-  outline-offset: 1px;
+    outline: 2px solid var(--color-cdx-primary);
+    outline-offset: 1px;
 }
 
-/* ---- A11y: touch targets on narrow viewports ---- */
-
 @container (max-width: 500px) {
-  .cdx-index-entry {
-    padding: 8px 10px;
-  }
+    .cdx-index-entry {
+        padding: 8px 10px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cdx-index-entry {
-    transition: none;
-  }
+    .cdx-index-entry {
+        transition: none;
+    }
 }

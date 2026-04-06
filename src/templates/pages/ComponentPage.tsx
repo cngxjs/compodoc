@@ -108,7 +108,6 @@ const ComponentMetadata = (c: any): string => {
     codeField('templateUrl', c.templateUrl);
     if (c.styleUrls?.length > 0) codeField('styleUrls', breakComma(c.styleUrls));
 
-    // Extends / Implements folded into metadata
     if (c.extends?.length > 0) {
         rows.push(MetadataRow('extends', (c.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')));
     }
@@ -141,7 +140,6 @@ const InfoContent = (data: any): string => {
 
     return (
         <>
-            {/* 1. Deprecation banner */}
             {isInfoSection('deprecated') && c.deprecated && (
                 <div class="cdx-deprecation-banner" role="alert">
                     <strong>{t('deprecated')}</strong>
@@ -149,7 +147,6 @@ const InfoContent = (data: any): string => {
                 </div>
             )}
 
-            {/* 2. Description */}
             {isInfoSection('description') && c.description && (
                 <section class="cdx-content-section">
                     <h3 class="cdx-section-heading">{t('description')}</h3>
@@ -157,7 +154,6 @@ const InfoContent = (data: any): string => {
                 </section>
             )}
 
-            {/* 3. Examples */}
             {isInfoSection('examples') &&
                 c.jsdoctags &&
                 (() => {
@@ -175,7 +171,6 @@ const InfoContent = (data: any): string => {
                     );
                 })()}
 
-            {/* 4. External links */}
             {(c.storybookUrl || c.figmaUrl || c.route) && (
                 <div class="cdx-external-links">
                     {c.storybookUrl && (
@@ -206,10 +201,8 @@ const InfoContent = (data: any): string => {
                 </div>
             )}
 
-            {/* 5. Metadata card (includes extends/implements) */}
             {ComponentMetadata(c)}
 
-            {/* 6. Content Slots */}
             {c.slots?.length > 0 && (
                 <section class="cdx-content-section">
                     <h3 class="cdx-section-heading">Content Slots</h3>
@@ -325,7 +318,6 @@ export const ComponentPage = (data: any): string => {
     const navTabs = data.navTabs;
     const hasStandaloneImports = c.standalone && c.imports?.length > 0;
 
-    // Build per-component dependency subgraph (center node + its imports)
     const componentDepGraph = hasStandaloneImports ? (() => {
         const allComponents = data.components as any[] ?? [];
         const allDirectives = data.directives as any[] ?? [];
@@ -541,7 +533,6 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="dependencies-tab"
                     >
-                        {/* A11y: text alternative for screen readers */}
                         <ul class="sr-only" aria-label="Component dependency list">
                             {c.imports.map((imp: any) => (
                                 <li>{c.name} imports {typeof imp === 'string' ? imp : imp.name}</li>
