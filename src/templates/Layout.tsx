@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import { relativeUrl } from './helpers';
+import { IconSearch, IconSun, IconMoon, IconPalette } from './components/Icons';
 
 export type PageData = {
     readonly documentationMainName: string;
@@ -8,6 +9,7 @@ export type PageData = {
     readonly name: string;
     readonly filename?: string;
     readonly theme?: string;
+    readonly customLogo?: string;
     readonly disableSearch?: boolean;
     readonly disableDependencies?: boolean;
     readonly disableProperties?: boolean;
@@ -137,30 +139,91 @@ const CommandPalette = () =>
         </dialog>
     ) as string;
 
-const DarkModeToggle = () => (
-    <div class="cdx-sidebar-footer">
-        <label class="dark-mode-switch" aria-label="Toggle dark mode">
-            <input type="checkbox" />
-            <span class="slider">
-                <svg
-                    class="slider-icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    height="20"
-                    stroke="#000"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    width="20"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                >
-                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
-                </svg>
-            </span>
-        </label>
-    </div>
-);
+/** Built-in themes with display name and primary swatch color */
+const BUILTIN_THEMES: ReadonlyArray<{ id: string; name: string; swatch: string }> = [
+    { id: 'default', name: 'Default', swatch: 'hsl(222 68% 52%)' },
+    { id: 'ocean', name: 'Ocean', swatch: 'hsl(200 60% 42%)' },
+    { id: 'ember', name: 'Ember', swatch: 'hsl(24 90% 52%)' },
+    { id: 'midnight', name: 'Midnight', swatch: 'hsl(262 68% 58%)' }
+];
+
+const SidebarHeader = (props: {
+    name: string;
+    logo?: string;
+    disableSearch?: boolean;
+    hideDarkModeToggle?: boolean;
+    lockedTheme?: string;
+    r: (path: string) => string;
+}): string => {
+    // Show theme picker when using default theme (no --theme lock to a specific non-default one)
+    const isDefaultTheme = !props.lockedTheme || props.lockedTheme === 'default' || props.lockedTheme === 'gitbook';
+    const showThemePicker = isDefaultTheme;
+    const activeTheme = isDefaultTheme ? 'default' : props.lockedTheme!;
+
+    return (
+        <div class="cdx-sidebar-header">
+            <div class="cdx-sidebar-header-row">
+                {props.logo ? (
+                    <a href="index.html" data-type="index-link" class="cdx-sidebar-logo">
+                        <img src={props.r(`images/${props.logo}`)} alt={props.name} />
+                    </a>
+                ) : (
+                    <a href="index.html" data-type="index-link" class="cdx-sidebar-brand">
+                        {props.name}
+                    </a>
+                )}
+                <div class="cdx-sidebar-actions">
+                    {!props.disableSearch && (
+                        <button
+                            type="button"
+                            class="cdx-sidebar-action"
+                            data-cdx-search-trigger
+                            aria-label="Search documentation (Ctrl+K)"
+                        >
+                            {IconSearch()}
+                        </button>
+                    )}
+                    {showThemePicker && (
+                        <div class="cdx-theme-picker" data-cdx-theme-picker>
+                            <button
+                                type="button"
+                                class="cdx-sidebar-action"
+                                aria-label="Switch theme"
+                                aria-haspopup="listbox"
+                                aria-expanded="false"
+                            >
+                                {IconPalette()}
+                            </button>
+                            <ul class="cdx-theme-picker-menu" role="listbox" aria-label="Theme" hidden>
+                                {BUILTIN_THEMES.map(t => (
+                                    <li
+                                        role="option"
+                                        data-cdx-theme={t.id}
+                                        aria-selected={t.id === activeTheme ? 'true' : 'false'}
+                                    >
+                                        <span class="cdx-theme-swatch" style={`--swatch: ${t.swatch}`}></span>
+                                        {t.name}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                    {!props.hideDarkModeToggle && (
+                        <button
+                            type="button"
+                            class="cdx-sidebar-action cdx-dark-toggle"
+                            aria-label="Toggle dark mode"
+                            aria-pressed="false"
+                        >
+                            {IconMoon('icon-moon')}
+                            {IconSun('icon-sun')}
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    ) as string;
+};
 
 /** Build a descriptive page title for browser tab + Pagefind indexing */
 const pageTitle = (data: PageData): string => {
@@ -194,9 +257,13 @@ export const Layout = (props: LayoutProps): string => {
                 `}</style>
                 <link rel="stylesheet" href={r('styles/style.css')} />
                 <link rel="stylesheet" href={r('styles/compodocx.css')} />
-                {data.theme && !['gitbook', 'default'].includes(data.theme) && (
-                    <link rel="stylesheet" href={r(`styles/${data.theme}.css`)} />
-                )}
+                <link
+                    id="cdx-theme-link"
+                    rel="stylesheet"
+                    href={data.theme && !['default', 'gitbook'].includes(data.theme) ? r(`styles/${data.theme}.css`) : ''}
+                    data-base={r('')}
+                />
+                <script>{`(function(){try{var t=localStorage.getItem('compodoc-theme');if(t&&t!=='default'){var l=document.getElementById('cdx-theme-link');if(l)l.href=l.getAttribute('data-base')+'styles/'+t+'.css'}}catch(e){}}())`}</script>
             </head>
             <body>
                 <script type="module" src={r('js/compodocx.js')}></script>
@@ -214,29 +281,42 @@ export const Layout = (props: LayoutProps): string => {
                     <a href={r('')} class="cdx-topbar-brand">
                         {data.documentationMainName}
                     </a>
-                    <button
-                        type="button"
-                        class="cdx-mobile-toggle"
-                        aria-label="Open navigation"
-                        aria-expanded="false"
-                        data-cdx-mobile-toggle="#sidebar"
-                    >
-                        <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            aria-hidden="true"
+                    <div class="cdx-topbar-actions">
+                        {!data.hideDarkModeToggle && (
+                            <button
+                                type="button"
+                                class="cdx-sidebar-action cdx-dark-toggle"
+                                aria-label="Toggle dark mode"
+                                aria-pressed="false"
+                            >
+                                {IconMoon('icon-moon')}
+                                {IconSun('icon-sun')}
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            class="cdx-mobile-toggle"
+                            aria-label="Open navigation"
+                            aria-expanded="false"
+                            data-cdx-mobile-toggle="#sidebar"
                         >
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
-                    </button>
+                            <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
                 </header>
 
                 {/* Sidebar backdrop (mobile) */}
@@ -260,8 +340,15 @@ export const Layout = (props: LayoutProps): string => {
                             <path d="m6 6 12 12"></path>
                         </svg>
                     </button>
+                    {SidebarHeader({
+                        name: data.documentationMainName,
+                        logo: data.customLogo,
+                        disableSearch: data.disableSearch,
+                        hideDarkModeToggle: data.hideDarkModeToggle,
+                        lockedTheme: data.theme,
+                        r
+                    })}
                     {menuHtml}
-                    {!data.hideDarkModeToggle && <DarkModeToggle />}
                 </nav>
 
                 {/* Main content */}

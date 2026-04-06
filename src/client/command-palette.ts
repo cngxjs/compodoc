@@ -401,12 +401,17 @@ export const initCommandPalette = () => {
         });
     }
 
-    // Sidebar search input click opens command palette
+    // Sidebar search input click opens command palette (legacy)
     document.querySelectorAll('#book-search-input input').forEach(el => {
         el.addEventListener('focus', e => {
             e.preventDefault();
             (el as HTMLInputElement).blur();
             open();
         });
+    });
+
+    // Search trigger button in sidebar header
+    document.querySelectorAll<HTMLElement>('[data-cdx-search-trigger]').forEach(btn => {
+        btn.addEventListener('click', () => open());
     });
 };

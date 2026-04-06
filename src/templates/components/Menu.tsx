@@ -1,7 +1,6 @@
 import Html from '@kitajs/html';
 import { t } from '../helpers';
-import { isToggled, getAloneElements, stripUrl } from '../helpers/menu-helpers';
-import { SearchInput } from './SearchInput';
+import { isToggled, getAloneElements } from '../helpers/menu-helpers';
 import { buildGroupTree, GroupNode } from '../../app/engines/dependencies.engine';
 import {
     IconHome,
@@ -264,26 +263,6 @@ export const Menu = (props: MenuProps): string => {
     return (
         <nav>
             <ul class="list">
-                <li class="title">
-                    {d.customLogo ? (
-                        <a href="index.html" data-type="index-link">
-                            <img
-                                alt={d.documentationMainName}
-                                class="img-responsive"
-                                data-type="custom-logo"
-                                data-src={stripUrl('images/', d.customLogo)}
-                            />
-                        </a>
-                    ) : (
-                        <a href="index.html" data-type="index-link">
-                            {d.documentationMainName}
-                        </a>
-                    )}
-                </li>
-
-                <li class="divider"></li>
-                {!d.disableSearch && <li class="search-wrapper">{SearchInput()}</li>}
-
                 {/* Getting Started */}
                 <li class="chapter">
                     <a data-type="chapter-link" href="index.html">
