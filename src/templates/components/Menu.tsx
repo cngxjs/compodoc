@@ -2,6 +2,7 @@ import Html from '@kitajs/html';
 import { t } from '../helpers';
 import { isToggled, getAloneElements, stripUrl } from '../helpers/menu-helpers';
 import { SearchInput } from './SearchInput';
+import { buildGroupTree, GroupNode } from '../../app/engines/dependencies.engine';
 import {
     IconHome,
     IconGrid,
@@ -22,8 +23,6 @@ import {
     IconInterceptor,
     IconGuard,
     IconInterface,
-    IconChevronDown,
-    IconChevronUp,
     IconChevronRight
 } from './Icons';
 
@@ -31,9 +30,8 @@ type MenuProps = {
     readonly data: any;
 };
 
-/** Chevron icon based on toggle state */
-const chevron = (type: string): string =>
-    isToggled(type) ? IconChevronUp('cdx-chevron') : IconChevronDown('cdx-chevron');
+/** Chevron icon — CSS rotation handles open/closed state */
+const chevron = (): string => IconChevronRight('cdx-chevron');
 
 /** Entity link href with duplicateName fallback */
 const entityHref = (prefix: string, item: any): string =>
@@ -75,8 +73,65 @@ const EntityLink = (props: {
         </li>
     ) as string;
 
+/** Recursive tree node for hierarchical folder groups */
+const GroupTree = (props: {
+    node: GroupNode;
+    type: string;
+    hrefPrefix: string;
+    depth: number;
+    groupDepth: number;
+}): string => {
+    const hasContent = props.node.items.length > 0 || props.node.children.length > 0;
+    if (!hasContent) return '';
+
+    const id = `${props.type}-group-${props.node.fullPath}`;
+    // Groups shallower than groupDepth start expanded, deeper start collapsed
+    const startExpanded = props.depth < props.groupDepth;
+
+    return (
+        <li class="chapter inner" style={`--depth: ${props.depth}`}>
+            <button
+                class="simple menu-toggler"
+                type="button"
+                data-cdx-toggle="collapse"
+                data-cdx-target={`#${id}`}
+                aria-expanded={startExpanded ? 'true' : 'false'}
+                aria-controls={id}
+            >
+                <span class="link-name">{props.node.name.charAt(0).toUpperCase() + props.node.name.slice(1)}</span>
+                {props.node.items.length > 0 && (
+                    <span class="cdx-badge cdx-badge--count">{props.node.items.length}</span>
+                )}
+                {IconChevronRight('cdx-chevron')}
+            </button>
+            <ul class={`links collapse${startExpanded ? ' in' : ''}`} id={id}>
+                {props.node.children.map(child =>
+                    GroupTree({
+                        node: child,
+                        type: props.type,
+                        hrefPrefix: props.hrefPrefix,
+                        depth: props.depth + 1,
+                        groupDepth: props.groupDepth
+                    })
+                )}
+                {props.node.items.map((item: any) =>
+                    EntityLink({
+                        href: entityHref(props.hrefPrefix, item),
+                        name: item.name,
+                        deprecated: item.deprecated,
+                        standalone: item.standalone,
+                        isToken: item.isToken,
+                        beta: item.beta,
+                        factoryKind: item.factoryKind
+                    })
+                )}
+            </ul>
+        </li>
+    ) as string;
+};
+
 /**
- * A collapsible chapter section with optional @category grouping.
+ * A collapsible chapter section with hierarchical folder grouping.
  */
 const EntitySection = (props: {
     items: any[];
@@ -85,10 +140,12 @@ const EntitySection = (props: {
     iconHtml: string;
     labelKey: string;
     hrefPrefix: string;
+    groupDepth?: number;
 }): string => {
     if (!props.items?.length) return '';
     const id = `${props.type}-links`;
     const hasCats = props.categorized && Object.keys(props.categorized).length > 0;
+    const groupDepth = props.groupDepth ?? 2;
 
     return (
         <li class="chapter">
@@ -102,53 +159,27 @@ const EntitySection = (props: {
             >
                 {props.iconHtml}
                 <span>{t(props.labelKey)}</span>
-                {chevron(props.type)}
+                {chevron()}
             </button>
             <ul class={`links collapse${isToggled(props.type) ? ' in' : ''}`} id={id}>
                 {hasCats
                     ? (() => {
+                          const tree = buildGroupTree(props.categorized!);
                           const groupedNames = new Set(
                               Object.values(props.categorized!).flat().map((i: any) => i.name)
                           );
                           const ungrouped = props.items.filter(i => !groupedNames.has(i.name));
                           return (
                               <>
-                                  {Object.entries(props.categorized!).map(([key, items]) => (
-                                      <li class="chapter inner">
-                                          <button
-                                              class="simple menu-toggler"
-                                              type="button"
-                                              data-cdx-toggle="collapse"
-                                              data-cdx-target={`#${props.type}-category-${key}`}
-                                              aria-expanded="true"
-                                              aria-controls={`${props.type}-category-${key}`}
-                                          >
-                                              <span class="link-name">
-                                                  {key || 'Uncategorized'}
-                                              </span>
-                                              <span class="cdx-badge cdx-badge--count">
-                                                  {items.length}
-                                              </span>
-                                              {IconChevronRight('cdx-chevron')}
-                                          </button>
-                                          <ul
-                                              class="links collapse in"
-                                              id={`${props.type}-category-${key}`}
-                                          >
-                                              {items.map((item: any) =>
-                                                  EntityLink({
-                                                      href: entityHref(props.hrefPrefix, item),
-                                                      name: item.name,
-                                                      deprecated: item.deprecated,
-                                                      standalone: item.standalone,
-                                                      isToken: item.isToken,
-                                                      beta: item.beta,
-                                                      factoryKind: item.factoryKind
-                                                  })
-                                              )}
-                                          </ul>
-                                      </li>
-                                  ))}
+                                  {tree.map(node =>
+                                      GroupTree({
+                                          node,
+                                          type: props.type,
+                                          hrefPrefix: props.hrefPrefix,
+                                          depth: 0,
+                                          groupDepth
+                                      })
+                                  )}
                                   {ungrouped.map(item =>
                                       EntityLink({
                                           href: entityHref(props.hrefPrefix, item),
@@ -203,7 +234,7 @@ const ModuleSubSection = (props: {
             >
                 {props.iconHtml}
                 <span>{t(props.labelKey)}</span>
-                {chevron(props.type)}
+                {chevron()}
             </button>
             <ul class="links collapse" id={id}>
                 {props.items.map((item: any) =>
@@ -332,7 +363,7 @@ export const Menu = (props: MenuProps): string => {
                         >
                             {IconBook()}
                             <span>{d.includesName}</span>
-                            {chevron('additionalPages')}
+                            {chevron()}
                         </button>
                         <ul
                             class={`links collapse${isToggled('additionalPages') ? ' in' : ''}`}
@@ -355,7 +386,7 @@ export const Menu = (props: MenuProps): string => {
                                                 aria-controls={`additional-page-${page.id}`}
                                             >
                                                 <span class="link-name">{page.name}</span>
-                                                {IconChevronDown('cdx-chevron')}
+                                                {IconChevronRight('cdx-chevron')}
                                             </div>
                                         </a>
                                         <ul
@@ -410,7 +441,7 @@ export const Menu = (props: MenuProps): string => {
                             >
                                 {IconModule()}
                                 <span class="link-name">{t('modules')}</span>
-                                {chevron('modules')}
+                                {chevron()}
                             </div>
                         </a>
                         <ul
@@ -472,7 +503,8 @@ export const Menu = (props: MenuProps): string => {
                         type: 'components',
                         iconHtml: IconComponent(),
                         labelKey: 'components',
-                        hrefPrefix: 'components'
+                        hrefPrefix: 'components',
+                        groupDepth: d.groupDepth
                     })}
                 {aloneEntities.length > 0 &&
                     EntitySection({
@@ -480,7 +512,8 @@ export const Menu = (props: MenuProps): string => {
                         type: 'entities',
                         iconHtml: IconEntity(),
                         labelKey: 'entities',
-                        hrefPrefix: 'entities'
+                        hrefPrefix: 'entities',
+                        groupDepth: d.groupDepth
                     })}
                 {aloneDirectives.length > 0 &&
                     EntitySection({
@@ -489,7 +522,8 @@ export const Menu = (props: MenuProps): string => {
                         type: 'directives',
                         iconHtml: IconDirective(),
                         labelKey: 'directives',
-                        hrefPrefix: 'directives'
+                        hrefPrefix: 'directives',
+                        groupDepth: d.groupDepth
                     })}
                 {d.classes?.length > 0 &&
                     EntitySection({
@@ -498,7 +532,8 @@ export const Menu = (props: MenuProps): string => {
                         type: 'classes',
                         iconHtml: IconClass(),
                         labelKey: 'classes',
-                        hrefPrefix: 'classes'
+                        hrefPrefix: 'classes',
+                        groupDepth: d.groupDepth
                     })}
                 {aloneInjectables.length > 0 &&
                     EntitySection({
@@ -507,7 +542,8 @@ export const Menu = (props: MenuProps): string => {
                         type: 'injectables',
                         iconHtml: IconInjectable(),
                         labelKey: 'injectables',
-                        hrefPrefix: 'injectables'
+                        hrefPrefix: 'injectables',
+                        groupDepth: d.groupDepth
                     })}
                 {d.interceptors?.length > 0 &&
                     EntitySection({
@@ -516,7 +552,8 @@ export const Menu = (props: MenuProps): string => {
                         type: 'interceptors',
                         iconHtml: IconInterceptor(),
                         labelKey: 'interceptors',
-                        hrefPrefix: 'interceptors'
+                        hrefPrefix: 'interceptors',
+                        groupDepth: d.groupDepth
                     })}
                 {d.guards?.length > 0 &&
                     EntitySection({
@@ -525,7 +562,8 @@ export const Menu = (props: MenuProps): string => {
                         type: 'guards',
                         iconHtml: IconGuard(),
                         labelKey: 'guards',
-                        hrefPrefix: 'guards'
+                        hrefPrefix: 'guards',
+                        groupDepth: d.groupDepth
                     })}
                 {d.interfaces?.length > 0 &&
                     EntitySection({
@@ -534,7 +572,8 @@ export const Menu = (props: MenuProps): string => {
                         type: 'interfaces',
                         iconHtml: IconInterface(),
                         labelKey: 'interfaces',
-                        hrefPrefix: 'interfaces'
+                        hrefPrefix: 'interfaces',
+                        groupDepth: d.groupDepth
                     })}
                 {alonePipes.length > 0 &&
                     EntitySection({
@@ -543,7 +582,8 @@ export const Menu = (props: MenuProps): string => {
                         type: 'pipes',
                         iconHtml: IconPipe(),
                         labelKey: 'pipes',
-                        hrefPrefix: 'pipes'
+                        hrefPrefix: 'pipes',
+                        groupDepth: d.groupDepth
                     })}
 
                 {/* Miscellaneous */}
@@ -559,7 +599,7 @@ export const Menu = (props: MenuProps): string => {
                         >
                             {IconCube()}
                             <span>{t('miscellaneous')}</span>
-                            {chevron('miscellaneous')}
+                            {chevron()}
                         </button>
                         <ul
                             class={`links collapse${isToggled('miscellaneous') ? ' in' : ''}`}

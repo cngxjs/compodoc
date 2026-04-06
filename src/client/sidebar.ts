@@ -18,16 +18,17 @@ const saveState = () => {
     } catch { /* localStorage blocked */ }
 };
 
-/** Apply saved state to all collapses. Without saved state, collapse all. */
+/** Apply saved state to all collapses. Without saved state, respect server-rendered state. */
 const restoreState = () => {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
         const states: Record<string, boolean> = saved ? JSON.parse(saved) : {};
 
         document.querySelectorAll<HTMLElement>('.menu .collapse[id]').forEach(el => {
-            // Category sub-groups (inside .chapter.inner) default to open
-            const isSubGroup = el.closest('.chapter.inner') !== null;
-            const open = states[el.id] ?? isSubGroup;
+            // Use saved state if available, otherwise keep server-rendered state
+            // (server renders expanded/collapsed based on groupDepth)
+            const serverOpen = el.classList.contains('in');
+            const open = states[el.id] ?? serverOpen;
             if (open) {
                 el.classList.add('in');
                 el.style.display = 'block';

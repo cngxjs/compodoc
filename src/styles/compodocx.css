@@ -969,6 +969,11 @@ body {
   margin-left: 0.25rem;
 }
 
+/* Hierarchical folder group nesting depth */
+.chapter.inner {
+  padding-left: calc(var(--depth, 0) * 0.75rem);
+}
+
 .cdx-badge--signal {
   color: hsl(142 50% 30%);
   border: 1px solid hsl(142 40% 50%);
