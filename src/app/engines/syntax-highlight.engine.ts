@@ -23,8 +23,8 @@ type Highlighter = {
 
 let highlighter: Highlighter | null = null;
 
-const THEME_LIGHT = 'github-light';
-const THEME_DARK = 'github-dark';
+let THEME_LIGHT = 'github-light';
+let THEME_DARK = 'github-dark';
 
 const SUPPORTED_LANGUAGES = [
     'typescript',
@@ -60,9 +60,28 @@ export interface HighlightOptions {
 }
 
 /** Initialize the Shiki highlighter singleton. Call once before any highlight calls. */
-export async function initHighlighter(): Promise<void> {
+export async function initHighlighter(shikiTheme?: string): Promise<void> {
     if (highlighter) return;
-    const { createHighlighter } = await import('shiki');
+
+    if (shikiTheme) {
+        const parts = shikiTheme.split(':');
+        THEME_LIGHT = parts[0];
+        THEME_DARK = parts.length > 1 ? parts[1] : parts[0];
+    }
+
+    const { createHighlighter, bundledThemes } = await import('shiki');
+    const available = Object.keys(bundledThemes);
+    if (!available.includes(THEME_LIGHT)) {
+        const { logger } = await import('../../utils/logger');
+        logger.warn(`Unknown Shiki theme '${THEME_LIGHT}', falling back to 'github-light'`);
+        THEME_LIGHT = 'github-light';
+    }
+    if (!available.includes(THEME_DARK)) {
+        const { logger } = await import('../../utils/logger');
+        logger.warn(`Unknown Shiki theme '${THEME_DARK}', falling back to 'github-dark'`);
+        THEME_DARK = 'github-dark';
+    }
+
     highlighter = await createHighlighter({
         themes: [THEME_LIGHT, THEME_DARK],
         langs: SUPPORTED_LANGUAGES

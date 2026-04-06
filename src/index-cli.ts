@@ -98,6 +98,10 @@ export class CliApplication extends Application {
                 "Choose a theme: 'default', 'ocean', 'ember', 'midnight', or a path to a custom CSS file"
             )
             .option(
+                '--shikiTheme [theme]',
+                "Shiki syntax highlighting theme pair (e.g. 'github-light:github-dark' or 'nord')"
+            )
+            .option(
                 '--hideGenerator',
                 'Do not print the compodocx link at the bottom of the page',
                 COMPODOC_DEFAULTS.hideGenerator
@@ -293,6 +297,27 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         // --extTheme is a deprecated alias — treat as custom theme path
         if (Configuration.mainData.extTheme && !Configuration.mainData.theme) {
             Configuration.mainData.theme = Configuration.mainData.extTheme;
+        }
+
+        // Detect custom theme file path (contains '/' or ends with '.css')
+        const themeVal = Configuration.mainData.theme;
+        if (themeVal && (themeVal.includes('/') || themeVal.includes(path.sep) || themeVal.endsWith('.css'))) {
+            const resolved = path.resolve(cwd, themeVal);
+            if (fs.existsSync(resolved)) {
+                Configuration.mainData.customThemePath = resolved;
+                Configuration.mainData.theme = 'custom';
+                logger.info(`Custom theme: ${resolved}`);
+            } else {
+                logger.error(`Custom theme file not found: ${resolved}`);
+                process.exit(1);
+            }
+        }
+
+        if (configFile.shikiTheme) {
+            Configuration.mainData.shikiTheme = configFile.shikiTheme;
+        }
+        if (programOptions.shikiTheme) {
+            Configuration.mainData.shikiTheme = programOptions.shikiTheme;
         }
 
         if (configFile.name) {

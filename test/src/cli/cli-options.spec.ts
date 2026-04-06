@@ -39,8 +39,13 @@ describe('CLI Options', () => {
         it(`--theme`, () => {
             expect(runHelp.stdout.toString()).to.contain('--theme [theme]');
             expect(runHelp.stdout.toString()).to.contain(
-                "Choose a theme: 'light' (default), 'dark', 'material', or a path to a custom CSS file"
+                "Choose a theme: 'default', 'ocean', 'ember', 'midnight', or a path to a custom CSS file"
             );
+        });
+
+        it(`--shikiTheme`, () => {
+            expect(runHelp.stdout.toString()).to.contain('--shikiTheme [theme]');
+            expect(runHelp.stdout.toString()).to.contain('Shiki syntax highlighting theme pair');
         });
 
         it(`-n`, () => {

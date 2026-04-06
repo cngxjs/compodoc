@@ -11,6 +11,8 @@ export class Configuration implements ConfigurationInterface {
         output: COMPODOC_DEFAULTS.folder,
         theme: COMPODOC_DEFAULTS.theme,
         extTheme: '',
+        customThemePath: '',
+        shikiTheme: '',
         serve: false,
         templatePlayground: false,
         hostname: COMPODOC_DEFAULTS.hostname,

@@ -113,7 +113,7 @@ export class Application {
         if (Configuration.mainData.exportFormat !== COMPODOC_DEFAULTS.exportFormat) {
             this.processPackageJson();
         } else {
-            initHighlighter()
+            initHighlighter(Configuration.mainData.shikiTheme || undefined)
                 .then(() => HtmlEngine.init(Configuration.mainData.templates))
                 .then(() => this.processPackageJson());
         }
@@ -2743,7 +2743,24 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     logger.error('Error during resources copy ', errorCopy);
                 } else {
                     const extThemePromise = new Promise((extThemeResolve, extThemeReject) => {
-                        if (Configuration.mainData.extTheme) {
+                        if (Configuration.mainData.customThemePath) {
+                            fs.copy(
+                                Configuration.mainData.customThemePath,
+                                path.resolve(finalOutput + '/styles/custom.css'),
+                                function (errorCopyTheme) {
+                                    if (errorCopyTheme) {
+                                        logger.error(
+                                            'Error during custom theme copy ',
+                                            errorCopyTheme
+                                        );
+                                        extThemeReject();
+                                    } else {
+                                        logger.info('Custom theme copy succeeded');
+                                        extThemeResolve(true);
+                                    }
+                                }
+                            );
+                        } else if (Configuration.mainData.extTheme) {
                             fs.copy(
                                 path.resolve(cwd + path.sep + Configuration.mainData.extTheme),
                                 path.resolve(finalOutput + '/styles/'),

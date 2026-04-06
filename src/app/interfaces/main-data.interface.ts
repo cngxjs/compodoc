@@ -4,6 +4,8 @@ export interface MainDataInterface {
     output: string;
     theme: string;
     extTheme: string;
+    customThemePath: string;
+    shikiTheme: string;
     serve: boolean;
     templatePlayground: boolean;
     hostname: string;
