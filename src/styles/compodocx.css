@@ -497,6 +497,68 @@ body {
   outline-offset: -2px;
 }
 
+/* Search trigger button with shortcut badge */
+.cdx-search-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 10px;
+  margin-top: 8px;
+  border: 1px solid var(--color-cdx-border);
+  border-radius: var(--radius-cdx-md);
+  background: var(--color-cdx-bg);
+  color: var(--color-cdx-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cdx-search-trigger-label {
+  flex: 1;
+  text-align: left;
+}
+
+.cdx-search-trigger:hover {
+  border-color: var(--color-cdx-primary);
+  color: var(--color-cdx-text);
+}
+
+.cdx-search-trigger:focus-visible {
+  outline: 2px solid var(--color-cdx-primary);
+  outline-offset: -2px;
+}
+
+.cdx-search-trigger .cdx-icon {
+  margin-right: 0;
+  flex-shrink: 0;
+}
+
+.cdx-search-trigger-hint {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+}
+
+.cdx-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 1px 5px;
+  font-size: 11px;
+  font-family: var(--font-body);
+  line-height: 1.4;
+  color: var(--color-cdx-text-muted);
+  background: var(--color-cdx-bg-alt);
+  border: 1px solid var(--color-cdx-border);
+  border-radius: 3px;
+}
+
+/* OS-aware modifier key: show ⌘ on Mac, Ctrl elsewhere */
+.cdx-kbd--mac { display: none; }
+.cdx-mac .cdx-kbd--mac { display: inline-flex; }
+.cdx-mac .cdx-kbd--other { display: none; }
+
 /* Dark mode icon toggle — swap sun/moon */
 .cdx-dark-toggle .icon-sun { display: none; }
 .dark .cdx-dark-toggle .icon-moon { display: none; }
@@ -629,6 +691,8 @@ body {
   }
 
   .cdx-sidebar-close { display: block; }
+  .cdx-sidebar-actions { display: none; }
+  .cdx-search-trigger { display: none; }
 
   .cdx-sidebar.cdx-sidebar--open {
     transform: translateX(0);

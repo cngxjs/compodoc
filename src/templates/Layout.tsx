@@ -173,16 +173,6 @@ const SidebarHeader = (props: {
                     </a>
                 )}
                 <div class="cdx-sidebar-actions">
-                    {!props.disableSearch && (
-                        <button
-                            type="button"
-                            class="cdx-sidebar-action"
-                            data-cdx-search-trigger
-                            aria-label="Search documentation (Ctrl+K)"
-                        >
-                            {IconSearch()}
-                        </button>
-                    )}
                     {showThemePicker && (
                         <div class="cdx-theme-picker" data-cdx-theme-picker>
                             <button
@@ -221,6 +211,22 @@ const SidebarHeader = (props: {
                     )}
                 </div>
             </div>
+            {!props.disableSearch && (
+                <button
+                    type="button"
+                    class="cdx-search-trigger"
+                    data-cdx-search-trigger
+                    aria-label="Search documentation"
+                >
+                    {IconSearch()}
+                    <span class="cdx-search-trigger-label">Search...</span>
+                    <span class="cdx-search-trigger-hint">
+                        <kbd class="cdx-kbd cdx-kbd--mac">&#8984;</kbd>
+                        <kbd class="cdx-kbd cdx-kbd--other">Ctrl</kbd>
+                        <kbd class="cdx-kbd">K</kbd>
+                    </span>
+                </button>
+            )}
         </div>
     ) as string;
 };
@@ -250,7 +256,7 @@ export const Layout = (props: LayoutProps): string => {
                 <meta name="description" content="" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <link rel="icon" type="image/x-icon" href={r('images/favicon.ico')} />
-                <script>{`(function(){try{var d=localStorage.getItem('compodocx_darkmode-state');var dark=d!==null?d==='true':window.matchMedia('(prefers-color-scheme:dark)').matches;if(dark)document.documentElement.classList.add('dark')}catch(e){}}())`}</script>
+                <script>{`(function(){try{var d=localStorage.getItem('compodocx_darkmode-state');var dark=d!==null?d==='true':window.matchMedia('(prefers-color-scheme:dark)').matches;if(dark)document.documentElement.classList.add('dark');if(/Mac|iPhone|iPad/.test(navigator.platform||''))document.documentElement.classList.add('cdx-mac')}catch(e){}}())`}</script>
                 <style>{`
                     .menu .collapse.in { display: block !important; visibility: visible !important; }
                     .menu .collapse:not(.in) { display: none !important; }
@@ -282,6 +288,41 @@ export const Layout = (props: LayoutProps): string => {
                         {data.documentationMainName}
                     </a>
                     <div class="cdx-topbar-actions">
+                        {!data.disableSearch && (
+                            <button
+                                type="button"
+                                class="cdx-sidebar-action"
+                                data-cdx-search-trigger
+                                aria-label="Search documentation (Ctrl+K)"
+                            >
+                                {IconSearch()}
+                            </button>
+                        )}
+                        {!data.theme || ['default', 'gitbook'].includes(data.theme) ? (
+                            <div class="cdx-theme-picker" data-cdx-theme-picker>
+                                <button
+                                    type="button"
+                                    class="cdx-sidebar-action"
+                                    aria-label="Switch theme"
+                                    aria-haspopup="listbox"
+                                    aria-expanded="false"
+                                >
+                                    {IconPalette()}
+                                </button>
+                                <ul class="cdx-theme-picker-menu" role="listbox" aria-label="Theme" hidden>
+                                    {BUILTIN_THEMES.map(t => (
+                                        <li
+                                            role="option"
+                                            data-cdx-theme={t.id}
+                                            aria-selected={t.id === 'default' ? 'true' : 'false'}
+                                        >
+                                            <span class="cdx-theme-swatch" style={`--swatch: ${t.swatch}`}></span>
+                                            {t.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ) : ''}
                         {!data.hideDarkModeToggle && (
                             <button
                                 type="button"
