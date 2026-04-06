@@ -99,7 +99,7 @@
 .cdx-entity-hero-context {
     position: relative;
     z-index: 1;
-    font-family: var(--font-code, 'JetBrains Mono', ui-monospace, monospace);
+    font-family: var(--font-code);
     font-size: var(--cdx-text-sm, 0.8125rem);
     color: var(--color-cdx-text-muted);
     margin: 0;

@@ -28,6 +28,7 @@ import { COMPODOC_CONSTANTS } from '../utils/constants';
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
 import { promiseSequential } from '../utils/promise-sequential';
 import RouterParserUtil from '../utils/router-parser.util';
+import { buildEntityIndex } from '../utils/entity-index.util';
 
 import {
     cleanNameWithoutSpaceAndToLowerCase,
@@ -2602,8 +2603,14 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         Configuration.mainData.dependencyGraph = { nodes, edges };
     }
 
+    private buildEntityIndex() {
+        const index = buildEntityIndex(Configuration.mainData as unknown as Record<string, unknown>);
+        Configuration.mainData.entityIndex = index;
+    }
+
     public processPages() {
         this.buildDependencyGraph();
+        this.buildEntityIndex();
         Configuration.mainData.generatedAt = new Date().toISOString();
         const pages = [...Configuration.pages].sort((a, b) => a.name.localeCompare(b.name));
 

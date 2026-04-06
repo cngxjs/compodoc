@@ -172,7 +172,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="52" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:52</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="52" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:52</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -199,7 +199,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="42" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:42</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="42" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:42</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -226,7 +226,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="47" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:47</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="47" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:47</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -258,7 +258,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="32" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:32</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="32" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:32</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -291,7 +291,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="37" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:37</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="37" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:37</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -317,7 +317,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="72" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:72</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="72" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:72</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -349,7 +349,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="62" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:62</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="62" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:62</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -375,7 +375,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="92" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:92</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="92" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:92</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -412,7 +412,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="67" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:67</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="67" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:67</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -443,7 +443,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="57" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:57</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="57" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:57</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -464,7 +464,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="87" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:87</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="87" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:87</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -485,7 +485,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="92" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:92</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="92" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:92</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -512,7 +512,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="77" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:77</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="77" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:77</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -539,7 +539,7 @@ describe('CLI simple generation', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="82" class="link-to-prism">test/fixtures/sample-files/foo.component.ts:82</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="82" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:82</a></div>
                             </td>
                         </tr>
                 <tr>

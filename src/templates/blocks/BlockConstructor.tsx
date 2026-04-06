@@ -37,7 +37,7 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
                     </div>
                     {ctor.line && isTabEnabled(props.navTabs, 'source') && (
                         <div class="cdx-member-row">
-                            {t('defined-in')} <a href="" data-line={String(ctor.line)} class="link-to-prism">{props.file}:{ctor.line}</a>
+                            {t('defined-in')} <a href="" data-cdx-line={String(ctor.line)} class="cdx-link-to-source">{props.file}:{ctor.line}</a>
                         </div>
                     )}
                     {ctor.description && (

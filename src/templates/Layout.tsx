@@ -17,6 +17,7 @@ export type PageData = {
     readonly maxSearchResults?: number;
     readonly gaID?: string;
     readonly gaSite?: string;
+    readonly entityIndex?: Record<string, { href: string; kind: string }>;
 };
 
 type LayoutProps = {
@@ -274,6 +275,7 @@ export const Layout = (props: LayoutProps): string => {
             <body>
                 <script type="module" src={r('js/compodocx.js')}></script>
                 <script>{IframeTrackingScript}</script>
+                {data.entityIndex && <script>{`window.__CDX_ENTITIES__=${JSON.stringify(data.entityIndex)};`}</script>}
 
                 <a href="#main-content" class="cdx-skip-link">
                     Skip to main content

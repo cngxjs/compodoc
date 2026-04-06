@@ -22,7 +22,7 @@ export const BlockIndexSignatures = (props: BlockIndexSignaturesProps): string =
                 <div class="cdx-member-body">
                     {idx.line && isTabEnabled(props.navTabs, 'source') && (
                         <div class="cdx-member-row">
-                            {t('defined-in')} <a href="" data-line={String(idx.line)} class="link-to-prism">{props.file}:{idx.line}</a>
+                            {t('defined-in')} <a href="" data-cdx-line={String(idx.line)} class="cdx-link-to-source">{props.file}:{idx.line}</a>
                         </div>
                     )}
                     {idx.description && (

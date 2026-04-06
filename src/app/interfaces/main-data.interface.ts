@@ -64,6 +64,7 @@ export interface MainDataInterface {
     watch: boolean;
     mainGraph: string;
     dependencyGraph: { nodes: Array<{ name: string; type: string; url?: string }>; edges: Array<{ source: string; target: string }> };
+    entityIndex: Record<string, { href: string; kind: string }>;
     coverageTest: boolean;
     coverageTestThreshold: number;
     coverageTestThresholdFail: boolean;

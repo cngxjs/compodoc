@@ -34,7 +34,7 @@ const SignatureBlock = (props: {
         </div>
         {sig.line && isTabEnabled(props.navTabs, 'source') && (
             <div class="cdx-member-row">
-                {t('defined-in')} <a href="" data-line={String(sig.line)} class="link-to-prism">{props.file}:{sig.line}</a>
+                {t('defined-in')} <a href="" data-cdx-line={String(sig.line)} class="cdx-link-to-source">{props.file}:{sig.line}</a>
             </div>
         )}
         {sig.description && (

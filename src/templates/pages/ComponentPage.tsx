@@ -23,6 +23,7 @@ import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconBook, EmptyIconHtml, EmptyIconPalette, EmptyIconTree } from '../components/EmptyStateIcons';
+import { shortPath } from '../helpers/short-url';
 
 const escapeSimpleQuote = (text: string): string => {
     if (!text) return '';
@@ -451,7 +452,8 @@ export const ComponentPage = (data: any): string => {
                         aria-labelledby="source-tab"
                     >
                         <div class="compodoc-sourcecode">
-                            {highlightCode(c.sourceCode ?? '', 'typescript')}
+                            {c.file && <div class="cdx-source-header"><span>{shortPath(c.file)}</span></div>}
+                            {highlightCode(c.sourceCode ?? '', { lang: 'typescript', mode: 'source' })}
                         </div>
                     </div>
                 )}
@@ -464,7 +466,10 @@ export const ComponentPage = (data: any): string => {
                         aria-labelledby="templateData-tab"
                     >
                         {c.templateData?.trim()
-                            ? <pre class="line-numbers"><code class="language-html">{c.templateData}</code></pre>
+                            ? <div class="compodoc-sourcecode">
+                                {c.templateUrl?.[0] && <div class="cdx-source-header"><span>{shortPath(c.templateUrl[0])}</span></div>}
+                                {highlightCode(c.templateData, { lang: 'html', mode: 'source' })}
+                              </div>
                             : EmptyState({ icon: EmptyIconHtml(), title: t('empty-template-title'), description: t('empty-template-desc'), variant: 'full' })
                         }
                     </div>
@@ -479,20 +484,17 @@ export const ComponentPage = (data: any): string => {
                     >
                         {c.styleUrlsData?.length > 0
                             ? c.styleUrlsData.map((s: any) => (
-                                <>
-                                    <p class="comment">
-                                        <code>{s.styleUrl}</code>
-                                    </p>
-                                    <pre class="line-numbers">
-                                        <code class="language-scss">{s.data}</code>
-                                    </pre>
-                                </>
+                                <div class="compodoc-sourcecode">
+                                    {s.styleUrl && <div class="cdx-source-header"><span>{shortPath(s.styleUrl)}</span></div>}
+                                    {highlightCode(s.data, { lang: 'scss', mode: 'source' })}
+                                </div>
                             ))
                             : ''}
                         {c.stylesData && c.stylesData !== '' && (
-                            <pre class="line-numbers">
-                                <code class="language-scss">{c.stylesData}</code>
-                            </pre>
+                            <div class="compodoc-sourcecode">
+                                <div class="cdx-source-header"><span>Inline Styles</span></div>
+                                {highlightCode(c.stylesData, { lang: 'scss', mode: 'source' })}
+                            </div>
                         )}
                         {!(c.styleUrlsData?.length > 0) && !(c.stylesData && c.stylesData !== '') &&
                             EmptyState({ icon: EmptyIconPalette(), title: t('empty-styles-title'), description: t('empty-styles-desc'), variant: 'full' })

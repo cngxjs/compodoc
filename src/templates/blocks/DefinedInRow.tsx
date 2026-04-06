@@ -22,7 +22,7 @@ export const DefinedInRow = (props: DefinedInRowProps): string => {
             {props.inheritance ? (
                 <span>{t('defined-in')} {linkTypeHtml(props.inheritance.file, { withLine: true, line: props.line })}</span>
             ) : (
-                <span>{t('defined-in')} <a href="" data-line={String(props.line)} class="link-to-prism">{props.file}:{props.line}</a></span>
+                <span>{t('defined-in')} <a href="" data-cdx-line={String(props.line)} class="cdx-link-to-source">{props.file}:{props.line}</a></span>
             )}
         </div>
     </>) as string;

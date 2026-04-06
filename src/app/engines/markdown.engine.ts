@@ -4,6 +4,7 @@ import * as path from 'path';
 
 import FileEngine from './file.engine';
 import I18nEngine from './i18n.engine';
+import { highlightCode } from './syntax-highlight.engine';
 import { markedAcl } from '../../utils/marked.acl';
 
 export interface markdownReadedDatas {
@@ -26,15 +27,20 @@ export class MarkdownEngine {
 
         const renderer = new this.markedInstance.Renderer();
         renderer.code = (code, language) => {
-            let highlighted = code;
             if (!language) {
                 language = 'none';
             }
 
-            highlighted = this.escape(code);
+            let highlighted: string;
+            try {
+                highlighted = highlightCode(code, { lang: language, mode: 'snippet' });
+            } catch {
+                // Fallback to escaped plain text if Shiki can't handle the language
+                highlighted = `<pre class="shiki"><code>${this.escape(code)}</code></pre>`;
+            }
             return `<b>${I18nEngine.translate(
                 'example'
-            )} :</b><div><pre class="line-numbers"><code class="language-${language}">${highlighted}</code></pre></div>`;
+            )} :</b><div class="cdx-code-snippet">${highlighted}</div>`;
         };
 
         renderer.table = (header, body) => {

@@ -1,6 +1,7 @@
 import Html from '@kitajs/html';
 import { extractReadmeHeadings, isInitialTab, isReadmeEmpty, isTabEnabled, t } from '../helpers';
 import { highlightCode } from '../../app/engines/syntax-highlight.engine';
+import { shortPath } from '../helpers/short-url';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconBook, EmptyIconFile } from '../components/EmptyStateIcons';
 
@@ -16,6 +17,7 @@ type EntityTabsProps = {
     readonly infoContent: string;
     readonly readme?: string;
     readonly sourceCode?: string;
+    readonly filePath?: string;
     readonly exampleUrls?: string[];
 };
 
@@ -58,7 +60,10 @@ export const EntityTabs = (props: EntityTabsProps): string => (<>
             <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'source') ? ' active' : ''} tab-source-code`}
                 id="source" role="tabpanel" aria-labelledby="source-tab">
                 {props.sourceCode
-                    ? <div class="compodoc-sourcecode">{highlightCode(props.sourceCode, 'typescript')}</div>
+                    ? <div class="compodoc-sourcecode">
+                        {props.filePath && <div class="cdx-source-header"><span>{shortPath(props.filePath)}</span></div>}
+                        {highlightCode(props.sourceCode, { lang: 'typescript', mode: 'source' })}
+                      </div>
                     : EmptyState({ icon: EmptyIconFile(), title: t('empty-source-title'), description: t('empty-source-desc'), variant: 'full' })
                 }
             </div>

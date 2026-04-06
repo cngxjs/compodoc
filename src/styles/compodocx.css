@@ -7,6 +7,7 @@
 @import "./components/coverage.css";
 @import "./components/overview.css";
 @import "./components/graphs.css";
+@import "./components/code-blocks.css";
 
 @source "../templates/**/*.hbs";
 @source "../templates/**/*.tsx";
@@ -61,7 +62,7 @@
   /* --- Typography --- */
   --font-heading: "Instrument Sans", system-ui, sans-serif;
   --font-body:    "Source Sans 3", system-ui, sans-serif;
-  --font-code:    "JetBrains Mono", ui-monospace, monospace;
+  --font-code:    ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
 
   /* --- Shadows --- */
   --shadow-cdx-sm: 0 1px 2px hsl(220 20% 14% / 0.06);
@@ -252,77 +253,7 @@ body, .cdx-sidebar, .content, .cdx-topbar,
   box-shadow: inset 3px 0 0 var(--color-cdx-primary-subtle);
 }
 
-/* ----------------------------------------------------------------
-   Code block micro-interactions
-   ---------------------------------------------------------------- */
-
-.compodoc-sourcecode .line:hover {
-  background: hsl(220 20% 14% / 0.06);
-  transition: background 80ms ease;
-}
-
-.dark .compodoc-sourcecode .line:hover {
-  background: hsl(220 16% 90% / 0.06);
-}
-
-/* Overflow gradient indicator */
-pre {
-  position: relative;
-}
-
-pre::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 40px;
-  background: linear-gradient(to right, transparent, var(--color-cdx-bg-code-block));
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 200ms ease;
-}
-
-pre:has(::-webkit-scrollbar) pre::after,
-pre.cdx-overflow::after {
-  opacity: 1;
-}
-
-/* Code copy button */
-.cdx-code-copy {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 4px 8px;
-  border: 1px solid var(--color-cdx-border);
-  border-radius: var(--radius-cdx-sm);
-  background: var(--color-cdx-bg-elevated);
-  color: var(--color-cdx-text-muted);
-  font-size: 12px;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 120ms ease, color 120ms ease, background 120ms ease;
-}
-
-pre:hover .cdx-code-copy {
-  opacity: 1;
-}
-
-.cdx-code-copy:hover {
-  color: var(--color-cdx-text);
-  background: var(--color-cdx-bg-alt);
-}
-
-.cdx-code-copy.cdx-code-copy--copied {
-  color: hsl(142 50% 40%);
-  transform: scale(1);
-  animation: cdx-copy-flash 300ms ease;
-}
-
-@keyframes cdx-copy-flash {
-  from { transform: scale(0.8); }
-  to   { transform: scale(1); }
-}
+/* Code block styles: see src/styles/components/code-blocks.css */
 
 /* ----------------------------------------------------------------
    Skip link
@@ -1402,19 +1333,7 @@ button.menu-toggler:focus-visible {
 .io-description { margin: 10px 0; }
 .io-file { margin: 20px 0; }
 
-/* Source code */
-.tab-source-code { padding: 10px 0; }
-pre { padding: 12px; border: none; background: var(--color-cdx-bg-code-block); border-radius: var(--radius-cdx-md); overflow-x: auto; }
-code { background: none; padding: 2px 0; }
-pre code { font-size: 0.85rem; line-height: 1.6; }
-
-/* Shiki dual-theme support */
-.shiki, .shiki span { color: var(--shiki-light); background-color: transparent; }
-.dark .shiki, .dark .shiki span { color: var(--shiki-dark); }
-
-/* Non-Shiki code blocks (JSDoc examples, inline templates) — prism.css replacement */
-pre.line-numbers { background: var(--color-cdx-bg-code-block); color: hsl(220 14% 80%); border-radius: var(--radius-cdx-md); overflow-x: auto; }
-pre.line-numbers code { color: inherit; font-size: 0.85rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+/* Source code: see src/styles/components/code-blocks.css */
 
 /* Search results (legacy fallback) */
 .search-results { display: none; max-width: 800px; margin: 0 auto; padding: 20px 15px 40px; }

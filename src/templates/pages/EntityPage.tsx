@@ -346,6 +346,7 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 infoContent: InfoContent(props),
                 readme: e.readme,
                 sourceCode: e.sourceCode,
+                filePath: e.file,
                 exampleUrls: e.exampleUrls
             })}
         </>

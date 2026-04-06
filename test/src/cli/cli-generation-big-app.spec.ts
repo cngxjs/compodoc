@@ -1024,7 +1024,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="18" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:18</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="18" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:18</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -1057,7 +1057,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="19" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:19</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="19" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:19</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1084,7 +1084,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="20" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:20</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="20" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:20</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1111,7 +1111,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="21" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:21</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="21" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:21</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1138,7 +1138,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="23" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:23</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="23" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:23</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1171,7 +1171,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="24" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:24</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="24" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:24</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1204,7 +1204,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="26" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:26</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="26" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:26</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1237,7 +1237,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="27" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:27</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="27" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:27</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1270,7 +1270,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="28" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:28</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="28" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:28</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1303,7 +1303,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="29" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:29</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="29" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:29</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1327,7 +1327,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="52" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:52</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="52" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:52</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -1355,7 +1355,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="53" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:53</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="53" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:53</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1383,7 +1383,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="55" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:55</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="55" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:55</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1411,7 +1411,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="56" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:56</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="56" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:56</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1439,7 +1439,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="57" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:57</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="57" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:57</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1467,7 +1467,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="58" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:58</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="58" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:58</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1491,7 +1491,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="35" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:35</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="35" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:35</a></div>
                             </td>
                         </tr>
                 <tr>
@@ -1524,7 +1524,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="36" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:36</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="36" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:36</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1551,7 +1551,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="37" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:37</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="37" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:37</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1578,7 +1578,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="38" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:38</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="38" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:38</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1605,7 +1605,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="40" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:40</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="40" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:40</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1638,7 +1638,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="41" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:41</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="41" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:41</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1671,7 +1671,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="43" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:43</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="43" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:43</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1704,7 +1704,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="44" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:44</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="44" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:44</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1732,7 +1732,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="45" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:45</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="45" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:45</a></div>
                             </td>
                         </tr>
             </tbody>
@@ -1765,7 +1765,7 @@ describe('CLI simple generation - big app', () => {
                 </tr>
                         <tr>
                             <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-line="46" class="link-to-prism">src/app/about/compodoc/compodoc.component.ts:46</a></div>
+                                    <div class="io-line">Defined in <a href="" data-cdx-line="46" class="cdx-link-to-source">src/app/about/compodoc/compodoc.component.ts:46</a></div>
                             </td>
                         </tr>
             </tbody>

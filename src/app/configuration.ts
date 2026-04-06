@@ -71,6 +71,7 @@ export class Configuration implements ConfigurationInterface {
         watch: false,
         mainGraph: '',
         dependencyGraph: { nodes: [], edges: [] },
+        entityIndex: {},
         coverageTest: false,
         coverageTestThreshold: COMPODOC_DEFAULTS.defaultCoverageThreshold,
         coverageTestThresholdFail: COMPODOC_DEFAULTS.coverageTestThresholdFail,
