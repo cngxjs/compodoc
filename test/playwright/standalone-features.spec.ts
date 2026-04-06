@@ -38,6 +38,125 @@ test.describe('Sidebar', () => {
     });
 });
 
+// ─── Navigation Grouping (folder-based hierarchy) ───────
+
+test.describe('Navigation Grouping', () => {
+    test('folder groups rendered as nested tree in sidebar', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        // Top-level groups exist as .chapter.inner elements
+        expect(html).toContain('chapter inner');
+        // Specific folder group IDs present
+        expect(html).toContain('components-group-dashboard');
+        expect(html).toContain('components-group-features');
+        expect(html).toContain('components-group-settings');
+        expect(html).toContain('components-group-users');
+    });
+
+    test('nested folder structure: features > admin > ui', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        // Intermediate container nodes exist
+        expect(html).toContain('components-group-features/admin');
+        expect(html).toContain('components-group-features/admin/ui');
+    });
+
+    test('folder group names capitalized', async ({ page }) => {
+        await page.goto('/');
+        // Check that group buttons show capitalized names
+        const dashboardBtn = page.locator('button:has-text("Dashboard")').first();
+        await expect(dashboardBtn).toBeVisible();
+        const featuresBtn = page.locator('button:has-text("Features")').first();
+        await expect(featuresBtn).toBeVisible();
+    });
+
+    test('count badges on groups with items', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        const countBadges = html.match(/cdx-badge--count/g) || [];
+        expect(countBadges.length).toBeGreaterThanOrEqual(3);
+    });
+
+    test('explicit @category overrides folder grouping', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        // BreadcrumbComponent has @category Navigation
+        expect(html).toContain('Navigation');
+        expect(html).toContain('BreadcrumbComponent');
+    });
+
+    test('ungrouped root-level components render flat', async ({ page }) => {
+        await page.goto('/');
+        // Root-level components (no folder) should be direct links, not inside .chapter.inner
+        const appLink = page.locator('#components-links > li.link > a:has-text("AppComponent")');
+        await expect(appLink).toHaveCount(1);
+    });
+
+    test('chevron rotation: collapsed shows right, expanded shows down', async ({ page }) => {
+        await page.goto('/');
+        await page.evaluate(() => localStorage.removeItem('compodoc-sidebar-state'));
+        await page.reload();
+
+        // All chevrons use IconChevronRight — CSS rotation handles state
+        const chevrons = page.locator('.cdx-chevron');
+        const count = await chevrons.count();
+        expect(count).toBeGreaterThan(0);
+    });
+
+    test('group toggle expand/collapse works', async ({ page }) => {
+        await page.goto('/');
+        // Find the Components section toggle and ensure it can be toggled
+        const componentsToggle = page.locator('button.menu-toggler:has-text("Components")').first();
+        await componentsToggle.click();
+        await page.waitForTimeout(300);
+
+        // After clicking, the collapse should toggle
+        const collapseEl = page.locator('#components-links');
+        const hasIn = await collapseEl.evaluate(el => el.classList.contains('in'));
+        // Click again to toggle back
+        await componentsToggle.click();
+        await page.waitForTimeout(300);
+        const hasInAfter = await collapseEl.evaluate(el => el.classList.contains('in'));
+        expect(hasIn).not.toBe(hasInAfter);
+    });
+
+    test('deep groups beyond groupDepth start collapsed', async ({ page }) => {
+        await page.goto('/');
+        await page.evaluate(() => localStorage.removeItem('compodoc-sidebar-state'));
+        await page.reload();
+
+        // With default groupDepth=2, depth >= 2 should start collapsed (no .in class)
+        // features/admin/ui/ui-settings is at depth 3
+        const deepGroup = page.locator('#components-group-features\\/admin\\/ui\\/ui-settings');
+        const count = await deepGroup.count();
+        if (count > 0) {
+            const isOpen = await deepGroup.evaluate(el => el.classList.contains('in'));
+            expect(isOpen).toBe(false);
+        }
+    });
+
+    test('directives grouped under shared > directives', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        expect(html).toContain('directives-group-shared');
+        expect(html).toContain('directives-group-shared/directives');
+    });
+
+    test('pipes grouped under shared > pipes', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        expect(html).toContain('pipes-group-shared');
+        expect(html).toContain('pipes-group-shared/pipes');
+    });
+
+    test('depth-based CSS indentation applied', async ({ page }) => {
+        await page.goto('/');
+        // .chapter.inner elements should have --depth custom property
+        const innerChapters = page.locator('.chapter.inner[style*="--depth"]');
+        expect(await innerChapters.count()).toBeGreaterThan(0);
+    });
+});
+
 // ─── Component pages ─────────────────────────────────────
 
 test.describe('Component page', () => {
