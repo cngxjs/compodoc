@@ -205,6 +205,50 @@ test.describe('Component page', () => {
         expect(text).toContain('HighlightDirective');
     });
 
+    test('HighlightDirective: relationships show used-by on directive page', async ({ page }) => {
+        await page.goto('/directives/HighlightDirective.html');
+        const section = page.locator('[data-compodoc="block-relationships"]');
+        expect(await section.count()).toBe(1);
+        const text = await section.textContent();
+        expect(text).toContain('Used by');
+        expect(text).toContain('UserCardComponent');
+    });
+
+    test('GreetingPipe: relationships show used-by on pipe page', async ({ page }) => {
+        await page.goto('/pipes/GreetingPipe.html');
+        const section = page.locator('[data-compodoc="block-relationships"]');
+        expect(await section.count()).toBe(1);
+        const text = await section.textContent();
+        expect(text).toContain('Used by');
+    });
+
+    test('UserService: no relationships section when no module-level data', async ({ page }) => {
+        await page.goto('/injectables/UserService.html');
+        const section = page.locator('[data-compodoc="block-relationships"]');
+        expect(await section.count()).toBe(0);
+    });
+
+    test('relationships section appears between metadata and index', async ({ page }) => {
+        await page.goto('/directives/HighlightDirective.html');
+        const sections = page.locator('.cdx-content-section');
+        const ids = await sections.evaluateAll(els =>
+            els.map(el => el.getAttribute('data-compodoc') || '')
+        );
+        const metaIdx = ids.indexOf('block-metadata');
+        const relIdx = ids.indexOf('block-relationships');
+        const indexIdx = ids.indexOf('block-index');
+        expect(relIdx).toBeGreaterThan(metaIdx);
+        expect(relIdx).toBeLessThan(indexIdx);
+    });
+
+    test('relationships links navigate to correct entity page', async ({ page }) => {
+        await page.goto('/directives/HighlightDirective.html');
+        const link = page.locator('[data-compodoc="block-relationships"] a').first();
+        await link.click();
+        await page.waitForURL(/UserCardComponent/);
+        expect(page.url()).toContain('UserCardComponent');
+    });
+
     test('no empty entryComponents section', async ({ page }) => {
         await page.goto('/components/UserCardComponent.html');
         expect(await page.content()).not.toContain('entryComponents');
