@@ -526,3 +526,33 @@ test.describe('Dependency Graph — Component Tab', () => {
         await expect(page.locator('#dep-zoom-in')).toBeVisible();
     });
 });
+
+test.describe('Responsive member cards', () => {
+    test('member header stacks vertically at narrow viewport', async ({ page }) => {
+        await page.setViewportSize({ width: 400, height: 800 });
+        await page.goto('/injectables/UserService.html');
+        const header = page.locator('.cdx-member-header').first();
+        await expect(header).toBeVisible();
+        const direction = await header.evaluate(el => getComputedStyle(el).flexDirection);
+        expect(direction).toBe('column');
+    });
+
+    test('member header is row layout at normal viewport', async ({ page }) => {
+        await page.setViewportSize({ width: 1200, height: 800 });
+        await page.goto('/injectables/UserService.html');
+        const header = page.locator('.cdx-member-header').first();
+        await expect(header).toBeVisible();
+        const direction = await header.evaluate(el => getComputedStyle(el).flexDirection);
+        expect(direction).toBe('row');
+    });
+
+    test('method signature wraps at narrow viewport', async ({ page }) => {
+        await page.setViewportSize({ width: 400, height: 800 });
+        await page.goto('/injectables/UserService.html');
+        const sig = page.locator('.cdx-member-signature').first();
+        if (await sig.count() > 0) {
+            const wrap = await sig.evaluate(el => getComputedStyle(el).whiteSpace);
+            expect(wrap).toBe('pre-wrap');
+        }
+    });
+});
