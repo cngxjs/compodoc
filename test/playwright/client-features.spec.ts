@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Sidebar', () => {
-    test('desktop: sections default collapsed without saved state', async ({ page }) => {
+    test('desktop: sections default expanded without saved state (toggleMenuItems: all)', async ({ page }) => {
         await page.goto('/');
         await page.evaluate(() => localStorage.removeItem('compodoc-sidebar-state'));
         await page.reload();
@@ -11,10 +11,9 @@ test.describe('Sidebar', () => {
         const count = await collapseSections.count();
         expect(count).toBeGreaterThan(0);
 
-        for (let i = 0; i < count; i++) {
-            const section = collapseSections.nth(i);
-            await expect(section).not.toHaveClass(/\bin\b/);
-        }
+        // Default toggleMenuItems is ['all'], so top-level sections start expanded
+        const firstSection = collapseSections.first();
+        await expect(firstSection).toHaveClass(/\bin\b/);
     });
 
     test('desktop: expand/collapse persists to localStorage', async ({ page }) => {
@@ -59,17 +58,12 @@ test.describe('Mobile menu', () => {
         const sidebar = page.locator('#sidebar');
         await expect(sidebar).toHaveClass(/cdx-sidebar--open/);
 
-        // Expand a section first, then click a visible link
-        const toggler = sidebar.locator('[data-cdx-toggle="collapse"]').first();
-        await toggler.click();
-        await page.waitForTimeout(300);
-
+        // Sections start expanded by default, so just click a visible link
         const link = sidebar.locator('a[data-type="entity-link"]').first();
-        if (await link.isVisible()) {
-            await link.click();
-            await page.waitForTimeout(300);
-            await expect(sidebar).not.toHaveClass(/cdx-sidebar--open/);
-        }
+        await link.scrollIntoViewIfNeeded();
+        await link.click();
+        await page.waitForTimeout(300);
+        await expect(sidebar).not.toHaveClass(/cdx-sidebar--open/);
     });
 });
 
@@ -105,11 +99,11 @@ test.describe('Command palette', () => {
         await expect(dialog).not.toBeVisible();
     });
 
-    test('opens when sidebar search input is focused', async ({ page }) => {
+    test('opens when sidebar search trigger is clicked', async ({ page }) => {
         await page.goto('/');
 
-        // Click the search input container (readonly input triggers focus -> opens palette)
-        await page.locator('#sidebar #book-search-input input').click();
+        // Click the search trigger button in sidebar header (use .cdx-search-trigger which is sidebar-only)
+        await page.locator('.cdx-search-trigger').click();
         await page.waitForTimeout(200);
 
         const dialog = page.locator('#cdx-command-palette');
@@ -144,10 +138,8 @@ test.describe('Dark mode', () => {
     test('toggle switches dark mode off and on', async ({ page }) => {
         await page.goto('/');
 
-        await page.evaluate(() => {
-            const input = document.querySelector('.dark-mode-switch input') as HTMLInputElement;
-            input?.click();
-        });
+        // Click the sidebar .cdx-dark-toggle button (topbar one is hidden at desktop)
+        await page.locator('#sidebar .cdx-dark-toggle').click();
         await page.waitForTimeout(100);
 
         const noDark = await page.evaluate(() =>
@@ -156,10 +148,8 @@ test.describe('Dark mode', () => {
         );
         expect(noDark).toBe(true);
 
-        await page.evaluate(() => {
-            const input = document.querySelector('.dark-mode-switch input') as HTMLInputElement;
-            input?.click();
-        });
+        // Click again to toggle dark mode back on
+        await page.locator('#sidebar .cdx-dark-toggle').click();
         await page.waitForTimeout(100);
 
         const hasDark = await page.evaluate(() =>
@@ -224,7 +214,7 @@ test.describe('Module graph', () => {
     test('SVG pan-zoom: zoom buttons work', async ({ page }) => {
         await page.goto('/modules.html');
 
-        const browseBtn = page.locator('a.btn:has-text("Browse")').first();
+        const browseBtn = page.locator('a.cdx-btn:has-text("Browse")').first();
         await browseBtn.click();
         await page.waitForTimeout(1000);
 

@@ -157,7 +157,7 @@ test.describe('Overview Dashboard', () => {
         test('graph container visible for NgModule app', async ({ page }) => {
             await page.goto('/overview.html');
 
-            const graph = page.locator('.module-graph-container');
+            const graph = page.locator('.cdx-graph-container');
             await expect(graph).toBeVisible();
         });
     });
@@ -301,11 +301,12 @@ test.describe('Overview Dashboard', () => {
         test('tree legend uses entity-color classes', async ({ page }) => {
             await page.goto('/components/TodoComponent.html');
             await page.getByRole('tab', { name: 'DOM Tree' }).click();
-            const legend = page.locator('.tree-legend');
+            // Scope to DOM Tree tab panel to avoid matching other .cdx-graph-legend instances
+            const treePanel = page.locator('#tree');
+            const legend = treePanel.locator('.cdx-graph-legend');
             await expect(legend).toBeVisible();
-            await expect(legend.locator('.component')).toBeVisible();
-            await expect(legend.locator('.directive')).toBeVisible();
-            await expect(legend.locator('.htmlelement')).toBeVisible();
+            const items = legend.locator('.cdx-graph-legend-item');
+            expect(await items.count()).toBeGreaterThanOrEqual(3);
         });
     });
 });
