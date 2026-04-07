@@ -39,7 +39,7 @@ describe('CLI Options', () => {
         it(`--theme`, () => {
             expect(runHelp.stdout.toString()).to.contain('--theme [theme]');
             expect(runHelp.stdout.toString()).to.contain(
-                "Choose a theme: 'default', 'ocean', 'ember', 'midnight', or a path to a custom CSS file"
+"Choose a built-in theme or path to a custom CSS file"
             );
         });
 

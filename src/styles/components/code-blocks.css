@@ -7,7 +7,7 @@
 
 pre {
   @apply relative overflow-x-auto;
-  padding: 12px;
+  padding: var(--spacing-cdx-md);
   border: 1px solid var(--color-cdx-border);
   border-radius: var(--radius-cdx-md);
   background: var(--color-cdx-bg-code-block);
@@ -71,7 +71,7 @@ pre.line-numbers code {
 /* --- Source viewer (Type A) --- */
 
 .tab-source-code {
-  padding: 10px 0;
+  padding: var(--spacing-cdx-md) 0;
 }
 
 .cdx-source-viewer {
@@ -88,7 +88,7 @@ pre.line-numbers code {
 
 .cdx-source-header {
   @apply flex items-center justify-between;
-  padding: 6px 12px;
+  padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
   background: hsl(220 16% 94%);
   border-bottom: 1px solid var(--color-cdx-border);
   font-family: var(--font-code);
@@ -195,7 +195,7 @@ pre.line-numbers code {
 .cdx-source-breadcrumb {
   @apply sticky z-10;
   top: 0;
-  padding: 4px 12px;
+  padding: var(--spacing-cdx-xs) var(--spacing-cdx-md);
   background: hsl(220 16% 94% / 0.95);
   backdrop-filter: blur(4px);
   border-bottom: 1px solid var(--color-cdx-border);
@@ -213,7 +213,7 @@ pre.line-numbers code {
 }
 
 .cdx-breadcrumb-sep {
-  margin: 0 4px;
+  margin: 0 var(--spacing-cdx-xs);
   opacity: 0.4;
 }
 
@@ -232,7 +232,7 @@ pre.line-numbers code {
   position: absolute;
   top: 8px;
   right: 8px;
-  padding: 4px 8px;
+  padding: var(--spacing-cdx-xs) var(--spacing-cdx-sm);
   border: 1px solid var(--color-cdx-border);
   border-radius: var(--radius-cdx-sm);
   background: var(--color-cdx-bg-elevated);
@@ -278,7 +278,7 @@ pre:hover .cdx-code-copy,
   position: absolute;
   top: 0;
   right: 0;
-  padding: 2px 8px;
+  padding: var(--spacing-cdx-xs) var(--spacing-cdx-sm);
   font-size: 10px;
   font-family: var(--font-code);
   text-transform: uppercase;
@@ -304,7 +304,7 @@ pre:hover > .cdx-code-lang-chip {
   @apply absolute w-full text-center cursor-pointer;
   bottom: 0;
   left: 0;
-  padding: 8px;
+  padding: var(--spacing-cdx-sm);
   font-size: 12px;
   color: var(--color-cdx-primary);
   background: transparent;

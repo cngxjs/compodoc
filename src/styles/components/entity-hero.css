@@ -1,9 +1,9 @@
 .cdx-entity-hero {
     position: relative;
-    padding: 24px 32px 16px;
+    padding: var(--spacing-cdx-2xl) 32px var(--spacing-cdx-lg);
     overflow: hidden;
     border-radius: var(--radius-cdx-lg);
-    margin: 16px 0 0;
+    margin: var(--spacing-cdx-lg) 0 0;
     background: var(--color-cdx-bg-alt);
 }
 .cdx-entity-hero::before {
@@ -60,7 +60,7 @@
 .cdx-entity-hero .cdx-breadcrumb {
     position: relative;
     z-index: 1;
-    margin-bottom: 8px;
+    margin-bottom: var(--spacing-cdx-sm);
 }
 
 .cdx-entity-hero-name {
@@ -79,8 +79,8 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
-    margin: 6px 0 0;
+    gap: var(--spacing-cdx-sm);
+    margin: var(--spacing-cdx-sm) 0 0;
 }
 
 .cdx-entity-hero-context {
@@ -93,13 +93,13 @@
 }
 
 .cdx-tab-bar {
-    margin-top: 12px;
-    margin-bottom: 20px;
+    margin-top: var(--spacing-cdx-md);
+    margin-bottom: var(--spacing-cdx-xl);
 }
 
 @container content (max-width: 500px) {
     .cdx-entity-hero {
-        padding: 16px 16px 12px;
+        padding: var(--spacing-cdx-lg) var(--spacing-cdx-lg) var(--spacing-cdx-md);
     }
 
     .cdx-entity-hero-name {

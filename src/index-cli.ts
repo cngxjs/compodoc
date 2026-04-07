@@ -95,7 +95,7 @@ export class CliApplication extends Application {
             )
             .option(
                 '--theme [theme]',
-                "Choose a theme: 'default', 'ocean', 'ember', 'midnight', or a path to a custom CSS file"
+                "Choose a built-in theme or path to a custom CSS file (built-in: default, ocean, ember, midnight, neon, brutalist, nord, rose-pine)"
             )
             .option(
                 '--shikiTheme [theme]',
@@ -289,7 +289,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         // Handle deprecated theme names
         if (Configuration.mainData.theme === 'material') {
             logger.warn(
-                "'material' theme has been removed. Use 'default', 'ocean', 'ember', or 'midnight' instead."
+                "'material' theme has been removed. Use 'default', 'ocean', 'ember', 'midnight', 'neon', 'brutalist', 'nord', or 'rose-pine' instead."
             );
             Configuration.mainData.theme = 'default';
         }

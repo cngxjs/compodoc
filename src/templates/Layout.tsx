@@ -145,7 +145,11 @@ const BUILTIN_THEMES: ReadonlyArray<{ id: string; name: string; swatch: string }
     { id: 'default', name: 'Default', swatch: 'hsl(222 68% 52%)' },
     { id: 'ocean', name: 'Ocean', swatch: 'hsl(200 60% 42%)' },
     { id: 'ember', name: 'Ember', swatch: 'hsl(24 90% 52%)' },
-    { id: 'midnight', name: 'Midnight', swatch: 'hsl(262 68% 58%)' }
+    { id: 'midnight', name: 'Midnight', swatch: 'hsl(262 68% 58%)' },
+    { id: 'neon', name: 'Neon', swatch: 'hsl(180 100% 50%)' },
+    { id: 'brutalist', name: 'Brutalist', swatch: 'hsl(0 0% 0%)' },
+    { id: 'nord', name: 'Nord', swatch: '#5e81ac' },
+    { id: 'rose-pine', name: 'Rose Pine', swatch: '#d7827e' }
 ];
 
 const SidebarHeader = (props: {

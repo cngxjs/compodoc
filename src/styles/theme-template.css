@@ -5,6 +5,10 @@
  * Both :root (light) and .dark blocks are supported.
  * If .dark is omitted, :root values are used in both modes.
  *
+ * IMPORTANT: For radii, fonts, and transitions you must also override the
+ * Tailwind alias tokens (marked with [TW]) so @apply-generated styles pick
+ * up your values. Color tokens don't need Tailwind aliases.
+ *
  * Usage: compodocx --theme ./my-theme.css
  *
  * Pairs well with: --shikiTheme github-light:github-dark
@@ -24,85 +28,75 @@
   /* --color-cdx-bg-code:       hsl(220 16% 95%); */
   /* --color-cdx-bg-code-block: hsl(225 16% 16%); */
 
-  /* --- Text hierarchy ---
-   * text:           body text
-   * text-secondary: less prominent text (descriptions, metadata)
-   * text-muted:     subtle labels, timestamps, placeholders
-   * text-inverse:   text on dark backgrounds (badges, buttons)
-   */
+  /* --- Text hierarchy --- */
   /* --color-cdx-text:           hsl(220 20% 14%); */
   /* --color-cdx-text-secondary: hsl(220 12% 44%); */
   /* --color-cdx-text-muted:     hsl(220 10% 46%); */
   /* --color-cdx-text-inverse:   hsl(220 16% 96%); */
 
-  /* --- Primary accent ---
-   * primary:        links, active states, focus rings
-   * primary-hover:  hovered links and buttons
-   * primary-subtle: active sidebar item background, selection tint
-   */
+  /* --- Primary accent --- */
   /* --color-cdx-primary:        hsl(222 68% 52%); */
   /* --color-cdx-primary-hover:  hsl(222 68% 44%); */
   /* --color-cdx-primary-subtle: hsl(222 68% 96%); */
 
-  /* --- Entity type accents ---
-   * Used in badges, hero gradients, graph nodes, coverage charts.
-   * All 13 types must remain visually distinguishable from each other.
-   */
-  /* --color-cdx-entity-component:   #14b8a6; */  /* teal */
-  /* --color-cdx-entity-service:     #f59e0b; */  /* amber */
-  /* --color-cdx-entity-directive:   #7c3aed; */  /* violet */
-  /* --color-cdx-entity-pipe:        #ec4899; */  /* pink */
-  /* --color-cdx-entity-module:      #3b82f6; */  /* blue */
-  /* --color-cdx-entity-class:       #059669; */  /* emerald */
-  /* --color-cdx-entity-interface:   #06b6d4; */  /* cyan */
-  /* --color-cdx-entity-guard:       #ef4444; */  /* red */
-  /* --color-cdx-entity-interceptor: #c026d3; */  /* fuchsia */
-  /* --color-cdx-entity-function:    #65a30d; */  /* lime */
-  /* --color-cdx-entity-variable:    #64748b; */  /* slate */
-  /* --color-cdx-entity-typealias:   #6366f1; */  /* indigo */
-  /* --color-cdx-entity-enum:        #c2410c; */  /* dark orange */
+  /* --- Entity type accents (13 types, must stay visually distinguishable) --- */
+  /* --color-cdx-entity-component:   #14b8a6; */
+  /* --color-cdx-entity-service:     #f59e0b; */
+  /* --color-cdx-entity-directive:   #7c3aed; */
+  /* --color-cdx-entity-pipe:        #ec4899; */
+  /* --color-cdx-entity-module:      #3b82f6; */
+  /* --color-cdx-entity-class:       #059669; */
+  /* --color-cdx-entity-interface:   #06b6d4; */
+  /* --color-cdx-entity-guard:       #ef4444; */
+  /* --color-cdx-entity-interceptor: #c026d3; */
+  /* --color-cdx-entity-function:    #65a30d; */
+  /* --color-cdx-entity-variable:    #64748b; */
+  /* --color-cdx-entity-typealias:   #6366f1; */
+  /* --color-cdx-entity-enum:        #c2410c; */
 
-  /* --- Feedback ---
-   * deprecated: deprecation banners and badges
-   * danger:     error states, destructive actions
-   */
+  /* --- Feedback --- */
   /* --color-cdx-deprecated: hsl(38 92% 50%); */
   /* --color-cdx-danger:     hsl(0 72% 52%); */
 
-  /* --- Borders ---
-   * border:       default card/section borders
-   * border-strong: emphasized separators
-   * border-focus:  focus ring color (usually matches primary)
-   */
+  /* --- Borders --- */
   /* --color-cdx-border:        hsl(220 14% 90%); */
   /* --color-cdx-border-strong: hsl(220 14% 80%); */
   /* --color-cdx-border-focus:  hsl(222 68% 52%); */
 
-  /* --- Shadows ---
-   * sm: subtle card shadow
-   * md: dropdown, popover shadow
-   * lg: modal, overlay shadow
-   */
+  /* --- Shadows --- */
   /* --shadow-cdx-sm: 0 1px 2px hsl(220 20% 14% / 0.06); */
   /* --shadow-cdx-md: 0 4px 12px hsl(220 20% 14% / 0.08); */
   /* --shadow-cdx-lg: 0 12px 32px hsl(220 20% 14% / 0.12); */
 
   /* --- Typography ---
-   * Override to match your brand fonts.
-   * Include fallback stacks for system font compatibility.
+   * Override both the cdx token AND the [TW] Tailwind alias.
    */
   /* --font-heading: "Instrument Sans", system-ui, sans-serif; */
   /* --font-body:    "Source Sans 3", system-ui, sans-serif; */
   /* --font-code:    ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; */
+  /* --font-sans:    "Source Sans 3", system-ui, sans-serif;       [TW] */
+  /* --font-mono:    ui-monospace, "SF Mono", Menlo, monospace;    [TW] */
 
   /* --- Radii ---
-   * sm: small elements (badges, chips)
-   * md: cards, inputs
-   * lg: hero blocks, large cards
+   * Override both the cdx token AND the [TW] Tailwind alias.
    */
   /* --radius-cdx-sm: 4px; */
   /* --radius-cdx-md: 8px; */
   /* --radius-cdx-lg: 12px; */
+  /* --radius-sm: 4px;      [TW] */
+  /* --radius-md: 8px;      [TW] */
+  /* --radius-lg: 12px;     [TW] */
+  /* --radius-2xl: 12px;    [TW] */
+
+  /* --- Density-aware spacing ---
+   * Scale UI density. Override individual steps or all at once.
+   */
+  /* --spacing-cdx-xs:  4px; */
+  /* --spacing-cdx-sm:  8px; */
+  /* --spacing-cdx-md:  12px; */
+  /* --spacing-cdx-lg:  16px; */
+  /* --spacing-cdx-xl:  20px; */
+  /* --spacing-cdx-2xl: 24px; */
 
   /* --- Layout --- */
   /* --spacing-cdx-sidebar: 320px; */
@@ -113,12 +107,5 @@
 }
 
 .dark {
-  /* Override the same tokens for dark mode.
-   * If this block is omitted, :root values are used in both modes.
-   */
-
-  /* --color-cdx-bg:            hsl(225 16% 10%); */
-  /* --color-cdx-text:          hsl(220 16% 90%); */
-  /* --color-cdx-primary:       hsl(222 80% 68%); */
-  /* ... */
+  /* Override the same tokens for dark mode. */
 }
