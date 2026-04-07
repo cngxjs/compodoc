@@ -41,6 +41,16 @@ const Badge = (props: { label: string; cssClass: string }): string =>
     (<span class={`cdx-badge ${props.cssClass}`}>{props.label}</span>) as string;
 
 /** Render a single entity link */
+/** Truncate description to first sentence, max 120 chars */
+const previewDesc = (desc?: string): string | undefined => {
+    if (!desc) return undefined;
+    const stripped = desc.replace(/<[^>]+>/g, '').trim();
+    if (!stripped) return undefined;
+    const firstSentence = stripped.split(/[.!?]\s/)[0];
+    const truncated = firstSentence.length > 120 ? firstSentence.substring(0, 117) + '...' : firstSentence;
+    return truncated;
+};
+
 const EntityLink = (props: {
     href: string;
     name: string;
@@ -51,10 +61,13 @@ const EntityLink = (props: {
     isToken?: boolean;
     beta?: boolean;
     factoryKind?: string;
+    entityType?: string;
+    selector?: string;
+    inputCount?: number;
+    outputCount?: number;
+    description?: string;
 }): string =>
     (
-        //TODO: show standalone-badge only if app is not standalone and has modules
-
         <li class="link">
             <a
                 href={props.href}
@@ -62,6 +75,10 @@ const EntityLink = (props: {
                 data-context={props.context}
                 data-context-id={props.contextId}
                 class={props.deprecated ? 'deprecated-name' : ''}
+                data-cdx-entity-type={props.entityType}
+                data-cdx-selector={props.selector || undefined}
+                data-cdx-io={props.inputCount || props.outputCount ? `${props.inputCount || 0}/${props.outputCount || 0}` : undefined}
+                data-cdx-desc={previewDesc(props.description)}
             >
                 {props.name}
                 {props.standalone ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' }) : ''}
@@ -121,7 +138,12 @@ const GroupTree = (props: {
                         standalone: item.standalone,
                         isToken: item.isToken,
                         beta: item.beta,
-                        factoryKind: item.factoryKind
+                        factoryKind: item.factoryKind,
+                        entityType: props.type.replace(/s$/, ''),
+                        selector: item.selector,
+                        inputCount: item.inputsClass?.length,
+                        outputCount: item.outputsClass?.length,
+                        description: item.description,
                     })
                 )}
             </ul>
@@ -187,7 +209,12 @@ const EntitySection = (props: {
                                           standalone: item.standalone,
                                           isToken: item.isToken,
                                           beta: item.beta,
-                                          factoryKind: item.factoryKind
+                                          factoryKind: item.factoryKind,
+                                          entityType: props.type.replace(/s$/, ''),
+                                          selector: item.selector,
+                                          inputCount: item.inputsClass?.length,
+                                          outputCount: item.outputsClass?.length,
+                                          description: item.description,
                                       })
                                   )}
                               </>
@@ -201,7 +228,12 @@ const EntitySection = (props: {
                               standalone: item.standalone,
                               isToken: item.isToken,
                               beta: item.beta,
-                              factoryKind: item.factoryKind
+                              factoryKind: item.factoryKind,
+                              entityType: props.type.replace(/s$/, ''),
+                              selector: item.selector,
+                              inputCount: item.inputsClass?.length,
+                              outputCount: item.outputsClass?.length,
+                              description: item.description,
                           })
                       )}
             </ul>
@@ -242,7 +274,12 @@ const ModuleSubSection = (props: {
                         name: item.name,
                         deprecated: item.deprecated,
                         context: 'sub-entity',
-                        contextId: 'modules'
+                        contextId: 'modules',
+                        entityType: props.type.replace(/s$/, ''),
+                        selector: item.selector,
+                        inputCount: item.inputsClass?.length,
+                        outputCount: item.outputsClass?.length,
+                        description: item.description,
                     })
                 )}
             </ul>

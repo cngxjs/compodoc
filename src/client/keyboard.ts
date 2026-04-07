@@ -92,32 +92,122 @@ const navigateMember = (direction: 1 | -1) => {
     card.scrollIntoView({ block: 'nearest', behavior: prefersReducedMotion ? 'auto' : 'smooth' });
 };
 
-/** [/] entity sidebar navigation */
+/** Entity preview panel state */
+let previewDismissTimer: ReturnType<typeof setTimeout> | null = null;
+let focusedEntityIdx = -1;
+
+/** Remove any existing preview panel and sidebar focus */
+const dismissPreview = () => {
+    if (previewDismissTimer) {
+        clearTimeout(previewDismissTimer);
+        previewDismissTimer = null;
+    }
+    document.querySelectorAll('.cdx-sidebar-focused').forEach(el =>
+        el.classList.remove('cdx-sidebar-focused')
+    );
+    document.querySelectorAll('.cdx-entity-preview').forEach(el => el.remove());
+    focusedEntityIdx = -1;
+};
+
+/** Build preview panel HTML from data-cdx-* attributes */
+const buildPreviewHtml = (link: HTMLAnchorElement): string => {
+    const entityType = link.getAttribute('data-cdx-entity-type') || '';
+    const selector = link.getAttribute('data-cdx-selector');
+    const io = link.getAttribute('data-cdx-io');
+    const desc = link.getAttribute('data-cdx-desc');
+
+    let html = '';
+    if (entityType) {
+        html += `<span class="cdx-badge cdx-badge--entity-${entityType}">${entityType.charAt(0).toUpperCase() + entityType.slice(1)}</span>`;
+    }
+    if (selector) {
+        html += ` <code class="cdx-entity-preview-selector">${selector}</code>`;
+    }
+    if (io) {
+        const [inputs, outputs] = io.split('/');
+        html += ` <span class="cdx-entity-preview-io">${inputs} inputs, ${outputs} outputs</span>`;
+    }
+    if (desc) {
+        html += `<p class="cdx-entity-preview-desc">${desc}</p>`;
+    }
+    return html;
+};
+
+/** [/] entity sidebar navigation with preview */
 const navigateEntity = (direction: 1 | -1) => {
     const links = Array.from(
         document.querySelectorAll<HTMLAnchorElement>('.menu a[data-type="entity-link"]')
     );
     if (!links.length) return;
 
-    const activeLink = document.querySelector<HTMLAnchorElement>('.menu a.active[data-type="entity-link"]');
-    let currentIdx = activeLink ? links.indexOf(activeLink) : -1;
+    // If no preview is active, start from the current active link
+    if (focusedEntityIdx === -1) {
+        const activeLink = document.querySelector<HTMLAnchorElement>('.menu a.active[data-type="entity-link"]');
+        focusedEntityIdx = activeLink ? links.indexOf(activeLink) : -1;
+    }
 
-    let nextIdx = currentIdx + direction;
-    // Wrap around
+    let nextIdx = focusedEntityIdx + direction;
     if (nextIdx < 0) nextIdx = links.length - 1;
     if (nextIdx >= links.length) nextIdx = 0;
+    focusedEntityIdx = nextIdx;
 
     const target = links[nextIdx];
-    if (target) target.click(); // Triggers SPA router
+    if (!target) return;
+
+    // Clear previous focus/preview
+    document.querySelectorAll('.cdx-sidebar-focused').forEach(el =>
+        el.classList.remove('cdx-sidebar-focused')
+    );
+    document.querySelectorAll('.cdx-entity-preview').forEach(el => el.remove());
+
+    // Focus the target's parent li
+    const li = target.closest('li');
+    if (li) li.classList.add('cdx-sidebar-focused');
+
+    // Scroll focused item into view
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ block: 'nearest', behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+
+    // Build and insert preview panel
+    const previewHtml = buildPreviewHtml(target);
+    if (previewHtml) {
+        const panel = document.createElement('div');
+        panel.className = 'cdx-entity-preview';
+        panel.setAttribute('role', 'tooltip');
+        panel.setAttribute('aria-live', 'polite');
+        panel.innerHTML = previewHtml;
+        if (li) li.appendChild(panel);
+    }
+
+    // Auto-dismiss after 5 seconds
+    if (previewDismissTimer) clearTimeout(previewDismissTimer);
+    previewDismissTimer = setTimeout(dismissPreview, 5000);
+};
+
+/** Navigate to the focused entity (Enter key) */
+const confirmEntityNavigation = () => {
+    const links = Array.from(
+        document.querySelectorAll<HTMLAnchorElement>('.menu a[data-type="entity-link"]')
+    );
+    if (focusedEntityIdx >= 0 && focusedEntityIdx < links.length) {
+        const target = links[focusedEntityIdx];
+        dismissPreview();
+        target.click(); // Triggers SPA router
+    }
 };
 
 /** Main keydown handler */
 const onKeydown = (e: KeyboardEvent) => {
-    // Always allow Escape to close the shortcut dialog
+    // Always allow Escape to close dialogs and dismiss previews
     if (e.key === 'Escape') {
         const dialog = document.getElementById(DIALOG_ID) as HTMLDialogElement;
         if (dialog?.open) {
             dialog.close();
+            return;
+        }
+        // Dismiss entity preview if active
+        if (focusedEntityIdx !== -1) {
+            dismissPreview();
             return;
         }
         // Clear member focus
@@ -125,6 +215,13 @@ const onKeydown = (e: KeyboardEvent) => {
             el.classList.remove('cdx-member-card--focused')
         );
         currentMemberIndex = -1;
+        return;
+    }
+
+    // Enter confirms entity navigation when preview is active
+    if (e.key === 'Enter' && focusedEntityIdx !== -1) {
+        e.preventDefault();
+        confirmEntityNavigation();
         return;
     }
 
@@ -164,6 +261,7 @@ export const resetKeyboardState = () => {
     document.querySelectorAll('.cdx-member-card--focused').forEach(el =>
         el.classList.remove('cdx-member-card--focused')
     );
+    dismissPreview();
 };
 
 export const initKeyboard = () => {
