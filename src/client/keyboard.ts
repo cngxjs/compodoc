@@ -27,40 +27,44 @@ const createDialog = (): HTMLDialogElement => {
 
     const dialog = document.createElement('dialog');
     dialog.id = DIALOG_ID;
-    dialog.className = 'cdx-shortcuts-dialog';
+    dialog.className = 'cdx-cp';
     dialog.setAttribute('aria-modal', 'true');
     dialog.setAttribute('aria-label', 'Keyboard shortcuts');
     dialog.innerHTML = `
-        <h2>Keyboard Shortcuts</h2>
-        <div class="cdx-shortcuts-grid">
-            <section>
-                <h3>Navigation</h3>
-                <dl>
-                    <div class="cdx-shortcut-row"><dt><kbd>[</kbd></dt><dd>Previous entity</dd></div>
-                    <div class="cdx-shortcut-row"><dt><kbd>]</kbd></dt><dd>Next entity</dd></div>
-                </dl>
-            </section>
-            <section>
-                <h3>Page</h3>
-                <dl>
-                    <div class="cdx-shortcut-row"><dt><kbd>j</kbd></dt><dd>Next member</dd></div>
-                    <div class="cdx-shortcut-row"><dt><kbd>k</kbd></dt><dd>Previous member</dd></div>
-                </dl>
-            </section>
-            <section>
-                <h3>Search</h3>
-                <dl>
-                    <div class="cdx-shortcut-row"><dt><kbd>/</kbd></dt><dd>Open search</dd></div>
-                    <div class="cdx-shortcut-row"><dt><kbd>?</kbd></dt><dd>This dialog</dd></div>
-                </dl>
-            </section>
+        <div class="cdx-shortcuts-panel">
+            <h2>Keyboard Shortcuts</h2>
+            <div class="cdx-shortcuts-grid">
+                <section>
+                    <h3>Navigation</h3>
+                    <dl>
+                        <div class="cdx-shortcut-row"><dt><kbd>p</kbd></dt><dd>Previous entity</dd></div>
+                        <div class="cdx-shortcut-row"><dt><kbd>n</kbd></dt><dd>Next entity</dd></div>
+                    </dl>
+                </section>
+                <section>
+                    <h3>Page</h3>
+                    <dl>
+                        <div class="cdx-shortcut-row"><dt><kbd>j</kbd></dt><dd>Next member</dd></div>
+                        <div class="cdx-shortcut-row"><dt><kbd>k</kbd></dt><dd>Previous member</dd></div>
+                    </dl>
+                </section>
+                <section>
+                    <h3>Search</h3>
+                    <dl>
+                        <div class="cdx-shortcut-row"><dt><kbd>/</kbd></dt><dd>Open search</dd></div>
+                        <div class="cdx-shortcut-row"><dt><kbd class="cdx-kbd-mod">${navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}</kbd><kbd>K</kbd></dt><dd>Open search</dd></div>
+                        <div class="cdx-shortcut-row"><dt><kbd>?</kbd></dt><dd>This dialog</dd></div>
+                    </dl>
+                </section>
+            </div>
         </div>
     `;
     document.body.appendChild(dialog);
 
-    // Close on backdrop click
+    // Close on click outside panel
     dialog.addEventListener('click', (e) => {
-        if (e.target === dialog) dialog.close();
+        const panel = dialog.querySelector('.cdx-shortcuts-panel');
+        if (panel && !panel.contains(e.target as Node)) dialog.close();
     });
 
     return dialog;
@@ -244,11 +248,11 @@ const onKeydown = (e: KeyboardEvent) => {
             e.preventDefault();
             navigateMember(-1);
             break;
-        case '[':
+        case 'p':
             e.preventDefault();
             navigateEntity(-1);
             break;
-        case ']':
+        case 'n':
             e.preventDefault();
             navigateEntity(1);
             break;

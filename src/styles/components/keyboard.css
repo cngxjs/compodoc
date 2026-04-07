@@ -1,14 +1,14 @@
-/* Keyboard shortcut overlay dialog */
-.cdx-shortcuts-dialog {
-    @apply max-w-[480px] w-[90vw] p-0 border-0;
+/* Keyboard shortcut overlay — reuses .cdx-cp dialog/backdrop from compodocx.css */
+
+.cdx-shortcuts-panel {
+    @apply mx-auto flex flex-col overflow-hidden;
+    margin-top: 15vh;
+    max-width: 480px;
     background: var(--color-cdx-bg-elevated);
     border-radius: var(--radius-cdx-lg);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-cdx-lg);
+    animation: cdx-cp-enter 150ms ease;
     color: var(--color-cdx-text);
-}
-
-.cdx-shortcuts-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.4);
 }
 
 .cdx-shortcuts-dialog h2 {
@@ -66,6 +66,12 @@
     border: 1px solid var(--color-cdx-border);
     border-radius: var(--radius-cdx-sm);
     box-shadow: 0 1px 0 var(--color-cdx-border);
+}
+
+.cdx-shortcut-row dt:has(.cdx-kbd-mod) {
+    display: flex;
+    gap: 2px;
+    align-items: center;
 }
 
 /* j/k member card focus ring */
