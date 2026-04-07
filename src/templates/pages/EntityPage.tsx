@@ -16,6 +16,7 @@ import { BlockInput } from '../blocks/BlockInput';
 import { BlockMethod } from '../blocks/BlockMethod';
 import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
+import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { EntityTabs } from '../blocks/EntityTabs';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconDocument } from '../components/EmptyStateIcons';
@@ -67,6 +68,10 @@ export type EntityInfoProps = {
     readonly showTokenBadge?: boolean;
     readonly showJsdocBadges?: boolean;
     readonly contextLine?: string;
+    readonly relationships?: {
+        incoming: Array<{ name: string; type: string }>;
+        outgoing: Array<{ name: string; type: string }>;
+    };
 };
 
 const hasMembers = (e: any): boolean =>
@@ -175,6 +180,15 @@ const InfoContent = (props: EntityInfoProps): string => {
                 : (isInfoSection('extends') && props.showExtends !== false
                     ? ExtendsMetadataCard(e)
                     : '')}
+
+            {/* 4.5 Relationships (cross-linking) */}
+            {props.relationships &&
+                (props.relationships.incoming?.length > 0 || props.relationships.outgoing?.length > 0) &&
+                BlockRelationshipGraph({
+                    incoming: props.relationships.incoming,
+                    outgoing: props.relationships.outgoing,
+                    entityName: e.name
+                })}
 
             {/* 5. Index */}
             {isInfoSection('index') &&
