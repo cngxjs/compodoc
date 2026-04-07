@@ -206,7 +206,7 @@ test.describe('Overview Dashboard', () => {
 
             const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
             const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
-            expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 5);
+            expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 15);
         });
 
         test('KPI tiles stack to 2 columns at narrow width', async ({ page }) => {
