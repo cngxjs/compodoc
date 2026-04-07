@@ -32,12 +32,23 @@ export const extractDeclaration = (sourceCode: string): string | null => {
 
     if (startIdx === -1) return null;
 
-    // Find the class opening brace and then track brace depth to find the closing brace
+    // Find the class/interface line (skip decorator braces)
+    let classLineIdx = -1;
+    for (let i = startIdx; i < lines.length; i++) {
+        if (CLASS_RE.test(lines[i])) {
+            classLineIdx = i;
+            break;
+        }
+    }
+    // If no explicit class line found (e.g. interface without export), use startIdx
+    if (classLineIdx === -1) classLineIdx = startIdx;
+
+    // Track brace depth from the class line to find the closing brace
     let depth = 0;
     let classBodyStart = -1;
     let endIdx = -1;
 
-    for (let i = startIdx; i < lines.length; i++) {
+    for (let i = classLineIdx; i < lines.length; i++) {
         const line = lines[i];
         for (const ch of line) {
             if (ch === '{') {
