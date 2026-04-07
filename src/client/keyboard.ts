@@ -30,35 +30,20 @@ const createDialog = (): HTMLDialogElement => {
     dialog.className = 'cdx-cp';
     dialog.setAttribute('aria-modal', 'true');
     dialog.setAttribute('aria-label', 'Keyboard shortcuts');
-    dialog.innerHTML = `
-        <div class="cdx-shortcuts-panel">
-            <h2>Keyboard Shortcuts</h2>
-            <div class="cdx-shortcuts-grid">
-                <section>
-                    <h3>Navigation</h3>
-                    <dl>
-                        <div class="cdx-shortcut-row"><dt><kbd>p</kbd></dt><dd>Previous entity</dd></div>
-                        <div class="cdx-shortcut-row"><dt><kbd>n</kbd></dt><dd>Next entity</dd></div>
-                    </dl>
-                </section>
-                <section>
-                    <h3>Page</h3>
-                    <dl>
-                        <div class="cdx-shortcut-row"><dt><kbd>j</kbd></dt><dd>Next member</dd></div>
-                        <div class="cdx-shortcut-row"><dt><kbd>k</kbd></dt><dd>Previous member</dd></div>
-                    </dl>
-                </section>
-                <section>
-                    <h3>Search</h3>
-                    <dl>
-                        <div class="cdx-shortcut-row"><dt><kbd>/</kbd></dt><dd>Open search</dd></div>
-                        <div class="cdx-shortcut-row"><dt><kbd class="cdx-kbd-mod">${navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}</kbd><kbd>K</kbd></dt><dd>Open search</dd></div>
-                        <div class="cdx-shortcut-row"><dt><kbd>?</kbd></dt><dd>This dialog</dd></div>
-                    </dl>
-                </section>
-            </div>
-        </div>
-    `;
+    const mod = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl';
+    const row = (key: string, desc: string) =>
+        `<div class="cdx-shortcut-row"><dt>${key}</dt><dd>${desc}</dd></div>`;
+    const kbd = (k: string, cls = '') => `<kbd${cls ? ` class="${cls}"` : ''}>${k}</kbd>`;
+    const section = (title: string, rows: string) =>
+        `<section><h3>${title}</h3><dl>${rows}</dl></section>`;
+
+    dialog.innerHTML = '<div class="cdx-shortcuts-panel">' +
+        '<h2>Keyboard Shortcuts</h2>' +
+        '<div class="cdx-shortcuts-grid">' +
+        section('Navigation', row(kbd('p'), 'Previous entity') + row(kbd('n'), 'Next entity')) +
+        section('Page', row(kbd('j'), 'Next member') + row(kbd('k'), 'Previous member')) +
+        section('Search', row(kbd('/'), 'Open search') + row(kbd(mod, 'cdx-kbd-mod') + kbd('K'), 'Open search') + row(kbd('?'), 'This dialog')) +
+        '</div></div>';
     document.body.appendChild(dialog);
 
     // Close on click outside panel

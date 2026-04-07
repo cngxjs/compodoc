@@ -226,14 +226,13 @@ const search = async (query: string) => {
     const searchQuery = lastQuery;
     list.innerHTML = mapped
         .map(
-            (r, i) => `
-        <a href="${escapeAttr(r.url)}" class="cdx-cp-item${i === 0 ? ' cdx-cp-active' : ''}"
-           role="option" aria-selected="${i === 0}" data-index="${i}" style="--i:${i}">
-            ${resultIcon(r.type)}
-            <span class="cdx-cp-name">${highlightMatch(r.name, searchQuery)}</span>
-            <span class="${entityClass(r.type) !== 'other' ? `cdx-badge cdx-badge--entity-${entityClass(r.type)}` : ''} cdx-cp-type">${typeLabel(r.type)}</span>
-        </a>
-    `
+            (r, i) =>
+                '<a href="' + escapeAttr(r.url) + '" class="cdx-cp-item' + (i === 0 ? ' cdx-cp-active' : '') + '"' +
+                ' role="option" aria-selected="' + (i === 0) + '" data-index="' + i + '" style="--i:' + i + '">' +
+                resultIcon(r.type) +
+                '<span class="cdx-cp-name">' + highlightMatch(r.name, searchQuery) + '</span>' +
+                '<span class="' + (entityClass(r.type) !== 'other' ? 'cdx-badge cdx-badge--entity-' + entityClass(r.type) + ' ' : '') + 'cdx-cp-type">' + typeLabel(r.type) + '</span>' +
+                '</a>'
         )
         .join('');
 
