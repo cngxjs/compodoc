@@ -13,6 +13,7 @@ export interface User {
 
 /**
  * Service for managing users.
+ * @category Services
  *
  * @since 1.0.0
  */

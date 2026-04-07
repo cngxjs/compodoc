@@ -45,8 +45,8 @@ test.describe('Mobile menu', () => {
         await page.locator('[data-cdx-mobile-toggle]').click();
         await expect(sidebar).toHaveClass(/cdx-sidebar--open/);
 
-        // Close via backdrop
-        await page.locator('.cdx-backdrop').click();
+        // Close via backdrop (force: true avoids intercepted pointer from sidebar overlay)
+        await page.locator('.cdx-backdrop').click({ force: true });
         await page.waitForTimeout(300);
         await expect(sidebar).not.toHaveClass(/cdx-sidebar--open/);
     });

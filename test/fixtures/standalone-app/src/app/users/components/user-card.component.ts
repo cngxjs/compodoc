@@ -8,6 +8,8 @@ import { API_BASE_URL } from '../../core/tokens/api.token';
  *
  * @since 1.0.0
  * @beta
+ * @link https://storybook.example.com/user-card Storybook
+ * @link https://figma.com/design/abc123 Figma
  */
 @Component({
     selector: 'app-user-card',
@@ -17,6 +19,7 @@ import { API_BASE_URL } from '../../core/tokens/api.token';
         <div class="card" #cardEl appHighlight>
             <h3>{{ displayName() }}</h3>
             <p>{{ user()?.email }}</p>
+            <ng-content select="[actions]"></ng-content>
         </div>
     `,
     styles: [`.card { border: 1px solid #ddd; padding: 1rem; border-radius: 8px; }`],
