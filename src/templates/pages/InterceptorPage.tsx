@@ -15,5 +15,6 @@ export const InterceptorPage = (data: any): string =>
         showMethods: true,
         showProperties: true,
         showAccessors: true,
+        contextLine: undefined,
         showJsdocBadges: true,
     });

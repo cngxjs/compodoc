@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { modifKind, t } from '../helpers';
+import { t } from '../helpers';
 
 type IndexItem = {
     readonly name: string;
@@ -16,65 +16,88 @@ type BlockIndexProps = {
     readonly hostBindings?: IndexItem[];
     readonly hostListeners?: IndexItem[];
     readonly accessors?: Record<string, any>;
+    readonly indexSignatures?: IndexItem[];
 };
 
-const IndexGroup = (props: { title: string; items: IndexItem[]; showModifiers?: boolean }): string => {
+type IndicatorKind = 'property' | 'method' | 'input' | 'output' | 'accessor' | 'constructor' | 'hostbinding' | 'hostlistener' | 'indexsignature';
+
+const INDICATOR_LETTERS: Record<IndicatorKind, string> = {
+    property: 'P',
+    method: 'M',
+    input: 'I',
+    output: 'O',
+    accessor: 'A',
+    constructor: 'C',
+    hostbinding: 'H',
+    hostlistener: 'L',
+    indexsignature: 'S',
+};
+
+const IndexGroup = (props: {
+    title: string;
+    items: IndexItem[];
+    kind: IndicatorKind;
+}): string => {
     if (!props.items?.length) return '';
+    const letter = INDICATOR_LETTERS[props.kind];
     return (<>
-        <tr><td class="col-md-4"><h6><b>{t(props.title)}</b></h6></td></tr>
-        <tr>
-            <td class="col-md-4">
-                <ul class="index-list">
-                    {props.items.map(item => (
-                        <li>
-                            {props.showModifiers && (item.modifierKind ?? []).map((k: number) => (
-                                <span class="modifier">{modifKind(k)}</span>
-                            ))}
-                            {props.showModifiers && item.optional && (
-                                <span class="modifier">{t('optional')}</span>
-                            )}
-                            <a href={`#${item.name}`} class={item.deprecated ? 'deprecated-name' : ''}>{item.name}</a>
-                        </li>
-                    ))}
-                </ul>
-            </td>
-        </tr>
+        <div class="cdx-index-group">
+            <h4 class="cdx-index-group-label">{t(props.title)}</h4>
+            <div class="cdx-index-entries">
+                {props.items.map(item => (
+                    <a href={`#${item.name}`}
+                       class={`cdx-index-entry${item.deprecated ? ' cdx-index-entry--deprecated' : ''}`}>
+                        <span class={`cdx-index-indicator cdx-index-indicator--${props.kind}`}
+                              aria-hidden="true">{letter}</span>
+                        <span class="cdx-index-name">{item.name}</span>
+                    </a>
+                ))}
+            </div>
+        </div>
     </>) as string;
 };
 
 export const BlockIndex = (props: BlockIndexProps): string => {
     const accessorEntries = props.accessors ? Object.entries(props.accessors) : [];
 
+    const hasContent = (props.properties?.length ?? 0) > 0
+        || (props.methods?.length ?? 0) > 0
+        || (props.inputs?.length ?? 0) > 0
+        || (props.outputs?.length ?? 0) > 0
+        || (props.hostBindings?.length ?? 0) > 0
+        || (props.hostListeners?.length ?? 0) > 0
+        || accessorEntries.length > 0
+        || (props.indexSignatures?.length ?? 0) > 0;
+
+    if (!hasContent) return '';
+
     return (
-        <section data-compodoc="block-index">
-            <h3 id="index">{t('index')}</h3>
-            <table class="table table-sm table-bordered index-table">
-                <tbody>
-                    {IndexGroup({ title: 'properties', items: props.properties ?? [], showModifiers: true })}
-                    {IndexGroup({ title: 'methods', items: props.methods ?? [], showModifiers: true })}
-                    {IndexGroup({ title: 'inputs', items: props.inputs ?? [] })}
-                    {IndexGroup({ title: 'outputs', items: props.outputs ?? [] })}
-                    {IndexGroup({ title: 'hostbindings', items: props.hostBindings ?? [] })}
-                    {IndexGroup({ title: 'hostlisteners', items: props.hostListeners ?? [] })}
-                    {accessorEntries.length > 0 && (<>
-                        <tr><td class="col-md-4"><h6><b>{t('accessors')}</b></h6></td></tr>
-                        <tr>
-                            <td class="col-md-4">
-                                <ul class="index-list">
-                                    {accessorEntries.map(([key, acc]) => (
-                                        <li>
-                                            {(acc.modifierKind ?? []).map((k: number) => (
-                                                <span class="modifier">{modifKind(k)}</span>
-                                            ))}
-                                            <a href={`#${key}`} class={acc.deprecated ? 'deprecated-name' : ''}>{key}</a>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </td>
-                        </tr>
-                    </>)}
-                </tbody>
-            </table>
+        <section class="cdx-content-section" data-compodoc="block-index">
+            <h3 class="cdx-section-heading" id="index">{t('index')}</h3>
+            <div class="cdx-index">
+                {IndexGroup({ title: 'properties', items: props.properties ?? [], kind: 'property' })}
+                {IndexGroup({ title: 'methods', items: props.methods ?? [], kind: 'method' })}
+                {IndexGroup({ title: 'inputs', items: props.inputs ?? [], kind: 'input' })}
+                {IndexGroup({ title: 'outputs', items: props.outputs ?? [], kind: 'output' })}
+                {IndexGroup({ title: 'hostbindings', items: props.hostBindings ?? [], kind: 'hostbinding' })}
+                {IndexGroup({ title: 'hostlisteners', items: props.hostListeners ?? [], kind: 'hostlistener' })}
+                {IndexGroup({ title: 'index-signatures', items: props.indexSignatures ?? [], kind: 'indexsignature' })}
+                {accessorEntries.length > 0 && (
+                    <div class="cdx-index-group">
+                        <h4 class="cdx-index-group-label">{t('accessors')}</h4>
+                        <div class="cdx-index-entries">
+                            {accessorEntries.map(([key, acc]) => (
+                                <a href={`#${key}`}
+                                   class={`cdx-index-entry${acc.deprecated ? ' cdx-index-entry--deprecated' : ''}`}>
+                                    <span class="cdx-index-indicator cdx-index-indicator--accessor"
+                                          aria-hidden="true">A</span>
+                                    <span class="cdx-index-name">{key}</span>
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
         </section>
     ) as string;
 };

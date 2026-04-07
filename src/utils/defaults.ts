@@ -5,7 +5,7 @@ export const COMPODOC_DEFAULTS = {
     folder: './documentation/',
     hostname: '127.0.0.1',
     port: 8080,
-    theme: 'gitbook',
+    theme: 'default',
     exportFormat: 'html',
     exportFormatsSupported: ['html', 'json'],
     base: '/',

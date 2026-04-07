@@ -15,5 +15,6 @@ export const GuardPage = (data: any): string =>
         showMethods: true,
         showProperties: true,
         showAccessors: true,
+        contextLine: data.injectable?.functionalKind ?? undefined,
         showJsdocBadges: true,
     });

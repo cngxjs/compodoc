@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { IconComponent, IconExternalLink, IconFile, IconGitBranch } from '../components/Icons';
 import {
     extractJsdocCodeExamples,
     isInfoSection,
@@ -7,7 +8,9 @@ import {
     linkTypeHtml,
     parseDescription,
     relativeUrl,
-    t,
+    extractReadmeHeadings,
+    isReadmeEmpty,
+    t
 } from '../helpers';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
@@ -16,13 +19,15 @@ import { BlockInput } from '../blocks/BlockInput';
 import { BlockMethod } from '../blocks/BlockMethod';
 import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
-import { EntityTabs } from '../blocks/EntityTabs';
 import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
+import { EmptyState } from '../components/EmptyState';
+import { EmptyIconBook, EmptyIconHtml, EmptyIconPalette, EmptyIconTree } from '../components/EmptyStateIcons';
+import { shortPath } from '../helpers/short-url';
 
 const escapeSimpleQuote = (text: string): string => {
     if (!text) return '';
-    return text.replace(/'/g, "\\'").replace(/(\r\n|\n|\r)/gm, '');
+    return text.replaceAll("'", String.raw`\'`).replaceAll(/(\r\n|\n|\r)/gm, '');
 };
 
 const formatObject = (obj: unknown): string => {
@@ -35,122 +40,96 @@ const formatObject = (obj: unknown): string => {
 
 const breakComma = (text: string): string => {
     const escaped = String(text)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    return escaped.replace(/,/g, ',<br>');
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll(/"/g, '&quot;');
+    return escaped.replaceAll(',', ',<br>');
 };
 
-type MetadataRow = { label: string; value: string; isCode?: boolean };
+const MetadataRow = (label: string, value: string, isBlock = false): string =>
+    (<div class={`cdx-metadata-row${isBlock ? ' cdx-metadata-row--block' : ''}`}>
+        <dt class="cdx-metadata-label">{label}</dt>
+        <dd class="cdx-metadata-value">{value}</dd>
+    </div>) as string;
 
-const MetadataField = (props: MetadataRow): string => (
-    <tr>
-        <td class="col-md-3">{props.label}</td>
-        <td class="col-md-9">{props.isCode !== false ? <code>{props.value}</code> : props.value}</td>
-    </tr>
-) as string;
+const MetadataCodeRow = (label: string, value: string): string =>
+    MetadataRow(label, `<code>${value}</code>`);
 
 const ComponentMetadata = (c: any): string => {
     if (!isInfoSection('metadata')) return '';
 
     const rows: string[] = [];
-    const field = (label: string, value: unknown, isCode = true) => {
-        if (value) rows.push(MetadataField({ label, value: String(value), isCode }));
+    const codeField = (label: string, value: unknown) => {
+        if (value != null && value !== '' && (!Array.isArray(value) || value.length > 0)) {
+            rows.push(MetadataCodeRow(label, String(value)));
+        }
     };
 
-    field('animations', c.animations);
-    field('changeDetection', c.changeDetection);
-    field('encapsulation', c.encapsulation);
+    codeField('selector', c.selector);
+    if (c.standalone) codeField('standalone', String(c.standalone));
 
-    if (c.hostDirectives) {
-        rows.push((
-            <tr>
-                <td class="col-md-3">{t('hostdirectives')}</td>
-                <td class="col-md-9">
-                    {c.hostDirectives.map((hd: any) => (<>
-                        {linkTypeHtml(hd.name)}<br />
-                        {hd.inputs?.length > 0 && <div><i>&nbsp;{t('inputs')}</i> : {hd.inputs.join(' ')}</div>}
-                        {hd.outputs?.length > 0 && <div><i>&nbsp;{t('outputs')}</i> : {hd.outputs.join(' ')}</div>}
-                    </>))}
-                </td>
-            </tr>
-        ) as string);
+    if (c.imports?.length > 0) {
+        rows.push(MetadataRow('imports', c.imports.map((imp: any) => linkTypeHtml(imp.name)).join(' ')));
+    }
+
+    if (c.providers?.length > 0) {
+        rows.push(MetadataRow('providers', c.providers.map((p: any) => linkTypeHtml(p.name)).join(' ')));
+    }
+
+    if (c.viewProviders?.length > 0) {
+        rows.push(MetadataRow('viewProviders', c.viewProviders.map((vp: any) => linkTypeHtml(vp.name)).join(' ')));
+    }
+
+    codeField('changeDetection', c.changeDetection);
+    codeField('encapsulation', c.encapsulation);
+    codeField('animations', c.animations);
+    codeField('exportAs', c.exportAs);
+    if (c.host) rows.push(MetadataRow('host', `<code>${formatObject(c.host)}</code>`));
+    codeField('interpolation', c.interpolation);
+    codeField('moduleId', c.moduleId);
+    if (c.hasOwnProperty('preserveWhitespaces'))
+        codeField('preserveWhitespaces', c.preserveWhitespaces);
+    codeField('queries', c.queries);
+
+    if (c.hostDirectives?.length > 0) {
+        rows.push(MetadataRow(t('hostdirectives'), c.hostDirectives.map((hd: any) => {
+            let html = linkTypeHtml(hd.name);
+            if (hd.inputs?.length > 0) html += ` <span class="cdx-metadata-label">${t('inputs')}:</span> ${hd.inputs.join(', ')}`;
+            if (hd.outputs?.length > 0) html += ` <span class="cdx-metadata-label">${t('outputs')}:</span> ${hd.outputs.join(', ')}`;
+            return html;
+        }).join(' ')));
     }
 
     if (c.entryComponents?.length > 0) {
-        rows.push((
-            <tr>
-                <td class="col-md-3">entryComponents</td>
-                <td class="col-md-9">{c.entryComponents.map((ec: any) => linkTypeHtml(ec.name)).join(' ')}</td>
-            </tr>
-        ) as string);
+        rows.push(MetadataRow('entryComponents', c.entryComponents.map((ec: any) => linkTypeHtml(ec.name)).join(' ')));
     }
 
-    field('exportAs', c.exportAs);
-    if (c.host) rows.push(MetadataField({ label: 'host', value: formatObject(c.host) }));
-    field('interpolation', c.interpolation);
-    field('moduleId', c.moduleId);
-    if (c.hasOwnProperty('preserveWhitespaces')) field('preserveWhitespaces', c.preserveWhitespaces);
+    codeField('templateUrl', c.templateUrl);
+    if (c.styleUrls?.length > 0) codeField('styleUrls', breakComma(c.styleUrls));
 
-    if (c.providers) {
-        rows.push((
-            <tr>
-                <td class="col-md-3">providers</td>
-                <td class="col-md-9">{c.providers.map((p: any) => linkTypeHtml(p.name)).join(' ')}</td>
-            </tr>
-        ) as string);
+    if (c.extends?.length > 0) {
+        rows.push(MetadataRow('extends', (c.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')));
+    }
+    if (c.implements?.length > 0) {
+        rows.push(MetadataRow('implements', (c.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')));
     }
 
-    field('queries', c.queries);
-    field('selector', c.selector);
-    if (c.standalone) field('standalone', String(c.standalone));
-
-    if (c.imports) {
-        rows.push((
-            <tr>
-                <td class="col-md-3">imports</td>
-                <td class="col-md-9">{c.imports.map((imp: any) => linkTypeHtml(imp.name)).join(' ')}</td>
-            </tr>
-        ) as string);
-    }
-
-    if (c.styleUrls) rows.push(MetadataField({ label: 'styleUrls', value: breakComma(c.styleUrls) }));
-    field('styles', c.styles);
-    if (c.template) {
-        rows.push((
-            <tr>
-                <td class="col-md-3">template</td>
-                <td class="col-md-9"><pre class="line-numbers"><code class="language-html">{c.template}</code></pre></td>
-            </tr>
-        ) as string);
-    }
-    field('templateUrl', c.templateUrl);
-
-    if (c.viewProviders) {
-        rows.push((
-            <tr>
-                <td class="col-md-3">viewProviders</td>
-                <td class="col-md-9"><code>{c.viewProviders.map((vp: any) => linkTypeHtml(vp.name)).join(' ')}</code></td>
-            </tr>
-        ) as string);
-    }
-
-    field('tag', c.tag);
-    field('styleUrl', c.styleUrl);
-    field('shadow', c.shadow);
-    field('scoped', c.scoped);
-    field('assetsDir', c.assetsDir);
-    field('assetsDirs', c.assetsDirs);
+    codeField('tag', c.tag);
+    codeField('styleUrl', c.styleUrl);
+    codeField('shadow', c.shadow);
+    codeField('scoped', c.scoped);
+    codeField('assetsDir', c.assetsDir);
+    codeField('assetsDirs', c.assetsDirs);
 
     if (rows.length === 0) return '';
 
     return (
-        <section data-compodoc="block-metadata">
-            <h3>{t('metadata')}</h3>
-            <table class="table table-sm table-hover metadata">
-                <tbody>{rows.join('')}</tbody>
-            </table>
+        <section class="cdx-content-section" data-compodoc="block-metadata">
+            <h3 class="cdx-section-heading">{t('metadata')}</h3>
+            <dl class="cdx-metadata-card">
+                {rows.join('')}
+            </dl>
         </section>
     ) as string;
 };
@@ -159,91 +138,165 @@ const InfoContent = (data: any): string => {
     const c = data.component;
     const depth = data.depth;
 
-    return (<>
-        {isInfoSection('file') && !data.disableFilePath && (<>
-            <p class="comment"><h3>{t('file')}</h3></p>
-            <p class="comment"><code>{c.file}</code></p>
-        </>)}
+    return (
+        <>
+            {isInfoSection('deprecated') && c.deprecated && (
+                <div class="cdx-deprecation-banner" role="alert">
+                    <strong>{t('deprecated')}</strong>
+                    <span>{c.deprecationMessage}</span>
+                </div>
+            )}
 
-        {isInfoSection('deprecated') && c.deprecated && (<>
-            <p class="comment"><h3 class="deprecated">{t('deprecated')}</h3></p>
-            <p class="comment">{c.deprecationMessage}</p>
-        </>)}
+            {isInfoSection('description') && c.description && (
+                <section class="cdx-content-section">
+                    <h3 class="cdx-section-heading">{t('description')}</h3>
+                    <div class="cdx-prose">{parseDescription(c.description, depth)}</div>
+                </section>
+            )}
 
-        {isInfoSection('description') && c.description && (<>
-            <p class="comment"><h3>{t('description')}</h3></p>
-            <p class="comment">{parseDescription(c.description, depth)}</p>
-        </>)}
+            {isInfoSection('examples') &&
+                c.jsdoctags &&
+                (() => {
+                    const examples = extractJsdocCodeExamples(c.jsdoctags);
+                    if (examples.length === 0) return '';
+                    return (
+                        <section class="cdx-content-section">
+                            <h3 class="cdx-section-heading">{t('example')}</h3>
+                            <div class="io-description">
+                                {examples.map(ex => (
+                                    <div>{ex.comment}</div>
+                                ))}
+                            </div>
+                        </section>
+                    );
+                })()}
 
-        {(c.storybookUrl || c.figmaUrl || c.route) && (
-            <div class="cdx-external-links">
-                {c.storybookUrl && <a href={c.storybookUrl} target="_blank" rel="noopener noreferrer" class="cdx-ext-link"><span class="icon ion-ios-open"></span> Storybook</a>}
-                {c.figmaUrl && <a href={c.figmaUrl} target="_blank" rel="noopener noreferrer" class="cdx-ext-link"><span class="icon ion-ios-open"></span> Figma</a>}
-                {c.route && <span class="cdx-route-info"><span class="icon ion-ios-git-branch"></span> {c.route}</span>}
-            </div>
-        )}
+            {(c.storybookUrl || c.figmaUrl || c.route) && (
+                <div class="cdx-external-links">
+                    {c.storybookUrl && (
+                        <a
+                            href={c.storybookUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="cdx-ext-link"
+                        >
+                            {IconExternalLink()} Storybook
+                        </a>
+                    )}
+                    {c.figmaUrl && (
+                        <a
+                            href={c.figmaUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="cdx-ext-link"
+                        >
+                            {IconExternalLink()} Figma
+                        </a>
+                    )}
+                    {c.route && (
+                        <span class="cdx-route-info">
+                            {IconGitBranch()} {c.route}
+                        </span>
+                    )}
+                </div>
+            )}
 
-        {c.slots?.length > 0 && (<>
-            <h3>Content Slots</h3>
-            <table class="table table-sm table-hover">
-                <thead><tr><th>Slot</th><th>Description</th></tr></thead>
-                <tbody>
-                    {c.slots.map((slot: any) => (
-                        <tr>
-                            <td><code>{slot.name}</code></td>
-                            <td>{slot.description}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </>)}
+            {ComponentMetadata(c)}
 
-        {isInfoSection('extends') && c.extends && (<>
-            <p class="comment"><h3>{t('extends')}</h3></p>
-            <p class="comment">{(c.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')}</p>
-        </>)}
+            {c.slots?.length > 0 && (
+                <section class="cdx-content-section">
+                    <h3 class="cdx-section-heading">Content Slots</h3>
+                    <dl class="cdx-metadata-card">
+                        {c.slots.map((slot: any) => (<>
+                            <dt><code>{slot.name}</code></dt>
+                            <dd>{slot.description}</dd>
+                        </>))}
+                    </dl>
+                </section>
+            )}
 
-        {isInfoSection('extends') && c.implements && (<>
-            <p class="comment"><h3>{t('implements')}</h3></p>
-            <p class="comment">{(c.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')}</p>
-        </>)}
+            {data.relationships &&
+                BlockRelationshipGraph({
+                    incoming: data.relationships.incoming,
+                    outgoing: data.relationships.outgoing,
+                    entityName: c.name
+                })}
 
-        {isInfoSection('examples') && c.jsdoctags && (() => {
-            const examples = extractJsdocCodeExamples(c.jsdoctags);
-            if (examples.length === 0) return '';
-            return (<>
-                <p class="comment"><h3>{t('example')}</h3></p>
-                <div class="io-description">{examples.map(ex => <div>{ex.comment}</div>)}</div>
-            </>);
-        })()}
+            {isInfoSection('index') &&
+                BlockIndex({
+                    properties: c.propertiesClass,
+                    methods: c.methodsClass,
+                    inputs: c.inputsClass,
+                    outputs: c.outputsClass,
+                    hostBindings: c.hostBindings,
+                    hostListeners: c.hostListeners,
+                    accessors: c.accessors
+                })}
 
-        {ComponentMetadata(c)}
-
-        {data.relationships && BlockRelationshipGraph({
-            incoming: data.relationships.incoming,
-            outgoing: data.relationships.outgoing,
-            entityName: c.name,
-        })}
-
-        {isInfoSection('index') && BlockIndex({
-            properties: c.propertiesClass,
-            methods: c.methodsClass,
-            inputs: c.inputsClass,
-            outputs: c.outputsClass,
-            hostBindings: c.hostBindings,
-            hostListeners: c.hostListeners,
-            accessors: c.accessors,
-        })}
-
-        {isInfoSection('constructor') && c.constructorObj && BlockConstructor({ constructor: c.constructorObj, file: c.file, depth, navTabs: data.navTabs })}
-        {isInfoSection('inputs') && c.inputsClass && BlockInput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
-        {isInfoSection('outputs') && c.outputsClass && BlockOutput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
-        {isInfoSection('hostBindings') && c.hostBindings && BlockProperty({ properties: c.hostBindings, file: c.file, title: 'HostBindings', depth, navTabs: data.navTabs })}
-        {isInfoSection('hostListeners') && c.hostListeners && BlockMethod({ methods: c.hostListeners, file: c.file, title: 'HostListeners', depth, navTabs: data.navTabs })}
-        {isInfoSection('methods') && c.methodsClass && BlockMethod({ methods: c.methodsClass, file: c.file, depth, navTabs: data.navTabs })}
-        {isInfoSection('properties') && c.propertiesClass && BlockProperty({ properties: c.propertiesClass, file: c.file, depth, navTabs: data.navTabs })}
-        {isInfoSection('accessors') && c.accessors && BlockAccessors({ accessors: c.accessors, file: c.file, depth, navTabs: data.navTabs })}
-    </>) as string;
+            {isInfoSection('constructor') &&
+                c.constructorObj &&
+                BlockConstructor({
+                    constructor: c.constructorObj,
+                    file: c.file,
+                    depth,
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
+                })}
+            {isInfoSection('inputs') &&
+                c.inputsClass?.length > 0 &&
+                BlockInput({ element: c, file: c.file, depth, navTabs: data.navTabs, entityColor: 'component' })}
+            {isInfoSection('outputs') &&
+                c.outputsClass?.length > 0 &&
+                BlockOutput({ element: c, file: c.file, depth, navTabs: data.navTabs, entityColor: 'component' })}
+            {isInfoSection('hostBindings') &&
+                c.hostBindings?.length > 0 &&
+                BlockProperty({
+                    properties: c.hostBindings,
+                    file: c.file,
+                    title: 'HostBindings',
+                    depth,
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
+                })}
+            {isInfoSection('hostListeners') &&
+                c.hostListeners?.length > 0 &&
+                BlockMethod({
+                    methods: c.hostListeners,
+                    file: c.file,
+                    title: 'HostListeners',
+                    depth,
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
+                })}
+            {isInfoSection('methods') &&
+                c.methodsClass?.length > 0 &&
+                BlockMethod({
+                    methods: c.methodsClass,
+                    file: c.file,
+                    depth,
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
+                })}
+            {isInfoSection('properties') &&
+                c.propertiesClass?.length > 0 &&
+                BlockProperty({
+                    properties: c.propertiesClass,
+                    file: c.file,
+                    depth,
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
+                })}
+            {isInfoSection('accessors') &&
+                c.accessors && Object.keys(c.accessors).length > 0 &&
+                BlockAccessors({
+                    accessors: c.accessors,
+                    file: c.file,
+                    depth,
+                    navTabs: data.navTabs,
+                    entityColor: 'component'
+                })}
+        </>
+    ) as string;
 };
 
 export const ComponentPage = (data: any): string => {
@@ -251,95 +304,284 @@ export const ComponentPage = (data: any): string => {
     const depth = data.depth;
     const base = relativeUrl(depth);
     const navTabs = data.navTabs;
+    const hasStandaloneImports = c.standalone && c.imports?.length > 0;
 
-    return (<>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('components')}</li>
-            <li class={c.deprecated ? 'breadcrumb-item deprecated-name' : 'breadcrumb-item'}>
-                {c.name}
-                {c.standalone ? <span class="cdx-badge cdx-badge--standalone">Standalone</span> : ''}
-                {c.zoneless ? <span class="cdx-badge cdx-badge--zoneless">Zoneless</span> : ''}
-                {c.beta ? <span class="cdx-badge cdx-badge--beta">Beta</span> : ''}
-                {c.since ? <span class="cdx-badge cdx-badge--since">v{c.since}</span> : ''}
-                {c.breaking ? <span class="cdx-badge cdx-badge--breaking">Breaking {c.breaking}</span> : ''}
-            </li>
-        </ol>
+    const componentDepGraph = hasStandaloneImports ? (() => {
+        const allComponents = data.components as any[] ?? [];
+        const allDirectives = data.directives as any[] ?? [];
+        const allPipes = data.pipes as any[] ?? [];
+        const allModules = data.modules as any[] ?? [];
+        const allInjectables = data.injectables as any[] ?? [];
+        const entityMap = new Map<string, { type: string; url?: string }>();
+        for (const x of allComponents) entityMap.set(x.name, { type: 'component', url: `${base}components/${x.name}.html` });
+        for (const x of allDirectives) entityMap.set(x.name, { type: 'directive', url: `${base}directives/${x.name}.html` });
+        for (const x of allPipes) entityMap.set(x.name, { type: 'pipe', url: `${base}pipes/${x.name}.html` });
+        for (const x of allModules) entityMap.set(x.name, { type: 'module', url: `${base}modules/${x.name}.html` });
+        for (const x of allInjectables) entityMap.set(x.name, { type: 'injectable', url: `${base}injectables/${x.name}.html` });
+        const nodes = [
+            { name: c.name, type: 'component', url: undefined },
+            ...c.imports.map((imp: any) => {
+                const n = typeof imp === 'string' ? imp : imp.name;
+                const info = entityMap.get(n);
+                return { name: n, type: info?.type ?? 'module', url: info?.url };
+            })
+        ];
+        const edges = c.imports.map((imp: any) => ({
+            source: c.name,
+            target: typeof imp === 'string' ? imp : imp.name
+        }));
+        return { nodes, edges };
+    })() : null;
 
-        <ul class="nav nav-tabs" role="tablist">
-            {navTabs.map((tab: any, i: number) => (
-                <li class="nav-item">
-                    <a href={tab.href}
-                        class={i === 0 ? 'nav-link active' : 'nav-link'}
-                        role="tab" id={`${tab.id}-tab`}
-                        data-cdx-toggle="tab"
-                        data-link={tab['data-link']}>{t(tab.label)}</a>
-                </li>
-            ))}
-        </ul>
-
-        <div class="tab-content">
-            {isTabEnabled(navTabs, 'info') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'info') ? ' active in' : ''}`} id="info">
-                    {InfoContent(data)}
+    return (
+        <>
+            <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-entity-component)">
+                <div class="cdx-entity-hero-watermark" aria-hidden="true">{IconComponent()}</div>
+                <nav aria-label="Breadcrumb">
+                    <ol class="cdx-breadcrumb">
+                        <li>{t('components')}</li>
+                        <li aria-current="page">{c.name}</li>
+                    </ol>
+                </nav>
+                <h1 class="cdx-entity-hero-name">
+                    <span class={c.deprecated ? 'deprecated-name' : ''}>{c.name}</span>
+                </h1>
+                <div class="cdx-entity-hero-badges">
+                    <span class="cdx-badge cdx-badge--entity-component">Component</span>
+                    {c.standalone ? <span class="cdx-badge cdx-badge--standalone">Standalone</span> : ''}
+                    {c.zoneless ? <span class="cdx-badge cdx-badge--zoneless">Zoneless</span> : ''}
+                    {c.beta ? <span class="cdx-badge cdx-badge--beta">Beta</span> : ''}
+                    {c.since ? <span class="cdx-badge cdx-badge--since">v{c.since}</span> : ''}
+                    {c.breaking ? <span class="cdx-badge cdx-badge--breaking">Breaking {c.breaking}</span> : ''}
                 </div>
-            )}
+                {c.selector ? <p class="cdx-entity-hero-context">{c.selector}</p> : ''}
+                {!data.disableFilePath && c.file && (
+                    <p class="cdx-entity-hero-file" aria-label="Source file">
+                        {IconFile()}
+                        <span>{c.file}</span>
+                    </p>
+                )}
+            </div>
 
-            {isTabEnabled(navTabs, 'readme') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'readme') ? ' active in' : ''}`} id="readme">
-                    <p>{c.readme}</p>
-                </div>
-            )}
+            <ul class="cdx-tab-bar" role="tablist">
+                {navTabs.map((tab: any, i: number) => (
+                    <li role="presentation">
+                        <a
+                            href={tab.href}
+                            class={i === 0 ? 'active' : ''}
+                            role="tab"
+                            id={`${tab.id}-tab`}
+                            aria-selected={i === 0 ? 'true' : 'false'}
+                            aria-controls={tab.id}
+                            tabindex={i === 0 ? '0' : '-1'}
+                            data-cdx-toggle="tab"
+                            data-link={tab['data-link']}
+                        >
+                            {t(tab.label)}
+                        </a>
+                    </li>
+                ))}
+                {hasStandaloneImports && (
+                    <li role="presentation">
+                        <a
+                            href="#dependencies"
+                            role="tab"
+                            id="dependencies-tab"
+                            aria-selected="false"
+                            aria-controls="dependencies"
+                            tabindex="-1"
+                            data-cdx-toggle="tab"
+                        >
+                            {t('dependencies')}
+                        </a>
+                    </li>
+                )}
+            </ul>
 
-            {isTabEnabled(navTabs, 'source') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'source') ? ' active in' : ''} tab-source-code`} id="source">
-                    <div class="compodoc-sourcecode">{highlightCode(c.sourceCode ?? '', 'typescript')}</div>
-                </div>
-            )}
-
-            {isTabEnabled(navTabs, 'templateData') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'templateData') ? ' active in' : ''}`} id="templateData">
-                    <pre class="line-numbers"><code class="language-html">{c.templateData}</code></pre>
-                </div>
-            )}
-
-            {isTabEnabled(navTabs, 'styleData') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'styleData') ? ' active in' : ''}`} id="styleData">
-                    {c.styleUrlsData?.length > 0 && c.styleUrlsData.map((s: any) => (<>
-                        <p class="comment"><code>{s.styleUrl}</code></p>
-                        <pre class="line-numbers"><code class="language-scss">{s.data}</code></pre>
-                    </>))}
-                    {c.stylesData && c.stylesData !== '' && (
-                        <pre class="line-numbers"><code class="language-scss">{c.stylesData}</code></pre>
-                    )}
-                </div>
-            )}
-
-            {isTabEnabled(navTabs, 'tree') && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'tree') ? ' active in' : ''}`} id="tree">
-                    <div id="tree-container"></div>
-                    <div class="tree-legend">
-                        <div class="title"><b>{t('legend')}</b></div>
-                        <div><div class="color htmlelement"></div><span>{t('html-element')}</span></div>
-                        <div><div class="color component"></div><span>{t('component')}</span></div>
-                        <div><div class="color directive"></div><span>{t('html-element-with-directive')}</span></div>
+            <div>
+                {isTabEnabled(navTabs, 'info') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'info') ? ' active' : ''}`}
+                        id="info"
+                        role="tabpanel"
+                        aria-labelledby="info-tab"
+                    >
+                        {InfoContent(data)}
                     </div>
-                </div>
-            )}
+                )}
 
-            {isTabEnabled(navTabs, 'example') && c.exampleUrls && (
-                <div class={`tab-pane fade${isInitialTab(navTabs, 'example') ? ' active in' : ''}`} id="example">
-                    {c.exampleUrls.map((url: string) => (
-                        <iframe class="exampleContainer" src={url}><p>{t('no-iframes')}</p></iframe>
-                    ))}
-                </div>
-            )}
-        </div>
+                {isTabEnabled(navTabs, 'readme') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'readme') ? ' active' : ''}`}
+                        id="readme"
+                        role="tabpanel"
+                        aria-labelledby="readme-tab"
+                    >
+                        {isReadmeEmpty(c.readme)
+                            ? <>{extractReadmeHeadings(c.readme)}{EmptyState({ icon: EmptyIconBook(), title: t('empty-readme-title'), description: t('empty-readme-desc'), variant: 'full' })}</>
+                            : <p>{c.readme}</p>
+                        }
+                    </div>
+                )}
 
-        <script>{`
-    var COMPONENT_TEMPLATE = '<div>${escapeSimpleQuote(c.template || c.templateData)}</div>'
-    var COMPONENTS = [${(data.components ?? []).map((comp: any) => `{'name': '${comp.name}', 'selector': '${comp.selector}'}`).join(',')}];
-    var DIRECTIVES = [${(data.directives ?? []).map((dir: any) => `{'name': '${dir.name}', 'selector': '${dir.selector}'}`).join(',')}];
-    var ACTUAL_COMPONENT = {'name': '${data.name}'};
+                {isTabEnabled(navTabs, 'source') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'source') ? ' active' : ''} tab-source-code`}
+                        id="source"
+                        role="tabpanel"
+                        aria-labelledby="source-tab"
+                    >
+                        <div class="compodoc-sourcecode">
+                            {c.file && <div class="cdx-source-header"><span>{shortPath(c.file)}</span></div>}
+                            {highlightCode(c.sourceCode ?? '', { lang: 'typescript', mode: 'source' })}
+                        </div>
+                    </div>
+                )}
+
+                {isTabEnabled(navTabs, 'templateData') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'templateData') ? ' active' : ''}`}
+                        id="templateData"
+                        role="tabpanel"
+                        aria-labelledby="templateData-tab"
+                    >
+                        {c.templateData?.trim()
+                            ? <div class="compodoc-sourcecode">
+                                {c.templateUrl?.[0] && <div class="cdx-source-header"><span>{shortPath(c.templateUrl[0])}</span></div>}
+                                {highlightCode(c.templateData, { lang: 'html', mode: 'source' })}
+                              </div>
+                            : EmptyState({ icon: EmptyIconHtml(), title: t('empty-template-title'), description: t('empty-template-desc'), variant: 'full' })
+                        }
+                    </div>
+                )}
+
+                {isTabEnabled(navTabs, 'styleData') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'styleData') ? ' active' : ''}`}
+                        id="styleData"
+                        role="tabpanel"
+                        aria-labelledby="styleData-tab"
+                    >
+                        {c.styleUrlsData?.length > 0
+                            ? c.styleUrlsData.map((s: any) => (
+                                <div class="compodoc-sourcecode">
+                                    {s.styleUrl && <div class="cdx-source-header"><span>{shortPath(s.styleUrl)}</span></div>}
+                                    {highlightCode(s.data, { lang: 'scss', mode: 'source' })}
+                                </div>
+                            ))
+                            : ''}
+                        {c.stylesData && c.stylesData !== '' && (
+                            <div class="compodoc-sourcecode">
+                                <div class="cdx-source-header"><span>Inline Styles</span></div>
+                                {highlightCode(c.stylesData, { lang: 'scss', mode: 'source' })}
+                            </div>
+                        )}
+                        {!(c.styleUrlsData?.length > 0) && !(c.stylesData && c.stylesData !== '') &&
+                            EmptyState({ icon: EmptyIconPalette(), title: t('empty-styles-title'), description: t('empty-styles-desc'), variant: 'full' })
+                        }
+                    </div>
+                )}
+
+                {isTabEnabled(navTabs, 'tree') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'tree') ? ' active' : ''}`}
+                        id="tree"
+                        role="tabpanel"
+                        aria-labelledby="tree-tab"
+                    >
+                        <div id="tree-container">
+                            {!(c.template || c.templateData) &&
+                                EmptyState({ icon: EmptyIconTree(), title: t('empty-dom-tree-title'), description: t('empty-dom-tree-desc'), variant: 'full' })
+                            }
+                        </div>
+                        <div class="cdx-graph-legend">
+                            <span class="cdx-graph-legend-item" style="font-weight: 600">{t('legend')}</span>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-bg-elevated)"></span>
+                                <span>{t('html-element')}</span>
+                            </div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-component)"></span>
+                                <span>{t('component')}</span>
+                            </div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-directive)"></span>
+                                <span>{t('html-element-with-directive')}</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {hasStandaloneImports && (
+                    <div
+                        class={`cdx-tab-panel`}
+                        id="dependencies"
+                        role="tabpanel"
+                        aria-labelledby="dependencies-tab"
+                    >
+                        <ul class="sr-only" aria-label="Component dependency list">
+                            {c.imports.map((imp: any) => (
+                                <li>{c.name} imports {typeof imp === 'string' ? imp : imp.name}</li>
+                            ))}
+                        </ul>
+                        <div class="cdx-graph-container">
+                            <div class="cdx-graph-viewport">
+                                <div id="dependency-graph-container"></div>
+                            </div>
+                            <div class="cdx-graph-zoom-controls">
+                                <button id="dep-zoom-in" class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
+                                <button id="dep-reset" class="cdx-btn cdx-btn--sm">{t('reset')}</button>
+                                <button id="dep-zoom-out" class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
+                            </div>
+                        </div>
+                        <div class="cdx-graph-legend">
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-component)"></span>
+                                <span>{t('component')}</span>
+                            </div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-directive)"></span>
+                                <span>{t('directive')}</span>
+                            </div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-pipe)"></span>
+                                <span>{t('pipe')}</span>
+                            </div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-module)"></span>
+                                <span>{t('module')}</span>
+                            </div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-service)"></span>
+                                <span>{t('injectable')}</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {isTabEnabled(navTabs, 'example') && c.exampleUrls && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'example') ? ' active' : ''}`}
+                        id="example"
+                        role="tabpanel"
+                        aria-labelledby="example-tab"
+                    >
+                        {c.exampleUrls.map((url: string) => (
+                            <iframe class="cdx-example-container" src={url}>
+                                <p>{t('no-iframes')}</p>
+                            </iframe>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <script>{`
+    window.COMPONENT_TEMPLATE = '<div>${escapeSimpleQuote(c.template || c.templateData)}</div>';
+    window.COMPONENTS = [${(data.components ?? []).map((comp: any) => `{'name': '${comp.name}', 'selector': '${comp.selector}'}`).join(',')}];
+    window.DIRECTIVES = [${(data.directives ?? []).map((dir: any) => `{'name': '${dir.name}', 'selector': '${dir.selector}'}`).join(',')}];
+    window.ACTUAL_COMPONENT = {'name': '${data.name}'};
+    ${componentDepGraph ? `window.DEPENDENCY_GRAPH = ${JSON.stringify(componentDepGraph)};` : ''}
 `}</script>
-    </>) as string;
+        </>
+    ) as string;
 };

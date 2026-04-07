@@ -6,32 +6,30 @@ type PackageDependenciesProps = {
     readonly packagePeerDependencies?: Record<string, string>;
 };
 
-const DependencyList = (props: { deps: Record<string, string> }): string => (
-    <ul class="dependencies-list">
-        {Object.entries(props.deps).map(([key, value]) => (
-            <li><b>{key}</b> : {value}</li>
+const DependencyCard = (props: { deps: Record<string, string> }): string => (
+    <dl class="cdx-metadata-card">
+        {Object.entries(props.deps).map(([name, version]) => (
+            <div class="cdx-metadata-row">
+                <dt class="cdx-metadata-label"><code>{name}</code></dt>
+                <dd class="cdx-metadata-value">{version}</dd>
+            </div>
         ))}
-    </ul>
+    </dl>
 ) as string;
 
 export const PackageDependencies = (props: PackageDependenciesProps): string => (
-    <>
+    <div class="cdx-prose">
         {props.packageDependencies && (
-            <>
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">{t('dependencies')}</li>
-                </ol>
-                <DependencyList deps={props.packageDependencies} />
-            </>
+            <section class="cdx-content-section">
+                <h2 class="cdx-section-heading">{t('dependencies')}</h2>
+                <DependencyCard deps={props.packageDependencies} />
+            </section>
         )}
-        {props.packagePeerDependencies && (
-            <>
-                {props.packageDependencies && <br />}
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">{t('peer-dependencies')}</li>
-                </ol>
-                <DependencyList deps={props.packagePeerDependencies} />
-            </>
+        {props.packagePeerDependencies && Object.keys(props.packagePeerDependencies).length > 0 && (
+            <section class="cdx-content-section">
+                <h2 class="cdx-section-heading">{t('peer-dependencies')}</h2>
+                <DependencyCard deps={props.packagePeerDependencies} />
+            </section>
         )}
-    </>
+    </div>
 ) as string;

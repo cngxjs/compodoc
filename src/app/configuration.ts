@@ -11,6 +11,8 @@ export class Configuration implements ConfigurationInterface {
         output: COMPODOC_DEFAULTS.folder,
         theme: COMPODOC_DEFAULTS.theme,
         extTheme: '',
+        customThemePath: '',
+        shikiTheme: '',
         serve: false,
         templatePlayground: false,
         hostname: COMPODOC_DEFAULTS.hostname,
@@ -70,6 +72,8 @@ export class Configuration implements ConfigurationInterface {
         disableOverview: COMPODOC_DEFAULTS.disableOverview,
         watch: false,
         mainGraph: '',
+        dependencyGraph: { nodes: [], edges: [] },
+        entityIndex: {},
         coverageTest: false,
         coverageTestThreshold: COMPODOC_DEFAULTS.defaultCoverageThreshold,
         coverageTestThresholdFail: COMPODOC_DEFAULTS.coverageTestThresholdFail,
@@ -106,7 +110,10 @@ export class Configuration implements ConfigurationInterface {
         categorizedInterfaces: {},
         categorizedGuards: {},
         categorizedInterceptors: {},
-        categorizedEntities: {}
+        categorizedEntities: {},
+        groupBy: '',
+        groupDepth: 2,
+        generatedAt: ''
     };
 
     private static instance: Configuration;

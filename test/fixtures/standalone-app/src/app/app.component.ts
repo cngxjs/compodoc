@@ -1,13 +1,12 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { GreetingPipe } from './components/greeting.pipe';
+import { GreetingPipe } from './shared/pipes/greeting.pipe';
 
 /**
  * Root application component -- fully standalone, no NgModule.
  *
  * @since 1.0.0
  * @route /
- * @storybook https://storybook.example.com/?path=/story/app
  */
 @Component({
     selector: 'app-root',

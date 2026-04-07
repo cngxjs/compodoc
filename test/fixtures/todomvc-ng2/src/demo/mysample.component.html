@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>TodoComponent Demo</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 2rem; color: #333; }
+        .todo-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 0.5rem; }
+        .todo-item.completed label { text-decoration: line-through; color: #9ca3af; }
+        .toggle { width: 18px; height: 18px; cursor: pointer; }
+        label { flex: 1; font-size: 15px; }
+        .destroy { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px; padding: 0 4px; }
+        .destroy:hover { color: #dc2626; }
+        h3 { margin: 0 0 1rem; font-size: 16px; color: #6b7280; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <h3>TodoComponent Preview</h3>
+    <div class="todo-item">
+        <input class="toggle" type="checkbox">
+        <label>Buy groceries</label>
+        <button class="destroy">&times;</button>
+    </div>
+    <div class="todo-item completed">
+        <input class="toggle" type="checkbox" checked>
+        <label>Write documentation</label>
+        <button class="destroy">&times;</button>
+    </div>
+    <div class="todo-item">
+        <input class="toggle" type="checkbox">
+        <label>Review pull request</label>
+        <button class="destroy">&times;</button>
+    </div>
+</body>
+</html>

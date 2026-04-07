@@ -95,7 +95,11 @@ export class CliApplication extends Application {
             )
             .option(
                 '--theme [theme]',
-                "Choose a theme: 'light' (default), 'dark', 'material', or a path to a custom CSS file"
+                "Choose a built-in theme or path to a custom CSS file (built-in: default, ocean, ember, midnight, neon, brutalist, nord, rose-pine)"
+            )
+            .option(
+                '--shikiTheme [theme]',
+                "Shiki syntax highlighting theme pair (e.g. 'github-light:github-dark' or 'nord')"
             )
             .option(
                 '--hideGenerator',
@@ -212,6 +216,15 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 '--stackblitzTemplate [template]',
                 'StackBlitz project template ID for examples'
             )
+            .option(
+                '--groupBy [strategy]',
+                'Sidebar grouping strategy: folder, category, none (default: auto-detect)'
+            )
+            .option(
+                '--groupDepth [depth]',
+                'Max folder depth for group names',
+                '2'
+            )
             .allowExcessArguments()
             .parse(process.argv);
 
@@ -271,6 +284,40 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.theme) {
             Configuration.mainData.theme = programOptions.theme;
+        }
+
+        // Handle deprecated theme names
+        if (Configuration.mainData.theme === 'material') {
+            logger.warn(
+                "'material' theme has been removed. Use 'default', 'ocean', 'ember', 'midnight', 'neon', 'brutalist', 'nord', or 'rose-pine' instead."
+            );
+            Configuration.mainData.theme = 'default';
+        }
+
+        // --extTheme is a deprecated alias — treat as custom theme path
+        if (Configuration.mainData.extTheme && !Configuration.mainData.theme) {
+            Configuration.mainData.theme = Configuration.mainData.extTheme;
+        }
+
+        // Detect custom theme file path (contains '/' or ends with '.css')
+        const themeVal = Configuration.mainData.theme;
+        if (themeVal && (themeVal.includes('/') || themeVal.includes(path.sep) || themeVal.endsWith('.css'))) {
+            const resolved = path.resolve(cwd, themeVal);
+            if (fs.existsSync(resolved)) {
+                Configuration.mainData.customThemePath = resolved;
+                Configuration.mainData.theme = 'custom';
+                logger.info(`Custom theme: ${resolved}`);
+            } else {
+                logger.error(`Custom theme file not found: ${resolved}`);
+                process.exit(1);
+            }
+        }
+
+        if (configFile.shikiTheme) {
+            Configuration.mainData.shikiTheme = configFile.shikiTheme;
+        }
+        if (programOptions.shikiTheme) {
+            Configuration.mainData.shikiTheme = programOptions.shikiTheme;
         }
 
         if (configFile.name) {
@@ -709,6 +756,20 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.stackblitzTemplate) {
             Configuration.mainData.stackblitzTemplate = programOptions.stackblitzTemplate;
+        }
+
+        if (configFile.groupBy) {
+            Configuration.mainData.groupBy = configFile.groupBy;
+        }
+        if (programOptions.groupBy) {
+            Configuration.mainData.groupBy = programOptions.groupBy;
+        }
+
+        if (configFile.groupDepth) {
+            Configuration.mainData.groupDepth = Number(configFile.groupDepth);
+        }
+        if (programOptions.groupDepth && programOptions.groupDepth !== '2') {
+            Configuration.mainData.groupDepth = Number(programOptions.groupDepth);
         }
 
         if (configFile.files) {

@@ -7,3 +7,11 @@ export const shortUrl = (url: string): string => {
     }
     return url;
 };
+
+/** Shorten a file path to start from the first "src" segment, or last 3 segments. */
+export const shortPath = (filePath: string): string => {
+    const parts = filePath.replace(/\\/g, '/').split('/');
+    const srcIdx = parts.lastIndexOf('src');
+    if (srcIdx >= 0) return parts.slice(srcIdx).join('/');
+    return parts.length <= 3 ? parts.join('/') : parts.slice(-3).join('/');
+};

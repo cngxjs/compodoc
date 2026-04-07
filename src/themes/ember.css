@@ -1,0 +1,35 @@
+/* compodocx theme: Ember
+   Warm, energetic, orange-accented — modern startup vibe */
+
+:root {
+  --color-cdx-primary:        hsl(24 90% 52%);
+  --color-cdx-primary-hover:  hsl(24 90% 44%);
+  --color-cdx-primary-subtle: hsl(24 60% 96%);
+
+  --color-cdx-bg:             hsl(30 16% 98%);
+  --color-cdx-bg-alt:         hsl(30 14% 95%);
+  --color-cdx-bg-elevated:    hsl(0 0% 100%);
+
+  --color-cdx-text:           hsl(20 25% 12%);
+  --color-cdx-text-secondary: hsl(20 12% 40%);
+  --color-cdx-text-muted:     hsl(20 8% 58%);
+
+  --color-cdx-border:         hsl(24 14% 88%);
+  --color-cdx-border-focus:   hsl(24 90% 52%);
+}
+
+.dark {
+  --color-cdx-primary:        hsl(24 85% 62%);
+  --color-cdx-primary-hover:  hsl(24 85% 70%);
+  --color-cdx-primary-subtle: hsl(24 40% 16%);
+
+  --color-cdx-bg:             hsl(20 16% 9%);
+  --color-cdx-bg-alt:         hsl(20 14% 12%);
+  --color-cdx-bg-elevated:    hsl(20 12% 16%);
+
+  --color-cdx-text:           hsl(24 14% 88%);
+  --color-cdx-text-secondary: hsl(20 10% 62%);
+  --color-cdx-text-muted:     hsl(20 8% 44%);
+
+  --color-cdx-border:         hsl(20 12% 20%);
+}

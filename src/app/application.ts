@@ -28,6 +28,7 @@ import { COMPODOC_CONSTANTS } from '../utils/constants';
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
 import { promiseSequential } from '../utils/promise-sequential';
 import RouterParserUtil from '../utils/router-parser.util';
+import { buildEntityIndex } from '../utils/entity-index.util';
 
 import {
     cleanNameWithoutSpaceAndToLowerCase,
@@ -112,7 +113,7 @@ export class Application {
         if (Configuration.mainData.exportFormat !== COMPODOC_DEFAULTS.exportFormat) {
             this.processPackageJson();
         } else {
-            initHighlighter()
+            initHighlighter(Configuration.mainData.shikiTheme || undefined)
                 .then(() => HtmlEngine.init(Configuration.mainData.templates))
                 .then(() => this.processPackageJson());
         }
@@ -493,6 +494,12 @@ export class Application {
         );
 
         const dependenciesData = crawler.getDependencies();
+
+        // Auto-detect groupBy if not explicitly set by user
+        if (!Configuration.mainData.groupBy) {
+            const hasModules = dependenciesData.modules && dependenciesData.modules.length > 0;
+            Configuration.mainData.groupBy = hasModules ? 'none' : 'folder';
+        }
 
         DependenciesEngine.init(dependenciesData);
 
@@ -2551,7 +2558,60 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         logger.info('Template playground CSS generated');
     }
 
+    /**
+     * Build the standalone component dependency graph from all components
+     * that have standalone: true and imports.
+     */
+    private buildDependencyGraph() {
+        const components = Configuration.mainData.components as any[] ?? [];
+        const directives = Configuration.mainData.directives as any[] ?? [];
+        const pipes = Configuration.mainData.pipes as any[] ?? [];
+        const modules = Configuration.mainData.modules as any[] ?? [];
+        const injectables = Configuration.mainData.injectables as any[] ?? [];
+
+        // Build a name→type+url lookup for all known entities
+        const entityMap = new Map<string, { type: string; url?: string }>();
+        for (const c of components) entityMap.set(c.name, { type: 'component', url: `./components/${c.name}.html` });
+        for (const d of directives) entityMap.set(d.name, { type: 'directive', url: `./directives/${d.name}.html` });
+        for (const p of pipes) entityMap.set(p.name, { type: 'pipe', url: `./pipes/${p.name}.html` });
+        for (const m of modules) entityMap.set(m.name, { type: 'module', url: `./modules/${m.name}.html` });
+        for (const s of injectables) entityMap.set(s.name, { type: 'injectable', url: `./injectables/${s.name}.html` });
+
+        const nodeSet = new Set<string>();
+        const edges: Array<{ source: string; target: string }> = [];
+
+        for (const comp of components) {
+            if (!comp.standalone || !comp.imports?.length) continue;
+            nodeSet.add(comp.name);
+            for (const imp of comp.imports) {
+                const impName = typeof imp === 'string' ? imp : imp.name;
+                if (!impName) continue;
+                nodeSet.add(impName);
+                edges.push({ source: comp.name, target: impName });
+            }
+        }
+
+        const nodes = Array.from(nodeSet).map(name => {
+            const info = entityMap.get(name);
+            return {
+                name,
+                type: info?.type ?? 'module',
+                url: info?.url
+            };
+        });
+
+        Configuration.mainData.dependencyGraph = { nodes, edges };
+    }
+
+    private buildEntityIndex() {
+        const index = buildEntityIndex(Configuration.mainData as unknown as Record<string, unknown>);
+        Configuration.mainData.entityIndex = index;
+    }
+
     public processPages() {
+        this.buildDependencyGraph();
+        this.buildEntityIndex();
+        Configuration.mainData.generatedAt = new Date().toISOString();
         const pages = [...Configuration.pages].sort((a, b) => a.name.localeCompare(b.name));
 
         logger.info('Process pages');
@@ -2683,7 +2743,24 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     logger.error('Error during resources copy ', errorCopy);
                 } else {
                     const extThemePromise = new Promise((extThemeResolve, extThemeReject) => {
-                        if (Configuration.mainData.extTheme) {
+                        if (Configuration.mainData.customThemePath) {
+                            fs.copy(
+                                Configuration.mainData.customThemePath,
+                                path.resolve(finalOutput + '/styles/custom.css'),
+                                function (errorCopyTheme) {
+                                    if (errorCopyTheme) {
+                                        logger.error(
+                                            'Error during custom theme copy ',
+                                            errorCopyTheme
+                                        );
+                                        extThemeReject();
+                                    } else {
+                                        logger.info('Custom theme copy succeeded');
+                                        extThemeResolve(true);
+                                    }
+                                }
+                            );
+                        } else if (Configuration.mainData.extTheme) {
                             fs.copy(
                                 path.resolve(cwd + path.sep + Configuration.mainData.extTheme),
                                 path.resolve(finalOutput + '/styles/'),

@@ -1,0 +1,95 @@
+.cdx-empty-state {
+    @apply text-center;
+    color: var(--color-cdx-text-muted);
+}
+
+.cdx-empty-state--compact {
+    @apply flex items-center gap-2 px-3;
+    border-radius: var(--radius-cdx-md);
+    height: 40px;
+    background: var(--color-cdx-bg-alt);
+    font-size: var(--cdx-text-sm, 0.8125rem);
+}
+
+.cdx-empty-state--full {
+    @apply flex flex-col items-center justify-center;
+    padding: 48px var(--spacing-cdx-2xl);
+}
+
+.cdx-empty-state--page {
+    @apply flex flex-col items-center justify-center;
+    min-height: 400px;
+}
+
+.cdx-empty-state-icon {
+    color: var(--color-cdx-text-muted);
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.cdx-empty-state--compact .cdx-empty-state-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.cdx-empty-state--full .cdx-empty-state-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: var(--spacing-cdx-lg);
+}
+
+.cdx-empty-state--page .cdx-empty-state-icon {
+    width: 80px;
+    height: 80px;
+    padding: var(--spacing-cdx-xl);
+    margin-bottom: var(--spacing-cdx-2xl);
+    background: var(--color-cdx-bg-alt);
+    border-radius: 9999px;
+}
+
+.cdx-empty-state-title {
+    font-weight: 600;
+    color: var(--color-cdx-text-secondary);
+    margin: 0;
+}
+
+.cdx-empty-state--full .cdx-empty-state-title {
+    font-size: var(--cdx-text-lg, 1.125rem);
+}
+
+.cdx-empty-state--page .cdx-empty-state-title {
+    font-size: var(--cdx-text-2xl, 1.5rem);
+}
+
+.cdx-empty-state-description {
+    color: var(--color-cdx-text-muted);
+    max-width: 360px;
+    margin: var(--spacing-cdx-sm) 0 0;
+}
+
+.cdx-empty-state-action {
+    color: var(--color-cdx-primary);
+    margin-top: var(--spacing-cdx-md);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.cdx-empty-state-action:hover {
+    color: var(--color-cdx-primary-hover);
+    text-decoration: underline;
+}
+
+.cdx-empty-state--page .cdx-empty-state-action {
+    @apply px-4 py-2;
+    border-radius: var(--radius-cdx-md);
+    border: 1px solid var(--color-cdx-primary);
+}
+
+.cdx-empty-state--page .cdx-empty-state-action:hover {
+    background: var(--color-cdx-primary-subtle);
+    text-decoration: none;
+}
+
+.dark .cdx-empty-state--page .cdx-empty-state-icon {
+    background: var(--color-cdx-bg-elevated);
+}

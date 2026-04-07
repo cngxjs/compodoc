@@ -81,8 +81,8 @@ class I18nEngine {
         i18next.addResources('zh-TW', 'translation', TRANSLATION_ZH_TW);
     }
 
-    public translate(key: string): string {
-        return i18next.t(key);
+    public translate(key: string, params?: Record<string, string>): string {
+        return i18next.t(key, params);
     }
 
     public exists(key: string): boolean {

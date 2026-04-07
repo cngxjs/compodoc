@@ -1,4 +1,5 @@
 export enum AngularLifecycleHooks {
+    // Classic interface-based hooks
     ngOnChanges,
     ngOnInit,
     ngDoCheck,
@@ -6,5 +7,11 @@ export enum AngularLifecycleHooks {
     ngAfterContentChecked,
     ngAfterViewInit,
     ngAfterViewChecked,
-    ngOnDestroy
+    ngOnDestroy,
+
+    // Function-based render hooks (v16.2+, stable v19+)
+    afterRender,
+    afterNextRender,
+    afterEveryRender,
+    afterRenderEffect
 }

@@ -1,4 +1,3 @@
-import * as semver from 'semver';
 import { IAngularApi } from './angular-api.util';
 
 export class AngularVersionUtil {
@@ -31,32 +30,12 @@ export class AngularVersionUtil {
                 _result = this.cleanVersion(angularCore);
             }
         }
-
+        console.log('Angular version from dependencies:', _result);
         return _result;
     }
 
-    private isAngularVersionArchived(version: string): boolean {
-        let result;
-
-        try {
-            result = semver.compare(version, '2.4.10') <= 0;
-        } catch (e) {}
-
-        return result;
-    }
-
-    public prefixOfficialDoc(version: string): string {
-        // Handle empty, undefined, or invalid version strings
-        if (!version || typeof version !== 'string' || version.trim() === '') {
-            return '';
-        }
-
-        return this.isAngularVersionArchived(version) ? 'v2.' : '';
-    }
-
-    public getApiLink(api: IAngularApi, angularVersion: string): string {
-        const angularDocPrefix = this.prefixOfficialDoc(angularVersion);
-        return `https://${angularDocPrefix}angular.io/${api.path}`;
+    public getApiLink(api: IAngularApi): string {
+        return `https://angular.dev/${api.path}`;
     }
 }
 

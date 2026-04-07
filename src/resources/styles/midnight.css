@@ -1,0 +1,102 @@
+/* @theme Midnight
+ * Dark-first, high contrast, neon accents — developer aesthetic.
+ * Pairs well with: --shikiTheme dracula:dracula
+ */
+
+:root {
+    /* --- Surfaces --- */
+    --color-cdx-bg: hsl(260 14% 96%);
+    --color-cdx-bg-alt: hsl(260 12% 93%);
+    --color-cdx-bg-elevated: hsl(0 0% 100%);
+    --color-cdx-bg-code: hsl(260 12% 93%);
+    --color-cdx-bg-code-block: hsl(260 20% 14%);
+
+    /* --- Text --- */
+    --color-cdx-text: hsl(260 20% 14%);
+    --color-cdx-text-secondary: hsl(260 10% 40%);
+    --color-cdx-text-muted: hsl(260 8% 44%);
+    --color-cdx-text-inverse: hsl(260 12% 96%);
+
+    /* --- Primary --- */
+    --color-cdx-primary: hsl(262 68% 52%);
+    --color-cdx-primary-hover: hsl(262 68% 50%);
+    --color-cdx-primary-subtle: hsl(262 40% 95%);
+
+    /* --- Entity colors (purple-shifted, WCAG AA compliant) --- */
+    --color-cdx-entity-component: #0b786e; /* teal-700 */
+    --color-cdx-entity-service: #a05805; /* amber-800 */
+    --color-cdx-entity-directive: #7c3aed; /* violet-600 vivid */
+    --color-cdx-entity-pipe: #c9226c; /* pink-700 */
+    --color-cdx-entity-module: #4f46e5; /* indigo-600 purple-shifted */
+    --color-cdx-entity-class: #047855; /* emerald-700 */
+    --color-cdx-entity-interface: #07738e; /* cyan-700 */
+    --color-cdx-entity-guard: #cf2222; /* red-700 */
+    --color-cdx-entity-interceptor: #9333ea; /* purple-600 */
+    --color-cdx-entity-function: #49760a; /* lime-800 */
+    --color-cdx-entity-variable: #646b77; /* gray-600 */
+    --color-cdx-entity-typealias: #5054ef; /* indigo-600 */
+    --color-cdx-entity-enum: #bd3f0c; /* orange-700 */
+
+    /* --- Feedback --- */
+    --color-cdx-deprecated: hsl(38 85% 32%);
+    --color-cdx-danger: hsl(0 72% 49.5%);
+
+    /* --- Borders --- */
+    --color-cdx-border: hsl(260 12% 88%);
+    --color-cdx-border-strong: hsl(260 10% 58%);
+    --color-cdx-border-focus: hsl(262 68% 58%);
+
+    /* --- Shadows (purple tint) --- */
+    --shadow-cdx-sm: 0 1px 2px hsl(260 20% 14% / 0.06);
+    --shadow-cdx-md: 0 4px 12px hsl(260 20% 14% / 0.08);
+    --shadow-cdx-lg: 0 12px 32px hsl(260 20% 14% / 0.12);
+}
+
+.dark {
+    /* --- Surfaces --- */
+    --color-cdx-bg: hsl(260 18% 8%);
+    --color-cdx-bg-alt: hsl(260 16% 11%);
+    --color-cdx-bg-elevated: hsl(260 14% 15%);
+    --color-cdx-bg-code: hsl(260 16% 13%);
+    --color-cdx-bg-code-block: hsl(260 22% 6%);
+
+    /* --- Text --- */
+    --color-cdx-text: hsl(260 14% 90%);
+    --color-cdx-text-secondary: hsl(260 10% 64%);
+    --color-cdx-text-muted: hsl(260 8% 53.5%);
+    --color-cdx-text-inverse: hsl(260 20% 14%);
+
+    /* --- Primary --- */
+    --color-cdx-primary: hsl(262 80% 72%);
+    --color-cdx-primary-hover: hsl(262 80% 80%);
+    --color-cdx-primary-subtle: hsl(262 30% 18%);
+
+    /* --- Entity colors (neon-boosted for dark mode pop) --- */
+    --color-cdx-entity-component: #5eead4; /* teal-300 neon */
+    --color-cdx-entity-service: #fcd34d; /* amber-300 bright */
+    --color-cdx-entity-directive: #c084fc; /* purple-400 vivid */
+    --color-cdx-entity-pipe: #f472b6; /* pink-400 */
+    --color-cdx-entity-module: #818cf8; /* indigo-400 purple */
+    --color-cdx-entity-class: #6ee7b7; /* emerald-300 neon */
+    --color-cdx-entity-interface: #67e8f9; /* cyan-300 neon */
+    --color-cdx-entity-guard: #fca5a5; /* red-300 */
+    --color-cdx-entity-interceptor: #d946ef; /* fuchsia-500 neon */
+    --color-cdx-entity-function: #bef264; /* lime-300 neon */
+    --color-cdx-entity-variable: #9ca3af; /* gray-400 */
+    --color-cdx-entity-typealias: #a5b4fc; /* indigo-300 */
+    --color-cdx-entity-enum: #fb923c; /* orange-400 */
+
+    /* --- Feedback --- */
+    --color-cdx-deprecated: hsl(38 80% 65%);
+    --color-cdx-danger: hsl(0 70% 65%);
+
+    /* --- Borders --- */
+    --color-cdx-border: hsl(260 12% 20%);
+    --color-cdx-border-strong: hsl(260 12% 41.5%);
+    --color-cdx-border-focus: hsl(262 80% 72%);
+
+    /* --- Shadows --- */
+    --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.25);
+    --shadow-cdx-md: 0 4px 12px hsl(0 0% 0% / 0.35);
+    --shadow-cdx-lg: 0 12px 32px hsl(0 0% 0% / 0.45);
+}

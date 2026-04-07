@@ -7,6 +7,9 @@
 import { initTabs } from './tabs';
 import { initCodeBlocks } from './code-blocks';
 import { initGraphs } from './graphs';
+import { initCoverage } from './coverage';
+import { expandToActive } from './sidebar';
+// import { initToc } from './toc';
 
 const CONTENT_SELECTOR = '.content-data';
 
@@ -65,25 +68,53 @@ const reinitPage = async () => {
     initTabs();
     initCodeBlocks();
     initGraphs();
+    initCoverage();
+    // initToc();
 };
 
 /** Update sidebar active state */
-const updateActiveLink = (url: string) => {
-    document.querySelectorAll('.menu a.active').forEach(a => a.classList.remove('active'));
+const updateActiveLink = (url: string, clickedAnchor: HTMLAnchorElement | null = null) => {
+    document.querySelectorAll('.menu a.active').forEach(a => {
+        a.classList.remove('active');
+        a.removeAttribute('aria-current');
+    });
 
-    // Extract pathname and get the filename
+    // If we know exactly which sidebar link was clicked, use it directly
+    if (clickedAnchor?.closest('.menu')) {
+        clickedAnchor.classList.add('active');
+        clickedAnchor.setAttribute('aria-current', 'page');
+        return;
+    }
+
     const pathname = new URL(url, window.location.origin).pathname;
-    const filename = pathname.split('/').pop() || 'index.html';
+    // Normalize: "/" -> "index.html", "/components/Foo.html" -> "components/Foo.html"
+    let normalizedPath = pathname.replace(/^\//, '').toLowerCase();
+    if (normalizedPath === '' || normalizedPath.endsWith('/')) {
+        normalizedPath += 'index.html';
+    }
+
+    let bestMatch: HTMLAnchorElement | null = null;
+    let bestScore = -1;
 
     document.querySelectorAll<HTMLAnchorElement>('.menu a[data-type]').forEach(a => {
         const href = a.getAttribute('href') || '';
-        // Strip prefix (./ or ../) to get raw filename or path
-        const cleaned = href.replace(/^(\.\/|\.\.\/)+/, '');
-        const hrefFile = cleaned.split('/').pop() || '';
-        if (hrefFile.toLowerCase() === filename.toLowerCase()) {
-            a.classList.add('active');
+        const cleaned = href.replace(/^(\.\/|\.\.\/)+/, '').toLowerCase();
+
+        if (normalizedPath.endsWith(cleaned)) {
+            // Prefer entity-link (3) > chapter-link (2) > index-link (1)
+            const type = a.getAttribute('data-type');
+            const score = type === 'entity-link' ? 3 : type === 'chapter-link' ? 2 : 1;
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = a;
+            }
         }
     });
+
+    if (bestMatch) {
+        (bestMatch as HTMLAnchorElement).classList.add('active');
+        (bestMatch as HTMLAnchorElement).setAttribute('aria-current', 'page');
+    }
 };
 
 /** Update page globals that templates depend on */
@@ -123,11 +154,33 @@ const isInternalLink = (anchor: HTMLAnchorElement): boolean => {
     return true;
 };
 
+/** Progress bar helpers */
+const progressBar = () => document.querySelector<HTMLElement>('.cdx-progress-bar');
+
+const showProgress = () => {
+    const bar = progressBar();
+    if (!bar) return;
+    bar.className = 'cdx-progress-bar cdx-progress--loading';
+};
+
+const completeProgress = () => {
+    const bar = progressBar();
+    if (!bar) return;
+    bar.className = 'cdx-progress-bar cdx-progress--done';
+    setTimeout(() => {
+        bar.classList.add('cdx-progress--hide');
+        setTimeout(() => { bar.className = 'cdx-progress-bar'; }, 200);
+    }, 300);
+};
+
 /** Navigate to a new page via fetch */
-const navigate = async (url: string, pushState = true) => {
+const navigate = async (url: string, pushState = true, clickedAnchor: HTMLAnchorElement | null = null) => {
     try {
+        showProgress();
+
         const response = await fetch(url);
         if (!response.ok) {
+            completeProgress();
             window.location.href = url;
             return;
         }
@@ -146,7 +199,13 @@ const navigate = async (url: string, pushState = true) => {
         const currentContent = document.querySelector(CONTENT_SELECTOR);
         if (newContent && currentContent) {
             currentContent.innerHTML = newContent.innerHTML;
+            // Trigger content fade animation
+            currentContent.classList.remove('cdx-fade-in');
+            void (currentContent as HTMLElement).offsetWidth; // force reflow
+            currentContent.classList.add('cdx-fade-in');
         }
+
+        completeProgress();
 
         // Sidebar is NOT swapped -- menu structure is identical across pages.
         // Only link prefixes and active state need updating.
@@ -164,7 +223,8 @@ const navigate = async (url: string, pushState = true) => {
 
         // Fix sidebar links for new page depth and update active state
         fixMenuLinks();
-        updateActiveLink(url);
+        updateActiveLink(url, clickedAnchor);
+        expandToActive();
 
         // Scroll to top or to anchor
         const hash = new URL(url, window.location.origin).hash;
@@ -204,7 +264,9 @@ export const initRouter = () => {
         if (!href || href === '#') return;
 
         e.preventDefault();
-        navigate(href);
+        // If clicked link is in sidebar, pass it as the active hint
+        const sidebarAnchor = anchor.closest('.menu') ? anchor : null;
+        navigate(href, true, sidebarAnchor as HTMLAnchorElement | null);
     });
 
     // Handle browser back/forward

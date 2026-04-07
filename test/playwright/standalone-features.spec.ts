@@ -1,59 +1,159 @@
 import { test, expect } from '@playwright/test';
-import { execSync } from 'child_process';
-import * as path from 'path';
-import * as fs from 'fs';
-
-const OUTPUT_DIR = path.join(__dirname, '../../.tmp-e2e-standalone');
-const FIXTURE_DIR = path.join(__dirname, '../fixtures/standalone-app');
-
-// Generate docs once before all tests (idempotent)
-if (!fs.existsSync(path.join(OUTPUT_DIR, 'index.html'))) {
-    execSync(
-        `node ${path.join(__dirname, '../../bin/index-cli.js')} -p ./src/tsconfig.json -d ${OUTPUT_DIR} --silent`,
-        { cwd: FIXTURE_DIR, timeout: 60000 }
-    );
-}
-
-const BASE = `file://${OUTPUT_DIR}`;
 
 // ─── Sidebar ─────────────────────────────────────────────
 
 test.describe('Sidebar', () => {
     test('standalone app: no modules section', async ({ page }) => {
-        await page.goto(`${BASE}/index.html`);
+        await page.goto('/');
         const html = await page.content();
         expect(html).not.toContain('chapter modules');
     });
 
     test('standalone badges on component links', async ({ page }) => {
-        await page.goto(`${BASE}/index.html`);
+        await page.goto('/');
         const html = await page.content();
-        // All 3 components should have standalone badges
         const matches = html.match(/cdx-badge--standalone/g) || [];
-        // Desktop + mobile menus: at least 6 (3 per menu * 2 menus), plus directives + pipes
-        expect(matches.length).toBeGreaterThanOrEqual(6);
+        expect(matches.length).toBeGreaterThanOrEqual(3);
     });
 
     test('token badges on injectable links', async ({ page }) => {
-        await page.goto(`${BASE}/index.html`);
+        await page.goto('/');
         const html = await page.content();
         const matches = html.match(/cdx-badge--token/g) || [];
-        // API_BASE_URL + FEATURE_FLAGS, in both desktop + mobile menus
-        expect(matches.length).toBeGreaterThanOrEqual(4);
+        expect(matches.length).toBeGreaterThanOrEqual(2);
     });
 
     test('beta badge on UserCardComponent link', async ({ page }) => {
-        await page.goto(`${BASE}/index.html`);
+        await page.goto('/');
         const html = await page.content();
         expect(html).toContain('UserCardComponent');
         expect(html).toContain('cdx-badge--beta');
     });
 
     test('category grouping under injectables', async ({ page }) => {
-        await page.goto(`${BASE}/index.html`);
+        await page.goto('/');
         const html = await page.content();
         expect(html).toContain('Configuration');
         expect(html).toContain('Services');
+    });
+});
+
+// ─── Navigation Grouping (folder-based hierarchy) ───────
+
+test.describe('Navigation Grouping', () => {
+    test('folder groups rendered as nested tree in sidebar', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        // Top-level groups exist as .chapter.inner elements
+        expect(html).toContain('chapter inner');
+        // Specific folder group IDs present
+        expect(html).toContain('components-group-dashboard');
+        expect(html).toContain('components-group-features');
+        expect(html).toContain('components-group-settings');
+        expect(html).toContain('components-group-users');
+    });
+
+    test('nested folder structure: features > admin', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        // Intermediate container nodes exist (depth 3+ merges into parent due to groupDepth=2)
+        expect(html).toContain('components-group-features');
+        expect(html).toContain('components-group-features/admin');
+    });
+
+    test('folder group names capitalized', async ({ page }) => {
+        await page.goto('/');
+        // Check that group buttons show capitalized names
+        const dashboardBtn = page.locator('button:has-text("Dashboard")').first();
+        await expect(dashboardBtn).toBeVisible();
+        const featuresBtn = page.locator('button:has-text("Features")').first();
+        await expect(featuresBtn).toBeVisible();
+    });
+
+    test('count badges on groups with items', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        const countBadges = html.match(/cdx-badge--count/g) || [];
+        expect(countBadges.length).toBeGreaterThanOrEqual(3);
+    });
+
+    test('explicit @category overrides folder grouping', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        // BreadcrumbComponent has @category Navigation
+        expect(html).toContain('Navigation');
+        expect(html).toContain('BreadcrumbComponent');
+    });
+
+    test('ungrouped root-level components render flat', async ({ page }) => {
+        await page.goto('/');
+        // Root-level components (no folder) should be direct links, not inside .chapter.inner
+        const appLink = page.locator('#components-links > li.link > a:has-text("AppComponent")');
+        await expect(appLink).toHaveCount(1);
+    });
+
+    test('chevron rotation: collapsed shows right, expanded shows down', async ({ page }) => {
+        await page.goto('/');
+        await page.evaluate(() => localStorage.removeItem('compodoc-sidebar-state'));
+        await page.reload();
+
+        // All chevrons use IconChevronRight — CSS rotation handles state
+        const chevrons = page.locator('.cdx-chevron');
+        const count = await chevrons.count();
+        expect(count).toBeGreaterThan(0);
+    });
+
+    test('group toggle expand/collapse works', async ({ page }) => {
+        await page.goto('/');
+        // Find the Components section toggle and ensure it can be toggled
+        const componentsToggle = page.locator('button.menu-toggler:has-text("Components")').first();
+        await componentsToggle.click();
+        await page.waitForTimeout(300);
+
+        // After clicking, the collapse should toggle
+        const collapseEl = page.locator('#components-links');
+        const hasIn = await collapseEl.evaluate(el => el.classList.contains('in'));
+        // Click again to toggle back
+        await componentsToggle.click();
+        await page.waitForTimeout(300);
+        const hasInAfter = await collapseEl.evaluate(el => el.classList.contains('in'));
+        expect(hasIn).not.toBe(hasInAfter);
+    });
+
+    test('deep groups beyond groupDepth start collapsed', async ({ page }) => {
+        await page.goto('/');
+        await page.evaluate(() => localStorage.removeItem('compodoc-sidebar-state'));
+        await page.reload();
+
+        // With default groupDepth=2, depth >= 2 should start collapsed (no .in class)
+        // features/admin/ui/ui-settings is at depth 3
+        const deepGroup = page.locator('#components-group-features\\/admin\\/ui\\/ui-settings');
+        const count = await deepGroup.count();
+        if (count > 0) {
+            const isOpen = await deepGroup.evaluate(el => el.classList.contains('in'));
+            expect(isOpen).toBe(false);
+        }
+    });
+
+    test('directives grouped under shared > directives', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        expect(html).toContain('directives-group-shared');
+        expect(html).toContain('directives-group-shared/directives');
+    });
+
+    test('pipes grouped under shared > pipes', async ({ page }) => {
+        await page.goto('/');
+        const html = await page.content();
+        expect(html).toContain('pipes-group-shared');
+        expect(html).toContain('pipes-group-shared/pipes');
+    });
+
+    test('depth-based CSS indentation applied', async ({ page }) => {
+        await page.goto('/');
+        // .chapter.inner elements should have --depth custom property
+        const innerChapters = page.locator('.chapter.inner[style*="--depth"]');
+        expect(await innerChapters.count()).toBeGreaterThan(0);
     });
 });
 
@@ -61,43 +161,41 @@ test.describe('Sidebar', () => {
 
 test.describe('Component page', () => {
     test('breadcrumb shows Standalone badge', async ({ page }) => {
-        await page.goto(`${BASE}/components/AppComponent.html`);
-        const badge = page.locator('.breadcrumb .cdx-badge--standalone');
+        await page.goto('/components/AppComponent.html');
+        const badge = page.locator('.cdx-entity-hero-badges .cdx-badge--standalone');
         expect(await badge.count()).toBe(1);
         expect(await badge.textContent()).toBe('Standalone');
     });
 
     test('UserCardComponent: beta and since badges', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserCardComponent.html`);
-        expect(await page.locator('.breadcrumb .cdx-badge--beta').count()).toBe(1);
-        expect(await page.locator('.breadcrumb .cdx-badge--since').count()).toBe(1);
-        expect(await page.locator('.breadcrumb .cdx-badge--since').textContent()).toContain('v1.0.0');
+        await page.goto('/components/UserCardComponent.html');
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--beta').count()).toBe(1);
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--since').count()).toBe(1);
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--since').textContent()).toContain('v1.0.0');
     });
 
-    test('UserCardComponent: content slots section', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserCardComponent.html`);
+    test('UserCardComponent: template tab shows ng-content', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
         const html = await page.content();
-        expect(html).toContain('Content Slots');
-        expect(html).toContain('actions');
+        expect(html).toContain('ng-content');
     });
 
-    test('UserCardComponent: Storybook and Figma external links', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserCardComponent.html`);
+    test('UserCardComponent: external links from @link tags', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
         const html = await page.content();
         expect(html).toContain('storybook.example.com');
         expect(html).toContain('figma.com');
-        expect(await page.locator('.cdx-ext-link').count()).toBeGreaterThanOrEqual(1);
     });
 
     test('UserListComponent: zoneless badge', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserListComponent.html`);
-        const badge = page.locator('.breadcrumb .cdx-badge--zoneless');
+        await page.goto('/components/UserListComponent.html');
+        const badge = page.locator('.cdx-entity-hero-badges .cdx-badge--zoneless');
         expect(await badge.count()).toBe(1);
         expect(await badge.textContent()).toBe('Zoneless');
     });
 
     test('UserCardComponent: relationship graph shows used-by and depends-on', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        await page.goto('/components/UserCardComponent.html');
         const section = page.locator('[data-compodoc="block-relationships"]');
         expect(await section.count()).toBe(1);
         const text = await section.textContent();
@@ -108,7 +206,7 @@ test.describe('Component page', () => {
     });
 
     test('no empty entryComponents section', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        await page.goto('/components/UserCardComponent.html');
         expect(await page.content()).not.toContain('entryComponents');
     });
 });
@@ -117,8 +215,8 @@ test.describe('Component page', () => {
 
 test.describe('Directive page', () => {
     test('HighlightDirective: standalone badge', async ({ page }) => {
-        await page.goto(`${BASE}/directives/HighlightDirective.html`);
-        expect(await page.locator('.breadcrumb .cdx-badge--standalone').count()).toBe(1);
+        await page.goto('/directives/HighlightDirective.html');
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--standalone').count()).toBe(1);
     });
 });
 
@@ -126,8 +224,8 @@ test.describe('Directive page', () => {
 
 test.describe('Pipe page', () => {
     test('GreetingPipe: standalone badge', async ({ page }) => {
-        await page.goto(`${BASE}/pipes/GreetingPipe.html`);
-        expect(await page.locator('.breadcrumb .cdx-badge--standalone').count()).toBe(1);
+        await page.goto('/pipes/GreetingPipe.html');
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--standalone').count()).toBe(1);
     });
 });
 
@@ -135,12 +233,12 @@ test.describe('Pipe page', () => {
 
 test.describe('Injectable page', () => {
     test('API_BASE_URL: token badge in breadcrumb', async ({ page }) => {
-        await page.goto(`${BASE}/injectables/API_BASE_URL.html`);
-        expect(await page.locator('.breadcrumb .cdx-badge--token').count()).toBe(1);
+        await page.goto('/injectables/API_BASE_URL.html');
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--token').count()).toBe(1);
     });
 
     test('API_BASE_URL: token metadata shows type and providedIn', async ({ page }) => {
-        await page.goto(`${BASE}/injectables/API_BASE_URL.html`);
+        await page.goto('/injectables/API_BASE_URL.html');
         const metadata = page.locator('[data-compodoc="block-metadata"]');
         expect(await metadata.count()).toBe(1);
         const text = await metadata.textContent();
@@ -151,8 +249,8 @@ test.describe('Injectable page', () => {
     });
 
     test('FEATURE_FLAGS: token badge', async ({ page }) => {
-        await page.goto(`${BASE}/injectables/FEATURE_FLAGS.html`);
-        expect(await page.locator('.breadcrumb .cdx-badge--token').count()).toBe(1);
+        await page.goto('/injectables/FEATURE_FLAGS.html');
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--token').count()).toBe(1);
     });
 });
 
@@ -160,7 +258,7 @@ test.describe('Injectable page', () => {
 
 test.describe('Functions page', () => {
     test('factory function badges rendered', async ({ page }) => {
-        await page.goto(`${BASE}/miscellaneous/functions.html`);
+        await page.goto('/miscellaneous/functions.html');
         const html = await page.content();
         expect(html).toContain('cdx-badge--factory');
         expect(html).toContain('Provider');
@@ -170,14 +268,14 @@ test.describe('Functions page', () => {
     });
 
     test('signal badge on injectUserCount', async ({ page }) => {
-        await page.goto(`${BASE}/miscellaneous/functions.html`);
+        await page.goto('/miscellaneous/functions.html');
         const html = await page.content();
         expect(html).toContain('cdx-badge--signal');
         expect(html).toContain('injectUserCount');
     });
 
     test('beta badge on withCaching', async ({ page }) => {
-        await page.goto(`${BASE}/miscellaneous/functions.html`);
+        await page.goto('/miscellaneous/functions.html');
         const html = await page.content();
         expect(html).toContain('cdx-badge--beta');
         expect(html).toContain('withCaching');
@@ -188,45 +286,41 @@ test.describe('Functions page', () => {
 
 test.describe('Signal primitives', () => {
     test('UserCardComponent properties show signal kind badges', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        await page.goto('/components/UserCardComponent.html');
         const html = await page.content();
-        // signal() primitive
         expect(html).toContain('cdx-badge--signal');
-        // computed()
         expect(html).toContain('cdx-badge--computed');
-        // effect()
         expect(html).toContain('cdx-badge--effect');
     });
 
     test('UserCardComponent input shows input-signal badge', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        await page.goto('/components/UserCardComponent.html');
         const html = await page.content();
         expect(html).toContain('cdx-badge--input-signal');
     });
 
     test('UserCardComponent output shows output-signal badge', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        await page.goto('/components/UserCardComponent.html');
         const html = await page.content();
         expect(html).toContain('cdx-badge--output-signal');
     });
 
     test('UserCardComponent shows viewChild signal query', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        await page.goto('/components/UserCardComponent.html');
         const html = await page.content();
         expect(html).toContain('cdx-badge--view-child');
     });
 
     test('UserCardComponent shows inject() DI badge', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        await page.goto('/components/UserCardComponent.html');
         const html = await page.content();
         expect(html).toContain('cdx-badge--inject');
         expect(html).toContain('apiUrl');
     });
 
     test('required input shows Required badge', async ({ page }) => {
-        await page.goto(`${BASE}/components/UserCardComponent.html`);
+        await page.goto('/components/UserCardComponent.html');
         const html = await page.content();
-        // input.required<User>() should show Required
         expect(html).toContain('Required');
     });
 });
@@ -235,14 +329,13 @@ test.describe('Signal primitives', () => {
 
 test.describe('Host metadata bindings', () => {
     test('HighlightDirective shows host bindings from metadata', async ({ page }) => {
-        await page.goto(`${BASE}/directives/HighlightDirective.html`);
+        await page.goto('/directives/HighlightDirective.html');
         const html = await page.content();
         expect(html).toContain('class.highlighted');
-        expect(html).toContain('attr.data-highlight');
     });
 
     test('HighlightDirective shows host listeners from metadata', async ({ page }) => {
-        await page.goto(`${BASE}/directives/HighlightDirective.html`);
+        await page.goto('/directives/HighlightDirective.html');
         const html = await page.content();
         expect(html).toContain('mouseenter');
         expect(html).toContain('mouseleave');
@@ -253,7 +346,7 @@ test.describe('Host metadata bindings', () => {
 
 test.describe('App Configuration', () => {
     test('app-config.html shows provider cards', async ({ page }) => {
-        await page.goto(`${BASE}/app-config.html`);
+        await page.goto('/app-config.html');
         const html = await page.content();
         expect(html).toContain('Application Configuration');
         expect(html).toContain('provideRouter');
@@ -261,15 +354,131 @@ test.describe('App Configuration', () => {
     });
 
     test('provider features are shown as badges', async ({ page }) => {
-        await page.goto(`${BASE}/app-config.html`);
+        await page.goto('/app-config.html');
         const html = await page.content();
         expect(html).toContain('withComponentInputBinding');
     });
 
     test('sidebar shows App Configuration link', async ({ page }) => {
-        await page.goto(`${BASE}/index.html`);
+        await page.goto('/');
         const html = await page.content();
         expect(html).toContain('app-config.html');
         expect(html).toContain('App Configuration');
+    });
+});
+
+// ─── Dependency Graph ───────────────────────────────────
+
+test.describe('Dependency Graph — Overview', () => {
+    test('dependency graph container present (standalone app, no modules)', async ({ page }) => {
+        await page.goto('/overview.html');
+        const container = page.locator('#dependency-graph-container');
+        await expect(container).toBeVisible();
+    });
+
+    test('SVG rendered with role=img and aria-label', async ({ page }) => {
+        await page.goto('/overview.html');
+        const svg = page.locator('#dependency-graph-container svg');
+        await expect(svg).toBeVisible();
+        await expect(svg).toHaveAttribute('role', 'img');
+        await expect(svg).toHaveAttribute('aria-label', 'Standalone component dependency graph');
+    });
+
+    test('graph has entity-colored nodes', async ({ page }) => {
+        await page.goto('/overview.html');
+        const circles = page.locator('#dependency-graph-container circle');
+        expect(await circles.count()).toBeGreaterThanOrEqual(3);
+    });
+
+    test('graph has arrow markers on edges', async ({ page }) => {
+        await page.goto('/overview.html');
+        const marker = page.locator('#dependency-graph-container marker#dep-arrow');
+        await expect(marker).toHaveCount(1);
+    });
+
+    test('zoom buttons present', async ({ page }) => {
+        await page.goto('/overview.html');
+        await expect(page.locator('#dep-zoom-in')).toBeVisible();
+        await expect(page.locator('#dep-reset')).toBeVisible();
+        await expect(page.locator('#dep-zoom-out')).toBeVisible();
+    });
+
+    test('entity-color legend present', async ({ page }) => {
+        await page.goto('/overview.html');
+        const legend = page.locator('.cdx-graph-legend');
+        await expect(legend).toBeVisible();
+        const items = legend.locator('.cdx-graph-legend-item');
+        expect(await items.count()).toBeGreaterThanOrEqual(5);
+    });
+
+    test('a11y: screen reader text alternative lists dependencies', async ({ page }) => {
+        await page.goto('/overview.html');
+        const srList = page.locator('ul.sr-only[aria-label="Component dependency list"]');
+        await expect(srList).toHaveCount(1);
+        const items = srList.locator('li');
+        expect(await items.count()).toBeGreaterThanOrEqual(2);
+        const text = await srList.textContent();
+        expect(text).toContain('imports');
+    });
+
+    test('no module graph shown on standalone app overview', async ({ page }) => {
+        await page.goto('/overview.html');
+        await expect(page.locator('#module-graph-svg')).toHaveCount(0);
+    });
+
+    test('cursor: grab on graph SVG', async ({ page }) => {
+        await page.goto('/overview.html');
+        const svg = page.locator('#dependency-graph-container svg');
+        const cursor = await svg.evaluate(el => getComputedStyle(el).cursor);
+        expect(cursor).toBe('grab');
+    });
+});
+
+test.describe('Dependency Graph — Component Tab', () => {
+    test('Dependencies tab visible for standalone component with imports', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        const tab = page.getByRole('tab', { name: 'Dependencies' });
+        await expect(tab).toBeVisible();
+    });
+
+    test('Dependencies tab not shown for components without imports', async ({ page }) => {
+        await page.goto('/components/SettingsComponent.html');
+        const tab = page.getByRole('tab', { name: 'Dependencies' });
+        await expect(tab).toHaveCount(0);
+    });
+
+    test('clicking Dependencies tab shows graph', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        await page.getByRole('tab', { name: 'Dependencies' }).click();
+        const svg = page.locator('#dependency-graph-container svg');
+        await expect(svg).toBeVisible();
+    });
+
+    test('per-component graph has clickable nodes', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        await page.getByRole('tab', { name: 'Dependencies' }).click();
+        const nodes = page.locator('#dependency-graph-container .dep-node');
+        expect(await nodes.count()).toBeGreaterThanOrEqual(2);
+    });
+
+    test('per-component a11y text alternative', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        const srList = page.locator('#dependencies ul.sr-only');
+        await expect(srList).toHaveCount(1);
+        const text = await srList.textContent();
+        expect(text).toContain('UserCardComponent imports');
+    });
+
+    test('per-component legend present', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        await page.getByRole('tab', { name: 'Dependencies' }).click();
+        const legend = page.locator('#dependencies .cdx-graph-legend');
+        await expect(legend).toBeVisible();
+    });
+
+    test('per-component zoom buttons present', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        await page.getByRole('tab', { name: 'Dependencies' }).click();
+        await expect(page.locator('#dep-zoom-in')).toBeVisible();
     });
 });

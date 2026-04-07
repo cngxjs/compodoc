@@ -8,6 +8,7 @@ import {
     parseDescription,
     t,
 } from '../helpers';
+import { IconChevronRight } from '../components/Icons';
 import { DefinedInRow } from './DefinedInRow';
 import { ParamsTable } from './ParamsTable';
 
@@ -17,63 +18,67 @@ type BlockHostListenerProps = {
     readonly title?: string;
     readonly depth?: number;
     readonly navTabs?: any[];
+    readonly entityColor?: string;
 };
 
-export const BlockHostListener = (props: BlockHostListenerProps): string => (
-    <section data-compodoc="block-host-listener">
-        {typeof props.title === 'string'
-            ? <h3>{props.title}</h3>
-            : <h3 id="methods">{t('methods')}</h3>
-        }
-        {props.methods.map(m => (
-            <table class="table table-sm table-bordered">
-                <tbody>
-                    <tr>
-                        <td class="col-md-4">
-                            <span id={m.name}></span>
-                            <span class="name">
-                                <b>
-                                    {(m.modifierKind ?? []).map((k: number) => (
-                                        <span class="modifier">{modifKind(k)}</span>
-                                    ))}
-                                    {m.optional && <span class="modifier">{t('optional')}</span>}
-                                    {m.name}
-                                </b>
-                                <a href={`#${m.name}`}><span class="icon ion-ios-link"></span></a>
-                            </span>
-                        </td>
-                    </tr>
-                    {m.argsDecorator && (
-                        <tr>
-                            <td class="col-md-4">
-                                <i>{t('arguments')} : </i><code>{m.argsDecorator.map((a: string) => `'${a}' `).join('')}</code>
-                            </td>
-                        </tr>
-                    )}
-                    {m.decorators && (
-                        <tr>
-                            <td class="col-md-4">
-                                <b>{t('decorators')} : </b><br />
-                                <code>{m.decorators.map((d: any) =>
-                                    d.stringifiedArguments ? `@${d.name}(${d.stringifiedArguments})` : `@${d.name}()`
-                                ).join('<br />')}</code>
-                            </td>
-                        </tr>
-                    )}
-                    {DefinedInRow({ line: m.line, file: props.file, inheritance: m.inheritance, navTabs: props.navTabs })}
-                    {m.typeParameters?.length > 0 && (
-                        <tr>
-                            <td class="col-md-4">
-                                <b>{t('type-parameters')} :</b>
-                                <ul class="type-parameters">
-                                    {m.typeParameters.map((tp: string) => <li>{tp}</li>)}
-                                </ul>
-                            </td>
-                        </tr>
-                    )}
-                    {(m.jsdoctags || m.returnType || m.description) && (
-                        <tr>
-                            <td class="col-md-4">
+export const BlockHostListener = (props: BlockHostListenerProps): string => {
+    return (
+        <section data-compodoc="block-host-listener">
+            {typeof props.title === 'string'
+                ? <h3>{props.title}</h3>
+                : <h3 id="methods">{t('methods')}</h3>
+            }
+            {props.methods.map(m => {
+                const cardClasses = m.deprecated
+                    ? 'cdx-member-card cdx-member-card--deprecated'
+                    : 'cdx-member-card';
+
+                return (
+                    <article class={cardClasses} id={m.name}>
+
+                        <details open>
+                            <summary>
+                                <header class="cdx-member-header">
+                                    <span class="cdx-member-name">
+                                        {(m.modifierKind ?? []).map((k: number) => (
+                                            <span class="modifier">{modifKind(k)}</span>
+                                        ))}
+                                        {m.optional && <span class="modifier">{t('optional')}</span>}
+                                        <span class={`cdx-member-name-text${m.deprecated ? ' deprecated-name' : ''}`}>{m.name}</span>
+                                        <a href={`#${m.name}`} class="cdx-member-permalink" aria-label={`Link to ${m.name}`}>#</a>
+                                    </span>
+                                    <span class="cdx-member-type">
+                                        {m.returnType && linkTypeHtml(m.returnType)}
+                                        <span class="cdx-member-chevron" aria-hidden="true">{IconChevronRight()}</span>
+                                    </span>
+                                </header>
+                            </summary>
+                            <div class="cdx-member-body">
+                                {m.deprecated && (
+                                    <div class="cdx-member-deprecation">{m.deprecationMessage || t('deprecated')}</div>
+                                )}
+                                {m.argsDecorator && (
+                                    <div class="cdx-member-row">
+                                        <i>{t('arguments')} : </i><code>{m.argsDecorator.map((a: string) => `'${a}' `).join('')}</code>
+                                    </div>
+                                )}
+                                {m.decorators && (
+                                    <div class="cdx-member-row">
+                                        <b>{t('decorators')} : </b>
+                                        <code>{m.decorators.map((d: any) =>
+                                            d.stringifiedArguments ? `@${d.name}(${d.stringifiedArguments})` : `@${d.name}()`
+                                        ).join(', ')}</code>
+                                    </div>
+                                )}
+                                {DefinedInRow({ line: m.line, file: props.file, inheritance: m.inheritance, navTabs: props.navTabs })}
+                                {m.typeParameters?.length > 0 && (
+                                    <div class="cdx-member-row">
+                                        <b>{t('type-parameters')} :</b>
+                                        <ul class="type-parameters">
+                                            {m.typeParameters.map((tp: string) => <li>{tp}</li>)}
+                                        </ul>
+                                    </div>
+                                )}
                                 {m.description && (
                                     <div class="io-description">{parseDescription(m.description, props.depth ?? 0)}</div>
                                 )}
@@ -81,30 +86,28 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => (
                                     <div class="io-description">
                                         {ParamsTable({ jsdocTags: m.jsdoctags, depth: props.depth ?? 0, showOptional: true, showDefaultValue: true })}
                                     </div>
-                                    <div>
-                                        {(() => {
-                                            const examples = extractJsdocCodeExamples(m.jsdoctags);
-                                            if (examples.length === 0) return '';
-                                            return (<>
-                                                <b>{t('example')} :</b>
-                                                {examples.map(ex => <div>{ex.comment}</div>)}
-                                            </>);
-                                        })()}
-                                    </div>
+                                    {(() => {
+                                        const examples = extractJsdocCodeExamples(m.jsdoctags);
+                                        if (examples.length === 0) return '';
+                                        return (<>
+                                            <b>{t('example')} :</b>
+                                            {examples.map(ex => <div>{ex.comment}</div>)}
+                                        </>);
+                                    })()}
                                 </>)}
-                                {m.returnType && (<>
-                                    <div class="io-description">
+                                {m.returnType && (
+                                    <div class="cdx-member-returns">
                                         <b>{t('returns')} : </b>{linkTypeHtml(m.returnType)}
                                     </div>
-                                    {m.jsdoctags && (
-                                        <div class="io-description">{jsdocReturnsComment(m.jsdoctags)}</div>
-                                    )}
-                                </>)}
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
-        ))}
-    </section>
-) as string;
+                                )}
+                                {m.returnType && m.jsdoctags && (
+                                    <div class="io-description">{jsdocReturnsComment(m.jsdoctags)}</div>
+                                )}
+                            </div>
+                        </details>
+                    </article>
+                );
+            })}
+        </section>
+    ) as string;
+};

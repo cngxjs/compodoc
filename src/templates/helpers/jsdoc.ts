@@ -37,7 +37,11 @@ export const extractJsdocParams = (jsdocTags: any[]): JsdocTag[] => {
 };
 
 function htmlEntities(str: string): string {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return str
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
 }
 
 type CodeBlock = { language: string; code: string };
@@ -53,8 +57,8 @@ function parseCodeFences(comment: string): CodeBlock[] {
         let lang = (match[1] || 'html').toLowerCase();
         if (lang === 'js') lang = 'javascript';
         if (lang === 'ts') lang = 'typescript';
-        let code = match[2].replace(/___COMPODOC_EMPTY_LINE___/g, '\n').trim();
-        code = code.replace(/```[\s\S]*?```/g, '');
+        let code = match[2].replaceAll('___COMPODOC_EMPTY_LINE___', '\n').trim();
+        code = code.replaceAll(/```[\s\S]*?```/g, '');
         if (code.length > 0) blocks.push({ language: lang, code });
     }
 
@@ -80,7 +84,7 @@ export const extractJsdocCodeExamples = (jsdocTags: any[]): JsdocTag[] => {
 
         for (const block of parseCodeFences(comment)) {
             tags.push({
-                comment: `<pre class="line-numbers"><code class="language-${block.language}">${htmlEntities(block.code)}</code></pre>`,
+                comment: `<pre class="line-numbers"><code class="language-${block.language}">${htmlEntities(block.code)}</code></pre>`
             });
         }
     }
@@ -93,8 +97,8 @@ export const extractJsdocExamples = (jsdocTags: any[]): JsdocTag[] => {
     for (const jt of jsdocTags) {
         if (jt.tagName?.text !== 'example') continue;
         const comment = (jt.comment ?? '')
-            .replace(/<caption>/g, '<b><i>')
-            .replace(/\/caption>/g, '/b></i>');
+            .replaceAll('<caption>', '<b><i>')
+            .replaceAll('/caption>', '/b></i>');
         tags.push({ comment });
     }
     return tags;

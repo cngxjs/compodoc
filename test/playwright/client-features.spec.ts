@@ -1,20 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Sidebar', () => {
-    test('desktop: sections default collapsed without saved state', async ({ page }) => {
+    test('desktop: sections default expanded without saved state (toggleMenuItems: all)', async ({ page }) => {
         await page.goto('/');
         await page.evaluate(() => localStorage.removeItem('compodoc-sidebar-state'));
         await page.reload();
 
-        const desktopMenu = page.locator('.d-none.d-md-block.menu');
-        const collapseSections = desktopMenu.locator('.collapse');
+        const sidebar = page.locator('#sidebar');
+        const collapseSections = sidebar.locator('.collapse');
         const count = await collapseSections.count();
         expect(count).toBeGreaterThan(0);
 
-        for (let i = 0; i < count; i++) {
-            const section = collapseSections.nth(i);
-            await expect(section).not.toHaveClass(/\bin\b/);
-        }
+        // Default toggleMenuItems is ['all'], so top-level sections start expanded
+        const firstSection = collapseSections.first();
+        await expect(firstSection).toHaveClass(/\bin\b/);
     });
 
     test('desktop: expand/collapse persists to localStorage', async ({ page }) => {
@@ -22,7 +21,7 @@ test.describe('Sidebar', () => {
         await page.evaluate(() => localStorage.removeItem('compodoc-sidebar-state'));
         await page.reload();
 
-        const toggler = page.locator('.d-none.d-md-block.menu [data-cdx-toggle="collapse"]').first();
+        const toggler = page.locator('#sidebar [data-cdx-toggle="collapse"]').first();
         await toggler.click();
         await page.waitForTimeout(300);
 
@@ -32,61 +31,39 @@ test.describe('Sidebar', () => {
         const hasOpenEntry = Object.values(state).some(v => v === true);
         expect(hasOpenEntry).toBe(true);
     });
-
-    test('desktop/mobile: collapse state syncs between menus', async ({ page }) => {
-        await page.goto('/');
-        await page.evaluate(() => localStorage.removeItem('compodoc-sidebar-state'));
-        await page.reload();
-
-        const toggler = page.locator('.d-none.d-md-block.menu [data-cdx-toggle="collapse"]').first();
-        await toggler.click();
-        await page.waitForTimeout(300);
-
-        const targetId = await toggler.getAttribute('data-cdx-target');
-        const desktopId = targetId!.replace('#', '');
-        const mobileId = 'xs-' + desktopId;
-
-        const mobileSibling = page.locator(`#${mobileId}`);
-        if (await mobileSibling.count() > 0) {
-            await expect(mobileSibling).toHaveClass(/\bin\b/);
-        }
-    });
 });
 
 test.describe('Mobile menu', () => {
     test.use({ viewport: { width: 375, height: 812 } });
 
-    test('hamburger button toggles mobile menu', async ({ page }) => {
+    test('hamburger button toggles mobile sidebar', async ({ page }) => {
         await page.goto('/');
 
-        const menu = page.locator('#mobile-menu');
-        await expect(menu).not.toBeVisible();
+        const sidebar = page.locator('#sidebar');
+        await expect(sidebar).not.toHaveClass(/cdx-sidebar--open/);
 
         await page.locator('[data-cdx-mobile-toggle]').click();
-        await expect(menu).toBeVisible();
+        await expect(sidebar).toHaveClass(/cdx-sidebar--open/);
 
-        await page.locator('[data-cdx-mobile-toggle]').click();
-        await expect(menu).not.toBeVisible();
+        // Close via backdrop (force: true avoids intercepted pointer from sidebar overlay)
+        await page.locator('.cdx-backdrop').click({ force: true });
+        await page.waitForTimeout(300);
+        await expect(sidebar).not.toHaveClass(/cdx-sidebar--open/);
     });
 
-    test('mobile menu closes on navigation', async ({ page }) => {
+    test('mobile sidebar closes on navigation', async ({ page }) => {
         await page.goto('/');
 
         await page.locator('[data-cdx-mobile-toggle]').click();
-        const menu = page.locator('#mobile-menu');
-        await expect(menu).toBeVisible();
+        const sidebar = page.locator('#sidebar');
+        await expect(sidebar).toHaveClass(/cdx-sidebar--open/);
 
-        // Expand a section first, then click a visible link
-        const toggler = menu.locator('[data-cdx-toggle="collapse"]').first();
-        await toggler.click();
+        // Sections start expanded by default, so just click a visible link
+        const link = sidebar.locator('a[data-type="entity-link"]').first();
+        await link.scrollIntoViewIfNeeded();
+        await link.click();
         await page.waitForTimeout(300);
-
-        const link = menu.locator('a[data-type="entity-link"]').first();
-        if (await link.isVisible()) {
-            await link.click();
-            await page.waitForTimeout(300);
-            await expect(menu).not.toBeVisible();
-        }
+        await expect(sidebar).not.toHaveClass(/cdx-sidebar--open/);
     });
 });
 
@@ -96,12 +73,12 @@ test.describe('Mobile menu auto-close on resize', () => {
         await page.goto('/');
 
         await page.locator('[data-cdx-mobile-toggle]').click();
-        const menu = page.locator('#mobile-menu');
-        await expect(menu).toBeVisible();
+        const sidebar = page.locator('#sidebar');
+        await expect(sidebar).toHaveClass(/cdx-sidebar--open/);
 
         await page.setViewportSize({ width: 1024, height: 768 });
         await page.waitForTimeout(200);
-        await expect(menu).not.toBeVisible();
+        await expect(sidebar).not.toHaveClass(/cdx-sidebar--open/);
     });
 });
 
@@ -122,11 +99,11 @@ test.describe('Command palette', () => {
         await expect(dialog).not.toBeVisible();
     });
 
-    test('opens when sidebar search input is focused', async ({ page }) => {
+    test('opens when sidebar search trigger is clicked', async ({ page }) => {
         await page.goto('/');
 
-        // Click the search input container (readonly input triggers focus -> opens palette)
-        await page.locator('.d-none.d-md-block #book-search-input input').click();
+        // Click the search trigger button in sidebar header (use .cdx-search-trigger which is sidebar-only)
+        await page.locator('.cdx-search-trigger').click();
         await page.waitForTimeout(200);
 
         const dialog = page.locator('#cdx-command-palette');
@@ -161,12 +138,8 @@ test.describe('Dark mode', () => {
     test('toggle switches dark mode off and on', async ({ page }) => {
         await page.goto('/');
 
-        // Playwright colorScheme: 'dark' means dark mode is ON initially.
-        // Toggle it OFF, verify, toggle back ON, verify.
-        await page.evaluate(() => {
-            const input = document.querySelector('.dark-mode-switch input') as HTMLInputElement;
-            input?.click();
-        });
+        // Click the sidebar .cdx-dark-toggle button (topbar one is hidden at desktop)
+        await page.locator('#sidebar .cdx-dark-toggle').click();
         await page.waitForTimeout(100);
 
         const noDark = await page.evaluate(() =>
@@ -175,11 +148,8 @@ test.describe('Dark mode', () => {
         );
         expect(noDark).toBe(true);
 
-        // Toggle back ON
-        await page.evaluate(() => {
-            const input = document.querySelector('.dark-mode-switch input') as HTMLInputElement;
-            input?.click();
-        });
+        // Click again to toggle dark mode back on
+        await page.locator('#sidebar .cdx-dark-toggle').click();
         await page.waitForTimeout(100);
 
         const hasDark = await page.evaluate(() =>
@@ -196,15 +166,15 @@ test.describe('SPA navigation', () => {
         const initialUrl = page.url();
 
         // Expand a section
-        const toggler = page.locator('.d-none.d-md-block.menu [data-cdx-toggle="collapse"]').first();
+        const toggler = page.locator('#sidebar [data-cdx-toggle="collapse"]').first();
         await toggler.click();
         await page.waitForTimeout(300);
 
-        const entityLink = page.locator('.d-none.d-md-block.menu a[data-type="entity-link"]').first();
+        const entityLink = page.locator('#sidebar a[data-type="entity-link"]').first();
         if (await entityLink.count() > 0) {
             // Mark the sidebar DOM to verify it wasn't replaced
             await page.evaluate(() => {
-                document.querySelector('.d-none.d-md-block.menu')?.setAttribute('data-spa-marker', '1');
+                document.querySelector('#sidebar')?.setAttribute('data-spa-marker', '1');
             });
 
             await entityLink.click();
@@ -215,7 +185,7 @@ test.describe('SPA navigation', () => {
 
             // Sidebar DOM was preserved (not replaced)
             const marker = await page.evaluate(() =>
-                document.querySelector('.d-none.d-md-block.menu')?.getAttribute('data-spa-marker')
+                document.querySelector('#sidebar')?.getAttribute('data-spa-marker')
             );
             expect(marker).toBe('1');
         }
@@ -224,7 +194,7 @@ test.describe('SPA navigation', () => {
     test('content scripts execute after SPA navigation', async ({ page }) => {
         await page.goto('/');
 
-        const routesLink = page.locator('.d-none.d-md-block.menu a[href="routes.html"]');
+        const routesLink = page.locator('#sidebar a[href="routes.html"]');
         if (await routesLink.count() > 0) {
             await routesLink.click();
             await page.waitForTimeout(2000);
@@ -244,7 +214,7 @@ test.describe('Module graph', () => {
     test('SVG pan-zoom: zoom buttons work', async ({ page }) => {
         await page.goto('/modules.html');
 
-        const browseBtn = page.locator('a.btn:has-text("Browse")').first();
+        const browseBtn = page.locator('a.cdx-btn:has-text("Browse")').first();
         await browseBtn.click();
         await page.waitForTimeout(1000);
 

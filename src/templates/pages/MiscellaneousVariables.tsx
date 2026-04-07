@@ -1,7 +1,8 @@
 import Html from '@kitajs/html';
-import { t } from '../helpers';
+import { shortPath } from '../helpers';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { IndexMisc } from '../blocks/IndexMisc';
+import { MiscHero } from '../blocks/MiscHero';
 
 type MiscVariablesProps = {
     readonly miscellaneous: {
@@ -13,14 +14,13 @@ type MiscVariablesProps = {
 
 export const MiscellaneousVariables = (props: MiscVariablesProps): string => (
     <>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('miscellaneous')}</li>
-            <li class="breadcrumb-item">{t('variables')}</li>
-        </ol>
-        {IndexMisc({ list: props.miscellaneous.variables })}
-        {Object.entries(props.miscellaneous.groupedVariables).map(([key, properties]) => (<>
-            <h3>{key}</h3>
-            {BlockProperty({ properties, title: '', file: '', depth: props.depth })}
-        </>))}
+        {MiscHero({ kind: 'variable', count: props.miscellaneous.variables.length })}
+        {IndexMisc({ list: props.miscellaneous.variables, kind: 'variable' })}
+        {Object.entries(props.miscellaneous.groupedVariables).map(([key, properties]) => (
+            <div class="cdx-content-section">
+                <h3 class="cdx-section-heading" title={key}>{shortPath(key)}</h3>
+                {BlockProperty({ properties, title: '', file: '', depth: props.depth })}
+            </div>
+        ))}
     </>
 ) as string;

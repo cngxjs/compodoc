@@ -1,0 +1,99 @@
+.cdx-tab-bar {
+    @apply inline-flex gap-0.5;
+    position: relative;
+    z-index: 1;
+    padding: var(--spacing-cdx-xs);
+    background: var(--color-cdx-bg-alt);
+    border-radius: var(--radius-cdx-lg);
+    list-style: none;
+    margin: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-cdx-border) transparent;
+}
+
+.cdx-tab-bar::-webkit-scrollbar {
+    height: 4px;
+}
+
+.cdx-tab-bar::-webkit-scrollbar-thumb {
+    background: var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
+}
+
+.cdx-tab-bar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@media (pointer: coarse) {
+    .cdx-tab-bar {
+        scrollbar-width: none;
+    }
+    .cdx-tab-bar::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.cdx-tab-bar li {
+    display: contents;
+}
+
+.cdx-tab-bar a {
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-xl);
+    border-radius: var(--radius-cdx-md);
+    font-size: var(--cdx-text-sm, 0.8125rem);
+    font-weight: 500;
+    color: var(--color-cdx-text-muted);
+    text-decoration: none;
+    transition:
+        background 150ms ease,
+        color 150ms ease,
+        box-shadow 150ms ease;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.cdx-tab-bar a.active {
+    background: var(--color-cdx-bg-elevated);
+    color: var(--color-cdx-text);
+    box-shadow:
+        0 1px 3px hsl(220 20% 14% / 0.1),
+        0 1px 2px hsl(220 20% 14% / 0.06);
+    font-weight: 600;
+}
+
+.cdx-tab-bar a:hover:not(.active) {
+    color: var(--color-cdx-text-secondary);
+    background: color-mix(in srgb, var(--color-cdx-bg-elevated) 50%, transparent);
+}
+
+.cdx-tab-bar a:focus-visible {
+    outline: 2px solid var(--color-cdx-border-focus);
+    outline-offset: -2px;
+    border-radius: var(--radius-cdx-md);
+}
+
+.dark .cdx-tab-bar {
+    background: var(--color-cdx-bg);
+}
+
+.dark .cdx-tab-bar a.active {
+    background: var(--color-cdx-bg-elevated);
+    color: var(--color-cdx-text);
+    box-shadow:
+        0 1px 3px hsl(0 0% 0% / 0.2),
+        0 1px 2px hsl(0 0% 0% / 0.15);
+}
+
+.dark .cdx-tab-bar a:hover:not(.active) {
+    background: var(--color-cdx-bg-alt);
+    color: var(--color-cdx-text-secondary);
+}
+
+@container content (max-width: 600px) {
+    .cdx-tab-bar a {
+        padding: var(--spacing-cdx-sm) var(--spacing-cdx-lg);
+    }
+}

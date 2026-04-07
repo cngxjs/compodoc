@@ -4,6 +4,8 @@ export interface MainDataInterface {
     output: string;
     theme: string;
     extTheme: string;
+    customThemePath: string;
+    shikiTheme: string;
     serve: boolean;
     templatePlayground: boolean;
     hostname: string;
@@ -63,6 +65,8 @@ export interface MainDataInterface {
     disableOverview: boolean;
     watch: boolean;
     mainGraph: string;
+    dependencyGraph: { nodes: Array<{ name: string; type: string; url?: string }>; edges: Array<{ source: string; target: string }> };
+    entityIndex: Record<string, { href: string; kind: string }>;
     coverageTest: boolean;
     coverageTestThreshold: number;
     coverageTestThresholdFail: boolean;
@@ -100,4 +104,7 @@ export interface MainDataInterface {
     categorizedGuards: Record<string, unknown[]>;
     categorizedInterceptors: Record<string, unknown[]>;
     categorizedEntities: Record<string, unknown[]>;
+    groupBy: 'folder' | 'category' | 'none' | '';
+    groupDepth: number;
+    generatedAt: string;
 }

@@ -18,26 +18,26 @@ type BlockEnumProps = {
 export const BlockEnum = (props: BlockEnumProps): string => (
     <section data-compodoc="block-enums">
         {props.enums.map(e => (
-            <table class="table table-sm table-bordered">
-                <tbody>
-                    <tr>
-                        <td class="col-md-4">
-                            <span id={e.name}></span>
-                            <span class={`name${e.deprecated ? ' deprecated-name' : ''}`}><b>{e.name}</b><a href={`#${e.name}`}><span class="icon ion-ios-link"></span></a></span>
-                        </td>
-                    </tr>
+            <article class={`cdx-member-card${e.deprecated ? ' cdx-member-card--deprecated' : ''}`} id={e.name}>
+                <header class="cdx-member-header">
+                    <span class="cdx-member-name">
+                        <span class={e.deprecated ? 'deprecated-name' : ''}>{e.name}</span>
+                        <a href={`#${e.name}`} class="cdx-member-permalink" aria-label={`Link to ${e.name}`}>#</a>
+                    </span>
+                </header>
+                <div class="cdx-member-body">
                     {e.deprecated && (
-                        <tr><td class="col-md-4 deprecated">{e.deprecationMessage}</td></tr>
+                        <div class="cdx-member-deprecated">{e.deprecationMessage}</div>
                     )}
                     {e.description && (
-                        <tr><td class="col-md-4"><div class="io-description">{parseDescription(e.description, props.depth ?? 0)}</div></td></tr>
+                        <div class="io-description">{parseDescription(e.description, props.depth ?? 0)}</div>
                     )}
                     {(e.childs ?? []).map(child => (<>
-                        {child.name && <tr><td class="col-md-4">&nbsp;{child.name}</td></tr>}
-                        {child.value && <tr><td class="col-md-4"><i>{t('value')} : </i><code>{child.value}</code></td></tr>}
+                        {child.name && <div class="cdx-member-row">{child.name}</div>}
+                        {child.value && <div class="cdx-member-row"><i>{t('value')} : </i><code>{child.value}</code></div>}
                     </>))}
-                </tbody>
-            </table>
+                </div>
+            </article>
         ))}
     </section>
 ) as string;

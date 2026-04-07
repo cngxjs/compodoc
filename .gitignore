@@ -11,12 +11,14 @@ node_modules
 .idea/
 .vscode/
 
+# Internal design docs (local only)
+.internal/
+
 # Optional npm cache directory
 .npm
 
 # Test js files
 test/dist/
-.tmp-compodoc-test/
 documentation
 doc
 
@@ -48,3 +50,6 @@ tmp/
 /playwright/.cache/
 
 .angular/
+
+# Playwright MCP snapshots
+.playwright-mcp/

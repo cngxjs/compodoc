@@ -1,7 +1,8 @@
 import Html from '@kitajs/html';
-import { t } from '../helpers';
+import { shortPath } from '../helpers';
 import { BlockEnum } from '../blocks/BlockEnum';
 import { IndexMisc } from '../blocks/IndexMisc';
+import { MiscHero } from '../blocks/MiscHero';
 
 type MiscEnumerationsProps = {
     readonly miscellaneous: {
@@ -13,14 +14,13 @@ type MiscEnumerationsProps = {
 
 export const MiscellaneousEnumerations = (props: MiscEnumerationsProps): string => (
     <>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">{t('miscellaneous')}</li>
-            <li class="breadcrumb-item">{t('enumerations')}</li>
-        </ol>
-        {IndexMisc({ list: props.miscellaneous.enumerations })}
-        {Object.entries(props.miscellaneous.groupedEnumerations).map(([key, enums]) => (<>
-            <h3>{key}</h3>
-            {BlockEnum({ enums, depth: props.depth })}
-        </>))}
+        {MiscHero({ kind: 'enum', count: props.miscellaneous.enumerations.length })}
+        {IndexMisc({ list: props.miscellaneous.enumerations, kind: 'enum' })}
+        {Object.entries(props.miscellaneous.groupedEnumerations).map(([key, enums]) => (
+            <div class="cdx-content-section">
+                <h3 class="cdx-section-heading" title={key}>{shortPath(key)}</h3>
+                {BlockEnum({ enums, depth: props.depth })}
+            </div>
+        ))}
     </>
 ) as string;

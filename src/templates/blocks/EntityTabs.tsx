@@ -1,6 +1,9 @@
 import Html from '@kitajs/html';
-import { isInitialTab, isTabEnabled, t } from '../helpers';
+import { extractReadmeHeadings, isInitialTab, isReadmeEmpty, isTabEnabled, t } from '../helpers';
 import { highlightCode } from '../../app/engines/syntax-highlight.engine';
+import { shortPath } from '../helpers/short-url';
+import { EmptyState } from '../components/EmptyState';
+import { EmptyIconBook, EmptyIconFile } from '../components/EmptyStateIcons';
 
 type Tab = {
     readonly id: string;
@@ -14,46 +17,63 @@ type EntityTabsProps = {
     readonly infoContent: string;
     readonly readme?: string;
     readonly sourceCode?: string;
+    readonly filePath?: string;
     readonly exampleUrls?: string[];
 };
 
-/** Render the shared nav-tabs + tab-content structure for entity detail pages. */
+/** Render the tab bar + tab panels for entity detail pages. */
 export const EntityTabs = (props: EntityTabsProps): string => (<>
-    <ul class="nav nav-tabs" role="tablist">
+    <ul class="cdx-tab-bar" role="tablist">
         {props.navTabs.map((tab, i) => (
-            <li class="nav-item">
+            <li role="presentation">
                 <a href={tab.href}
-                    class={i === 0 ? 'nav-link active' : 'nav-link'}
+                    class={i === 0 ? 'active' : ''}
                     role="tab" id={`${tab.id}-tab`}
+                    aria-selected={i === 0 ? 'true' : 'false'}
+                    aria-controls={tab.id}
+                    tabindex={i === 0 ? '0' : '-1'}
                     data-cdx-toggle="tab"
                     data-link={tab['data-link']}>{t(tab.label)}</a>
             </li>
         ))}
     </ul>
 
-    <div class="tab-content">
+    <div>
         {isTabEnabled(props.navTabs, 'info') && (
-            <div class={`tab-pane fade${isInitialTab(props.navTabs, 'info') ? ' active in' : ''}`} id="info">
+            <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'info') ? ' active' : ''}`}
+                id="info" role="tabpanel" aria-labelledby="info-tab">
                 {props.infoContent}
             </div>
         )}
 
         {isTabEnabled(props.navTabs, 'readme') && (
-            <div class={`tab-pane fade${isInitialTab(props.navTabs, 'readme') ? ' active in' : ''}`} id="readme">
-                <p>{props.readme}</p>
+            <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'readme') ? ' active' : ''}`}
+                id="readme" role="tabpanel" aria-labelledby="readme-tab">
+                {isReadmeEmpty(props.readme)
+                    ? <>{extractReadmeHeadings(props.readme)}{EmptyState({ icon: EmptyIconBook(), title: t('empty-readme-title'), description: t('empty-readme-desc'), variant: 'full' })}</>
+                    : <p>{props.readme}</p>
+                }
             </div>
         )}
 
         {isTabEnabled(props.navTabs, 'source') && (
-            <div class={`tab-pane fade${isInitialTab(props.navTabs, 'source') ? ' active in' : ''} tab-source-code`} id="source">
-                <div class="compodoc-sourcecode">{highlightCode(props.sourceCode ?? '', 'typescript')}</div>
+            <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'source') ? ' active' : ''} tab-source-code`}
+                id="source" role="tabpanel" aria-labelledby="source-tab">
+                {props.sourceCode
+                    ? <div class="compodoc-sourcecode">
+                        {props.filePath && <div class="cdx-source-header"><span>{shortPath(props.filePath)}</span></div>}
+                        {highlightCode(props.sourceCode, { lang: 'typescript', mode: 'source' })}
+                      </div>
+                    : EmptyState({ icon: EmptyIconFile(), title: t('empty-source-title'), description: t('empty-source-desc'), variant: 'full' })
+                }
             </div>
         )}
 
         {isTabEnabled(props.navTabs, 'example') && props.exampleUrls && (
-            <div class={`tab-pane fade${isInitialTab(props.navTabs, 'example') ? ' active in' : ''}`} id="example">
+            <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'example') ? ' active' : ''}`}
+                id="example" role="tabpanel" aria-labelledby="example-tab">
                 {props.exampleUrls.map(url => (
-                    <iframe class="exampleContainer" src={url}>
+                    <iframe class="cdx-example-container" src={url}>
                         <p>{t('no-iframes')}</p>
                     </iframe>
                 ))}

@@ -21,32 +21,29 @@ type BlockTypealiasProps = {
 export const BlockTypealias = (props: BlockTypealiasProps): string => (
     <section data-compodoc="block-typealias">
         {props.typealias.map(ta => (
-            <table class="table table-sm table-bordered">
-                <tbody>
-                    <tr>
-                        <td class="col-md-4">
-                            <span id={ta.name}></span>
-                            <span class={`name${ta.deprecated ? ' deprecated-name' : ''}`}><b>{ta.name}</b><a href={`#${ta.name}`}><span class="icon ion-ios-link"></span></a></span>
-                        </td>
-                    </tr>
+            <article class={`cdx-member-card${ta.deprecated ? ' cdx-member-card--deprecated' : ''}`} id={ta.name}>
+                <header class="cdx-member-header">
+                    <span class="cdx-member-name">
+                        <span class={ta.deprecated ? 'deprecated-name' : ''}>{ta.name}</span>
+                        <a href={`#${ta.name}`} class="cdx-member-permalink" aria-label={`Link to ${ta.name}`}>#</a>
+                    </span>
+                </header>
+                <div class="cdx-member-body">
                     {ta.deprecated && (
-                        <tr><td class="col-md-4 deprecated">{ta.deprecationMessage}</td></tr>
+                        <div class="cdx-member-deprecated">{ta.deprecationMessage}</div>
                     )}
                     {ta.description && (
-                        <tr><td class="col-md-4"><div class="io-description">{parseDescription(ta.description, props.depth ?? 0)}</div></td></tr>
+                        <div class="io-description">{parseDescription(ta.description, props.depth ?? 0)}</div>
                     )}
-                    {ta.kind === 160 ? (
-                        <tr><td class="col-md-4"><code>{functionSignature(ta)}</code></td></tr>
-                    ) : (
-                        <tr>
-                            <td class="col-md-4">
-                                {ta.modifierKind && <span class={`modifier-icon icon ion-ios-${modifIconFromArray(ta.modifierKind)}`}></span>}
-                                <code>{linkTypeHtml(ta.rawtype ?? '')}</code>
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+                    <div class="cdx-member-row">
+                        {ta.kind === 160 ? (
+                            <code>{functionSignature(ta)}</code>
+                        ) : (<>
+                            <code>{linkTypeHtml(ta.rawtype ?? '')}</code>
+                        </>)}
+                    </div>
+                </div>
+            </article>
         ))}
     </section>
 ) as string;
