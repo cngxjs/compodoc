@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import {
+    extractDeclaration,
     extractJsdocCodeExamples,
     isInfoSection,
     isTabEnabled,
@@ -7,6 +8,7 @@ import {
     parseDescription,
     t
 } from '../helpers';
+import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockHostListener } from '../blocks/BlockHostListener';
@@ -68,6 +70,7 @@ export type EntityInfoProps = {
     readonly showTokenBadge?: boolean;
     readonly showJsdocBadges?: boolean;
     readonly contextLine?: string;
+    readonly sourceCode?: string;
     readonly relationships?: {
         incoming: Array<{ name: string; type: string }>;
         outgoing: Array<{ name: string; type: string }>;
@@ -155,6 +158,24 @@ const InfoContent = (props: EntityInfoProps): string => {
                     <div class="cdx-prose">{parseDescription(e.description, props.depth)}</div>
                 </section>
             )}
+
+            {/* 2.5 Mini Code Preview */}
+            {props.sourceCode && (() => {
+                const declaration = extractDeclaration(props.sourceCode);
+                if (!declaration) return '';
+                return (
+                    <section class="cdx-content-section">
+                        <details class="cdx-code-preview">
+                            <summary class="cdx-code-preview-toggle">
+                                {t('source-preview') || 'Source Preview'}
+                            </summary>
+                            <div class="cdx-code-snippet">
+                                {highlightCode(declaration, { lang: 'typescript', mode: 'snippet' })}
+                            </div>
+                        </details>
+                    </section>
+                );
+            })()}
 
             {/* 3. Examples */}
             {isInfoSection('examples') &&

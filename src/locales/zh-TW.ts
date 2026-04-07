@@ -158,6 +158,7 @@ export const TRANSLATION_ZH_TW = {
     signature: '簽名',
     'signal-adoption': '信號',
     source: '來源',
+    'source-preview': '原始碼預覽',
     standalone: 'Standalone',
     'standalone-adoption': '獨立組件',
     statements: '陳述式',

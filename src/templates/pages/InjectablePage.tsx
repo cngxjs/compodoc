@@ -40,4 +40,5 @@ export const InjectablePage = (data: any): string =>
         showJsdocBadges: true,
         metadataHtml: TokenMetadata(data.injectable),
         relationships: data.relationships,
+        sourceCode: data.injectable?.sourceCode,
     });

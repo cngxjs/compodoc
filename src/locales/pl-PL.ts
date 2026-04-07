@@ -158,6 +158,7 @@ export const TRANSLATION_PL_PL = {
     signature: 'Podpis',
     'signal-adoption': 'Sygnały',
     source: 'Source',
+    'source-preview': 'Podglad kodu',
     standalone: 'Standalone',
     'standalone-adoption': 'Standalone',
     statements: 'Instrukcje',

@@ -158,6 +158,7 @@ export const TRANSLATION_PT_BR = {
     signature: 'Assinatura',
     'signal-adoption': 'Sinais',
     source: 'Fonte',
+    'source-preview': 'Pre-visualizacao do codigo',
     standalone: 'Standalone',
     'standalone-adoption': 'Standalone',
     statements: 'Statements',

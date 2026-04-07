@@ -1,4 +1,5 @@
 export { capitalize } from './capitalize';
+export { extractDeclaration } from './extract-declaration';
 export { functionSignature } from './function-signature';
 export { indexableSignature } from './indexable-signature';
 export {

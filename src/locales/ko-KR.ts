@@ -158,6 +158,7 @@ export const TRANSLATION_KO_KR = {
     signature: 'Signature',
     'signal-adoption': '시그널',
     source: '출처',
+    'source-preview': '소스 미리보기',
     standalone: 'Standalone',
     'standalone-adoption': '독립형',
     statements: 'Statements',

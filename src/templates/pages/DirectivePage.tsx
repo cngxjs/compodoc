@@ -71,4 +71,5 @@ export const DirectivePage = (data: any): string =>
         showStandaloneBadge: true,
         showJsdocBadges: true,
         relationships: data.relationships,
+        sourceCode: data.directive?.sourceCode,
     });

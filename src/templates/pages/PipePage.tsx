@@ -43,4 +43,5 @@ export const PipePage = (data: any): string =>
         showStandaloneBadge: true,
         showJsdocBadges: true,
         relationships: data.relationships,
+        sourceCode: data.pipe?.sourceCode,
     });

@@ -158,6 +158,7 @@ export const TRANSLATION_SK_SK = {
     signature: 'Podpis',
     'signal-adoption': 'Signály',
     source: 'Zdroj',
+    'source-preview': 'Nahlad kodu',
     standalone: 'Standalone',
     'standalone-adoption': 'Samostatný',
     statements: 'Statements',

@@ -158,6 +158,7 @@ export const TRANSLATION_EN_US = {
     signature: 'Signature',
     'signal-adoption': 'Signals',
     source: 'Source',
+    'source-preview': 'Source Preview',
     standalone: 'Standalone',
     'standalone-adoption': 'Standalone',
     statements: 'Statements',

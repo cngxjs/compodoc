@@ -158,6 +158,7 @@ export const TRANSLATION_BG_BG = {
     signature: 'Подпис',
     'signal-adoption': 'Сигнали',
     source: 'Източник',
+    'source-preview': 'Преглед на кода',
     standalone: 'Standalone',
     'standalone-adoption': 'Самостоятелен',
     statements: 'Statements',

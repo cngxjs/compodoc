@@ -158,6 +158,7 @@ export const TRANSLATION_ES_ES = {
     signature: 'Firma',
     'signal-adoption': 'Signals',
     source: 'Fuente',
+    'source-preview': 'Vista previa del codigo',
     standalone: 'Standalone',
     'standalone-adoption': 'Standalone',
     statements: 'Declaraciones',
