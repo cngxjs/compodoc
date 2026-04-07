@@ -73,7 +73,7 @@ export const EntityTabs = (props: EntityTabsProps): string => (<>
             <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'example') ? ' active' : ''}`}
                 id="example" role="tabpanel" aria-labelledby="example-tab">
                 {props.exampleUrls.map(url => (
-                    <iframe class="exampleContainer" src={url}>
+                    <iframe class="cdx-example-container" src={url}>
                         <p>{t('no-iframes')}</p>
                     </iframe>
                 ))}

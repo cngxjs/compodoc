@@ -1,4 +1,8 @@
 .cdx-graph-container {
+    margin-top: var(--spacing-cdx-xl);
+}
+
+.cdx-graph-viewport {
     @apply relative border border-[var(--color-cdx-border)] bg-[var(--color-cdx-bg-alt)] overflow-hidden;
     border-radius: var(--radius-cdx-lg);
 }
@@ -8,6 +12,27 @@
 }
 .cdx-graph-container svg:active {
     cursor: grabbing;
+}
+
+.cdx-graph-fullscreen-btn {
+    @apply absolute cursor-pointer;
+    top: var(--spacing-cdx-sm);
+    right: var(--spacing-cdx-sm);
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
+    padding: var(--spacing-cdx-xs);
+    color: var(--color-cdx-text-muted);
+}
+.cdx-graph-fullscreen-btn:hover {
+    color: var(--color-cdx-text);
+    background: var(--color-cdx-bg-alt);
+}
+
+.cdx-graph-zoom-controls {
+    @apply inline-flex;
+    gap: var(--spacing-cdx-xs);
+    margin-top: var(--spacing-cdx-sm);
 }
 
 .cdx-graph-legend {

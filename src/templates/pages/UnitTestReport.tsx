@@ -25,9 +25,9 @@ type UnitTestReportProps = {
 };
 
 const MetricCell = (props: { metric: CoverageMetric }): string => (
-    <td align="right" data-sort={String(props.metric.coveragePercent)} class={props.metric.status}>
-        <span class="coverage-percent">{props.metric.coveragePercent} %</span>
-        <span class="coverage-count">({props.metric.coverageCount})</span>
+    <td class={`cdx-text-right ${props.metric.status}`} data-sort={String(props.metric.coveragePercent)}>
+        <span class="cdx-coverage-percent">{props.metric.coveragePercent} %</span>
+        <span class="cdx-coverage-count">({props.metric.coverageCount})</span>
     </td>
 ) as string;
 
@@ -43,22 +43,22 @@ export const UnitTestReport = (props: UnitTestReportProps): string => {
             <li class="">{t('unit-test-coverage')}</li>
         </ol>
 
-        <div>
+        <div class="cdx-coverage-badges">
             <img src="./images/coverage-badge-statements.svg" />
             <img src="./images/coverage-badge-branches.svg" />
             <img src="./images/coverage-badge-functions.svg" />
             <img src="./images/coverage-badge-lines.svg" />
         </div>
 
-        <table class="table table-bordered coverage" id="coverage-table">
-            <thead class="coverage-header">
+        <table class="cdx-table cdx-unit-test-table" id="coverage-table">
+            <thead class="cdx-table-header">
                 <tr>
                     <th>{t('file')}</th>
                     {props.idColumn && <th>{t('identifier')}</th>}
-                    <th style="text-align:right" class="statements" data-sort-default>{t('statements')}</th>
-                    <th style="text-align:right" class="statements" data-sort-default>{t('branches')}</th>
-                    <th style="text-align:right" class="statements" data-sort-default>{t('functions')}</th>
-                    <th style="text-align:right" class="statements" data-sort-default>{t('lines')}</th>
+                    <th class="cdx-text-right statements" data-sort-default>{t('statements')}</th>
+                    <th class="cdx-text-right statements" data-sort-default>{t('branches')}</th>
+                    <th class="cdx-text-right statements" data-sort-default>{t('functions')}</th>
+                    <th class="cdx-text-right statements" data-sort-default>{t('lines')}</th>
                 </tr>
             </thead>
             <tbody>

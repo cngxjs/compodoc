@@ -669,14 +669,14 @@ export const Menu = (props: MenuProps): string => {
                                 ) ? (
                                     <img
                                         data-src="images/compodoc-vectorise-inverted.png"
-                                        class="img-responsive"
+                                        class="cdx-logo-img"
                                         data-type="compodoc-logo"
                                         alt="Compodoc logo"
                                     />
                                 ) : (
                                     <img
                                         data-src="images/compodoc-vectorise.png"
-                                        class="img-responsive"
+                                        class="cdx-logo-img"
                                         data-type="compodoc-logo"
                                         alt="Compodoc logo"
                                     />

@@ -67,14 +67,16 @@ export const Overview = (props: OverviewProps): string => {
 
             {/* 2. Module Graph (NgModule apps only) */}
             {showGraph && (
-                <div class="text-center module-graph-container">
-                    <div id="module-graph-svg">
-                        {props.mainGraph}
+                <div class="cdx-graph-container">
+                    <div class="cdx-graph-viewport">
+                        <div id="module-graph-svg">
+                            {props.mainGraph}
+                        </div>
+                        <button id="fullscreen" class="cdx-graph-fullscreen-btn" aria-label="Fullscreen">
+                            {iconFor('ion-ios-resize')}
+                        </button>
                     </div>
-                    <button id="fullscreen" class="module-graph-fullscreen-btn" aria-label="Fullscreen">
-                        {iconFor('ion-ios-resize')}
-                    </button>
-                    <div class="btn-group size-buttons">
+                    <div class="cdx-graph-zoom-controls">
                         <button id="zoom-in" class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
                         <button id="reset" class="cdx-btn cdx-btn--sm">{t('reset')}</button>
                         <button id="zoom-out" class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
@@ -91,14 +93,16 @@ export const Overview = (props: OverviewProps): string => {
                         <li>{e.source} imports {e.target}</li>
                     ))}
                 </ul>
-                <div class="text-center module-graph-container">
-                    <div id="dependency-graph-container"></div>
-                    <div class="btn-group size-buttons">
+                <div class="cdx-graph-container">
+                    <div class="cdx-graph-viewport">
+                        <div id="dependency-graph-container"></div>
+                    </div>
+                    <div class="cdx-graph-zoom-controls">
                         <button id="dep-zoom-in" class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
                         <button id="dep-reset" class="cdx-btn cdx-btn--sm">{t('reset')}</button>
                         <button id="dep-zoom-out" class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
                     </div>
-                    <div class="cdx-graph-legend" style="margin-top: 0.75rem">
+                    <div class="cdx-graph-legend">
                         <div class="cdx-graph-legend-item">
                             <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-component)"></span>
                             <span>{t('component')}</span>

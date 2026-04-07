@@ -34,8 +34,8 @@ export const BlockRelationshipGraph = (props: BlockRelationshipGraphProps): stri
     if (!props.incoming?.length && !props.outgoing?.length) return '';
 
     return (
-        <section data-compodoc="block-relationships">
-            <h3>{t('relationships') || 'Relationships'}</h3>
+        <section class="cdx-content-section" data-compodoc="block-relationships">
+            <h3 class="cdx-section-heading">{t('relationships') || 'Relationships'}</h3>
             <div class="cdx-relationships">
                 {RelationshipList({ items: props.incoming, title: 'Used by', iconHtml: IconArrowLeft() })}
                 {RelationshipList({ items: props.outgoing, title: 'Depends on', iconHtml: IconArrowRight() })}

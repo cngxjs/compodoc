@@ -124,6 +124,7 @@ const DonutChart = (pct: number, total: number, documented: number, partial: num
     const partOffset = -(docLen);
     const undocOffset = -(docLen + partLen);
 
+    // These hex values match the CSS custom properties: --color-cdx-coverage-good / -warning / -critical
     const LIGHT = { green: '#22c55e', yellow: '#eab308', red: '#ef4444' };
 
     return (
@@ -361,7 +362,7 @@ export const CoverageReport = (props: CoverageReportProps): string => {
                                             <span class={`cdx-coverage-pct cdx-coverage-pct--${f.coveragePercent <= 33 ? 'low' : f.coveragePercent <= 66 ? 'medium' : 'high'}`}>
                                                 {f.coveragePercent}%
                                             </span>
-                                            <span style="color:var(--color-cdx-text-muted);font-size:0.75rem;margin-left:4px">
+                                            <span class="cdx-coverage-count-detail">
                                                 ({f.coverageCount})
                                             </span>
                                         </td>

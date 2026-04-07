@@ -206,24 +206,12 @@ const InfoContent = (data: any): string => {
             {c.slots?.length > 0 && (
                 <section class="cdx-content-section">
                     <h3 class="cdx-section-heading">Content Slots</h3>
-                    <table class="table table-sm table-hover">
-                        <thead>
-                            <tr>
-                                <th>Slot</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {c.slots.map((slot: any) => (
-                                <tr>
-                                    <td>
-                                        <code>{slot.name}</code>
-                                    </td>
-                                    <td>{slot.description}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <dl class="cdx-metadata-card">
+                        {c.slots.map((slot: any) => (<>
+                            <dt><code>{slot.name}</code></dt>
+                            <dd>{slot.description}</dd>
+                        </>))}
+                    </dl>
                 </section>
             )}
 
@@ -506,20 +494,18 @@ export const ComponentPage = (data: any): string => {
                                 EmptyState({ icon: EmptyIconTree(), title: t('empty-dom-tree-title'), description: t('empty-dom-tree-desc'), variant: 'full' })
                             }
                         </div>
-                        <div class="tree-legend">
-                            <div class="title">
-                                <b>{t('legend')}</b>
-                            </div>
-                            <div>
-                                <div class="color htmlelement"></div>
+                        <div class="cdx-graph-legend">
+                            <span class="cdx-graph-legend-item" style="font-weight: 600">{t('legend')}</span>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-bg-elevated)"></span>
                                 <span>{t('html-element')}</span>
                             </div>
-                            <div>
-                                <div class="color component"></div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-component)"></span>
                                 <span>{t('component')}</span>
                             </div>
-                            <div>
-                                <div class="color directive"></div>
+                            <div class="cdx-graph-legend-item">
+                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-directive)"></span>
                                 <span>{t('html-element-with-directive')}</span>
                             </div>
                         </div>
@@ -538,15 +524,17 @@ export const ComponentPage = (data: any): string => {
                                 <li>{c.name} imports {typeof imp === 'string' ? imp : imp.name}</li>
                             ))}
                         </ul>
-                        <div class="module-graph-container">
-                            <div id="dependency-graph-container"></div>
-                            <div class="btn-group size-buttons">
+                        <div class="cdx-graph-container">
+                            <div class="cdx-graph-viewport">
+                                <div id="dependency-graph-container"></div>
+                            </div>
+                            <div class="cdx-graph-zoom-controls">
                                 <button id="dep-zoom-in" class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
                                 <button id="dep-reset" class="cdx-btn cdx-btn--sm">{t('reset')}</button>
                                 <button id="dep-zoom-out" class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
                             </div>
                         </div>
-                        <div class="cdx-graph-legend" style="margin-top: 0.75rem">
+                        <div class="cdx-graph-legend">
                             <div class="cdx-graph-legend-item">
                                 <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-component)"></span>
                                 <span>{t('component')}</span>
@@ -579,7 +567,7 @@ export const ComponentPage = (data: any): string => {
                         aria-labelledby="example-tab"
                     >
                         {c.exampleUrls.map((url: string) => (
-                            <iframe class="exampleContainer" src={url}>
+                            <iframe class="cdx-example-container" src={url}>
                                 <p>{t('no-iframes')}</p>
                             </iframe>
                         ))}

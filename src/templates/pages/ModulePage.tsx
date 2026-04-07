@@ -19,13 +19,13 @@ const ModuleList = (props: {
     if (!props.items?.length) return '';
     const base = relativeUrl(props.depth);
     return (
-        <div class="col-sm-3">
-            <h3>{t(props.titleKey)}<a href={`https://angular.io/api/core/NgModule#${props.docsPath}`} target="_blank" rel="noopener noreferrer" title={`Official documentation about module ${props.docsPath}`}>{IconInterface()}</a></h3>
-            <ul class="list-group">
+        <div class="cdx-module-list-section">
+            <h3>{t(props.titleKey)}<a href={`https://angular.dev/api/core/NgModule`} target="_blank" rel="noopener noreferrer" title={`Official documentation about module ${props.docsPath}`}>{IconInterface()}</a></h3>
+            <ul class="cdx-entity-list">
                 {props.items.map(item => {
                     const href = props.buildHref(item, base);
                     return (
-                        <li class="list-group-item">
+                        <li class="cdx-entity-list-item">
                             {href ? <a href={href}>{item.name ?? item}</a> : (item.name ?? item)}
                         </li>
                     );
@@ -41,28 +41,35 @@ export const ModulePage = (data: any): string => {
     const base = relativeUrl(depth);
 
     const infoContent = (<>
-        {!data.disableFilePath && (<>
-            <p class="comment"><h3>{t('file')}</h3></p>
-            <p class="comment"><code>{mod.file}</code></p>
-        </>)}
+        {!data.disableFilePath && (
+            <section class="cdx-content-section">
+                <h3 class="cdx-section-heading">{t('file')}</h3>
+                <p><code>{mod.file}</code></p>
+            </section>
+        )}
 
-        {mod.ngid && (<>
-            <p class="comment"><h3>{t('identifier')}</h3></p>
-            <p class="comment">{mod.ngid}</p>
-        </>)}
+        {mod.ngid && (
+            <section class="cdx-content-section">
+                <h3 class="cdx-section-heading">{t('identifier')}</h3>
+                <p>{mod.ngid}</p>
+            </section>
+        )}
 
-        {mod.deprecated && (<>
-            <p class="comment"><h3 class="deprecated">{t('deprecated')}</h3></p>
-            <p class="comment">{mod.deprecationMessage}</p>
-        </>)}
+        {mod.deprecated && (
+            <section class="cdx-content-section">
+                <h3 class="cdx-section-heading deprecated">{t('deprecated')}</h3>
+                <p>{mod.deprecationMessage}</p>
+            </section>
+        )}
 
-        {mod.description && (<>
-            <p class="comment"><h3>{t('description')}</h3></p>
-            <p class="comment">{parseDescription(mod.description, depth)}</p>
-        </>)}
+        {mod.description && (
+            <section class="cdx-content-section">
+                <h3 class="cdx-section-heading">{t('description')}</h3>
+                <div class="cdx-prose">{parseDescription(mod.description, depth)}</div>
+            </section>
+        )}
 
-        <div class="container-fluid module">
-            <div class="row">
+        <div class="cdx-module-lists">
                 {ModuleList({
                     items: mod.declarations, titleKey: 'declarations', docsPath: 'declarations', depth,
                     buildHref: (item, b) => `${b}${item.type}s/${item.name}.html`,
@@ -92,18 +99,17 @@ export const ModulePage = (data: any): string => {
                     buildHref: (item, b) => `${b}${item.type}s/${item.name}.html`,
                 })}
                 {mod.schemas?.length > 0 && (
-                    <div class="col-sm-3">
-                        <h3>{t('schemas')}<a href="https://angular.io/api/core/NgModule#schemas" target="_blank" rel="noopener noreferrer" title="Official documentation about module schemas">{IconInterface()}</a></h3>
-                        <ul class="list-group">
+                    <div class="cdx-module-list-section">
+                        <h3>{t('schemas')}<a href="https://angular.dev/api/core/NgModule" target="_blank" rel="noopener noreferrer" title="Official documentation about module schemas">{IconInterface()}</a></h3>
+                        <ul class="cdx-entity-list">
                             {mod.schemas.map((s: string) => (
-                                <li class="list-group-item">
-                                    <a href={`https://angular.io/api/core/${s}`} target="_blank" rel="noopener noreferrer">{s}</a>
+                                <li class="cdx-entity-list-item">
+                                    <a href={`https://angular.dev/api/core/${s}`} target="_blank" rel="noopener noreferrer">{s}</a>
                                 </li>
                             ))}
                         </ul>
                     </div>
                 )}
-            </div>
         </div>
 
         {mod.methods && BlockMethod({ methods: mod.methods, file: mod.file, depth })}
@@ -116,10 +122,12 @@ export const ModulePage = (data: any): string => {
         </ol>
 
         {!data.disableGraph && mod.graph && (<>
-            <div class="text-center module-graph-container">
-                <div id="module-graph-svg">{mod.graph}</div>
-                <button id="fullscreen" class="module-graph-fullscreen-btn" aria-label="Fullscreen">{IconMaximize()}</button>
-                <div class="btn-group size-buttons">
+            <div class="cdx-graph-container">
+                <div class="cdx-graph-viewport">
+                    <div id="module-graph-svg">{mod.graph}</div>
+                    <button id="fullscreen" class="cdx-graph-fullscreen-btn" aria-label="Fullscreen">{IconMaximize()}</button>
+                </div>
+                <div class="cdx-graph-zoom-controls">
                     <button id="zoom-in" class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
                     <button id="reset" class="cdx-btn cdx-btn--sm">{t('reset')}</button>
                     <button id="zoom-out" class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
