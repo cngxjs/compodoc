@@ -23,7 +23,8 @@
 }
 
 .cdx-overview-kpi {
-    @apply flex flex-col items-center justify-center text-center py-6 px-4 rounded-2xl no-underline;
+    @apply flex flex-col items-center justify-center text-center py-6 px-4 no-underline;
+    border-radius: var(--radius-cdx-lg);
     background: var(--color-cdx-bg-elevated);
 }
 
@@ -106,7 +107,8 @@ a.cdx-overview-kpi:hover {
 }
 
 .cdx-overview-chip {
-    @apply inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm no-underline;
+    @apply inline-flex items-center gap-1.5 px-3 py-2 text-sm no-underline;
+    border-radius: var(--radius-cdx-lg);
     color: var(--color-cdx-text);
     background: var(--color-cdx-bg-elevated);
 }

@@ -25,7 +25,7 @@ pre::-webkit-scrollbar {
 
 pre::-webkit-scrollbar-thumb {
   background: hsl(220 10% 50% / 0.4);
-  border-radius: 3px;
+  border-radius: var(--radius-cdx-sm);
 }
 
 code {

@@ -60,6 +60,10 @@
     --font-body: 'Source Sans 3', system-ui, sans-serif;
     --font-code: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
 
+    /* Tailwind built-in font aliases — override these in custom themes too */
+    --font-sans: 'Source Sans 3', system-ui, sans-serif;
+    --font-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+
     /* --- Shadows --- */
     --shadow-cdx-sm: 0 1px 2px hsl(220 20% 14% / 0.06);
     --shadow-cdx-md: 0 4px 12px hsl(220 20% 14% / 0.08);
@@ -72,6 +76,12 @@
     --radius-cdx-sm: 4px;
     --radius-cdx-md: 8px;
     --radius-cdx-lg: 12px;
+
+    /* Tailwind built-in radius aliases — override these in custom themes too */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-2xl: 12px;
 
     /* --- Transitions --- */
     --cdx-transition-fast: 120ms ease;
@@ -90,7 +100,7 @@
 
 ::-webkit-scrollbar-thumb {
     background: var(--color-cdx-border-strong);
-    border-radius: 3px;
+    border-radius: var(--radius-cdx-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -121,10 +131,10 @@ body,
 .cdx-cp .cdx-cp-panel,
 .cdx-cp .cdx-cp-header {
     transition:
-        background-color 300ms ease,
-        color 300ms ease,
-        border-color 300ms ease,
-        box-shadow 300ms ease;
+        background-color var(--cdx-transition-base),
+        color var(--cdx-transition-base),
+        border-color var(--cdx-transition-base),
+        box-shadow var(--cdx-transition-base);
 }
 
 .cdx-progress {
@@ -143,7 +153,7 @@ body,
     background: var(--color-cdx-primary);
     transform-origin: left;
     transform: scaleX(0);
-    transition: transform 300ms ease;
+    transition: transform var(--cdx-transition-base);
 }
 
 .cdx-progress-bar.cdx-progress--loading {
@@ -357,7 +367,7 @@ body {
     padding: 6px;
     cursor: pointer;
     color: var(--color-cdx-text-muted);
-    border-radius: 4px;
+    border-radius: var(--radius-cdx-sm);
     z-index: 5;
 }
 .cdx-sidebar-close:hover {
@@ -489,7 +499,7 @@ body {
     color: var(--color-cdx-text-muted);
     background: var(--color-cdx-bg-alt);
     border: 1px solid var(--color-cdx-border);
-    border-radius: 3px;
+    border-radius: var(--radius-cdx-sm);
 }
 
 /* OS-aware modifier key: show ⌘ on Mac, Ctrl elsewhere */
@@ -859,8 +869,9 @@ body {
 }
 
 .cdx-cp .cdx-cp-kbd {
-    @apply shrink-0 rounded px-1.5 py-0.5 text-xs;
+    @apply shrink-0 px-1.5 py-0.5 text-xs;
     border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
     color: var(--color-cdx-text-muted);
     font-family: var(--font-code);
 }
@@ -875,7 +886,8 @@ body {
 }
 
 .cdx-cp .cdx-cp-item {
-    @apply flex items-center gap-3 rounded-lg px-3 py-2 no-underline;
+    @apply flex items-center gap-3 px-3 py-2 no-underline;
+    border-radius: var(--radius-cdx-lg);
     color: var(--color-cdx-text);
     transition: background var(--cdx-transition-fast);
 }
@@ -885,7 +897,8 @@ body {
 }
 
 .cdx-cp .cdx-cp-badge {
-    @apply shrink-0 rounded px-2 py-0.5 text-xs font-semibold uppercase;
+    @apply shrink-0 px-2 py-0.5 text-xs font-semibold uppercase;
+    border-radius: var(--radius-cdx-sm);
     font-family: var(--font-body);
 }
 
@@ -950,8 +963,9 @@ body {
 }
 
 .cdx-cp .cdx-cp-footer kbd {
-    @apply inline-block rounded px-1.5 py-0.5 text-xs;
+    @apply inline-block px-1.5 py-0.5 text-xs;
     border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
     font-family: var(--font-code);
     font-size: 10px;
 }
@@ -993,7 +1007,8 @@ body {
 }
 
 .cdx-badge {
-    @apply ml-1 inline-block rounded px-1.5 py-0 text-[10px] font-semibold uppercase leading-4;
+    @apply ml-1 inline-block px-1.5 py-0 text-[10px] font-semibold uppercase leading-4;
+    border-radius: var(--radius-cdx-sm);
     vertical-align: middle;
 }
 
@@ -1386,8 +1401,9 @@ body {
 }
 
 .cdx-provider-card {
-    @apply rounded-lg p-4;
+    @apply p-4;
     border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-lg);
     background: var(--color-cdx-bg-alt);
 }
 .cdx-provider-header {
@@ -1520,7 +1536,7 @@ button.menu-toggler {
 button.menu-toggler:focus-visible {
     outline: 2px solid var(--color-cdx-primary);
     outline-offset: -2px;
-    border-radius: 4px;
+    border-radius: var(--radius-cdx-sm);
 }
 .menu a {
     color: var(--color-cdx-text-secondary);
@@ -1675,7 +1691,7 @@ table.params td p {
     background: #636363;
     padding: 1px 5px;
     color: white;
-    border-radius: 4px;
+    border-radius: var(--radius-cdx-sm);
 }
 .modifier:empty {
     display: none;

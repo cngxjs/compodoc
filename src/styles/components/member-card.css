@@ -75,7 +75,7 @@
     font-size: 0.7rem;
     font-weight: 600;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: var(--radius-cdx-sm);
     margin-right: 6px;
     background: var(--color-cdx-bg-alt);
     color: var(--color-cdx-text-secondary);
@@ -196,7 +196,7 @@
     font-family: var(--font-code);
     font-size: 0.8rem;
     padding: 1px 5px;
-    border-radius: 4px;
+    border-radius: var(--radius-cdx-sm);
 }
 
 .cdx-param-default {
@@ -228,7 +228,7 @@
     font-size: 0.7rem;
     font-weight: 600;
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: var(--radius-cdx-sm);
     margin-right: 8px;
     background: var(--color-cdx-text);
     color: var(--color-cdx-bg);
@@ -237,7 +237,7 @@
 
 .cdx-member-signature {
     background: var(--color-cdx-bg-alt);
-    border-radius: 8px;
+    border-radius: var(--radius-cdx-md);
     padding: 10px 14px;
     font-family: var(--font-code);
     font-size: 0.85rem;
@@ -318,7 +318,7 @@
     color: var(--color-cdx-primary);
     background: color-mix(in srgb, var(--color-cdx-primary) 8%, transparent);
     padding: 1px 5px;
-    border-radius: 4px;
+    border-radius: var(--radius-cdx-sm);
     text-decoration: none;
 }
 
@@ -332,7 +332,7 @@
     color: #c2185b;
     background: color-mix(in srgb, #c2185b 6%, transparent);
     padding: 1px 5px;
-    border-radius: 4px;
+    border-radius: var(--radius-cdx-sm);
     text-decoration: none;
 }
 
@@ -352,7 +352,7 @@
     color: #c2185b;
     background: color-mix(in srgb, #c2185b 6%, transparent);
     padding: 1px 5px;
-    border-radius: 4px;
+    border-radius: var(--radius-cdx-sm);
 }
 
 .dark .cdx-member-returns > code {

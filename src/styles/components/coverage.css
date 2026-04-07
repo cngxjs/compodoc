@@ -205,7 +205,7 @@
 .cdx-coverage-bar-mini {
     width: 100px;
     height: 4px;
-    border-radius: 2px;
+    border-radius: var(--radius-cdx-sm);
     background: color-mix(in srgb, var(--color-cdx-border) 30%, transparent);
     overflow: hidden;
     flex-shrink: 0;
@@ -213,7 +213,7 @@
 
 .cdx-coverage-bar-mini-fill {
     height: 100%;
-    border-radius: 2px;
+    border-radius: var(--radius-cdx-sm);
     transition: width 400ms ease;
 }
 
@@ -349,7 +349,7 @@
     display: inline-block;
     width: 60px;
     height: 4px;
-    border-radius: 2px;
+    border-radius: var(--radius-cdx-sm);
     background: color-mix(in srgb, var(--color-cdx-border) 30%, transparent);
     overflow: hidden;
     vertical-align: middle;
@@ -358,7 +358,7 @@
 
 .cdx-coverage-bar-fill {
     height: 100%;
-    border-radius: 2px;
+    border-radius: var(--radius-cdx-sm);
 }
 
 .cdx-coverage-pct {

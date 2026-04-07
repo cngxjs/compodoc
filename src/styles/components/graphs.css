@@ -84,7 +84,7 @@
     height: 10px;
     display: inline-block;
     margin-right: 0.375rem;
-    border-radius: 2px;
+    border-radius: var(--radius-cdx-sm);
 }
 
 .tree-legend .htmlelement {
