@@ -1,0 +1,76 @@
+/* Keyboard shortcut overlay dialog */
+.cdx-shortcuts-dialog {
+    @apply max-w-[480px] w-[90vw] p-0 border-0;
+    background: var(--color-cdx-bg-elevated);
+    border-radius: var(--radius-cdx-lg);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+    color: var(--color-cdx-text);
+}
+
+.cdx-shortcuts-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.cdx-shortcuts-dialog h2 {
+    @apply text-base font-semibold m-0;
+    padding: var(--spacing-cdx-md) var(--spacing-cdx-lg);
+    border-bottom: 1px solid var(--color-cdx-border);
+}
+
+.cdx-shortcuts-grid {
+    padding: var(--spacing-cdx-md) var(--spacing-cdx-lg) var(--spacing-cdx-lg);
+    display: grid;
+    gap: var(--spacing-cdx-lg);
+}
+
+.cdx-shortcuts-grid section h3 {
+    @apply text-xs font-semibold uppercase tracking-wider m-0;
+    color: var(--color-cdx-text-muted);
+    margin-bottom: var(--spacing-cdx-sm);
+}
+
+.cdx-shortcuts-grid dl {
+    @apply m-0 p-0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-cdx-xs);
+}
+
+.cdx-shortcut-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-md);
+}
+
+.cdx-shortcut-row dt {
+    @apply m-0 shrink-0;
+    width: 40px;
+    text-align: center;
+}
+
+.cdx-shortcut-row dd {
+    @apply m-0;
+    font-size: 0.85rem;
+    color: var(--color-cdx-text-secondary);
+}
+
+.cdx-shortcut-row kbd {
+    display: inline-block;
+    min-width: 24px;
+    padding: 2px 8px;
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    text-align: center;
+    background: var(--color-cdx-bg-alt);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
+    box-shadow: 0 1px 0 var(--color-cdx-border);
+}
+
+/* j/k member card focus ring */
+.cdx-member-card--focused {
+    outline: 2px solid var(--color-cdx-primary);
+    outline-offset: -2px;
+    border-radius: var(--radius-cdx-md);
+}

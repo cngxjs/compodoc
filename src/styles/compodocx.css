@@ -8,6 +8,7 @@
 @import './components/overview.css';
 @import './components/graphs.css';
 @import './components/code-blocks.css';
+@import './components/keyboard.css';
 
 @source "../templates/**/*.hbs";
 @source "../templates/**/*.tsx";

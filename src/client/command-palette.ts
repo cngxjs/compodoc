@@ -284,7 +284,7 @@ const navigateToActive = () => {
 };
 
 /** Open the command palette */
-const open = () => {
+export const openCommandPalette = () => {
     const dialog = getDialog();
     if (!dialog) return;
     dialog.showModal();
@@ -325,7 +325,7 @@ export const initCommandPalette = () => {
             if (dialog.open) {
                 close();
             } else {
-                open();
+                openCommandPalette();
             }
         }
     });
@@ -406,12 +406,12 @@ export const initCommandPalette = () => {
         el.addEventListener('focus', e => {
             e.preventDefault();
             (el as HTMLInputElement).blur();
-            open();
+            openCommandPalette();
         });
     });
 
     // Search trigger button in sidebar header
     document.querySelectorAll<HTMLElement>('[data-cdx-search-trigger]').forEach(btn => {
-        btn.addEventListener('click', () => open());
+        btn.addEventListener('click', () => openCommandPalette());
     });
 };

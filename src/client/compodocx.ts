@@ -7,6 +7,7 @@ import { initCommandPalette } from './command-palette';
 import { initGraphs } from './graphs';
 import { initStackblitz } from './stackblitz';
 import { initCoverage } from './coverage';
+import { initKeyboard } from './keyboard';
 // import { initToc } from './toc';
 
 // Theme must run before DOMContentLoaded to prevent flash
@@ -21,6 +22,7 @@ const init = () => {
     initGraphs();
     initStackblitz();
     initCoverage();
+    initKeyboard();
     // initToc(); // TODO: enable when ToC styling is finalized
 };
 

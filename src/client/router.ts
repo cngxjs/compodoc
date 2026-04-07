@@ -9,6 +9,7 @@ import { initCodeBlocks } from './code-blocks';
 import { initGraphs } from './graphs';
 import { initCoverage } from './coverage';
 import { expandToActive } from './sidebar';
+import { resetKeyboardState } from './keyboard';
 // import { initToc } from './toc';
 
 const CONTENT_SELECTOR = '.content-data';
@@ -236,6 +237,9 @@ const navigate = async (url: string, pushState = true, clickedAnchor: HTMLAnchor
         } else {
             document.querySelector('.content')?.scrollTo(0, 0);
         }
+
+        // Reset keyboard navigation state
+        resetKeyboardState();
 
         // Re-initialize page components
         reinitPage();
