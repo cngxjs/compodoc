@@ -42,4 +42,6 @@ export const PipePage = (data: any): string =>
         contextLine: data.pipe?.name ? '{{ value | ' + data.pipe.name + ' }}' : undefined,
         showStandaloneBadge: true,
         showJsdocBadges: true,
+        relationships: data.relationships,
+        sourceCode: data.pipe?.sourceCode,
     });

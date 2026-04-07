@@ -205,6 +205,50 @@ test.describe('Component page', () => {
         expect(text).toContain('HighlightDirective');
     });
 
+    test('HighlightDirective: relationships show used-by on directive page', async ({ page }) => {
+        await page.goto('/directives/HighlightDirective.html');
+        const section = page.locator('[data-compodoc="block-relationships"]');
+        expect(await section.count()).toBe(1);
+        const text = await section.textContent();
+        expect(text).toContain('Used by');
+        expect(text).toContain('UserCardComponent');
+    });
+
+    test('GreetingPipe: relationships show used-by on pipe page', async ({ page }) => {
+        await page.goto('/pipes/GreetingPipe.html');
+        const section = page.locator('[data-compodoc="block-relationships"]');
+        expect(await section.count()).toBe(1);
+        const text = await section.textContent();
+        expect(text).toContain('Used by');
+    });
+
+    test('UserService: no relationships section when no module-level data', async ({ page }) => {
+        await page.goto('/injectables/UserService.html');
+        const section = page.locator('[data-compodoc="block-relationships"]');
+        expect(await section.count()).toBe(0);
+    });
+
+    test('relationships section appears between metadata and index', async ({ page }) => {
+        await page.goto('/directives/HighlightDirective.html');
+        const sections = page.locator('.cdx-content-section');
+        const ids = await sections.evaluateAll(els =>
+            els.map(el => el.getAttribute('data-compodoc') || '')
+        );
+        const metaIdx = ids.indexOf('block-metadata');
+        const relIdx = ids.indexOf('block-relationships');
+        const indexIdx = ids.indexOf('block-index');
+        expect(relIdx).toBeGreaterThan(metaIdx);
+        expect(relIdx).toBeLessThan(indexIdx);
+    });
+
+    test('relationships links navigate to correct entity page', async ({ page }) => {
+        await page.goto('/directives/HighlightDirective.html');
+        const link = page.locator('[data-compodoc="block-relationships"] a').first();
+        await link.click();
+        await page.waitForURL(/UserCardComponent/);
+        expect(page.url()).toContain('UserCardComponent');
+    });
+
     test('no empty entryComponents section', async ({ page }) => {
         await page.goto('/components/UserCardComponent.html');
         expect(await page.content()).not.toContain('entryComponents');
@@ -480,5 +524,179 @@ test.describe('Dependency Graph — Component Tab', () => {
         await page.goto('/components/UserCardComponent.html');
         await page.getByRole('tab', { name: 'Dependencies' }).click();
         await expect(page.locator('#dep-zoom-in')).toBeVisible();
+    });
+});
+
+test.describe('Keyboard navigation', () => {
+    test('? opens shortcut overlay dialog', async ({ page }) => {
+        await page.goto('/injectables/UserService.html');
+        await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true })));
+        const dialog = page.locator('#cdx-shortcuts-dialog');
+        await expect(dialog).toBeVisible();
+        await expect(dialog).toContainText('Keyboard Shortcuts');
+    });
+
+    test('Escape closes shortcut overlay', async ({ page }) => {
+        await page.goto('/injectables/UserService.html');
+        await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true })));
+        const dialog = page.locator('#cdx-shortcuts-dialog');
+        await expect(dialog).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(dialog).not.toBeVisible();
+    });
+
+    test('j/k navigate between member cards with focus ring', async ({ page }) => {
+        await page.goto('/injectables/UserService.html');
+        await page.keyboard.press('j');
+        const focused = page.locator('.cdx-member-card--focused');
+        await expect(focused).toHaveCount(1);
+        await page.keyboard.press('j');
+        // Still one focused card (moved to next)
+        await expect(focused).toHaveCount(1);
+        await page.keyboard.press('k');
+        await expect(focused).toHaveCount(1);
+    });
+
+    test('j/k scrolls focused card into view', async ({ page }) => {
+        await page.goto('/injectables/UserService.html');
+        await page.keyboard.press('j');
+        const focused = page.locator('.cdx-member-card--focused');
+        await expect(focused).toBeVisible();
+        await expect(focused).toBeInViewport();
+    });
+
+    test('Escape clears member focus', async ({ page }) => {
+        await page.goto('/injectables/UserService.html');
+        await page.keyboard.press('j');
+        await expect(page.locator('.cdx-member-card--focused')).toHaveCount(1);
+        await page.keyboard.press('Escape');
+        await expect(page.locator('.cdx-member-card--focused')).toHaveCount(0);
+    });
+
+    test('shortcuts suppressed when dialog is open', async ({ page }) => {
+        await page.goto('/injectables/UserService.html');
+        // Open shortcut overlay
+        await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true, cancelable: true })));
+        await page.waitForTimeout(200);
+        // j should not navigate members while dialog is open
+        await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', bubbles: true, cancelable: true })));
+        await expect(page.locator('.cdx-member-card--focused')).toHaveCount(0);
+    });
+});
+
+test.describe('Entity preview panel', () => {
+    test('n/p shows preview panel below focused sidebar entity', async ({ page }) => {
+        await page.goto('/injectables/UserService.html');
+        await page.keyboard.press('n');
+        const preview = page.locator('.cdx-entity-preview');
+        await expect(preview).toBeVisible();
+        const focused = page.locator('.cdx-sidebar-focused');
+        await expect(focused).toHaveCount(1);
+    });
+
+    test('preview shows entity type badge', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        await page.keyboard.press('n');
+        const badge = page.locator('.cdx-entity-preview .cdx-badge');
+        await expect(badge).toBeVisible();
+    });
+
+    test('Enter navigates to focused entity', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        const startUrl = page.url();
+        await page.keyboard.press('n');
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(500);
+        expect(page.url()).not.toBe(startUrl);
+    });
+
+    test('Escape dismisses preview', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        await page.keyboard.press('n');
+        await expect(page.locator('.cdx-entity-preview')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.locator('.cdx-entity-preview')).toHaveCount(0);
+        await expect(page.locator('.cdx-sidebar-focused')).toHaveCount(0);
+    });
+
+    test('no preview on mouse hover (keyboard only)', async ({ page }) => {
+        await page.goto('/components/UserCardComponent.html');
+        const link = page.locator('.menu a[data-type="entity-link"]').first();
+        await link.hover();
+        await expect(page.locator('.cdx-entity-preview')).toHaveCount(0);
+    });
+});
+
+test.describe('Mini code preview', () => {
+    test('entity page shows collapsed Source Preview details element', async ({ page }) => {
+        await page.goto('/directives/HighlightDirective.html');
+        const details = page.locator('details.cdx-code-preview');
+        await expect(details).toBeVisible();
+        // Should be collapsed by default
+        const isOpen = await details.evaluate(el => (el as HTMLDetailsElement).open);
+        expect(isOpen).toBe(false);
+    });
+
+    test('click toggles open and shows highlighted code', async ({ page }) => {
+        await page.goto('/directives/HighlightDirective.html');
+        const details = page.locator('details.cdx-code-preview');
+        await details.locator('summary').click();
+        const isOpen = await details.evaluate(el => (el as HTMLDetailsElement).open);
+        expect(isOpen).toBe(true);
+        const code = details.locator('.shiki');
+        await expect(code).toBeVisible();
+    });
+
+    test('declaration shows decorator + class signature, not full method bodies', async ({ page }) => {
+        await page.goto('/directives/HighlightDirective.html');
+        const details = page.locator('details.cdx-code-preview');
+        await details.locator('summary').click();
+        const text = await details.textContent();
+        expect(text).toContain('@Directive');
+        expect(text).toContain('// ...');
+    });
+
+    test('entity without sourceCode shows no preview section', async ({ page }) => {
+        await page.goto('/injectables/API_BASE_URL.html');
+        const details = page.locator('details.cdx-code-preview');
+        expect(await details.count()).toBe(0);
+    });
+
+    test('preview uses Shiki syntax highlighting', async ({ page }) => {
+        await page.goto('/directives/HighlightDirective.html');
+        const details = page.locator('details.cdx-code-preview');
+        await details.locator('summary').click();
+        const shiki = details.locator('.shiki');
+        await expect(shiki).toBeVisible();
+    });
+});
+
+test.describe('Responsive member cards', () => {
+    test('member header stacks vertically at narrow viewport', async ({ page }) => {
+        await page.setViewportSize({ width: 400, height: 800 });
+        await page.goto('/injectables/UserService.html');
+        const header = page.locator('.cdx-member-header').first();
+        await expect(header).toBeVisible();
+        const direction = await header.evaluate(el => getComputedStyle(el).flexDirection);
+        expect(direction).toBe('column');
+    });
+
+    test('member header is row layout at normal viewport', async ({ page }) => {
+        await page.setViewportSize({ width: 1200, height: 800 });
+        await page.goto('/injectables/UserService.html');
+        const header = page.locator('.cdx-member-header').first();
+        await expect(header).toBeVisible();
+        const direction = await header.evaluate(el => getComputedStyle(el).flexDirection);
+        expect(direction).toBe('row');
+    });
+
+    test('method signature wraps at narrow viewport', async ({ page }) => {
+        await page.setViewportSize({ width: 400, height: 800 });
+        await page.goto('/injectables/UserService.html');
+        const sig = page.locator('.cdx-member-signature').first();
+        if (await sig.count() > 0) {
+            const wrap = await sig.evaluate(el => getComputedStyle(el).whiteSpace);
+            expect(wrap).toBe('pre-wrap');
+        }
     });
 });

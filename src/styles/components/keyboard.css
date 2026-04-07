@@ -1,0 +1,130 @@
+/* Keyboard shortcut overlay — reuses .cdx-cp dialog/backdrop from compodocx.css */
+
+.cdx-shortcuts-panel {
+    @apply mx-auto flex flex-col overflow-hidden;
+    margin-top: 15vh;
+    max-width: 480px;
+    background: var(--color-cdx-bg-elevated);
+    border-radius: var(--radius-cdx-lg);
+    box-shadow: var(--shadow-cdx-lg);
+    animation: cdx-cp-enter 150ms ease;
+    color: var(--color-cdx-text);
+}
+
+.cdx-shortcuts-panel h2 {
+    @apply text-base font-semibold m-0 px-4 py-3;
+    border-bottom: 1px solid var(--color-cdx-border);
+}
+
+.cdx-shortcuts-grid {
+    padding: var(--spacing-cdx-md) var(--spacing-cdx-lg) var(--spacing-cdx-lg);
+    display: grid;
+    gap: var(--spacing-cdx-lg);
+}
+
+.cdx-shortcuts-grid section h3 {
+    @apply text-xs font-semibold uppercase tracking-wider m-0;
+    color: var(--color-cdx-text-muted);
+    margin-bottom: var(--spacing-cdx-sm);
+}
+
+.cdx-shortcuts-grid dl {
+    @apply m-0 p-0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-cdx-xs);
+}
+
+.cdx-shortcut-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-md);
+}
+
+.cdx-shortcut-row dt {
+    @apply m-0 shrink-0;
+    width: 40px;
+    text-align: center;
+}
+
+.cdx-shortcut-row dd {
+    @apply m-0;
+    font-size: 0.85rem;
+    color: var(--color-cdx-text-secondary);
+}
+
+.cdx-shortcut-row kbd {
+    display: inline-block;
+    min-width: 24px;
+    padding: 2px 8px;
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    text-align: center;
+    background: var(--color-cdx-bg-alt);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
+    box-shadow: 0 1px 0 var(--color-cdx-border);
+}
+
+.cdx-shortcut-row dt:has(.cdx-kbd-mod) {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+/* j/k member card focus ring */
+.cdx-member-card--focused {
+    outline: 2px solid var(--color-cdx-primary);
+    outline-offset: -2px;
+    border-radius: var(--radius-cdx-md);
+}
+
+/* [/] entity sidebar focus + preview panel */
+.cdx-sidebar-focused > a {
+    outline: 2px solid var(--color-cdx-primary);
+    outline-offset: -2px;
+    border-radius: var(--radius-cdx-sm);
+}
+
+.cdx-entity-preview {
+    position: relative;
+    left: 0;
+    right: 0;
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-size: 0.8rem;
+    z-index: 20;
+    margin-top: var(--spacing-cdx-xs);
+    animation: cdx-preview-in 150ms ease;
+}
+
+@keyframes cdx-preview-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-entity-preview { animation: none; }
+}
+
+.cdx-entity-preview-selector {
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    color: var(--color-cdx-text-muted);
+}
+
+.cdx-entity-preview-io {
+    font-size: 0.75rem;
+    color: var(--color-cdx-text-secondary);
+}
+
+.cdx-entity-preview-desc {
+    @apply m-0;
+    margin-top: var(--spacing-cdx-xs);
+    color: var(--color-cdx-text-secondary);
+    line-height: 1.4;
+}

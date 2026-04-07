@@ -37,8 +37,8 @@ export const BlockRelationshipGraph = (props: BlockRelationshipGraphProps): stri
         <section class="cdx-content-section" data-compodoc="block-relationships">
             <h3 class="cdx-section-heading">{t('relationships') || 'Relationships'}</h3>
             <div class="cdx-relationships">
-                {RelationshipList({ items: props.incoming, title: 'Used by', iconHtml: IconArrowLeft() })}
-                {RelationshipList({ items: props.outgoing, title: 'Depends on', iconHtml: IconArrowRight() })}
+                {RelationshipList({ items: props.incoming, title: t('relationships-used-by') || 'Used by', iconHtml: IconArrowLeft() })}
+                {RelationshipList({ items: props.outgoing, title: t('relationships-depends-on') || 'Depends on', iconHtml: IconArrowRight() })}
             </div>
         </section>
     ) as string;

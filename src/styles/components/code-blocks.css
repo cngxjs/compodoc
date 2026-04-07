@@ -324,6 +324,45 @@ pre:hover > .cdx-code-lang-chip {
   display: none;
 }
 
+/* --- Mini code preview (details/summary) --- */
+
+.cdx-code-preview {
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+    overflow: hidden;
+    margin-top: var(--spacing-cdx-md);
+}
+
+.cdx-code-preview-toggle {
+    @apply flex items-center m-0 cursor-pointer;
+    gap: var(--spacing-cdx-sm);
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
+    font-family: var(--font-code);
+    font-size: 0.8rem;
+    color: var(--color-cdx-text-muted);
+    background: var(--color-cdx-bg-alt);
+    list-style: none;
+}
+
+.cdx-code-preview-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.cdx-code-preview-toggle::marker {
+    display: none;
+    content: '';
+}
+
+.cdx-code-preview[open] .cdx-code-preview-toggle {
+    border-bottom: 1px solid var(--color-cdx-border);
+}
+
+.cdx-code-preview .cdx-code-snippet {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+}
+
 /* --- Selection color (entity-themed) --- */
 
 pre ::selection {

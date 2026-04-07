@@ -113,12 +113,14 @@ export class HtmlEngine {
             case 'class':
                 return ClassPage(data);
             case 'directive':
+                data.relationships = DependenciesEngine.getRelationships(data.directive?.name);
                 return DirectivePage(data);
             case 'entity':
                 return EntityDetailPage(data);
             case 'guard':
                 return GuardPage(data);
             case 'injectable':
+                data.relationships = DependenciesEngine.getRelationships(data.injectable?.name);
                 return InjectablePage(data);
             case 'interceptor':
                 return InterceptorPage(data);
@@ -127,6 +129,7 @@ export class HtmlEngine {
             case 'module':
                 return ModulePage(data);
             case 'pipe':
+                data.relationships = DependenciesEngine.getRelationships(data.pipe?.name);
                 return PipePage(data);
             case 'miscellaneous-functions':
                 return MiscellaneousFunctions(data);

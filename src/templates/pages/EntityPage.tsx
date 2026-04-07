@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import {
+    extractDeclaration,
     extractJsdocCodeExamples,
     isInfoSection,
     isTabEnabled,
@@ -7,6 +8,7 @@ import {
     parseDescription,
     t
 } from '../helpers';
+import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockHostListener } from '../blocks/BlockHostListener';
@@ -16,6 +18,7 @@ import { BlockInput } from '../blocks/BlockInput';
 import { BlockMethod } from '../blocks/BlockMethod';
 import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
+import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { EntityTabs } from '../blocks/EntityTabs';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconDocument } from '../components/EmptyStateIcons';
@@ -67,6 +70,11 @@ export type EntityInfoProps = {
     readonly showTokenBadge?: boolean;
     readonly showJsdocBadges?: boolean;
     readonly contextLine?: string;
+    readonly sourceCode?: string;
+    readonly relationships?: {
+        incoming: Array<{ name: string; type: string }>;
+        outgoing: Array<{ name: string; type: string }>;
+    };
 };
 
 const hasMembers = (e: any): boolean =>
@@ -151,6 +159,24 @@ const InfoContent = (props: EntityInfoProps): string => {
                 </section>
             )}
 
+            {/* 2.5 Mini Code Preview */}
+            {props.sourceCode && (() => {
+                const declaration = extractDeclaration(props.sourceCode);
+                if (!declaration) return '';
+                return (
+                    <section class="cdx-content-section">
+                        <details class="cdx-code-preview">
+                            <summary class="cdx-code-preview-toggle">
+                                {t('source-preview') || 'Source Preview'}
+                            </summary>
+                            <div class="cdx-code-snippet">
+                                {highlightCode(declaration, { lang: 'typescript', mode: 'snippet' })}
+                            </div>
+                        </details>
+                    </section>
+                );
+            })()}
+
             {/* 3. Examples */}
             {isInfoSection('examples') &&
                 e.jsdoctags &&
@@ -175,6 +201,15 @@ const InfoContent = (props: EntityInfoProps): string => {
                 : (isInfoSection('extends') && props.showExtends !== false
                     ? ExtendsMetadataCard(e)
                     : '')}
+
+            {/* 4.5 Relationships (cross-linking) */}
+            {props.relationships &&
+                (props.relationships.incoming?.length > 0 || props.relationships.outgoing?.length > 0) &&
+                BlockRelationshipGraph({
+                    incoming: props.relationships.incoming,
+                    outgoing: props.relationships.outgoing,
+                    entityName: e.name
+                })}
 
             {/* 5. Index */}
             {isInfoSection('index') &&

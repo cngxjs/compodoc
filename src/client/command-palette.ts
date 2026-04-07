@@ -226,14 +226,13 @@ const search = async (query: string) => {
     const searchQuery = lastQuery;
     list.innerHTML = mapped
         .map(
-            (r, i) => `
-        <a href="${escapeAttr(r.url)}" class="cdx-cp-item${i === 0 ? ' cdx-cp-active' : ''}"
-           role="option" aria-selected="${i === 0}" data-index="${i}" style="--i:${i}">
-            ${resultIcon(r.type)}
-            <span class="cdx-cp-name">${highlightMatch(r.name, searchQuery)}</span>
-            <span class="${entityClass(r.type) !== 'other' ? `cdx-badge cdx-badge--entity-${entityClass(r.type)}` : ''} cdx-cp-type">${typeLabel(r.type)}</span>
-        </a>
-    `
+            (r, i) =>
+                '<a href="' + escapeAttr(r.url) + '" class="cdx-cp-item' + (i === 0 ? ' cdx-cp-active' : '') + '"' +
+                ' role="option" aria-selected="' + (i === 0) + '" data-index="' + i + '" style="--i:' + i + '">' +
+                resultIcon(r.type) +
+                '<span class="cdx-cp-name">' + highlightMatch(r.name, searchQuery) + '</span>' +
+                '<span class="' + (entityClass(r.type) !== 'other' ? 'cdx-badge cdx-badge--entity-' + entityClass(r.type) + ' ' : '') + 'cdx-cp-type">' + typeLabel(r.type) + '</span>' +
+                '</a>'
         )
         .join('');
 
@@ -284,7 +283,7 @@ const navigateToActive = () => {
 };
 
 /** Open the command palette */
-const open = () => {
+export const openCommandPalette = () => {
     const dialog = getDialog();
     if (!dialog) return;
     dialog.showModal();
@@ -325,7 +324,7 @@ export const initCommandPalette = () => {
             if (dialog.open) {
                 close();
             } else {
-                open();
+                openCommandPalette();
             }
         }
     });
@@ -406,12 +405,12 @@ export const initCommandPalette = () => {
         el.addEventListener('focus', e => {
             e.preventDefault();
             (el as HTMLInputElement).blur();
-            open();
+            openCommandPalette();
         });
     });
 
     // Search trigger button in sidebar header
     document.querySelectorAll<HTMLElement>('[data-cdx-search-trigger]').forEach(btn => {
-        btn.addEventListener('click', () => open());
+        btn.addEventListener('click', () => openCommandPalette());
     });
 };

@@ -70,4 +70,6 @@ export const DirectivePage = (data: any): string =>
         contextLine: data.directive?.selector,
         showStandaloneBadge: true,
         showJsdocBadges: true,
+        relationships: data.relationships,
+        sourceCode: data.directive?.sourceCode,
     });

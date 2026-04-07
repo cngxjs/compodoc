@@ -32,7 +32,7 @@
         "*********TEST********": "*******************",
         "pretest": "npm run build",
         "test": "npm run test:unit && npm run test:cli && npm run test:playground",
-        "test:unit": "vitest run test/src/utils test/src/app",
+        "test:unit": "vitest run test/src/utils test/src/app test/src/templates",
         "test:cli": "vitest run test/src/cli",
         "test:playground": "vitest run test/src/template-playground",
         "test:all": "vitest run",
