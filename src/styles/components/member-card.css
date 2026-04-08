@@ -246,6 +246,11 @@
     font-size: 0.75rem;
 }
 
+.cdx-member-body--flush {
+    border-top: none;
+    padding-top: var(--spacing-cdx-md);
+}
+
 .cdx-member-signature {
     background: var(--color-cdx-bg-alt);
     border-radius: var(--radius-cdx-md);

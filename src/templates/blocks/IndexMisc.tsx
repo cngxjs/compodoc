@@ -26,8 +26,8 @@ export const IndexMisc = (props: IndexMiscProps): string => {
     const sorted = [...props.list].sort((a, b) => a.name.localeCompare(b.name));
 
     return (
-        <section data-compodoc="block-index" style="margin-top:1.5rem">
-            <h3 id="index" class="cdx-section-heading" style="margin-top:0;padding-top:0;border-top:none">{t('index')}</h3>
+        <section class="cdx-content-section" data-compodoc="block-index">
+            <h3 id="index" class="cdx-section-heading">{t('index')}</h3>
 
             <div class="cdx-misc-filter">
                 <input type="text" class="cdx-coverage-filter-input"

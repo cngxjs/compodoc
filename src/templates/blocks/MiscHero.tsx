@@ -21,7 +21,7 @@ export const MiscHero = (props: MiscHeroProps): string => {
     return (
         <div class="cdx-entity-hero" style={`--cdx-hero-color: ${meta.color}`}>
             <div class="cdx-entity-hero-watermark" aria-hidden="true">{meta.icon()}</div>
-            <span class="cdx-entity-hero-file" style="margin-bottom:0.25rem">{t('miscellaneous')} &gt; {t(meta.plural)}</span>
+            <span class="cdx-entity-hero-file cdx-entity-hero-file--breadcrumb">{t('miscellaneous')} &gt; {t(meta.plural)}</span>
             <h1 class="cdx-entity-hero-name">{t(meta.plural)}</h1>
             <div class="cdx-entity-hero-badges">
                 <span class={`cdx-badge cdx-badge--entity-${props.kind}`}>{meta.label}</span>

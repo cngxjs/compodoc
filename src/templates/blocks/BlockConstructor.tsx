@@ -23,7 +23,7 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
         <section data-compodoc="block-constructor">
             <h3 id="constructor">{t('constructor')}</h3>
             <article class="cdx-member-card">
-                <div class="cdx-member-body" style="border-top: none; padding-top: 16px;">
+                <div class="cdx-member-body cdx-member-body--flush">
                     {ctor.modifierKind && ctor.modifierKind.length > 0 && (
                         <div class="cdx-member-row">
                             {ctor.modifierKind.map((k: number) => (

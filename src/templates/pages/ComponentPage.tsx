@@ -458,21 +458,11 @@ export const ComponentPage = (data: any): string => {
                                 EmptyState({ icon: EmptyIconTree(), title: t('empty-dom-tree-title'), description: t('empty-dom-tree-desc'), variant: 'full' })
                             }
                         </div>
-                        <div class="cdx-graph-legend">
-                            <span class="cdx-graph-legend-item" style="font-weight: 600">{t('legend')}</span>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-bg-elevated)"></span>
-                                <span>{t('html-element')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-component)"></span>
-                                <span>{t('component')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-directive)"></span>
-                                <span>{t('html-element-with-directive')}</span>
-                            </div>
-                        </div>
+                        {GraphLegend({ items: [
+                            { colorVar: 'var(--color-cdx-bg-elevated)', labelKey: 'html-element' },
+                            { colorVar: 'var(--color-cdx-entity-component)', labelKey: 'component' },
+                            { colorVar: 'var(--color-cdx-entity-directive)', labelKey: 'html-element-with-directive' },
+                        ] })}
                     </div>
                 )}
 
