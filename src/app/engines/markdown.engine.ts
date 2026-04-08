@@ -44,7 +44,7 @@ export class MarkdownEngine {
 
         renderer.table = (header, body) => {
             return (
-                '<table class="table table-bordered compodoc-table">\n' +
+                '<table class="cdx-table">\n' +
                 '<thead>\n' +
                 header +
                 '</thead>\n' +
