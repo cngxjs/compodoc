@@ -7,6 +7,10 @@
     border-radius: var(--radius-cdx-lg);
 }
 
+.cdx-graph-container--compact .cdx-graph-viewport {
+    max-height: 400px;
+}
+
 .cdx-graph-container svg {
     cursor: grab;
 }

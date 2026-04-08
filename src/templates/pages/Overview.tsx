@@ -90,7 +90,7 @@ export const Overview = (props: OverviewProps): string => {
                         <li>{e.source} imports {e.target}</li>
                     ))}
                 </ul>
-                <div class="cdx-graph-container">
+                <div class="cdx-graph-container cdx-graph-container--compact">
                     <div class="cdx-graph-viewport">
                         <div id="dependency-graph-container"></div>
                     </div>
