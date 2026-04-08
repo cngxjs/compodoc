@@ -15,6 +15,8 @@ export const InterceptorPage = (data: any): string =>
         showMethods: true,
         showProperties: true,
         showAccessors: true,
-        contextLine: undefined,
+        contextLine: data.injectable?.functionalKind
+            ? `Functional ${data.injectable.functionalKind}`
+            : undefined,
         showJsdocBadges: true
     });
