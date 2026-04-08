@@ -8,6 +8,7 @@ import { initTabs } from './tabs';
 import { initCodeBlocks } from './code-blocks';
 import { initGraphs } from './graphs';
 import { initCoverage } from './coverage';
+import { initAnimations } from './animate';
 import { expandToActive } from './sidebar';
 import { resetKeyboardState } from './keyboard';
 // import { initToc } from './toc';
@@ -70,6 +71,7 @@ const reinitPage = async () => {
     initCodeBlocks();
     initGraphs();
     initCoverage();
+    initAnimations();
     // initToc();
 };
 
