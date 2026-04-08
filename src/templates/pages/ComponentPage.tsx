@@ -12,6 +12,7 @@ import {
     t
 } from '../helpers';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
+import { GraphZoomControls, GraphLegend, DEPENDENCY_LEGEND_ITEMS } from '../blocks/GraphControls';
 import { MetadataRow, MetadataCodeRow, MetadataSection } from '../blocks/MetadataRow';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
@@ -491,34 +492,9 @@ export const ComponentPage = (data: any): string => {
                             <div class="cdx-graph-viewport">
                                 <div id="dependency-graph-container"></div>
                             </div>
-                            <div class="cdx-graph-zoom-controls">
-                                <button id="dep-zoom-in" class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
-                                <button id="dep-reset" class="cdx-btn cdx-btn--sm">{t('reset')}</button>
-                                <button id="dep-zoom-out" class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
-                            </div>
+                            {GraphZoomControls({ prefix: 'dep-' })}
                         </div>
-                        <div class="cdx-graph-legend">
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-component)"></span>
-                                <span>{t('component')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-directive)"></span>
-                                <span>{t('directive')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-pipe)"></span>
-                                <span>{t('pipe')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-module)"></span>
-                                <span>{t('module')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-service)"></span>
-                                <span>{t('injectable')}</span>
-                            </div>
-                        </div>
+                        {GraphLegend({ items: DEPENDENCY_LEGEND_ITEMS })}
                     </div>
                 )}
 
