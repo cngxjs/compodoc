@@ -1,0 +1,24 @@
+.cdx-breadcrumb {
+    @apply flex items-center gap-1 text-sm;
+    list-style: none !important;
+    padding: 0;
+    margin: 0 0 1rem;
+    color: var(--color-cdx-text-muted);
+    font-family: var(--font-body);
+}
+
+.cdx-breadcrumb li + li::before {
+    content: '>';
+    margin-right: 0.5rem;
+    color: var(--color-cdx-text-muted);
+}
+
+.cdx-breadcrumb a {
+    color: var(--color-cdx-text-secondary);
+    text-decoration: none;
+}
+
+.cdx-breadcrumb a:hover {
+    color: var(--color-cdx-primary);
+    text-decoration: underline;
+}
