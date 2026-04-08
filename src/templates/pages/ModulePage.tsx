@@ -119,7 +119,7 @@ export const ModulePage = (data: any): string => {
     return (<>
         <ol class="cdx-breadcrumb">
             <li class="">{t('modules')}</li>
-            <li class={mod.deprecated ? 'deprecated-name' : ''}>{data.name}</li>
+            <li class={mod.deprecated ? 'cdx-member-name--deprecated' : ''}>{data.name}</li>
         </ol>
 
         {!data.disableGraph && mod.graph && (<>

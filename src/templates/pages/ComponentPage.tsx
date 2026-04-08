@@ -308,7 +308,7 @@ export const ComponentPage = (data: any): string => {
                     </ol>
                 </nav>
                 <h1 class="cdx-entity-hero-name">
-                    <span class={c.deprecated ? 'deprecated-name' : ''}>{c.name}</span>
+                    <span class={c.deprecated ? 'cdx-member-name--deprecated' : ''}>{c.name}</span>
                 </h1>
                 <div class="cdx-entity-hero-badges">
                     <span class="cdx-badge cdx-badge--entity-component">Component</span>

@@ -331,7 +331,7 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                     </ol>
                 </nav>
                 <h1 class="cdx-entity-hero-name">
-                    <span class={e.deprecated ? 'deprecated-name' : ''}>{e.name}</span>
+                    <span class={e.deprecated ? 'cdx-member-name--deprecated' : ''}>{e.name}</span>
                 </h1>
                 <div class="cdx-entity-hero-badges">
                     <span class={`cdx-badge ${meta.badge}`}>{meta.label}</span>
