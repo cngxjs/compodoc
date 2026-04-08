@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
-import { functionSignature, linkTypeHtml, modifIconFromArray, parseDescription } from '../helpers';
+import { functionSignature, linkTypeHtml, parseDescription } from '../helpers';
+import { MemberCard } from './MemberCard';
 
 type TypealiasItem = {
     readonly name: string;
@@ -20,30 +21,33 @@ type BlockTypealiasProps = {
 
 export const BlockTypealias = (props: BlockTypealiasProps): string => (
     <section data-compodoc="block-typealias">
-        {props.typealias.map(ta => (
-            <article class={`cdx-member-card${ta.deprecated ? ' cdx-member-card--deprecated' : ''}`} id={ta.name}>
+        {props.typealias.map(ta => {
+            const header = (
                 <header class="cdx-member-header">
                     <span class="cdx-member-name">
                         <span class={ta.deprecated ? 'deprecated-name' : ''}>{ta.name}</span>
                         <a href={`#${ta.name}`} class="cdx-member-permalink" aria-label={`Link to ${ta.name}`}>#</a>
                     </span>
                 </header>
-                <div class="cdx-member-body">
-                    {ta.deprecated && (
-                        <div class="cdx-member-deprecated">{ta.deprecationMessage}</div>
+            ) as string;
+
+            const body = (<>
+                {ta.deprecated && (
+                    <div class="cdx-member-deprecated">{ta.deprecationMessage}</div>
+                )}
+                {ta.description && (
+                    <div class="io-description">{parseDescription(ta.description, props.depth ?? 0)}</div>
+                )}
+                <div class="cdx-member-row">
+                    {ta.kind === 160 ? (
+                        <code>{functionSignature(ta)}</code>
+                    ) : (
+                        <code>{linkTypeHtml(ta.rawtype ?? '')}</code>
                     )}
-                    {ta.description && (
-                        <div class="io-description">{parseDescription(ta.description, props.depth ?? 0)}</div>
-                    )}
-                    <div class="cdx-member-row">
-                        {ta.kind === 160 ? (
-                            <code>{functionSignature(ta)}</code>
-                        ) : (<>
-                            <code>{linkTypeHtml(ta.rawtype ?? '')}</code>
-                        </>)}
-                    </div>
                 </div>
-            </article>
-        ))}
+            </>) as string;
+
+            return MemberCard({ id: ta.name, deprecated: ta.deprecated, header, children: body });
+        })}
     </section>
 ) as string;

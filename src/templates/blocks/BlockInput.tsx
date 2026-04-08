@@ -1,6 +1,7 @@
 import Html from '@kitajs/html';
 import { linkTypeHtml, parseDescription, t } from '../helpers';
 import { DefinedInRow } from './DefinedInRow';
+import { MemberCard } from './MemberCard';
 
 type BlockInputProps = {
     readonly element: any;
@@ -13,9 +14,8 @@ export const BlockInput = (props: BlockInputProps): string => {
     return (
         <section data-compodoc="block-inputs">
             <h3 id="inputs">{t('inputs')}</h3>
-            {(props.element.inputsClass ?? []).map((inp: any) => (
-                <article class="cdx-member-card" id={inp.name}>
-
+            {(props.element.inputsClass ?? []).map((inp: any) => {
+                const header = (
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
                             <span class="cdx-member-name-text">{inp.name}</span>
@@ -25,20 +25,23 @@ export const BlockInput = (props: BlockInputProps): string => {
                         </span>
                         {inp.type && <span class="cdx-member-type">{linkTypeHtml(inp.type)}</span>}
                     </header>
-                    <div class="cdx-member-body">
-                        {inp.required && (
-                            <div class="cdx-member-row"><i>{t('required')} : </i><b>{String(inp.required)}</b></div>
-                        )}
-                        {inp.defaultValue && (
-                            <div class="cdx-member-row"><i>{t('default-value')} : </i><code>{inp.defaultValue}</code></div>
-                        )}
-                        {DefinedInRow({ line: inp.line, file: props.element.file, inheritance: inp.inheritance, navTabs: props.navTabs })}
-                        {inp.description && (
-                            <div class="io-description">{parseDescription(inp.description, props.depth ?? 0)}</div>
-                        )}
-                    </div>
-                </article>
-            ))}
+                ) as string;
+
+                const body = (<>
+                    {inp.required && (
+                        <div class="cdx-member-row"><i>{t('required')} : </i><b>{String(inp.required)}</b></div>
+                    )}
+                    {inp.defaultValue && (
+                        <div class="cdx-member-row"><i>{t('default-value')} : </i><code>{inp.defaultValue}</code></div>
+                    )}
+                    {DefinedInRow({ line: inp.line, file: props.element.file, inheritance: inp.inheritance, navTabs: props.navTabs })}
+                    {inp.description && (
+                        <div class="io-description">{parseDescription(inp.description, props.depth ?? 0)}</div>
+                    )}
+                </>) as string;
+
+                return MemberCard({ id: inp.name, header, children: body });
+            })}
         </section>
     ) as string;
 };

@@ -9,6 +9,7 @@ import {
     t,
 } from '../helpers';
 import { JsdocExamplesBlock } from './JsdocExamplesBlock';
+import { MemberCard } from './MemberCard';
 import { ParamsTable } from './ParamsTable';
 
 type BlockAccessorsProps = {
@@ -60,21 +61,23 @@ export const BlockAccessors = (props: BlockAccessorsProps): string => {
     return (
         <section data-compodoc="block-accessors">
             <h3 id="accessors">{t('accessors')}</h3>
-            {Object.entries(props.accessors).map(([key, acc]) => (
-                <article class="cdx-member-card" id={key}>
-
+            {Object.entries(props.accessors).map(([key, acc]) => {
+                const header = (
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
                             <span class="cdx-member-name-text">{key}</span>
                             <a href={`#${key}`} class="cdx-member-permalink" aria-label={`Link to ${key}`}>#</a>
                         </span>
                     </header>
-                    <div class="cdx-member-body">
-                        {SignatureBlock({ label: 'get', sig: acc.getSignature, file: props.file, depth: props.depth ?? 0, navTabs: props.navTabs })}
-                        {SignatureBlock({ label: 'set', sig: acc.setSignature, file: props.file, depth: props.depth ?? 0, navTabs: props.navTabs })}
-                    </div>
-                </article>
-            ))}
+                ) as string;
+
+                const body = (<>
+                    {SignatureBlock({ label: 'get', sig: acc.getSignature, file: props.file, depth: props.depth ?? 0, navTabs: props.navTabs })}
+                    {SignatureBlock({ label: 'set', sig: acc.setSignature, file: props.file, depth: props.depth ?? 0, navTabs: props.navTabs })}
+                </>) as string;
+
+                return MemberCard({ id: key, header, children: body });
+            })}
         </section>
     ) as string;
 };
