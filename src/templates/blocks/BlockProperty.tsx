@@ -23,11 +23,7 @@ type BlockPropertyProps = {
 export const BlockProperty = (props: BlockPropertyProps): string => {
     return (
         <section data-compodoc="block-properties">
-            {typeof props.title === 'string' ? (
-                <h3>{props.title}</h3>
-            ) : (
-                <h3 id="properties">{t('properties')}</h3>
-            )}
+            <h3 id={props.title ? props.title.toLowerCase() : 'properties'}>{props.title ?? t('properties')}</h3>
             {props.properties.map(p => {
                 const header = (
                     <header class="cdx-member-header">

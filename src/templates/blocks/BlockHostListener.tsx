@@ -24,11 +24,7 @@ type BlockHostListenerProps = {
 export const BlockHostListener = (props: BlockHostListenerProps): string => {
     return (
         <section data-compodoc="block-host-listener">
-            {typeof props.title === 'string' ? (
-                <h3>{props.title}</h3>
-            ) : (
-                <h3 id="methods">{t('methods')}</h3>
-            )}
+            <h3 id={props.title ? props.title.toLowerCase() : 'methods'}>{props.title ?? t('methods')}</h3>
             {props.methods.map(m => {
                 const header = (
                     <header class="cdx-member-header">
