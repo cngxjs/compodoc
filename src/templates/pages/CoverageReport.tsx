@@ -1,4 +1,4 @@
-import { Html } from '@kitajs/html';
+import Html from '@kitajs/html';
 import { t, shortPath, computeCoverageStats } from '../helpers';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconChart } from '../components/EmptyStateIcons';
@@ -109,7 +109,13 @@ const fileLink = (f: CoverageFile): string => {
 
 const CIRCUMFERENCE = 2 * Math.PI * 50; // r=50
 
-const DonutChart = (pct: number, total: number, documented: number, partial: number, undocumented: number): string => {
+const DonutChart = (
+    pct: number,
+    total: number,
+    documented: number,
+    partial: number,
+    undocumented: number
+): string => {
     // Three segments: green (documented), yellow (partial), red (undocumented)
     const docFrac = total > 0 ? documented / total : 0;
     const partFrac = total > 0 ? partial / total : 0;
@@ -121,7 +127,7 @@ const DonutChart = (pct: number, total: number, documented: number, partial: num
 
     // Each segment starts where the previous ends (cumulative offset)
     const docOffset = 0;
-    const partOffset = -(docLen);
+    const partOffset = -docLen;
     const undocOffset = -(docLen + partLen);
 
     // These hex values match the CSS custom properties: --color-cdx-coverage-good / -warning / -critical
@@ -137,38 +143,75 @@ const DonutChart = (pct: number, total: number, documented: number, partial: num
             <title>{`Documentation coverage: ${pct}%`}</title>
             <desc>{`${documented} documented, ${partial} partial, ${undocumented} undocumented of ${total} entities`}</desc>
             {/* Background ring */}
-            <circle cx="60" cy="60" r="50" fill="none"
-                class="cdx-coverage-donut-ring" stroke-width="10" />
+            <circle
+                cx="60"
+                cy="60"
+                r="50"
+                fill="none"
+                class="cdx-coverage-donut-ring"
+                stroke-width="10"
+            />
             {/* Green: fully documented */}
-            {docLen > 0 && <circle cx="60" cy="60" r="50" fill="none"
-                stroke={LIGHT.green} stroke-width="10"
-                stroke-dasharray={`${docLen} ${CIRCUMFERENCE - docLen}`}
-                stroke-dashoffset={String(docOffset)}
-                transform="rotate(-90 60 60)"
-                class="cdx-coverage-donut-segment">
-                <title>{`Documented: ${documented} (${Math.round(docFrac * 100)}%)`}</title>
-            </circle>}
+            {docLen > 0 && (
+                <circle
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    fill="none"
+                    stroke={LIGHT.green}
+                    stroke-width="10"
+                    stroke-dasharray={`${docLen} ${CIRCUMFERENCE - docLen}`}
+                    stroke-dashoffset={String(docOffset)}
+                    transform="rotate(-90 60 60)"
+                    class="cdx-coverage-donut-segment"
+                >
+                    <title>{`Documented: ${documented} (${Math.round(docFrac * 100)}%)`}</title>
+                </circle>
+            )}
             {/* Yellow: partial */}
-            {partLen > 0 && <circle cx="60" cy="60" r="50" fill="none"
-                stroke={LIGHT.yellow} stroke-width="10"
-                stroke-dasharray={`${partLen} ${CIRCUMFERENCE - partLen}`}
-                stroke-dashoffset={String(partOffset)}
-                transform="rotate(-90 60 60)"
-                class="cdx-coverage-donut-segment">
-                <title>{`Partial: ${partial} (${Math.round(partFrac * 100)}%)`}</title>
-            </circle>}
+            {partLen > 0 && (
+                <circle
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    fill="none"
+                    stroke={LIGHT.yellow}
+                    stroke-width="10"
+                    stroke-dasharray={`${partLen} ${CIRCUMFERENCE - partLen}`}
+                    stroke-dashoffset={String(partOffset)}
+                    transform="rotate(-90 60 60)"
+                    class="cdx-coverage-donut-segment"
+                >
+                    <title>{`Partial: ${partial} (${Math.round(partFrac * 100)}%)`}</title>
+                </circle>
+            )}
             {/* Red: undocumented */}
-            {undocLen > 0 && <circle cx="60" cy="60" r="50" fill="none"
-                stroke={LIGHT.red} stroke-width="10"
-                stroke-dasharray={`${undocLen} ${CIRCUMFERENCE - undocLen}`}
-                stroke-dashoffset={String(undocOffset)}
-                transform="rotate(-90 60 60)"
-                class="cdx-coverage-donut-segment">
-                <title>{`Undocumented: ${undocumented} (${Math.round(undocFrac * 100)}%)`}</title>
-            </circle>}
+            {undocLen > 0 && (
+                <circle
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    fill="none"
+                    stroke={LIGHT.red}
+                    stroke-width="10"
+                    stroke-dasharray={`${undocLen} ${CIRCUMFERENCE - undocLen}`}
+                    stroke-dashoffset={String(undocOffset)}
+                    transform="rotate(-90 60 60)"
+                    class="cdx-coverage-donut-segment"
+                >
+                    <title>{`Undocumented: ${undocumented} (${Math.round(undocFrac * 100)}%)`}</title>
+                </circle>
+            )}
             {/* Center text — percentage only */}
-            <text x="60" y="60" text-anchor="middle" dominant-baseline="central"
-                class="cdx-coverage-donut-pct">{pct}%</text>
+            <text
+                x="60"
+                y="60"
+                text-anchor="middle"
+                dominant-baseline="central"
+                class="cdx-coverage-donut-pct"
+            >
+                {pct}%
+            </text>
         </svg>
     ) as string;
 };
@@ -328,17 +371,28 @@ export const CoverageReport = (props: CoverageReportProps): string => {
                             <thead>
                                 <tr>
                                     <th data-cdx-sort="name" aria-sort="none">
-                                        {t('identifier')}<span class="cdx-coverage-sort-arrow" aria-hidden="true"></span>
+                                        {t('identifier')}
+                                        <span
+                                            class="cdx-coverage-sort-arrow"
+                                            aria-hidden="true"
+                                        ></span>
                                     </th>
                                     <th
                                         data-cdx-sort="file"
                                         aria-sort="none"
                                         class="cdx-coverage-file-col"
                                     >
-                                        {t('file')}<span class="cdx-coverage-sort-arrow" aria-hidden="true"></span>
+                                        {t('file')}
+                                        <span
+                                            class="cdx-coverage-sort-arrow"
+                                            aria-hidden="true"
+                                        ></span>
                                     </th>
                                     <th data-cdx-sort="coverage" aria-sort="ascending">
-                                        {t('coverage') || 'Coverage'}<span class="cdx-coverage-sort-arrow" aria-hidden="true">{'\u25B2'}</span>
+                                        {t('coverage') || 'Coverage'}
+                                        <span class="cdx-coverage-sort-arrow" aria-hidden="true">
+                                            {'\u25B2'}
+                                        </span>
                                     </th>
                                 </tr>
                             </thead>
@@ -359,7 +413,9 @@ export const CoverageReport = (props: CoverageReportProps): string => {
                                             {shortPath(f.filePath)}
                                         </td>
                                         <td class="cdx-coverage-cell">
-                                            <span class={`cdx-coverage-pct cdx-coverage-pct--${f.coveragePercent <= 33 ? 'low' : f.coveragePercent <= 66 ? 'medium' : 'high'}`}>
+                                            <span
+                                                class={`cdx-coverage-pct cdx-coverage-pct--${f.coveragePercent <= 33 ? 'low' : f.coveragePercent <= 66 ? 'medium' : 'high'}`}
+                                            >
                                                 {f.coveragePercent}%
                                             </span>
                                             <span class="cdx-coverage-count-detail">
