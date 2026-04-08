@@ -37,7 +37,7 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
                                 <span class="modifier">{modifKind(k)}</span>
                             ))}
                             {m.optional && <span class="modifier">{t('optional')}</span>}
-                            <span class={`cdx-member-name-text${m.deprecated ? ' deprecated-name' : ''}`}>{m.name}</span>
+                            <span class={`cdx-member-name-text${m.deprecated ? ' cdx-member-name--deprecated' : ''}`}>{m.name}</span>
                             <a href={`#${m.name}`} class="cdx-member-permalink" aria-label={`Link to ${m.name}`}>#</a>
                         </span>
                         <span class="cdx-member-type">

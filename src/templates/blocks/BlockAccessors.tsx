@@ -62,21 +62,28 @@ export const BlockAccessors = (props: BlockAccessorsProps): string => {
         <section data-compodoc="block-accessors">
             <h3 id="accessors">{t('accessors')}</h3>
             {Object.entries(props.accessors).map(([key, acc]) => {
+                const isDeprecated = !!(acc.getSignature?.deprecated || acc.setSignature?.deprecated);
+
                 const header = (
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
-                            <span class="cdx-member-name-text">{key}</span>
+                            <span class={`cdx-member-name-text${isDeprecated ? ' cdx-member-name--deprecated' : ''}`}>{key}</span>
                             <a href={`#${key}`} class="cdx-member-permalink" aria-label={`Link to ${key}`}>#</a>
                         </span>
                     </header>
                 ) as string;
 
                 const body = (<>
+                    {isDeprecated && (
+                        <div class="cdx-member-deprecated">
+                            {acc.getSignature?.deprecationMessage || acc.setSignature?.deprecationMessage || t('deprecated')}
+                        </div>
+                    )}
                     {SignatureBlock({ label: 'get', sig: acc.getSignature, file: props.file, depth: props.depth ?? 0, navTabs: props.navTabs })}
                     {SignatureBlock({ label: 'set', sig: acc.setSignature, file: props.file, depth: props.depth ?? 0, navTabs: props.navTabs })}
                 </>) as string;
 
-                return MemberCard({ id: key, header, children: body });
+                return MemberCard({ id: key, deprecated: isDeprecated, header, children: body });
             })}
         </section>
     ) as string;

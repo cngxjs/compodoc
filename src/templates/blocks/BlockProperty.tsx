@@ -36,7 +36,7 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                                 <span class="modifier">{modifKind(k)}</span>
                             ))}
                             {p.optional && <span class="modifier">{t('optional')}</span>}
-                            <span class={`cdx-member-name-text${p.deprecated ? ' deprecated-name' : ''}`}>
+                            <span class={`cdx-member-name-text${p.deprecated ? ' cdx-member-name--deprecated' : ''}`}>
                                 {p.name}
                             </span>
                             {p.signalKind && (

@@ -25,7 +25,7 @@ export const BlockTypealias = (props: BlockTypealiasProps): string => (
             const header = (
                 <header class="cdx-member-header">
                     <span class="cdx-member-name">
-                        <span class={ta.deprecated ? 'deprecated-name' : ''}>{ta.name}</span>
+                        <span class={`cdx-member-name-text${ta.deprecated ? ' cdx-member-name--deprecated' : ''}`}>{ta.name}</span>
                         <a href={`#${ta.name}`} class="cdx-member-permalink" aria-label={`Link to ${ta.name}`}>#</a>
                     </span>
                 </header>

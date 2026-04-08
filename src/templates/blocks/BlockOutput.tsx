@@ -18,7 +18,7 @@ export const BlockOutput = (props: BlockOutputProps): string => {
                 const header = (
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
-                            <span class="cdx-member-name-text">{out.name}</span>
+                            <span class={`cdx-member-name-text${out.deprecated ? ' cdx-member-name--deprecated' : ''}`}>{out.name}</span>
                             {out.signalKind && <span class={`cdx-badge cdx-badge--${out.signalKind}`}>{out.signalKind === 'output-signal' ? 'Signal' : ''}</span>}
                             <a href={`#${out.name}`} class="cdx-member-permalink" aria-label={`Link to ${out.name}`}>#</a>
                         </span>
