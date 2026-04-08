@@ -4,7 +4,7 @@ import { renderEntityPage } from './EntityPage';
 export const GuardPage = (data: any): string =>
     renderEntityPage({
         entity: data.injectable,
-        entityKey: 'injectable',
+        entityKey: 'guard',
         breadcrumbLabel: 'guards',
         depth: data.depth,
         navTabs: data.navTabs,
@@ -15,6 +15,8 @@ export const GuardPage = (data: any): string =>
         showMethods: true,
         showProperties: true,
         showAccessors: true,
-        contextLine: data.injectable?.functionalKind ?? undefined,
-        showJsdocBadges: true,
+        contextLine: data.injectable?.functionalKind
+            ? `Functional ${data.injectable.functionalKind}`
+            : undefined,
+        showJsdocBadges: true
     });
