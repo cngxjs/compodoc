@@ -1,0 +1,50 @@
+.cdx-btn {
+    position: relative;
+    overflow: hidden;
+    transition:
+        transform 120ms ease-out,
+        box-shadow 120ms ease-out;
+}
+
+.cdx-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-cdx-md);
+}
+
+.cdx-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-cdx-sm);
+    transition-duration: 60ms;
+}
+
+.cdx-btn--sm {
+    padding: var(--spacing-cdx-xs) var(--spacing-cdx-md);
+    font-size: 12px;
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
+    background: var(--color-cdx-bg-elevated);
+    color: var(--color-cdx-text);
+    cursor: pointer;
+}
+
+.cdx-btn--sm:hover {
+    background: var(--color-cdx-bg-alt);
+}
+
+.cdx-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, currentColor 10%, transparent 10.01%) no-repeat 50% 50%;
+    transform: scale(0);
+    opacity: 0;
+    transition:
+        transform 400ms ease,
+        opacity 400ms ease;
+}
+
+.cdx-btn:active::after {
+    transform: scale(2.5);
+    opacity: 0.15;
+    transition-duration: 0ms;
+}

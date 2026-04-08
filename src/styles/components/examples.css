@@ -1,0 +1,7 @@
+/* Example container */
+.cdx-example-container {
+    width: 100%;
+    min-height: 400px;
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+}
