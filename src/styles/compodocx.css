@@ -1883,7 +1883,9 @@ ul.properties-list {
     align-items: center;
     gap: var(--spacing-cdx-xs);
 }
-.cdx-module-list-section h3 a { color: var(--color-cdx-text-muted); }
+.cdx-module-list-section h3 a {
+    color: var(--color-cdx-text-muted);
+}
 .cdx-entity-list {
     list-style: none;
     padding: 0;
@@ -1894,9 +1896,16 @@ ul.properties-list {
     border-bottom: 1px solid var(--color-cdx-border);
     font-size: 0.875rem;
 }
-.cdx-entity-list-item:last-child { border-bottom: none; }
-.cdx-entity-list-item a { color: var(--color-cdx-primary); text-decoration: none; }
-.cdx-entity-list-item a:hover { text-decoration: underline; }
+.cdx-entity-list-item:last-child {
+    border-bottom: none;
+}
+.cdx-entity-list-item a {
+    color: var(--color-cdx-primary);
+    text-decoration: none;
+}
+.cdx-entity-list-item a:hover {
+    text-decoration: underline;
+}
 
 /* Unit test coverage table */
 .cdx-unit-test-table {

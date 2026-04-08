@@ -1,13 +1,13 @@
 import Html from '@kitajs/html';
 import {
-    extractJsdocExamples,
     functionSignature,
     hasJsdocParams,
-    isTabEnabled,
     modifKind,
     parseDescription,
     t,
 } from '../helpers';
+import { DefinedInRow } from './DefinedInRow';
+import { JsdocExamplesBlock } from './JsdocExamplesBlock';
 import { ParamsTable } from './ParamsTable';
 
 type BlockConstructorProps = {
@@ -15,7 +15,6 @@ type BlockConstructorProps = {
     readonly file: string;
     readonly depth?: number;
     readonly navTabs?: any[];
-    readonly entityColor?: string;
 };
 
 export const BlockConstructor = (props: BlockConstructorProps): string => {
@@ -24,7 +23,7 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
         <section data-compodoc="block-constructor">
             <h3 id="constructor">{t('constructor')}</h3>
             <article class="cdx-member-card">
-                <div class="cdx-member-body" style="border-top: none; padding-top: 16px;">
+                <div class="cdx-member-body cdx-member-body--flush">
                     {ctor.modifierKind && ctor.modifierKind.length > 0 && (
                         <div class="cdx-member-row">
                             {ctor.modifierKind.map((k: number) => (
@@ -35,25 +34,14 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
                     <div class="cdx-member-signature">
                         <code>{functionSignature(ctor)}</code>
                     </div>
-                    {ctor.line && isTabEnabled(props.navTabs, 'source') && (
-                        <div class="cdx-member-row">
-                            {t('defined-in')} <a href="" data-cdx-line={String(ctor.line)} class="cdx-link-to-source">{props.file}:{ctor.line}</a>
-                        </div>
-                    )}
+                    {DefinedInRow({ line: ctor.line, file: props.file, navTabs: props.navTabs })}
                     {ctor.description && (
                         <div class="io-description">{parseDescription(ctor.description, props.depth ?? 0)}</div>
                     )}
                     {ctor.jsdoctags && hasJsdocParams(ctor.jsdoctags) && (
                         <div>
                             {ParamsTable({ jsdocTags: ctor.jsdoctags, depth: props.depth ?? 0, showOptional: true })}
-                            {(() => {
-                                const examples = extractJsdocExamples(ctor.jsdoctags);
-                                if (examples.length === 0) return '';
-                                return (<>
-                                    <b>{t('example')} :</b>
-                                    {examples.map(ex => <div>{ex.comment}</div>)}
-                                </>);
-                            })()}
+                            {JsdocExamplesBlock({ tags: ctor.jsdoctags, variant: 'text' })}
                         </div>
                     )}
                 </div>

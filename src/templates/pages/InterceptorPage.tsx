@@ -4,7 +4,7 @@ import { renderEntityPage } from './EntityPage';
 export const InterceptorPage = (data: any): string =>
     renderEntityPage({
         entity: data.injectable,
-        entityKey: 'injectable',
+        entityKey: 'interceptor',
         breadcrumbLabel: 'interceptors',
         depth: data.depth,
         navTabs: data.navTabs,
@@ -15,6 +15,8 @@ export const InterceptorPage = (data: any): string =>
         showMethods: true,
         showProperties: true,
         showAccessors: true,
-        contextLine: undefined,
-        showJsdocBadges: true,
+        contextLine: data.injectable?.functionalKind
+            ? `Functional ${data.injectable.functionalKind}`
+            : undefined,
+        showJsdocBadges: true
     });

@@ -89,6 +89,13 @@ a.cdx-overview-kpi:hover {
 
 .cdx-overview-adoption-fill {
     @apply h-full rounded-full bg-[var(--color-cdx-primary)];
+    transition: width 600ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-overview-adoption-fill {
+        transition: none;
+    }
 }
 
 .cdx-overview-section-heading {

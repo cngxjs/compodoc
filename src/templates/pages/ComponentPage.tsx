@@ -1,7 +1,6 @@
 import Html from '@kitajs/html';
 import { IconComponent, IconExternalLink, IconFile, IconGitBranch } from '../components/Icons';
 import {
-    extractJsdocCodeExamples,
     isInfoSection,
     isInitialTab,
     isTabEnabled,
@@ -12,6 +11,9 @@ import {
     isReadmeEmpty,
     t
 } from '../helpers';
+import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
+import { GraphZoomControls, GraphLegend, DEPENDENCY_LEGEND_ITEMS } from '../blocks/GraphControls';
+import { MetadataRow, MetadataCodeRow, MetadataSection } from '../blocks/MetadataRow';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockIndex } from '../blocks/BlockIndex';
@@ -46,15 +48,6 @@ const breakComma = (text: string): string => {
         .replaceAll(/"/g, '&quot;');
     return escaped.replaceAll(',', ',<br>');
 };
-
-const MetadataRow = (label: string, value: string, isBlock = false): string =>
-    (<div class={`cdx-metadata-row${isBlock ? ' cdx-metadata-row--block' : ''}`}>
-        <dt class="cdx-metadata-label">{label}</dt>
-        <dd class="cdx-metadata-value">{value}</dd>
-    </div>) as string;
-
-const MetadataCodeRow = (label: string, value: string): string =>
-    MetadataRow(label, `<code>${value}</code>`);
 
 const ComponentMetadata = (c: any): string => {
     if (!isInfoSection('metadata')) return '';
@@ -122,16 +115,7 @@ const ComponentMetadata = (c: any): string => {
     codeField('assetsDir', c.assetsDir);
     codeField('assetsDirs', c.assetsDirs);
 
-    if (rows.length === 0) return '';
-
-    return (
-        <section class="cdx-content-section" data-compodoc="block-metadata">
-            <h3 class="cdx-section-heading">{t('metadata')}</h3>
-            <dl class="cdx-metadata-card">
-                {rows.join('')}
-            </dl>
-        </section>
-    ) as string;
+    return MetadataSection({ rows });
 };
 
 const InfoContent = (data: any): string => {
@@ -154,22 +138,8 @@ const InfoContent = (data: any): string => {
                 </section>
             )}
 
-            {isInfoSection('examples') &&
-                c.jsdoctags &&
-                (() => {
-                    const examples = extractJsdocCodeExamples(c.jsdoctags);
-                    if (examples.length === 0) return '';
-                    return (
-                        <section class="cdx-content-section">
-                            <h3 class="cdx-section-heading">{t('example')}</h3>
-                            <div class="io-description">
-                                {examples.map(ex => (
-                                    <div>{ex.comment}</div>
-                                ))}
-                            </div>
-                        </section>
-                    );
-                })()}
+            {isInfoSection('examples') && c.jsdoctags &&
+                JsdocExamplesBlock({ tags: c.jsdoctags, variant: 'code', level: 'section' })}
 
             {(c.storybookUrl || c.figmaUrl || c.route) && (
                 <div class="cdx-external-links">
@@ -239,15 +209,14 @@ const InfoContent = (data: any): string => {
                     constructor: c.constructorObj,
                     file: c.file,
                     depth,
-                    navTabs: data.navTabs,
-                    entityColor: 'component'
+                    navTabs: data.navTabs
                 })}
             {isInfoSection('inputs') &&
                 c.inputsClass?.length > 0 &&
-                BlockInput({ element: c, file: c.file, depth, navTabs: data.navTabs, entityColor: 'component' })}
+                BlockInput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
             {isInfoSection('outputs') &&
                 c.outputsClass?.length > 0 &&
-                BlockOutput({ element: c, file: c.file, depth, navTabs: data.navTabs, entityColor: 'component' })}
+                BlockOutput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
             {isInfoSection('hostBindings') &&
                 c.hostBindings?.length > 0 &&
                 BlockProperty({
@@ -255,8 +224,7 @@ const InfoContent = (data: any): string => {
                     file: c.file,
                     title: 'HostBindings',
                     depth,
-                    navTabs: data.navTabs,
-                    entityColor: 'component'
+                    navTabs: data.navTabs
                 })}
             {isInfoSection('hostListeners') &&
                 c.hostListeners?.length > 0 &&
@@ -265,8 +233,7 @@ const InfoContent = (data: any): string => {
                     file: c.file,
                     title: 'HostListeners',
                     depth,
-                    navTabs: data.navTabs,
-                    entityColor: 'component'
+                    navTabs: data.navTabs
                 })}
             {isInfoSection('methods') &&
                 c.methodsClass?.length > 0 &&
@@ -274,8 +241,7 @@ const InfoContent = (data: any): string => {
                     methods: c.methodsClass,
                     file: c.file,
                     depth,
-                    navTabs: data.navTabs,
-                    entityColor: 'component'
+                    navTabs: data.navTabs
                 })}
             {isInfoSection('properties') &&
                 c.propertiesClass?.length > 0 &&
@@ -283,8 +249,7 @@ const InfoContent = (data: any): string => {
                     properties: c.propertiesClass,
                     file: c.file,
                     depth,
-                    navTabs: data.navTabs,
-                    entityColor: 'component'
+                    navTabs: data.navTabs
                 })}
             {isInfoSection('accessors') &&
                 c.accessors && Object.keys(c.accessors).length > 0 &&
@@ -292,8 +257,7 @@ const InfoContent = (data: any): string => {
                     accessors: c.accessors,
                     file: c.file,
                     depth,
-                    navTabs: data.navTabs,
-                    entityColor: 'component'
+                    navTabs: data.navTabs
                 })}
         </>
     ) as string;
@@ -344,7 +308,7 @@ export const ComponentPage = (data: any): string => {
                     </ol>
                 </nav>
                 <h1 class="cdx-entity-hero-name">
-                    <span class={c.deprecated ? 'deprecated-name' : ''}>{c.name}</span>
+                    <span class={c.deprecated ? 'cdx-member-name--deprecated' : ''}>{c.name}</span>
                 </h1>
                 <div class="cdx-entity-hero-badges">
                     <span class="cdx-badge cdx-badge--entity-component">Component</span>
@@ -494,21 +458,11 @@ export const ComponentPage = (data: any): string => {
                                 EmptyState({ icon: EmptyIconTree(), title: t('empty-dom-tree-title'), description: t('empty-dom-tree-desc'), variant: 'full' })
                             }
                         </div>
-                        <div class="cdx-graph-legend">
-                            <span class="cdx-graph-legend-item" style="font-weight: 600">{t('legend')}</span>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-bg-elevated)"></span>
-                                <span>{t('html-element')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-component)"></span>
-                                <span>{t('component')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-directive)"></span>
-                                <span>{t('html-element-with-directive')}</span>
-                            </div>
-                        </div>
+                        {GraphLegend({ items: [
+                            { colorVar: 'var(--color-cdx-bg-elevated)', labelKey: 'html-element' },
+                            { colorVar: 'var(--color-cdx-entity-component)', labelKey: 'component' },
+                            { colorVar: 'var(--color-cdx-entity-directive)', labelKey: 'html-element-with-directive' },
+                        ] })}
                     </div>
                 )}
 
@@ -528,34 +482,9 @@ export const ComponentPage = (data: any): string => {
                             <div class="cdx-graph-viewport">
                                 <div id="dependency-graph-container"></div>
                             </div>
-                            <div class="cdx-graph-zoom-controls">
-                                <button id="dep-zoom-in" class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
-                                <button id="dep-reset" class="cdx-btn cdx-btn--sm">{t('reset')}</button>
-                                <button id="dep-zoom-out" class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
-                            </div>
+                            {GraphZoomControls({ prefix: 'dep-' })}
                         </div>
-                        <div class="cdx-graph-legend">
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-component)"></span>
-                                <span>{t('component')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-directive)"></span>
-                                <span>{t('directive')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-pipe)"></span>
-                                <span>{t('pipe')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-module)"></span>
-                                <span>{t('module')}</span>
-                            </div>
-                            <div class="cdx-graph-legend-item">
-                                <span class="cdx-graph-legend-dot" style="background: var(--color-cdx-entity-service)"></span>
-                                <span>{t('injectable')}</span>
-                            </div>
-                        </div>
+                        {GraphLegend({ items: DEPENDENCY_LEGEND_ITEMS })}
                     </div>
                 )}
 

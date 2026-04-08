@@ -9,6 +9,10 @@
     white-space: nowrap;
 }
 
+.cdx-entity-hero-file--breadcrumb {
+    margin-bottom: 0.25rem;
+}
+
 .cdx-entity-hero-file svg {
     width: 14px;
     height: 14px;

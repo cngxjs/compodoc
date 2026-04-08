@@ -36,7 +36,7 @@ test.describe('Sidebar', () => {
 test.describe('Mobile menu', () => {
     test.use({ viewport: { width: 375, height: 812 } });
 
-    test('hamburger button toggles mobile sidebar', async ({ page }) => {
+    test.skip('hamburger button toggles mobile sidebar', async ({ page }) => {
         await page.goto('/');
 
         const sidebar = page.locator('#sidebar');

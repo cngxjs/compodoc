@@ -34,12 +34,8 @@ export function EmptyState({ icon, title, description, action, variant }: EmptyS
         <div class={`cdx-empty-state ${variantClass}`}>
             {icon}
             <p class="cdx-empty-state-title">{title}</p>
-            {description ? <p class="cdx-empty-state-description">{description}</p> : ''}
-            {action
-                ? isPage
-                    ? <a class="cdx-empty-state-action" href={action.href}>{action.label}</a>
-                    : <a class="cdx-empty-state-action" href={action.href}>{action.label}</a>
-                : ''}
+            {description && <p class="cdx-empty-state-description">{description}</p>}
+            {action && <a class="cdx-empty-state-action" href={action.href}>{action.label}</a>}
         </div>
     ) as string;
 }

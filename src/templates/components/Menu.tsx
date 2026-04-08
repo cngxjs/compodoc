@@ -74,7 +74,7 @@ const EntityLink = (props: {
                 data-type="entity-link"
                 data-context={props.context}
                 data-context-id={props.contextId}
-                class={props.deprecated ? 'deprecated-name' : ''}
+                class={props.deprecated ? 'cdx-member-name--deprecated' : ''}
                 data-cdx-entity-type={props.entityType}
                 data-cdx-selector={props.selector || undefined}
                 data-cdx-io={props.inputCount || props.outputCount ? `${props.inputCount || 0}/${props.outputCount || 0}` : undefined}
@@ -469,7 +469,7 @@ export const Menu = (props: MenuProps): string => {
                                     <a
                                         href={`modules/${mod.name}.html`}
                                         data-type="entity-link"
-                                        class={mod.deprecated ? 'deprecated-name' : ''}
+                                        class={mod.deprecated ? 'cdx-member-name--deprecated' : ''}
                                     >
                                         {mod.name}
                                     </a>

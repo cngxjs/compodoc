@@ -1,7 +1,6 @@
 import Html from '@kitajs/html';
 import {
     extractDeclaration,
-    extractJsdocCodeExamples,
     isInfoSection,
     isTabEnabled,
     linkTypeHtml,
@@ -9,6 +8,7 @@ import {
     t
 } from '../helpers';
 import { highlightCode } from '../../app/engines/syntax-highlight.engine';
+import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockHostListener } from '../blocks/BlockHostListener';
@@ -126,7 +126,6 @@ const ExtendsMetadataCard = (e: any): string => {
 
 const InfoContent = (props: EntityInfoProps): string => {
     const e = props.entity;
-    const entityColor = props.entityKey === 'classe' ? 'class' : props.entityKey;
 
     if (!hasMembers(e)) {
         return (
@@ -178,22 +177,8 @@ const InfoContent = (props: EntityInfoProps): string => {
             })()}
 
             {/* 3. Examples */}
-            {isInfoSection('examples') &&
-                e.jsdoctags &&
-                (() => {
-                    const examples = extractJsdocCodeExamples(e.jsdoctags);
-                    if (examples.length === 0) return '';
-                    return (
-                        <section class="cdx-content-section">
-                            <h3 class="cdx-section-heading">{t('example')}</h3>
-                            <div class="io-description">
-                                {examples.map(ex => (
-                                    <div>{ex.comment}</div>
-                                ))}
-                            </div>
-                        </section>
-                    );
-                })()}
+            {isInfoSection('examples') && e.jsdoctags &&
+                JsdocExamplesBlock({ tags: e.jsdoctags, variant: 'code', level: 'section' })}
 
             {/* 4. Metadata (from entity-specific page) or extends/implements card */}
             {props.metadataHtml
@@ -233,8 +218,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                     constructor: e.constructorObj,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs,
-                    entityColor
+                    navTabs: props.navTabs
                 })}
 
             {/* 7. Inputs */}
@@ -245,8 +229,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                     element: e,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs,
-                    entityColor
+                    navTabs: props.navTabs
                 })}
 
             {/* 8. Outputs */}
@@ -257,8 +240,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                     element: e,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs,
-                    entityColor
+                    navTabs: props.navTabs
                 })}
 
             {/* 9. Host Bindings */}
@@ -270,8 +252,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                     file: e.file,
                     title: 'HostBindings',
                     depth: props.depth,
-                    navTabs: props.navTabs,
-                    entityColor
+                    navTabs: props.navTabs
                 })}
 
             {/* 10. Host Listeners */}
@@ -283,8 +264,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                     file: e.file,
                     title: 'HostListeners',
                     depth: props.depth,
-                    navTabs: props.navTabs,
-                    entityColor
+                    navTabs: props.navTabs
                 })}
 
             {/* 11. Methods */}
@@ -295,8 +275,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                     methods: e.methodsClass ?? e.methods,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs,
-                    entityColor
+                    navTabs: props.navTabs
                 })}
 
             {/* 12. Properties */}
@@ -307,8 +286,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                     properties: e.propertiesClass ?? e.properties,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs,
-                    entityColor
+                    navTabs: props.navTabs
                 })}
 
             {/* 13. Index Signatures */}
@@ -331,8 +309,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                     accessors: e.accessors,
                     file: e.file,
                     depth: props.depth,
-                    navTabs: props.navTabs,
-                    entityColor
+                    navTabs: props.navTabs
                 })}
         </>
     ) as string;
@@ -354,7 +331,7 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                     </ol>
                 </nav>
                 <h1 class="cdx-entity-hero-name">
-                    <span class={e.deprecated ? 'deprecated-name' : ''}>{e.name}</span>
+                    <span class={e.deprecated ? 'cdx-member-name--deprecated' : ''}>{e.name}</span>
                 </h1>
                 <div class="cdx-entity-hero-badges">
                     <span class={`cdx-badge ${meta.badge}`}>{meta.label}</span>

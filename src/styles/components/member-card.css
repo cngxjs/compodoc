@@ -216,12 +216,12 @@
     padding-left: 52px;
 }
 
-.cdx-member-deprecation {
+.cdx-member-deprecated {
     font-size: 0.85rem;
     color: var(--color-cdx-text-secondary);
 }
 
-.cdx-member-deprecation::before {
+.cdx-member-deprecated::before {
     content: '@deprecated';
     display: inline-block;
     font-family: var(--font-code);
@@ -233,6 +233,22 @@
     background: var(--color-cdx-text);
     color: var(--color-cdx-bg);
     vertical-align: middle;
+}
+
+.cdx-member-name--deprecated {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.cdx-member-deprecated--inline {
+    display: inline;
+    margin-left: var(--spacing-cdx-sm);
+    font-size: 0.75rem;
+}
+
+.cdx-member-body--flush {
+    border-top: none;
+    padding-top: var(--spacing-cdx-md);
 }
 
 .cdx-member-signature {

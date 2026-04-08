@@ -2,6 +2,7 @@ import Html from '@kitajs/html';
 import { isInitialTab, isTabEnabled, parseDescription, relativeUrl, t } from '../helpers';
 import { BlockMethod } from '../blocks/BlockMethod';
 import { EntityTabs } from '../blocks/EntityTabs';
+import { GraphZoomControls } from '../blocks/GraphControls';
 import { IconInterface, IconMaximize } from '../components/Icons';
 
 const NG2_MODULES = ['BrowserModule', 'FormsModule', 'HttpModule', 'RouterModule'];
@@ -118,7 +119,7 @@ export const ModulePage = (data: any): string => {
     return (<>
         <ol class="cdx-breadcrumb">
             <li class="">{t('modules')}</li>
-            <li class={mod.deprecated ? 'deprecated-name' : ''}>{data.name}</li>
+            <li class={mod.deprecated ? 'cdx-member-name--deprecated' : ''}>{data.name}</li>
         </ol>
 
         {!data.disableGraph && mod.graph && (<>
@@ -127,11 +128,7 @@ export const ModulePage = (data: any): string => {
                     <div id="module-graph-svg">{mod.graph}</div>
                     <button id="fullscreen" class="cdx-graph-fullscreen-btn" aria-label="Fullscreen">{IconMaximize()}</button>
                 </div>
-                <div class="cdx-graph-zoom-controls">
-                    <button id="zoom-in" class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
-                    <button id="reset" class="cdx-btn cdx-btn--sm">{t('reset')}</button>
-                    <button id="zoom-out" class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
-                </div>
+                {GraphZoomControls({})}
             </div>
         </>)}
 
