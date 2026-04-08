@@ -16,6 +16,7 @@ export { oneParameterHas } from './one-parameter-has';
 export { parseDescription } from './parse-description';
 export { parseProperty } from './parse-property';
 export { relativeUrl } from './relative-url';
+export { signalKindLabel } from './signal-kind';
 export { shortUrl, shortPath } from './short-url';
 export { computeCoverageStats } from './coverage-stats';
 export type { CoverageStats } from './coverage-stats';
