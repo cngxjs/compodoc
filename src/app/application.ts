@@ -2335,7 +2335,9 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         out[key] = {
                             coveragePercent: Math.round(t.pct),
                             coverageCount: '' + t.covered + '/' + t.total,
-                            status: getCovStatus(t.pct, t.total)
+                            status: getCovStatus(t.pct, t.total),
+                            total: t.total,
+                            covered: t.covered
                         };
                     }
                 });

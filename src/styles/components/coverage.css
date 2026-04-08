@@ -95,6 +95,12 @@
     font-weight: 500;
 }
 
+.cdx-coverage-stat-sub {
+    font-size: 0.75rem;
+    color: var(--color-cdx-text-muted);
+    margin-top: 2px;
+}
+
 .cdx-coverage-filter {
     position: relative;
     margin-bottom: 1.25rem;

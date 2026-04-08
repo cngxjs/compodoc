@@ -1,6 +1,7 @@
 import Html from '@kitajs/html';
 import { t, shortPath, computeCoverageStats } from '../helpers';
 import { DonutChart } from '../blocks/DonutChart';
+import { CoverageSummary } from '../blocks/CoverageSummary';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconChart } from '../components/EmptyStateIcons';
 
@@ -183,33 +184,15 @@ export const CoverageReport = (props: CoverageReportProps): string => {
             <ol class="cdx-breadcrumb">
                 <li>{t('coverage-page-title')}</li>
             </ol>
-            <div class="cdx-coverage-summary">
-                {DonutChart({ percent: overallPct, documented, partial, undocumented, total, size: 'lg' })}
-                <div class="cdx-coverage-stats">
-                    <div>
-                        <div class="cdx-coverage-stat-value">{total}</div>
-                        <div class="cdx-coverage-stat-label">{t('total')}</div>
-                    </div>
-                    <div>
-                        <div class="cdx-coverage-stat-value cdx-coverage-stat-value--documented">
-                            {documented}
-                        </div>
-                        <div class="cdx-coverage-stat-label">{t('documented')}</div>
-                    </div>
-                    <div>
-                        <div class="cdx-coverage-stat-value cdx-coverage-stat-value--partial">
-                            {partial}
-                        </div>
-                        <div class="cdx-coverage-stat-label">{t('partial')}</div>
-                    </div>
-                    <div>
-                        <div class="cdx-coverage-stat-value cdx-coverage-stat-value--undocumented">
-                            {undocumented}
-                        </div>
-                        <div class="cdx-coverage-stat-label">{t('undocumented')}</div>
-                    </div>
-                </div>
-            </div>
+            {CoverageSummary({
+                donutHtml: DonutChart({ percent: overallPct, documented, partial, undocumented, total, size: 'lg' }),
+                stats: [
+                    { value: total, label: t('total'), subtitle: `${files.length} files` },
+                    { value: documented, label: t('documented'), modifier: 'documented', subtitle: total > 0 ? `${Math.round(documented / total * 100)}%` : '0%' },
+                    { value: partial, label: t('partial'), modifier: 'partial', subtitle: total > 0 ? `${Math.round(partial / total * 100)}%` : '0%' },
+                    { value: undocumented, label: t('undocumented'), modifier: 'undocumented', subtitle: total > 0 ? `${Math.round(undocumented / total * 100)}%` : '0%' },
+                ],
+            })}
 
             <div class="cdx-coverage-filter">
                 <input
