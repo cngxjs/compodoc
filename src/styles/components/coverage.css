@@ -35,12 +35,12 @@
     stroke: var(--color-cdx-border);
 }
 
-.cdx-coverage-donut-arc {
-    transition: stroke-dashoffset 400ms ease;
+.cdx-donut-segment {
+    transition: stroke-dasharray 800ms ease-out, stroke-dashoffset 800ms ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cdx-coverage-donut-arc {
+    .cdx-donut-segment {
         transition: none;
     }
 }

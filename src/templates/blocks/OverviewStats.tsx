@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import { t, computeCoverageStats } from '../helpers';
+import { DonutChart } from './DonutChart';
 import {
     IconComponent, IconDirective, IconPipe, IconModule, IconClass,
     IconInterface, IconGuard, IconInterceptor, IconInjectable, IconEntity,
@@ -34,56 +35,6 @@ type OverviewStatsProps = {
     readonly coverageData?: { files?: any[] };
 };
 
-/* ---- Mini SVG Donut (80x80) ---- */
-
-const CIRCUMFERENCE = 2 * Math.PI * 34; // r=34 for 80x80 viewBox
-
-const CoverageDonut = (percent: number, documented: number, partial: number, undocumented: number, total: number): string => {
-    const docFrac = total > 0 ? documented / total : 0;
-    const partFrac = total > 0 ? partial / total : 0;
-
-    const docLen = CIRCUMFERENCE * docFrac;
-    const partLen = CIRCUMFERENCE * partFrac;
-    const undocLen = CIRCUMFERENCE - docLen - partLen;
-
-    const docOffset = 0;
-    const partOffset = -(docLen);
-    const undocOffset = -(docLen + partLen);
-
-    const COLORS = { green: '#22c55e', yellow: '#eab308', red: '#ef4444' };
-
-    return (
-        <svg viewBox="0 0 80 80" class="cdx-overview-donut" role="img"
-            aria-label={`Documentation coverage: ${percent}%`}>
-            <title>{`Coverage: ${percent}%`}</title>
-            <circle cx="40" cy="40" r="34" fill="none" stroke="var(--cdx-border)" stroke-width="7" />
-            {docLen > 0 && <circle cx="40" cy="40" r="34" fill="none"
-                stroke={COLORS.green} stroke-width="7"
-                stroke-dasharray={`${docLen} ${CIRCUMFERENCE - docLen}`}
-                stroke-dashoffset={String(docOffset)}
-                transform="rotate(-90 40 40)">
-                <title>{`Documented: ${documented}`}</title>
-            </circle>}
-            {partLen > 0 && <circle cx="40" cy="40" r="34" fill="none"
-                stroke={COLORS.yellow} stroke-width="7"
-                stroke-dasharray={`${partLen} ${CIRCUMFERENCE - partLen}`}
-                stroke-dashoffset={String(partOffset)}
-                transform="rotate(-90 40 40)">
-                <title>{`Partial: ${partial}`}</title>
-            </circle>}
-            {undocLen > 0 && <circle cx="40" cy="40" r="34" fill="none"
-                stroke={COLORS.red} stroke-width="7"
-                stroke-dasharray={`${undocLen} ${CIRCUMFERENCE - undocLen}`}
-                stroke-dashoffset={String(undocOffset)}
-                transform="rotate(-90 40 40)">
-                <title>{`Undocumented: ${undocumented}`}</title>
-            </circle>}
-            <text x="40" y="40" text-anchor="middle" dominant-baseline="central"
-                class="cdx-overview-donut-pct">{percent}%</text>
-        </svg>
-    ) as string;
-};
-
 /* ---- KPI Tile ---- */
 
 const KpiTile = (props: {
@@ -99,7 +50,7 @@ const KpiTile = (props: {
             <div class="cdx-overview-kpi-label">{props.label}</div>
             <div class="cdx-overview-adoption-bar" role="progressbar"
                 aria-valuenow={String(pct)} aria-valuemin="0" aria-valuemax="100">
-                <div class="cdx-overview-adoption-fill" style={`width:${pct}%`} />
+                <div class="cdx-overview-adoption-fill" style="width:0" data-cdx-fill-width={`${pct}%`} />
             </div>
             {props.fraction && (
                 <div class="cdx-overview-kpi-fraction">{props.fraction}</div>
@@ -251,7 +202,7 @@ export const OverviewStats = (props: OverviewStatsProps): string => {
                     {/* Coverage tile */}
                     {coverage.total > 0 && (
                         <a href="./coverage.html" class="cdx-overview-kpi cdx-overview-kpi--coverage">
-                            {CoverageDonut(coverage.percent, coverage.documented, coverage.partial, coverage.undocumented, coverage.total)}
+                            {DonutChart({ percent: coverage.percent, documented: coverage.documented, partial: coverage.partial, undocumented: coverage.undocumented, total: coverage.total, size: 'sm' })}
                             <div class="cdx-overview-kpi-label">{t('coverage-overview')}</div>
                             <div class="cdx-overview-kpi-fraction">{coverage.documented}/{coverage.total} {t('documented').toLowerCase()}</div>
                         </a>

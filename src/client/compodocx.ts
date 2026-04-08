@@ -8,6 +8,7 @@ import { initGraphs } from './graphs';
 import { initStackblitz } from './stackblitz';
 import { initCoverage } from './coverage';
 import { initKeyboard } from './keyboard';
+import { initAnimations } from './animate';
 // import { initToc } from './toc';
 
 // Theme must run before DOMContentLoaded to prevent flash
@@ -23,6 +24,7 @@ const init = () => {
     initStackblitz();
     initCoverage();
     initKeyboard();
+    initAnimations();
     // initToc(); // TODO: enable when ToC styling is finalized
 };
 
