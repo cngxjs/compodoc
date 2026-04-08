@@ -49,7 +49,7 @@ export const BlockMethod = (props: BlockMethodProps): string => {
 
                 const body = (<>
                     {m.deprecated && (
-                        <div class="cdx-member-deprecation">{m.deprecationMessage || t('deprecated')}</div>
+                        <div class="cdx-member-deprecated">{m.deprecationMessage || t('deprecated')}</div>
                     )}
                     {m.args?.length > 0 && (
                         <div class="cdx-member-signature">

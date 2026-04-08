@@ -30,7 +30,7 @@ export const BlockEnum = (props: BlockEnumProps): string => (
 
             const body = (<>
                 {e.deprecated && (
-                    <div class="cdx-member-deprecated">{e.deprecationMessage}</div>
+                    <div class="cdx-member-deprecated">{e.deprecationMessage || t('deprecated')}</div>
                 )}
                 {e.description && (
                     <div class="io-description">{parseDescription(e.description, props.depth ?? 0)}</div>

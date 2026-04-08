@@ -49,7 +49,7 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
 
                 const body = (<>
                     {m.deprecated && (
-                        <div class="cdx-member-deprecation">{m.deprecationMessage || t('deprecated')}</div>
+                        <div class="cdx-member-deprecated">{m.deprecationMessage || t('deprecated')}</div>
                     )}
                     {m.argsDecorator && (
                         <div class="cdx-member-row">

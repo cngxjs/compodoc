@@ -55,7 +55,7 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
 
                 const body = (<>
                     {p.deprecated && (
-                        <div class="cdx-member-deprecation">{p.deprecationMessage || t('deprecated')}</div>
+                        <div class="cdx-member-deprecated">{p.deprecationMessage || t('deprecated')}</div>
                     )}
                     {p.defaultValue && (
                         <div class="cdx-member-row">
