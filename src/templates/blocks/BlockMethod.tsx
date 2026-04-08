@@ -19,7 +19,6 @@ type BlockMethodProps = {
     readonly title?: string;
     readonly depth?: number;
     readonly navTabs?: any[];
-    readonly entityColor?: string;
 };
 
 export const BlockMethod = (props: BlockMethodProps): string => {

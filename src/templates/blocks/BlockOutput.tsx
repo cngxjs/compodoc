@@ -7,7 +7,6 @@ type BlockOutputProps = {
     readonly file: string;
     readonly depth?: number;
     readonly navTabs?: any[];
-    readonly entityColor?: string;
 };
 
 export const BlockOutput = (props: BlockOutputProps): string => {

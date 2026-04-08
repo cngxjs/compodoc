@@ -15,7 +15,6 @@ type BlockConstructorProps = {
     readonly file: string;
     readonly depth?: number;
     readonly navTabs?: any[];
-    readonly entityColor?: string;
 };
 
 export const BlockConstructor = (props: BlockConstructorProps): string => {

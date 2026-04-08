@@ -16,7 +16,6 @@ type BlockAccessorsProps = {
     readonly file: string;
     readonly depth?: number;
     readonly navTabs?: any[];
-    readonly entityColor?: string;
 };
 
 const SignatureBlock = (props: {

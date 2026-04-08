@@ -40,7 +40,6 @@ type BlockPropertyProps = {
     readonly title?: string;
     readonly depth?: number;
     readonly navTabs?: any[];
-    readonly entityColor?: string;
 };
 
 export const BlockProperty = (props: BlockPropertyProps): string => {

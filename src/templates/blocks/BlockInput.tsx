@@ -7,7 +7,6 @@ type BlockInputProps = {
     readonly file: string;
     readonly depth?: number;
     readonly navTabs?: any[];
-    readonly entityColor?: string;
 };
 
 export const BlockInput = (props: BlockInputProps): string => {
