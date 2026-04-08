@@ -1095,6 +1095,39 @@ export class AngularDependencies extends FrameworkDependencies {
                                     return;
                                 }
 
+                                // Detect functional guard/interceptor from type annotation
+                                const functionalKind = this.detectFunctionalAngularKind(infos.type, name);
+                                if (functionalKind && !isIgnore(variableNode)) {
+                                    if (!this.isSymbolAllowed(name, file)) {
+                                        logger.debug(`Skipping functional ${functionalKind} ${name} (not in public API)`);
+                                        return;
+                                    }
+                                    const guardDep: any = {
+                                        name,
+                                        id: `${functionalKind}-${name}-${crypto.createHash('sha512').update(name + file).digest('hex')}`,
+                                        file,
+                                        type: functionalKind,
+                                        properties: [],
+                                        methods: [],
+                                        deprecated: deps.deprecated || false,
+                                        deprecationMessage: deps.deprecationMessage || '',
+                                        category: deps.category || '',
+                                        description: deps.description || '',
+                                        rawdescription: deps.rawdescription || '',
+                                        sourceCode: srcFile.getText(),
+                                        functionalKind,
+                                    };
+                                    if (infos.since) guardDep.since = infos.since;
+                                    if (infos.beta) guardDep.beta = true;
+                                    this.debug(guardDep);
+                                    if (functionalKind === 'guard') {
+                                        outputSymbols.guards.push(guardDep);
+                                    } else if (functionalKind === 'interceptor') {
+                                        outputSymbols.interceptors.push(guardDep);
+                                    }
+                                    return;
+                                }
+
                                 if (isModuleWithProviders(variableNode)) {
                                     const routingInitializer = getModuleWithProviders(variableNode);
                                     RouterParserUtil.addModuleWithRoutes(
