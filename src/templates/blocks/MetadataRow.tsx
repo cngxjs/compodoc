@@ -17,14 +17,15 @@ export function MetadataCodeRow(label: string, value: string): string {
 }
 
 /** Full metadata section: `<section>` + `<h3>` + `<dl>` wrapping pre-rendered rows. */
-export function MetadataSection(props: { readonly title?: string; readonly rows: string[] }): string {
+export function MetadataSection(props: {
+    readonly title?: string;
+    readonly rows: string[];
+}): string {
     if (props.rows.length === 0) return '';
     return (
         <section class="cdx-content-section" data-compodoc="block-metadata">
             <h3 class="cdx-section-heading">{props.title ?? t('metadata')}</h3>
-            <dl class="cdx-metadata-card">
-                {props.rows.join('')}
-            </dl>
+            <dl class="cdx-metadata-card">{props.rows.join('')}</dl>
         </section>
     ) as string;
 }

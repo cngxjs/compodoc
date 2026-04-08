@@ -1,24 +1,13 @@
 import Html from '@kitajs/html';
+import { MetadataCodeRow, MetadataSection } from '../blocks/MetadataRow';
 import { renderEntityPage } from './EntityPage';
 
 const TokenMetadata = (injectable: any): string => {
     if (!injectable.isToken) return '';
     const rows: string[] = [];
-    if (injectable.tokenType) {
-        rows.push(<div class="cdx-metadata-row"><dt class="cdx-metadata-label">Type</dt><dd class="cdx-metadata-value"><code>{injectable.tokenType}</code></dd></div> as string);
-    }
-    if (injectable.providedIn) {
-        rows.push(<div class="cdx-metadata-row"><dt class="cdx-metadata-label">Provided in</dt><dd class="cdx-metadata-value"><code>{injectable.providedIn}</code></dd></div> as string);
-    }
-    if (rows.length === 0) return '';
-    return (
-        <section class="cdx-content-section" data-compodoc="block-metadata">
-            <h3 class="cdx-section-heading">Token Metadata</h3>
-            <dl class="cdx-metadata-card">
-                {rows.join('')}
-            </dl>
-        </section>
-    ) as string;
+    if (injectable.tokenType) rows.push(MetadataCodeRow('Type', injectable.tokenType));
+    if (injectable.providedIn) rows.push(MetadataCodeRow('Provided in', injectable.providedIn));
+    return MetadataSection({ title: 'Token Metadata', rows });
 };
 
 export const InjectablePage = (data: any): string =>

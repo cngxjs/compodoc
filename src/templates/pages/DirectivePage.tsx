@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import { isInfoSection, linkTypeHtml, t } from '../helpers';
+import { MetadataRow, MetadataCodeRow, MetadataSection } from '../blocks/MetadataRow';
 import { renderEntityPage } from './EntityPage';
 
 const DirectiveMetadata = (directive: any): string => {
@@ -11,41 +12,28 @@ const DirectiveMetadata = (directive: any): string => {
 
     const rows: string[] = [];
 
-    if (directive.selector) {
-        rows.push(<div class="cdx-metadata-row"><dt class="cdx-metadata-label">{t('selector')}</dt><dd class="cdx-metadata-value"><code>{directive.selector}</code></dd></div> as string);
-    }
-    if (directive.standalone) {
-        rows.push(<div class="cdx-metadata-row"><dt class="cdx-metadata-label">{t('standalone')}</dt><dd class="cdx-metadata-value"><code>{String(directive.standalone)}</code></dd></div> as string);
-    }
-    if (directive.exportAs) {
-        rows.push(<div class="cdx-metadata-row"><dt class="cdx-metadata-label">{t('exportAs')}</dt><dd class="cdx-metadata-value"><code>{directive.exportAs}</code></dd></div> as string);
-    }
+    if (directive.selector) rows.push(MetadataCodeRow(t('selector'), directive.selector));
+    if (directive.standalone) rows.push(MetadataCodeRow(t('standalone'), String(directive.standalone)));
+    if (directive.exportAs) rows.push(MetadataCodeRow(t('exportAs'), directive.exportAs));
     if (directive.providers) {
-        rows.push(<div class="cdx-metadata-row"><dt class="cdx-metadata-label">{t('providers')}</dt><dd class="cdx-metadata-value"><code>{directive.providers.map((p: any) => p.name).join(', ')}</code></dd></div> as string);
+        rows.push(MetadataCodeRow(t('providers'), directive.providers.map((p: any) => p.name).join(', ')));
     }
     if (directive.hostDirectives?.length > 0) {
-        rows.push(<div class="cdx-metadata-row"><dt class="cdx-metadata-label">{t('hostdirectives')}</dt><dd class="cdx-metadata-value">{directive.hostDirectives.map((hd: any) => {
+        rows.push(MetadataRow(t('hostdirectives'), directive.hostDirectives.map((hd: any) => {
             let html = linkTypeHtml(hd.name);
             if (hd.inputs?.length > 0) html += ` <span class="cdx-metadata-label">${t('inputs')}:</span> ${hd.inputs.join(', ')}`;
             if (hd.outputs?.length > 0) html += ` <span class="cdx-metadata-label">${t('outputs')}:</span> ${hd.outputs.join(', ')}`;
             return html;
-        }).join(' ')}</dd></div> as string);
+        }).join(' ')));
     }
     if (hasExtends) {
-        rows.push(<div class="cdx-metadata-row"><dt class="cdx-metadata-label">extends</dt><dd class="cdx-metadata-value">{(directive.extends as string[]).map((ext: string) => linkTypeHtml(ext)).join(' ')}</dd></div> as string);
+        rows.push(MetadataRow('extends', (directive.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')));
     }
     if (hasImplements) {
-        rows.push(<div class="cdx-metadata-row"><dt class="cdx-metadata-label">implements</dt><dd class="cdx-metadata-value">{(directive.implements as string[]).map((impl: string) => linkTypeHtml(impl)).join(' ')}</dd></div> as string);
+        rows.push(MetadataRow('implements', (directive.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')));
     }
 
-    return (
-        <section class="cdx-content-section" data-compodoc="block-metadata">
-            <h3 class="cdx-section-heading">{t('metadata')}</h3>
-            <dl class="cdx-metadata-card">
-                {rows.join('')}
-            </dl>
-        </section>
-    ) as string;
+    return MetadataSection({ rows });
 };
 
 export const DirectivePage = (data: any): string =>

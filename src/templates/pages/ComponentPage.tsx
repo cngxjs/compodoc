@@ -12,6 +12,7 @@ import {
     t
 } from '../helpers';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
+import { MetadataRow, MetadataCodeRow, MetadataSection } from '../blocks/MetadataRow';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockIndex } from '../blocks/BlockIndex';
@@ -46,15 +47,6 @@ const breakComma = (text: string): string => {
         .replaceAll(/"/g, '&quot;');
     return escaped.replaceAll(',', ',<br>');
 };
-
-const MetadataRow = (label: string, value: string, isBlock = false): string =>
-    (<div class={`cdx-metadata-row${isBlock ? ' cdx-metadata-row--block' : ''}`}>
-        <dt class="cdx-metadata-label">{label}</dt>
-        <dd class="cdx-metadata-value">{value}</dd>
-    </div>) as string;
-
-const MetadataCodeRow = (label: string, value: string): string =>
-    MetadataRow(label, `<code>${value}</code>`);
 
 const ComponentMetadata = (c: any): string => {
     if (!isInfoSection('metadata')) return '';
@@ -122,16 +114,7 @@ const ComponentMetadata = (c: any): string => {
     codeField('assetsDir', c.assetsDir);
     codeField('assetsDirs', c.assetsDirs);
 
-    if (rows.length === 0) return '';
-
-    return (
-        <section class="cdx-content-section" data-compodoc="block-metadata">
-            <h3 class="cdx-section-heading">{t('metadata')}</h3>
-            <dl class="cdx-metadata-card">
-                {rows.join('')}
-            </dl>
-        </section>
-    ) as string;
+    return MetadataSection({ rows });
 };
 
 const InfoContent = (data: any): string => {
