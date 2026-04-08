@@ -86,14 +86,17 @@ export const BlockIndex = (props: BlockIndexProps): string => {
                     <div class="cdx-index-group">
                         <h4 class="cdx-index-group-label">{t('accessors')}</h4>
                         <div class="cdx-index-entries">
-                            {accessorEntries.map(([key, acc]) => (
-                                <a href={`#${key}`}
-                                   class={`cdx-index-entry${acc.deprecated ? ' cdx-index-entry--deprecated' : ''}`}>
-                                    <span class="cdx-index-indicator cdx-index-indicator--accessor"
-                                          aria-hidden="true">A</span>
-                                    <span class="cdx-index-name">{key}</span>
-                                </a>
-                            ))}
+                            {accessorEntries.map(([key, acc]) => {
+                                const isDeprecated = !!(acc.getSignature?.deprecated || acc.setSignature?.deprecated);
+                                return (
+                                    <a href={`#${key}`}
+                                       class={`cdx-index-entry${isDeprecated ? ' cdx-index-entry--deprecated' : ''}`}>
+                                        <span class="cdx-index-indicator cdx-index-indicator--accessor"
+                                              aria-hidden="true">A</span>
+                                        <span class="cdx-index-name">{key}</span>
+                                    </a>
+                                );
+                            })}
                         </div>
                     </div>
                 )}
