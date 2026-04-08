@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
+import { roleGuard, unsavedChangesGuard, featureFlagGuard } from './core/guards/role.guard';
 
 /**
  * Application routes configuration.
@@ -29,5 +31,14 @@ export const routes: Routes = [
         path: 'settings',
         loadComponent: () =>
             import('./settings/settings.component').then(m => m.SettingsComponent),
+        canDeactivate: [unsavedChangesGuard],
+    },
+    {
+        path: 'admin',
+        loadComponent: () =>
+            import('./features/admin/admin-panel.component').then(m => m.AdminPanelComponent),
+        canActivate: [adminGuard, roleGuard('admin', 'superadmin')],
+        canMatch: [featureFlagGuard],
+        data: { featureFlag: 'beta' },
     },
 ];
