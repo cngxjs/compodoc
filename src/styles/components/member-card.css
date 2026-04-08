@@ -235,6 +235,17 @@
     vertical-align: middle;
 }
 
+.cdx-member-name--deprecated {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.cdx-member-deprecated--inline {
+    display: inline;
+    margin-left: var(--spacing-cdx-sm);
+    font-size: 0.75rem;
+}
+
 .cdx-member-signature {
     background: var(--color-cdx-bg-alt);
     border-radius: var(--radius-cdx-md);

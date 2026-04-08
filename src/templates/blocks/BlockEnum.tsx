@@ -2,7 +2,7 @@ import Html from '@kitajs/html';
 import { parseDescription, t } from '../helpers';
 import { MemberCard } from './MemberCard';
 
-type EnumChild = { readonly name?: string; readonly value?: string };
+type EnumChild = { readonly name?: string; readonly value?: string; readonly deprecated?: boolean; readonly deprecationMessage?: string };
 type EnumItem = {
     readonly name: string;
     readonly deprecated?: boolean;
@@ -36,7 +36,12 @@ export const BlockEnum = (props: BlockEnumProps): string => (
                     <div class="io-description">{parseDescription(e.description, props.depth ?? 0)}</div>
                 )}
                 {(e.childs ?? []).map(child => (<>
-                    {child.name && <div class="cdx-member-row">{child.name}</div>}
+                    {child.name && (
+                        <div class="cdx-member-row">
+                            <span class={child.deprecated ? 'cdx-member-name--deprecated' : ''}>{child.name}</span>
+                            {child.deprecated && <span class="cdx-member-deprecated cdx-member-deprecated--inline">{child.deprecationMessage || t('deprecated')}</span>}
+                        </div>
+                    )}
                     {child.value && <div class="cdx-member-row"><i>{t('value')} : </i><code>{child.value}</code></div>}
                 </>))}
             </>) as string;
