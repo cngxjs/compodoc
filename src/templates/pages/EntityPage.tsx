@@ -1,7 +1,6 @@
 import Html from '@kitajs/html';
 import {
     extractDeclaration,
-    extractJsdocCodeExamples,
     isInfoSection,
     isTabEnabled,
     linkTypeHtml,
@@ -9,6 +8,7 @@ import {
     t
 } from '../helpers';
 import { highlightCode } from '../../app/engines/syntax-highlight.engine';
+import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockHostListener } from '../blocks/BlockHostListener';
@@ -177,22 +177,8 @@ const InfoContent = (props: EntityInfoProps): string => {
             })()}
 
             {/* 3. Examples */}
-            {isInfoSection('examples') &&
-                e.jsdoctags &&
-                (() => {
-                    const examples = extractJsdocCodeExamples(e.jsdoctags);
-                    if (examples.length === 0) return '';
-                    return (
-                        <section class="cdx-content-section">
-                            <h3 class="cdx-section-heading">{t('example')}</h3>
-                            <div class="io-description">
-                                {examples.map(ex => (
-                                    <div>{ex.comment}</div>
-                                ))}
-                            </div>
-                        </section>
-                    );
-                })()}
+            {isInfoSection('examples') && e.jsdoctags &&
+                JsdocExamplesBlock({ tags: e.jsdoctags, variant: 'code', level: 'section' })}
 
             {/* 4. Metadata (from entity-specific page) or extends/implements card */}
             {props.metadataHtml

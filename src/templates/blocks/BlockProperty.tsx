@@ -1,13 +1,14 @@
 import Html from '@kitajs/html';
 import {
-    extractJsdocExamples,
     hasJsdocParams,
     linkTypeHtml,
     modifKind,
     parseDescription,
+    signalKindLabel,
     t
 } from '../helpers';
 import { DefinedInRow } from './DefinedInRow';
+import { JsdocExamplesBlock } from './JsdocExamplesBlock';
 import { ParamsTable } from './ParamsTable';
 
 const signalKindLabel = (kind: string): string =>
@@ -131,18 +132,7 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                                         showOptional: false,
                                         showDefaultValue: false
                                     })}
-                                    {(() => {
-                                        const examples = extractJsdocExamples(p.jsdoctags);
-                                        if (examples.length === 0) return '';
-                                        return (
-                                            <>
-                                                <b>{t('example')} :</b>
-                                                {examples.map(ex => (
-                                                    <div class="jsdoc-example-ul">{ex.comment}</div>
-                                                ))}
-                                            </>
-                                        );
-                                    })()}
+                                    {JsdocExamplesBlock({ tags: p.jsdoctags, variant: 'text', cssClass: 'jsdoc-example-ul' })}
                                 </div>
                             )}
                         </div>

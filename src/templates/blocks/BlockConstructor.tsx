@@ -1,6 +1,5 @@
 import Html from '@kitajs/html';
 import {
-    extractJsdocExamples,
     functionSignature,
     hasJsdocParams,
     isTabEnabled,
@@ -8,6 +7,7 @@ import {
     parseDescription,
     t,
 } from '../helpers';
+import { JsdocExamplesBlock } from './JsdocExamplesBlock';
 import { ParamsTable } from './ParamsTable';
 
 type BlockConstructorProps = {
@@ -45,14 +45,7 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
                     {ctor.jsdoctags && hasJsdocParams(ctor.jsdoctags) && (
                         <div>
                             {ParamsTable({ jsdocTags: ctor.jsdoctags, depth: props.depth ?? 0, showOptional: true })}
-                            {(() => {
-                                const examples = extractJsdocExamples(ctor.jsdoctags);
-                                if (examples.length === 0) return '';
-                                return (<>
-                                    <b>{t('example')} :</b>
-                                    {examples.map(ex => <div>{ex.comment}</div>)}
-                                </>);
-                            })()}
+                            {JsdocExamplesBlock({ tags: ctor.jsdoctags, variant: 'text' })}
                         </div>
                     )}
                 </div>

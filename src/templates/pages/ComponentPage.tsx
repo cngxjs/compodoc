@@ -1,7 +1,6 @@
 import Html from '@kitajs/html';
 import { IconComponent, IconExternalLink, IconFile, IconGitBranch } from '../components/Icons';
 import {
-    extractJsdocCodeExamples,
     isInfoSection,
     isInitialTab,
     isTabEnabled,
@@ -12,6 +11,7 @@ import {
     isReadmeEmpty,
     t
 } from '../helpers';
+import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockIndex } from '../blocks/BlockIndex';
@@ -154,22 +154,8 @@ const InfoContent = (data: any): string => {
                 </section>
             )}
 
-            {isInfoSection('examples') &&
-                c.jsdoctags &&
-                (() => {
-                    const examples = extractJsdocCodeExamples(c.jsdoctags);
-                    if (examples.length === 0) return '';
-                    return (
-                        <section class="cdx-content-section">
-                            <h3 class="cdx-section-heading">{t('example')}</h3>
-                            <div class="io-description">
-                                {examples.map(ex => (
-                                    <div>{ex.comment}</div>
-                                ))}
-                            </div>
-                        </section>
-                    );
-                })()}
+            {isInfoSection('examples') && c.jsdoctags &&
+                JsdocExamplesBlock({ tags: c.jsdoctags, variant: 'code', level: 'section' })}
 
             {(c.storybookUrl || c.figmaUrl || c.route) && (
                 <div class="cdx-external-links">

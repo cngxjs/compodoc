@@ -1,6 +1,5 @@
 import Html from '@kitajs/html';
 import {
-    extractJsdocCodeExamples,
     functionSignature,
     hasJsdocParams,
     isTabEnabled,
@@ -9,6 +8,7 @@ import {
     parseDescription,
     t,
 } from '../helpers';
+import { JsdocExamplesBlock } from './JsdocExamplesBlock';
 import { ParamsTable } from './ParamsTable';
 
 type BlockAccessorsProps = {
@@ -44,16 +44,7 @@ const SignatureBlock = (props: {
                 {ParamsTable({ jsdocTags: sig.jsdoctags, depth: props.depth, showOptional: true })}
             </div>
         )}
-        {sig.jsdoctags && (() => {
-            const examples = extractJsdocCodeExamples(sig.jsdoctags);
-            if (examples.length === 0) return '';
-            return (
-                <div>
-                    <b>{t('example')} :</b>
-                    {examples.map(ex => <div>{ex.comment}</div>)}
-                </div>
-            );
-        })()}
+        {sig.jsdoctags && JsdocExamplesBlock({ tags: sig.jsdoctags, variant: 'code' })}
         {sig.returnType && (<>
             <div class="cdx-member-returns">
                 <b>{t('returns')} : </b>{linkTypeHtml(sig.returnType)}
