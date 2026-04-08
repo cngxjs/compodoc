@@ -2,12 +2,12 @@ import Html from '@kitajs/html';
 import {
     functionSignature,
     hasJsdocParams,
-    isTabEnabled,
     jsdocReturnsComment,
     linkTypeHtml,
     parseDescription,
     t,
 } from '../helpers';
+import { DefinedInRow } from './DefinedInRow';
 import { JsdocExamplesBlock } from './JsdocExamplesBlock';
 import { MemberCard } from './MemberCard';
 import { ParamsTable } from './ParamsTable';
@@ -32,11 +32,7 @@ const SignatureBlock = (props: {
         <div class="cdx-member-row">
             <span class="accessor"><b>{props.label}</b><code>{functionSignature(sig)}</code></span>
         </div>
-        {sig.line && isTabEnabled(props.navTabs, 'source') && (
-            <div class="cdx-member-row">
-                {t('defined-in')} <a href="" data-cdx-line={String(sig.line)} class="cdx-link-to-source">{props.file}:{sig.line}</a>
-            </div>
-        )}
+        {DefinedInRow({ line: sig.line, file: props.file, navTabs: props.navTabs })}
         {sig.description && (
             <div class="io-description">{parseDescription(sig.description, props.depth)}</div>
         )}

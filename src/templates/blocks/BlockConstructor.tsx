@@ -2,11 +2,11 @@ import Html from '@kitajs/html';
 import {
     functionSignature,
     hasJsdocParams,
-    isTabEnabled,
     modifKind,
     parseDescription,
     t,
 } from '../helpers';
+import { DefinedInRow } from './DefinedInRow';
 import { JsdocExamplesBlock } from './JsdocExamplesBlock';
 import { ParamsTable } from './ParamsTable';
 
@@ -34,11 +34,7 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
                     <div class="cdx-member-signature">
                         <code>{functionSignature(ctor)}</code>
                     </div>
-                    {ctor.line && isTabEnabled(props.navTabs, 'source') && (
-                        <div class="cdx-member-row">
-                            {t('defined-in')} <a href="" data-cdx-line={String(ctor.line)} class="cdx-link-to-source">{props.file}:{ctor.line}</a>
-                        </div>
-                    )}
+                    {DefinedInRow({ line: ctor.line, file: props.file, navTabs: props.navTabs })}
                     {ctor.description && (
                         <div class="io-description">{parseDescription(ctor.description, props.depth ?? 0)}</div>
                     )}

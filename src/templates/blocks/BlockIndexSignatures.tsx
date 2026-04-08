@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
-import { indexableSignature, isTabEnabled, linkTypeHtml, parseDescription, t } from '../helpers';
+import { indexableSignature, linkTypeHtml, parseDescription, t } from '../helpers';
+import { DefinedInRow } from './DefinedInRow';
 import { MemberCard } from './MemberCard';
 
 type BlockIndexSignaturesProps = {
@@ -23,14 +24,7 @@ export const BlockIndexSignatures = (props: BlockIndexSignaturesProps): string =
             ) as string;
 
             const body = (<>
-                {idx.line && isTabEnabled(props.navTabs, 'source') && (
-                    <div class="cdx-member-row">
-                        {t('defined-in')}{' '}
-                        <a href="" data-cdx-line={String(idx.line)} class="cdx-link-to-source">
-                            {props.file}:{idx.line}
-                        </a>
-                    </div>
-                )}
+                {DefinedInRow({ line: idx.line, file: props.file, navTabs: props.navTabs })}
                 {idx.description && (
                     <div class="io-description">{parseDescription(idx.description, props.depth ?? 0)}</div>
                 )}
