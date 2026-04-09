@@ -45,6 +45,10 @@
 }
 .cdx-provider-name {
     @apply text-sm font-semibold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 .cdx-provider-name a,
 .cdx-provider-feature a {

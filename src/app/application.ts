@@ -209,6 +209,13 @@ export class Application {
                 }
                 Configuration.mainData.angularVersion =
                     AngularVersionUtil.getAngularVersionOfProject(parsedData);
+
+                // Detect zone.js in dependencies (if absent, app is zoneless)
+                const allDeps = {
+                    ...parsedData.dependencies,
+                    ...parsedData.devDependencies
+                };
+                Configuration.mainData.hasZoneJs = 'zone.js' in allDeps;
                 logger.info('package.json file found');
 
                 if (!Configuration.mainData.disableDependencies) {

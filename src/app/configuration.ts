@@ -84,6 +84,7 @@ export class Configuration implements ConfigurationInterface {
         coverageTestShowOnlyFailed: COMPODOC_DEFAULTS.coverageTestShowOnlyFailed,
         routesLength: 0,
         angularVersion: '',
+        hasZoneJs: true,
         exportFormat: COMPODOC_DEFAULTS.exportFormat,
         coverageData: {} as CoverageData,
         customFavicon: '',

@@ -15,6 +15,7 @@ import {
 } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
@@ -83,6 +84,7 @@ export const appConfig: ApplicationConfig = {
         ),
 
         // ─── Platform ───────────────────────────────────────
+        provideZonelessChangeDetection(),
         provideAnimationsAsync(),
         provideClientHydration(withEventReplay()),
         provideServiceWorker('ngsw-worker.js', {

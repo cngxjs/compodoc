@@ -1039,6 +1039,12 @@ export class AngularDependencies extends FrameworkDependencies {
                                         const providers = this.extractProviderCalls(
                                             infos.initializer
                                         );
+                                        // Zoneless detection: if zone.js is not in package.json
+                                        // dependencies, the app is zoneless — regardless of
+                                        // which provider function is used.
+                                        const hasZoneJs =
+                                            Configuration.mainData.hasZoneJs ?? true;
+                                        const isZoneless = !hasZoneJs;
                                         const appConfigDep: any = {
                                             name,
                                             file,
@@ -1049,7 +1055,8 @@ export class AngularDependencies extends FrameworkDependencies {
                                             deprecated: deps.deprecated || false,
                                             deprecationMessage: deps.deprecationMessage || '',
                                             category: deps.category || '',
-                                            since: infos.since || ''
+                                            since: infos.since || '',
+                                            zoneless: isZoneless
                                         };
                                         if (!isIgnore(variableNode)) {
                                             if (!this.isSymbolAllowed(name, file)) {

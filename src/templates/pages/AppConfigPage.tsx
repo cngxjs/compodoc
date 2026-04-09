@@ -14,6 +14,7 @@ type AppConfigData = {
     readonly description?: string;
     readonly providers: ProviderCall[];
     readonly since?: string;
+    readonly zoneless?: boolean;
 };
 
 const providerIcon = (name: string): string => {
@@ -49,7 +50,7 @@ const ProviderCard = (provider: ProviderCall): string =>
         <div class="cdx-provider-card">
             <div class="cdx-provider-header">
                 {iconFor(providerIcon(provider.name))}
-                <code class="cdx-provider-name">{linkedName(provider.name)}</code>
+                <code class="cdx-provider-name" title={`${provider.name}()`}>{linkedName(provider.name)}</code>
             </div>
             {provider.features.length > 0 && (
                 <div class="cdx-provider-features">
@@ -62,6 +63,12 @@ const ProviderCard = (provider: ProviderCall): string =>
         </div>
     ) as string;
 
+/** Zoneless provider names -- absorbed into the Zoneless badge */
+const ZONELESS_PROVIDERS = new Set([
+    'provideZonelessChangeDetection',
+    'provideExperimentalZonelessChangeDetection'
+]);
+
 export const AppConfigPage = (data: any): string => {
     const configs: AppConfigData[] = data.appConfig || [];
     if (configs.length === 0) {
@@ -70,7 +77,13 @@ export const AppConfigPage = (data: any): string => {
 
     return (
         <>
-            {configs.map(config => (
+            {configs.map(config => {
+                // When zoneless, the badge in the hero already conveys this,
+                // so filter out the redundant provider card.
+                const providers = config.zoneless
+                    ? config.providers.filter(p => !ZONELESS_PROVIDERS.has(p.name))
+                    : config.providers;
+                return (
                 <>
                     <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-entity-service)">
                         <div class="cdx-entity-hero-watermark" aria-hidden="true">
@@ -85,11 +98,14 @@ export const AppConfigPage = (data: any): string => {
                         <h1 class="cdx-entity-hero-name">{config.name}</h1>
                         <div class="cdx-entity-hero-badges">
                             <span class="cdx-badge cdx-badge--entity-injectable">Config</span>
+                            {config.zoneless && (
+                                <span class="cdx-badge cdx-badge--standalone">Zoneless</span>
+                            )}
                             {config.since && (
                                 <span class="cdx-badge cdx-badge--since">v{config.since}</span>
                             )}
                             <span class="cdx-badge cdx-badge--outline">
-                                {config.providers.length} {config.providers.length === 1 ? 'provider' : 'providers'}
+                                {providers.length} {providers.length === 1 ? 'provider' : 'providers'}
                             </span>
                         </div>
                         <p class="cdx-entity-hero-file" title="Source file">
@@ -109,18 +125,19 @@ export const AppConfigPage = (data: any): string => {
                     {/* Providers */}
                     <section class="cdx-content-section">
                         <h3 class="cdx-section-heading" id="providers">
-                            Providers ({config.providers.length})
+                            Providers ({providers.length})
                         </h3>
-                        {config.providers.length > 0 ? (
+                        {providers.length > 0 ? (
                             <div class="cdx-providers-grid">
-                                {config.providers.map(p => ProviderCard(p))}
+                                {providers.map(p => ProviderCard(p))}
                             </div>
                         ) : (
                             <p>No providers configured.</p>
                         )}
                     </section>
                 </>
-            ))}
+                );
+            })}
         </>
     ) as string;
 };
