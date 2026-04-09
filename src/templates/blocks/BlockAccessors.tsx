@@ -30,7 +30,7 @@ const SignatureBlock = (props: {
     if (!sig) return '';
     return (<>
         <div class="cdx-member-row">
-            <span class="accessor"><b>{props.label}</b><code>{functionSignature(sig)}</code></span>
+            <span class="cdx-accessor-label"><b>{props.label}</b><code>{functionSignature(sig)}</code></span>
         </div>
         {DefinedInRow({ line: sig.line, file: props.file, navTabs: props.navTabs })}
         {sig.description && (

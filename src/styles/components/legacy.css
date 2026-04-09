@@ -85,7 +85,7 @@ a[href] {
 .jsdoc-params li {
     padding-bottom: var(--spacing-cdx-md);
 }
-.jsdoc-example-ul ul {
+.cdx-jsdoc-example ul {
     padding-left: var(--spacing-cdx-xl);
 }
 example-url {
@@ -114,7 +114,7 @@ i {
 .content ul ul {
     list-style-type: circle;
 }
-.content ul.type-parameters {
+.content ul.cdx-type-params {
     margin-bottom: var(--spacing-cdx-sm);
 }
 
