@@ -97,3 +97,12 @@
         padding: var(--spacing-cdx-sm) var(--spacing-cdx-lg);
     }
 }
+
+/* Tab panel visibility */
+.cdx-tab-panel {
+    display: none;
+}
+
+.cdx-tab-panel.active {
+    display: block;
+}

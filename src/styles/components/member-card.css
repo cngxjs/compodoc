@@ -35,6 +35,8 @@
 .cdx-member-header {
     @apply flex items-baseline justify-between gap-2;
     padding: var(--spacing-cdx-lg) var(--spacing-cdx-xl) var(--spacing-cdx-md);
+    background: var(--color-cdx-bg-alt);
+    border-bottom: 1px solid var(--color-cdx-border);
 }
 
 .cdx-member-name {
@@ -69,12 +71,12 @@
     flex-shrink: 0;
 }
 
-.cdx-member-card .modifier {
+.cdx-member-card .cdx-member-modifier {
     display: inline-block;
     font-family: var(--font-code);
     font-size: 0.7rem;
     font-weight: 600;
-    padding: var(--spacing-cdx-xs) var(--spacing-cdx-sm);
+    padding: 1px 5px;
     border-radius: var(--radius-cdx-sm);
     margin-right: var(--spacing-cdx-sm);
     background: var(--color-cdx-bg-alt);
@@ -135,7 +137,7 @@
     margin-top: 0.5rem;
 }
 
-.cdx-member-body .io-description {
+.cdx-member-body .cdx-member-description {
     color: var(--color-cdx-text);
 }
 
@@ -144,6 +146,7 @@
     font-size: 0.8rem;
     color: var(--color-cdx-text);
 }
+
 
 .cdx-member-row {
     @apply text-sm;

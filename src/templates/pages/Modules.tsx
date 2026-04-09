@@ -1,5 +1,7 @@
 import Html from '@kitajs/html';
 import { t } from '../helpers';
+import { EmptyState } from '../components/EmptyState';
+import { EmptyIconTree } from '../components/EmptyStateIcons';
 
 type ModuleItem = {
     readonly name: string;
@@ -28,7 +30,7 @@ export const Modules = (props: ModulesProps): string => (
                         {!props.disableGraph && (
                             mod.graph
                                 ? <p>{lazyGraphObject(mod.name)}</p>
-                                : <p class="no-graph">{t('no-graph')}</p>
+                                : EmptyState({ icon: EmptyIconTree(), title: t('no-graph'), variant: 'full' })
                         )}
                     </div>
                     <div class="cdx-module-card-footer">

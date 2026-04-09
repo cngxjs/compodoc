@@ -26,7 +26,7 @@ export const BlockIndexSignatures = (props: BlockIndexSignaturesProps): string =
             const body = (<>
                 {DefinedInRow({ line: idx.line, file: props.file, navTabs: props.navTabs })}
                 {idx.description && (
-                    <div class="io-description">{parseDescription(idx.description, props.depth ?? 0)}</div>
+                    <div class="cdx-member-description">{parseDescription(idx.description, props.depth ?? 0)}</div>
                 )}
             </>) as string;
 

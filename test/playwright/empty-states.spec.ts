@@ -48,7 +48,7 @@ test.describe('Empty States', () => {
 
             const sourcePanel = page.locator('#source');
             await expect(sourcePanel.locator('.cdx-empty-state')).not.toBeVisible();
-            await expect(sourcePanel.locator('.compodoc-sourcecode')).toBeVisible();
+            await expect(sourcePanel.locator('.cdx-source-code')).toBeVisible();
         });
     });
 

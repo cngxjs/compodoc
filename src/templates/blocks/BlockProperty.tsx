@@ -29,9 +29,9 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
                             {(p.modifierKind ?? []).map((k: number) => (
-                                <span class="modifier">{modifKind(k)}</span>
+                                <span class="cdx-member-modifier">{modifKind(k)}</span>
                             ))}
-                            {p.optional && <span class="modifier">{t('optional')}</span>}
+                            {p.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
                             <span class={`cdx-member-name-text${p.deprecated ? ' cdx-member-name--deprecated' : ''}`}>
                                 {p.name}
                             </span>
@@ -68,10 +68,10 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                     )}
                     {DefinedInRow({ line: p.line, file: props.file, inheritance: p.inheritance, navTabs: props.navTabs })}
                     {p.description && (
-                        <div class="io-description">{parseDescription(p.description, props.depth ?? 0)}</div>
+                        <div class="cdx-member-description">{parseDescription(p.description, props.depth ?? 0)}</div>
                     )}
                     {p.jsdoctags && hasJsdocParams(p.jsdoctags) && (
-                        <div class="io-description">
+                        <div class="cdx-member-description">
                             {ParamsTable({ jsdocTags: p.jsdoctags, depth: props.depth ?? 0, showOptional: false, showDefaultValue: false })}
                             {JsdocExamplesBlock({ tags: p.jsdoctags, variant: 'text', cssClass: 'jsdoc-example-ul' })}
                         </div>

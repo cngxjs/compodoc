@@ -122,7 +122,7 @@ describe('CLI generation - JSDoc @example language specifications', () => {
         });
 
         it('should use proper HTML structure for code blocks', () => {
-            expect(directiveFile).to.contain('<pre class="line-numbers">');
+            expect(directiveFile).to.contain('<pre class="cdx-code-example">');
             expect(directiveFile).to.contain('<code class="language-typescript">');
             expect(directiveFile).to.contain('<code class="language-html">');
             expect(directiveFile).to.contain('<code class="language-javascript">');
@@ -130,7 +130,7 @@ describe('CLI generation - JSDoc @example language specifications', () => {
         });
 
         it('should have line-numbers class for syntax highlighting', () => {
-            const preElements = directiveFile.match(/<pre class="line-numbers">/g);
+            const preElements = directiveFile.match(/<pre class="cdx-code-example">/g);
             expect(preElements).to.have.length.greaterThan(3);
         });
 

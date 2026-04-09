@@ -31,7 +31,7 @@ export function JsdocExamplesBlock({ tags, variant = 'code', cssClass, level = '
         return (
             <section class="cdx-content-section">
                 <h3 class="cdx-section-heading">{t('example')}</h3>
-                <div class="io-description">{items}</div>
+                <div class="cdx-member-description">{items}</div>
             </section>
         ) as string;
     }

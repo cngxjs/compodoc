@@ -104,7 +104,7 @@ export class JsdocCodeExampleHelper implements IHtmlEngineHelper {
                         for (const block of codeBlocks) {
                             const tag = {} as JsdocTagInterface;
                             tag.comment =
-                                `<pre class="line-numbers"><code class="language-${block.language}">` +
+                                `<pre class="cdx-code-example"><code class="language-${block.language}">` +
                                 this.getHtmlEntities(block.code) +
                                 `</code></pre>`;
                             tags.push(tag);

@@ -70,7 +70,7 @@ pre.line-numbers code {
 
 /* --- Source viewer (Type A) --- */
 
-.tab-source-code {
+.cdx-tab-panel--source {
   padding: var(--spacing-cdx-md) 0;
 }
 
@@ -116,12 +116,12 @@ pre.line-numbers code {
   color: var(--color-cdx-text-secondary);
 }
 
-.compodoc-sourcecode .line:hover {
+.cdx-source-code .line:hover {
   background: hsl(220 20% 14% / 0.06);
   transition: background 80ms ease;
 }
 
-.dark .compodoc-sourcecode .line:hover {
+.dark .cdx-source-code .line:hover {
   background: hsl(220 16% 90% / 0.06);
 }
 

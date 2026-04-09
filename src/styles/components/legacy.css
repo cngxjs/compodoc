@@ -57,7 +57,7 @@ a[href] {
 .comment {
     margin: 15px 0;
 }
-.io-description {
+.cdx-member-description {
     margin: 10px 0;
 }
 
@@ -85,7 +85,7 @@ a[href] {
 .jsdoc-params li {
     padding-bottom: var(--spacing-cdx-md);
 }
-.jsdoc-example-ul ul {
+.cdx-jsdoc-example ul {
     padding-left: var(--spacing-cdx-xl);
 }
 example-url {
@@ -114,17 +114,17 @@ i {
 .content ul ul {
     list-style-type: circle;
 }
-.content ul.type-parameters {
+.content ul.cdx-type-params {
     margin-bottom: var(--spacing-cdx-sm);
 }
 
-.modifier {
+.cdx-member-modifier {
     background: #636363;
     padding: 1px 5px;
     color: white;
     border-radius: var(--radius-cdx-sm);
 }
-.modifier:empty {
+.cdx-member-modifier:empty {
     display: none;
 }
 
