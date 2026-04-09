@@ -1,3 +1,5 @@
+declare function gtag(...args: unknown[]): void;
+
 /**
  * SPA-style navigation.
  * Intercepts internal link clicks, fetches pages via fetch(),
@@ -21,7 +23,7 @@ const stripPrefix = (path: string): string =>
 
 /** Rewrite relative sidebar links based on current page depth */
 const fixMenuLinks = () => {
-    const depth = (window as any).COMPODOC_CURRENT_PAGE_DEPTH ?? 0;
+    const depth = (globalThis as any).COMPODOC_CURRENT_PAGE_DEPTH ?? 0;
     const prefix = depth === 0 ? './' : '../'.repeat(depth);
 
     document.querySelectorAll<HTMLAnchorElement>('.menu a[data-type]').forEach(a => {
@@ -222,6 +224,11 @@ const navigate = async (url: string, pushState = true, clickedAnchor: HTMLAnchor
         // Update URL
         if (pushState) {
             history.pushState({ path: url }, '', url);
+        }
+
+        // Send GA4 pageview on SPA navigation
+        if (typeof gtag === 'function') {
+            gtag('event', 'page_view', { page_path: new URL(url, window.location.origin).pathname });
         }
 
         // Fix sidebar links for new page depth and update active state
