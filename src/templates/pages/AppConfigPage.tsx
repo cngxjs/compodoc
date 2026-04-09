@@ -1,5 +1,7 @@
 import Html from '@kitajs/html';
 import { IconFile, IconSettings, iconFor } from '../components/Icons';
+import { EmptyState } from '../components/EmptyState';
+import { EmptyIconBolt } from '../components/EmptyStateIcons';
 import { resolveType } from '../helpers/link-type';
 import { parseDescription, t } from '../helpers';
 
@@ -132,7 +134,12 @@ export const AppConfigPage = (data: any): string => {
                                 {providers.map(p => ProviderCard(p))}
                             </div>
                         ) : (
-                            <p>No providers configured.</p>
+                            EmptyState({
+                                icon: EmptyIconBolt(),
+                                title: 'No providers',
+                                description: 'This configuration has no registered providers.',
+                                variant: 'full'
+                            })
                         )}
                     </section>
                 </>

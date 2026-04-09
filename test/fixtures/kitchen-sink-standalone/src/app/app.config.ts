@@ -147,3 +147,14 @@ export const testConfig: ApplicationConfig = {
         provideLogging('debug'),
     ],
 };
+
+/**
+ * Bare E2E test configuration with no providers.
+ *
+ * Used to verify the empty-state rendering on the AppConfig page.
+ *
+ * @since 2.1.0
+ */
+export const e2eConfig: ApplicationConfig = {
+    providers: [],
+};
