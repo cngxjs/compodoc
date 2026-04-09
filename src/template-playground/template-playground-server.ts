@@ -1448,7 +1448,7 @@ export class TemplatePlaygroundServer {
             const isActive = navTabs[0].id === 'source';
             const activeClass = isActive ? 'active in' : '';
 
-            tabContentHtml += `    <div class="tab-pane fade ${activeClass} tab-source-code" id="source">
+            tabContentHtml += `    <div class="tab-pane fade ${activeClass} cdx-tab-panel--source" id="source">
         <pre class="line-numbers cdx-source-code"><code class="language-typescript">${component.sourceCode || ''}</code></pre>
     </div>
 `;

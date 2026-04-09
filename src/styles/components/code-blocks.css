@@ -70,7 +70,7 @@ pre.line-numbers code {
 
 /* --- Source viewer (Type A) --- */
 
-.tab-source-code {
+.cdx-tab-panel--source {
   padding: var(--spacing-cdx-md) 0;
 }
 

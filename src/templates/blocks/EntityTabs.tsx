@@ -57,7 +57,7 @@ export const EntityTabs = (props: EntityTabsProps): string => (<>
         )}
 
         {isTabEnabled(props.navTabs, 'source') && (
-            <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'source') ? ' active' : ''} tab-source-code`}
+            <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'source') ? ' active' : ''} cdx-tab-panel--source`}
                 id="source" role="tabpanel" aria-labelledby="source-tab">
                 {props.sourceCode
                     ? <div class="cdx-source-code">

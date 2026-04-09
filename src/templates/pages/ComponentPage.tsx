@@ -390,7 +390,7 @@ export const ComponentPage = (data: any): string => {
 
                 {isTabEnabled(navTabs, 'source') && (
                     <div
-                        class={`cdx-tab-panel${isInitialTab(navTabs, 'source') ? ' active' : ''} tab-source-code`}
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'source') ? ' active' : ''} cdx-tab-panel--source`}
                         id="source"
                         role="tabpanel"
                         aria-labelledby="source-tab"
