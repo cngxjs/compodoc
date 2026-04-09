@@ -36,7 +36,7 @@ export const BlockTypealias = (props: BlockTypealiasProps): string => (
                     <div class="cdx-member-deprecated">{ta.deprecationMessage || t('deprecated')}</div>
                 )}
                 {ta.description && (
-                    <div class="io-description">{parseDescription(ta.description, props.depth ?? 0)}</div>
+                    <div class="cdx-member-description">{parseDescription(ta.description, props.depth ?? 0)}</div>
                 )}
                 <div class="cdx-member-row">
                     {ta.kind === 160 ? (

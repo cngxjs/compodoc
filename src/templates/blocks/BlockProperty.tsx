@@ -68,10 +68,10 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                     )}
                     {DefinedInRow({ line: p.line, file: props.file, inheritance: p.inheritance, navTabs: props.navTabs })}
                     {p.description && (
-                        <div class="io-description">{parseDescription(p.description, props.depth ?? 0)}</div>
+                        <div class="cdx-member-description">{parseDescription(p.description, props.depth ?? 0)}</div>
                     )}
                     {p.jsdoctags && hasJsdocParams(p.jsdoctags) && (
-                        <div class="io-description">
+                        <div class="cdx-member-description">
                             {ParamsTable({ jsdocTags: p.jsdoctags, depth: props.depth ?? 0, showOptional: false, showDefaultValue: false })}
                             {JsdocExamplesBlock({ tags: p.jsdoctags, variant: 'text', cssClass: 'jsdoc-example-ul' })}
                         </div>

@@ -1029,7 +1029,7 @@ describe('CLI simple generation - big app', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>Input Signals</p>
+                        <div class="cdx-member-description"><p>Input Signals</p>
 </div>
                     </td>
                 </tr>
@@ -1332,7 +1332,7 @@ describe('CLI simple generation - big app', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>Output Signals</p>
+                        <div class="cdx-member-description"><p>Output Signals</p>
 </div>
                     </td>
                 </tr>
@@ -1496,7 +1496,7 @@ describe('CLI simple generation - big app', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>Model Signals</p>
+                        <div class="cdx-member-description"><p>Model Signals</p>
 </div>
                     </td>
                 </tr>

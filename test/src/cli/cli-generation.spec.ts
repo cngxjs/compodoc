@@ -177,7 +177,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example aliased required input using the object syntax</p>
+                        <div class="cdx-member-description"><p>An example aliased required input using the object syntax</p>
 </div>
                     </td>
                 </tr>
@@ -204,7 +204,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example aliased input</p>
+                        <div class="cdx-member-description"><p>An example aliased input</p>
 </div>
                     </td>
                 </tr>
@@ -231,7 +231,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example aliased input using the object syntax</p>
+                        <div class="cdx-member-description"><p>An example aliased input using the object syntax</p>
 </div>
                     </td>
                 </tr>
@@ -263,7 +263,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example input
+                        <div class="cdx-member-description"><p>An example input
 <a href="../components/BarComponent.html">BarComponent</a> or <a href="../components/BarComponent.html">BarComponent2</a> or <a href="../components/BarComponent.html">BarComponent3</a></p>
 </div>
                     </td>
@@ -296,7 +296,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example required input</p>
+                        <div class="cdx-member-description"><p>An example required input</p>
 </div>
                     </td>
                 </tr>
@@ -322,7 +322,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example aliased input signal</p>
+                        <div class="cdx-member-description"><p>An example aliased input signal</p>
 </div>
                     </td>
                 </tr>
@@ -354,7 +354,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example input signal</p>
+                        <div class="cdx-member-description"><p>An example input signal</p>
 </div>
                     </td>
                 </tr>
@@ -380,7 +380,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example model input signal</p>
+                        <div class="cdx-member-description"><p>An example model input signal</p>
 </div>
                     </td>
                 </tr>
@@ -417,7 +417,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example required input signal</p>
+                        <div class="cdx-member-description"><p>An example required input signal</p>
 </div>
                     </td>
                 </tr>
@@ -448,7 +448,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example output</p>
+                        <div class="cdx-member-description"><p>An example output</p>
 </div>
                     </td>
                 </tr>
@@ -469,7 +469,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example aliased output signal</p>
+                        <div class="cdx-member-description"><p>An example aliased output signal</p>
 </div>
                     </td>
                 </tr>
@@ -490,7 +490,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example model input signal</p>
+                        <div class="cdx-member-description"><p>An example model input signal</p>
 </div>
                     </td>
                 </tr>
@@ -517,7 +517,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example output signal</p>
+                        <div class="cdx-member-description"><p>An example output signal</p>
 </div>
                     </td>
                 </tr>
@@ -544,7 +544,7 @@ describe('CLI simple generation', () => {
                         </tr>
                 <tr>
                     <td class="col-md-4">
-                        <div class="io-description"><p>An example required output signal</p>
+                        <div class="cdx-member-description"><p>An example required output signal</p>
 </div>
                     </td>
                 </tr>

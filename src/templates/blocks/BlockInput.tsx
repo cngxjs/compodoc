@@ -36,7 +36,7 @@ export const BlockInput = (props: BlockInputProps): string => {
                     )}
                     {DefinedInRow({ line: inp.line, file: props.element.file, inheritance: inp.inheritance, navTabs: props.navTabs })}
                     {inp.description && (
-                        <div class="io-description">{parseDescription(inp.description, props.depth ?? 0)}</div>
+                        <div class="cdx-member-description">{parseDescription(inp.description, props.depth ?? 0)}</div>
                     )}
                 </>) as string;
 

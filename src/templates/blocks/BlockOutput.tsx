@@ -29,7 +29,7 @@ export const BlockOutput = (props: BlockOutputProps): string => {
                 const body = (<>
                     {DefinedInRow({ line: out.line, file: props.element.file, inheritance: out.inheritance, navTabs: props.navTabs })}
                     {out.description && (
-                        <div class="io-description">{parseDescription(out.description, props.depth ?? 0)}</div>
+                        <div class="cdx-member-description">{parseDescription(out.description, props.depth ?? 0)}</div>
                     )}
                 </>) as string;
 

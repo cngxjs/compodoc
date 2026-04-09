@@ -71,10 +71,10 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
                         </div>
                     )}
                     {m.description && (
-                        <div class="io-description">{parseDescription(m.description, props.depth ?? 0)}</div>
+                        <div class="cdx-member-description">{parseDescription(m.description, props.depth ?? 0)}</div>
                     )}
                     {m.jsdoctags && hasJsdocParams(m.jsdoctags) && (<>
-                        <div class="io-description">
+                        <div class="cdx-member-description">
                             {ParamsTable({ jsdocTags: m.jsdoctags, depth: props.depth ?? 0, showOptional: true, showDefaultValue: true })}
                         </div>
                         {JsdocExamplesBlock({ tags: m.jsdoctags, variant: 'code' })}
@@ -85,7 +85,7 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
                         </div>
                     )}
                     {m.returnType && m.jsdoctags && (
-                        <div class="io-description">{jsdocReturnsComment(m.jsdoctags)}</div>
+                        <div class="cdx-member-description">{jsdocReturnsComment(m.jsdoctags)}</div>
                     )}
                 </>) as string;
 

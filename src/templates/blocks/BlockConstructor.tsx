@@ -36,7 +36,7 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
                     </div>
                     {DefinedInRow({ line: ctor.line, file: props.file, navTabs: props.navTabs })}
                     {ctor.description && (
-                        <div class="io-description">{parseDescription(ctor.description, props.depth ?? 0)}</div>
+                        <div class="cdx-member-description">{parseDescription(ctor.description, props.depth ?? 0)}</div>
                     )}
                     {ctor.jsdoctags && hasJsdocParams(ctor.jsdoctags) && (
                         <div>

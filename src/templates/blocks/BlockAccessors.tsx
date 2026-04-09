@@ -34,10 +34,10 @@ const SignatureBlock = (props: {
         </div>
         {DefinedInRow({ line: sig.line, file: props.file, navTabs: props.navTabs })}
         {sig.description && (
-            <div class="io-description">{parseDescription(sig.description, props.depth)}</div>
+            <div class="cdx-member-description">{parseDescription(sig.description, props.depth)}</div>
         )}
         {sig.jsdoctags && hasJsdocParams(sig.jsdoctags) && (
-            <div class="io-description">
+            <div class="cdx-member-description">
                 {ParamsTable({ jsdocTags: sig.jsdoctags, depth: props.depth, showOptional: true })}
             </div>
         )}
@@ -47,7 +47,7 @@ const SignatureBlock = (props: {
                 <b>{t('returns')} : </b>{linkTypeHtml(sig.returnType)}
             </div>
             {sig.jsdoctags && (
-                <div class="io-description">{jsdocReturnsComment(sig.jsdoctags)}</div>
+                <div class="cdx-member-description">{jsdocReturnsComment(sig.jsdoctags)}</div>
             )}
         </>)}
     </>) as string;

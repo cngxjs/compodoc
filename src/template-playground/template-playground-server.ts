@@ -1289,8 +1289,8 @@ export class TemplatePlaygroundServer {
                             {{#if description}}
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-description">{{description}}</div>
-                                    <div class="io-description">
+                                    <div class="cdx-member-description">{{description}}</div>
+                                    <div class="cdx-member-description">
                                         <b>Returns : </b><code>{{type}}</code>
                                     </div>
                                 </td>
@@ -1430,8 +1430,8 @@ export class TemplatePlaygroundServer {
                     ${method.description ? `
                     <tr>
                         <td class="col-md-4">
-                            <div class="io-description">${method.description}</div>
-                            <div class="io-description">
+                            <div class="cdx-member-description">${method.description}</div>
+                            <div class="cdx-member-description">
                                 <b>Returns : </b><code>${method.type || 'void'}</code>
                             </div>
                         </td>
