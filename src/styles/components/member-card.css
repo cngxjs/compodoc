@@ -35,6 +35,8 @@
 .cdx-member-header {
     @apply flex items-baseline justify-between gap-2;
     padding: var(--spacing-cdx-lg) var(--spacing-cdx-xl) var(--spacing-cdx-md);
+    background: var(--color-cdx-bg-alt);
+    border-bottom: 1px solid var(--color-cdx-border);
 }
 
 .cdx-member-name {
@@ -144,6 +146,7 @@
     font-size: 0.8rem;
     color: var(--color-cdx-text);
 }
+
 
 .cdx-member-row {
     @apply text-sm;

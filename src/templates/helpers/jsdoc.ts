@@ -84,7 +84,7 @@ export const extractJsdocCodeExamples = (jsdocTags: any[]): JsdocTag[] => {
 
         for (const block of parseCodeFences(comment)) {
             tags.push({
-                comment: `<pre class="line-numbers"><code class="language-${block.language}">${htmlEntities(block.code)}</code></pre>`
+                comment: `<pre class="cdx-code-example"><code class="language-${block.language}">${htmlEntities(block.code)}</code></pre>`
             });
         }
     }

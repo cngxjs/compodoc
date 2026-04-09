@@ -257,7 +257,7 @@ describe('JsdocCodeExampleHelper', () => {
 
             const result = helper.helperFunc(mockContext, jsdocTags, mockOptions);
 
-            expect(mockContext.tags[0].comment).to.contain('<pre class="line-numbers">');
+            expect(mockContext.tags[0].comment).to.contain('<pre class="cdx-code-example">');
             expect(mockContext.tags[0].comment).to.contain('<code class="language-typescript">');
             expect(mockContext.tags[0].comment).to.contain('</code></pre>');
         });

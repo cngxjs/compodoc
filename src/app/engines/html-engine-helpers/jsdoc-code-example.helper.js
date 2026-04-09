@@ -94,7 +94,7 @@ class JsdocCodeExampleHelper {
                         for (const block of codeBlocks) {
                             const tag = {};
                             tag.comment =
-                                `<pre class="line-numbers"><code class="language-${block.language}">` +
+                                `<pre class="cdx-code-example"><code class="language-${block.language}">` +
                                     this.getHtmlEntities(block.code) +
                                     `</code></pre>`;
                             tags.push(tag);
