@@ -14,9 +14,9 @@ type MemberCardProps = {
  * Renders `<article class="cdx-member-card">` with optional `<details>/<summary>`
  * for collapsible cards (methods, host listeners) and flat layout for the rest.
  *
- * When collapsible, permalink anchors are moved out of `<summary>` to avoid
- * an a11y violation (interactive elements inside `<summary>` are not
- * consistently accessible via keyboard/assistive technology).
+ * When collapsible, permalink anchors inside `<summary>` get `tabindex="-1"`
+ * to prevent keyboard focus conflicts with the summary toggle. Type-links
+ * are converted to `<span>` since they'd be confusing inside a toggle control.
  */
 export function MemberCard({
     id,
@@ -30,20 +30,23 @@ export function MemberCard({
         : 'cdx-member-card';
 
     if (collapsible) {
-        // Strip all <a> tags from header for the summary (a11y: no interactive
-        // elements inside <summary>). Permalinks are moved as siblings;
-        // type-links are converted to plain <span> keeping their content.
-        const permalinkRe = /<a\b[^>]*class="cdx-member-permalink"[^>]*>.*?<\/a>/g;
-        const permalink = header.match(permalinkRe)?.[0] ?? '';
+        // Convert type-links to plain <span> inside summary (confusing as
+        // interactive elements in a toggle control), but keep permalinks
+        // in place with tabindex="-1" so they stay visually correct.
         const summaryHeader = header
-            .replace(permalinkRe, '')
-            .replace(/<a\b[^>]*>(.*?)<\/a>/g, '<span>$1</span>');
+            .replace(
+                /(<a\b[^>]*class="cdx-member-permalink"[^>]*)(>)/g,
+                '$1 tabindex="-1"$2'
+            )
+            .replace(
+                /<a\b(?![^>]*class="cdx-member-permalink")[^>]*>(.*?)<\/a>/g,
+                '<span>$1</span>'
+            );
 
         return (
             <article class={cardClass} id={id}>
                 <details open>
                     <summary>{summaryHeader}</summary>
-                    {permalink}
                     <div class="cdx-member-body">{children}</div>
                 </details>
             </article>

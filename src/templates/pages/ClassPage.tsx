@@ -1,5 +1,4 @@
-import Html from '@kitajs/html';
-import { renderEntityPage } from './EntityPage';
+import { renderEntityPage } from "./EntityPage";
 
 const classContextLine = (cls: any): string | undefined => {
     if (cls.extends?.length) {
@@ -14,8 +13,8 @@ const classContextLine = (cls: any): string | undefined => {
 export const ClassPage = (data: any): string =>
     renderEntityPage({
         entity: data.class,
-        entityKey: 'class',
-        breadcrumbLabel: 'classes',
+        entityKey: "class",
+        breadcrumbLabel: "classes",
         depth: data.depth,
         navTabs: data.navTabs,
         disableFilePath: data.disableFilePath,
@@ -31,5 +30,5 @@ export const ClassPage = (data: any): string =>
         showIndexSignatures: true,
         showAccessors: true,
         showJsdocBadges: true,
-        contextLine: classContextLine(data.class)
+        contextLine: classContextLine(data.class),
     });

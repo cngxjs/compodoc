@@ -83,6 +83,11 @@
     padding-top: 0;
     border-top: none;
 }
+.cdx-entity-hero + .cdx-content-section > .cdx-section-heading {
+    margin-top: var(--spacing-cdx-lg);
+    padding-top: 0;
+    border-top: none;
+}
 
 .cdx-metadata-card {
     display: grid;

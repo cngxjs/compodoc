@@ -19,6 +19,7 @@ type BlockMethodProps = {
     readonly title?: string;
     readonly depth?: number;
     readonly navTabs?: any[];
+    readonly collapsible?: boolean;
 };
 
 export const BlockMethod = (props: BlockMethodProps): string => {
@@ -139,7 +140,7 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                 return MemberCard({
                     id: m.name,
                     deprecated: m.deprecated,
-                    collapsible: true,
+                    collapsible: props.collapsible !== false,
                     header,
                     children: body
                 });

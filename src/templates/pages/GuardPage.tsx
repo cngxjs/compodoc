@@ -1,11 +1,10 @@
-import Html from '@kitajs/html';
-import { renderEntityPage } from './EntityPage';
+import { renderEntityPage } from "./EntityPage";
 
 export const GuardPage = (data: any): string =>
     renderEntityPage({
         entity: data.injectable,
-        entityKey: 'guard',
-        breadcrumbLabel: 'guards',
+        entityKey: "guard",
+        breadcrumbLabel: "guards",
         depth: data.depth,
         navTabs: data.navTabs,
         disableFilePath: data.disableFilePath,
@@ -18,5 +17,5 @@ export const GuardPage = (data: any): string =>
         contextLine: data.injectable?.functionalKind
             ? `Functional ${data.injectable.functionalKind}`
             : undefined,
-        showJsdocBadges: true
+        showJsdocBadges: true,
     });

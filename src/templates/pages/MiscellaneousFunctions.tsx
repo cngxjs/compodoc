@@ -78,7 +78,7 @@ export const MiscellaneousFunctions = (props: MiscFunctionsProps): string =>
                     ) : (
                         ''
                     )}
-                    {BlockMethod({ methods, title: '', file: '', depth: props.depth })}
+                    {BlockMethod({ methods, title: '', file: '', depth: props.depth, collapsible: false })}
                 </div>
             ))}
         </>

@@ -1,5 +1,5 @@
 .cdx-app-config {
-    @apply mb-8;
+    @apply mt-6 mb-8;
 }
 .cdx-app-config-desc {
     @apply text-base mb-4;
@@ -13,39 +13,60 @@
     color: var(--color-cdx-text-muted);
 }
 .cdx-providers-grid {
-    @apply grid grid-cols-1 gap-3;
-}
-@media (min-width: 640px) {
-    .cdx-providers-grid {
-        @apply grid-cols-2;
-    }
-}
-@media (min-width: 1024px) {
-    .cdx-providers-grid {
-        @apply grid-cols-3;
-    }
+    @apply grid gap-3;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 }
 
 .cdx-provider-card {
-    @apply p-4;
-    border: 1px solid var(--color-cdx-border);
+    @apply flex flex-col gap-2 px-4 py-3 text-sm;
     border-radius: var(--radius-cdx-lg);
-    background: var(--color-cdx-bg-alt);
+    background: var(--color-cdx-bg-elevated);
+    transition:
+        transform 200ms ease-out,
+        box-shadow 200ms ease-out;
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+.cdx-provider-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.1);
+}
+:is(.dark) .cdx-provider-card:hover {
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+}
+.cdx-provider-card:focus-visible {
+    @apply outline-2 outline-offset-1 outline-[var(--color-cdx-primary)];
 }
 .cdx-provider-header {
-    @apply flex items-center gap-2 mb-2;
+    @apply flex items-center gap-2;
 }
 .cdx-provider-header .icon {
-    @apply text-lg;
     color: var(--color-cdx-primary);
 }
 .cdx-provider-name {
     @apply text-sm font-semibold;
 }
+.cdx-provider-name a,
+.cdx-provider-feature a {
+    color: var(--color-cdx-primary);
+    text-decoration: none;
+    transition: color 150ms ease;
+}
+.cdx-provider-name a:hover,
+.cdx-provider-feature a:hover {
+    color: var(--color-cdx-primary-hover, var(--color-cdx-primary));
+    text-decoration: underline;
+}
 .cdx-provider-features {
-    @apply flex flex-wrap gap-1 mt-2;
+    @apply flex flex-col gap-1;
 }
 .cdx-provider-features-label {
-    @apply text-xs mr-1;
+    @apply text-xs;
     color: var(--color-cdx-text-muted);
+}
+.cdx-provider-feature {
+    @apply text-xs px-1.5 py-0.5;
+    color: var(--color-cdx-text-secondary);
+    background: var(--color-cdx-bg-code);
+    border-radius: var(--radius-cdx-sm);
 }

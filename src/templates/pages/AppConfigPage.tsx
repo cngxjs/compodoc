@@ -1,5 +1,7 @@
 import Html from '@kitajs/html';
-import { iconFor } from '../components/Icons';
+import { IconFile, IconSettings, iconFor } from '../components/Icons';
+import { resolveType } from '../helpers/link-type';
+import { parseDescription, t } from '../helpers';
 
 type ProviderCall = {
     readonly name: string;
@@ -24,7 +26,7 @@ const providerIcon = (name: string): string => {
     if (name.includes('Animation')) {
         return 'ion-ios-film';
     }
-    if (name.includes('Zoneless')) {
+    if (name.includes('Zoneless') || name.includes('Zone')) {
         return 'ion-ios-flash';
     }
     if (name.includes('Store') || name.includes('State')) {
@@ -33,18 +35,27 @@ const providerIcon = (name: string): string => {
     return 'ion-ios-settings';
 };
 
+/** Link a function name to Angular API docs or internal docs via DependenciesEngine. */
+const linkedName = (name: string): string => {
+    const resolved = resolveType(name);
+    if (resolved) {
+        return `<a href="${resolved.href}" target="${resolved.target}">${name}()</a>`;
+    }
+    return `${name}()`;
+};
+
 const ProviderCard = (provider: ProviderCall): string =>
     (
         <div class="cdx-provider-card">
             <div class="cdx-provider-header">
                 {iconFor(providerIcon(provider.name))}
-                <code class="cdx-provider-name">{provider.name}()</code>
+                <code class="cdx-provider-name">{linkedName(provider.name)}</code>
             </div>
             {provider.features.length > 0 && (
                 <div class="cdx-provider-features">
                     <span class="cdx-provider-features-label">Features:</span>
                     {provider.features.map(f => (
-                        <span class="cdx-badge cdx-badge--factory">{f}()</span>
+                        <code class="cdx-provider-feature">{linkedName(f)}</code>
                     ))}
                 </div>
             )}
@@ -59,36 +70,55 @@ export const AppConfigPage = (data: any): string => {
 
     return (
         <>
-            <ol class="cdx-breadcrumb">
-                <li class="">Application Configuration</li>
-            </ol>
-
             {configs.map(config => (
                 <>
-                    <div class="cdx-app-config">
-                        {config.description && (
-                            <p class="cdx-app-config-desc">{config.description}</p>
-                        )}
-
-                        <div class="cdx-app-config-meta">
-                            <span class="cdx-badge cdx-badge--standalone">{config.name}</span>
+                    <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-entity-service)">
+                        <div class="cdx-entity-hero-watermark" aria-hidden="true">
+                            {IconSettings()}
+                        </div>
+                        <nav aria-label="Breadcrumb">
+                            <ol class="cdx-breadcrumb">
+                                <li>{t('application-configuration')}</li>
+                                <li aria-current="page">{config.name}</li>
+                            </ol>
+                        </nav>
+                        <h1 class="cdx-entity-hero-name">{config.name}</h1>
+                        <div class="cdx-entity-hero-badges">
+                            <span class="cdx-badge cdx-badge--entity-injectable">Config</span>
                             {config.since && (
                                 <span class="cdx-badge cdx-badge--since">v{config.since}</span>
                             )}
-                            <code class="cdx-app-config-file">{config.file}</code>
+                            <span class="cdx-badge cdx-badge--outline">
+                                {config.providers.length} {config.providers.length === 1 ? 'provider' : 'providers'}
+                            </span>
                         </div>
+                        <p class="cdx-entity-hero-file" title="Source file">
+                            {IconFile()}
+                            <span>{config.file}</span>
+                        </p>
+                    </div>
 
+                    {/* Description */}
+                    {config.description && (
+                        <section class="cdx-content-section">
+                            <h3 class="cdx-section-heading">{t('description')}</h3>
+                            <div class="cdx-prose">{parseDescription(config.description, data.depth ?? 0)}</div>
+                        </section>
+                    )}
+
+                    {/* Providers */}
+                    <section class="cdx-content-section">
+                        <h3 class="cdx-section-heading" id="providers">
+                            Providers ({config.providers.length})
+                        </h3>
                         {config.providers.length > 0 ? (
-                            <>
-                                <h3>Providers ({config.providers.length})</h3>
-                                <div class="cdx-providers-grid">
-                                    {config.providers.map(p => ProviderCard(p))}
-                                </div>
-                            </>
+                            <div class="cdx-providers-grid">
+                                {config.providers.map(p => ProviderCard(p))}
+                            </div>
                         ) : (
                             <p>No providers configured.</p>
                         )}
-                    </div>
+                    </section>
                 </>
             ))}
         </>
