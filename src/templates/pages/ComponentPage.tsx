@@ -395,7 +395,7 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="source-tab"
                     >
-                        <div class="compodoc-sourcecode">
+                        <div class="cdx-source-code">
                             {c.file && <div class="cdx-source-header"><span>{shortPath(c.file)}</span></div>}
                             {highlightCode(c.sourceCode ?? '', { lang: 'typescript', mode: 'source' })}
                         </div>
@@ -410,7 +410,7 @@ export const ComponentPage = (data: any): string => {
                         aria-labelledby="templateData-tab"
                     >
                         {c.templateData?.trim()
-                            ? <div class="compodoc-sourcecode">
+                            ? <div class="cdx-source-code">
                                 {c.templateUrl?.[0] && <div class="cdx-source-header"><span>{shortPath(c.templateUrl[0])}</span></div>}
                                 {highlightCode(c.templateData, { lang: 'html', mode: 'source' })}
                               </div>
@@ -428,14 +428,14 @@ export const ComponentPage = (data: any): string => {
                     >
                         {c.styleUrlsData?.length > 0
                             ? c.styleUrlsData.map((s: any) => (
-                                <div class="compodoc-sourcecode">
+                                <div class="cdx-source-code">
                                     {s.styleUrl && <div class="cdx-source-header"><span>{shortPath(s.styleUrl)}</span></div>}
                                     {highlightCode(s.data, { lang: 'scss', mode: 'source' })}
                                 </div>
                             ))
                             : ''}
                         {c.stylesData && c.stylesData !== '' && (
-                            <div class="compodoc-sourcecode">
+                            <div class="cdx-source-code">
                                 <div class="cdx-source-header"><span>Inline Styles</span></div>
                                 {highlightCode(c.stylesData, { lang: 'scss', mode: 'source' })}
                             </div>

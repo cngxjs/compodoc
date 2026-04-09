@@ -1449,7 +1449,7 @@ export class TemplatePlaygroundServer {
             const activeClass = isActive ? 'active in' : '';
 
             tabContentHtml += `    <div class="tab-pane fade ${activeClass} tab-source-code" id="source">
-        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">${component.sourceCode || ''}</code></pre>
+        <pre class="line-numbers cdx-source-code"><code class="language-typescript">${component.sourceCode || ''}</code></pre>
     </div>
 `;
         }

@@ -120,7 +120,7 @@ const initLinkToSource = () => {
                 history.replaceState(null, '', `#L${lineNr}`);
 
                 setTimeout(() => {
-                    const pre = document.querySelector('.compodoc-sourcecode pre');
+                    const pre = document.querySelector('.cdx-source-code pre');
                     if (!pre) return;
                     highlightLines(pre, lineNr, lineNr);
                 }, 300);
@@ -130,7 +130,7 @@ const initLinkToSource = () => {
 };
 
 const initLinePermalinks = () => {
-    document.querySelectorAll<HTMLElement>('.compodoc-sourcecode pre').forEach(pre => {
+    document.querySelectorAll<HTMLElement>('.cdx-source-code pre').forEach(pre => {
         if (pre.dataset.cdxPermalinks) return;
         pre.dataset.cdxPermalinks = '1';
 
@@ -169,7 +169,7 @@ const initHashHighlight = () => {
 
         // wait for tab switch animation
         setTimeout(() => {
-            const pre = document.querySelector('.compodoc-sourcecode pre');
+            const pre = document.querySelector('.cdx-source-code pre');
             if (pre) highlightLines(pre, range.start, range.end);
         }, 100);
     };
@@ -179,7 +179,7 @@ const initHashHighlight = () => {
 };
 
 const initSourceBreadcrumb = () => {
-    document.querySelectorAll<HTMLElement>('.compodoc-sourcecode').forEach(container => {
+    document.querySelectorAll<HTMLElement>('.cdx-source-code').forEach(container => {
         const pre = container.querySelector('pre');
         if (!pre) return;
 
@@ -278,7 +278,7 @@ const escapeAttr = (str: string) =>
 
 const initLanguageChips = () => {
     document.querySelectorAll<HTMLElement>('pre:has(> code), pre.shiki').forEach(pre => {
-        if (pre.querySelector('.cdx-code-lang-chip') || pre.closest('.compodoc-sourcecode')) return;
+        if (pre.querySelector('.cdx-code-lang-chip') || pre.closest('.cdx-source-code')) return;
 
         const code = pre.querySelector('code');
         if (!code) return;
@@ -299,7 +299,7 @@ const initLanguageChips = () => {
 
 const initExpandableSnippets = () => {
     document.querySelectorAll<HTMLElement>('pre:has(> code), pre.shiki').forEach(pre => {
-        if (pre.closest('.compodoc-sourcecode') || pre.dataset.cdxExpandChecked) return;
+        if (pre.closest('.cdx-source-code') || pre.dataset.cdxExpandChecked) return;
         pre.dataset.cdxExpandChecked = '1';
 
         const code = pre.querySelector('code');

@@ -60,7 +60,7 @@ export const EntityTabs = (props: EntityTabsProps): string => (<>
             <div class={`cdx-tab-panel${isInitialTab(props.navTabs, 'source') ? ' active' : ''} tab-source-code`}
                 id="source" role="tabpanel" aria-labelledby="source-tab">
                 {props.sourceCode
-                    ? <div class="compodoc-sourcecode">
+                    ? <div class="cdx-source-code">
                         {props.filePath && <div class="cdx-source-header"><span>{shortPath(props.filePath)}</span></div>}
                         {highlightCode(props.sourceCode, { lang: 'typescript', mode: 'source' })}
                       </div>
