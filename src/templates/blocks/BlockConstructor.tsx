@@ -27,7 +27,7 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
                     {ctor.modifierKind && ctor.modifierKind.length > 0 && (
                         <div class="cdx-member-row">
                             {ctor.modifierKind.map((k: number) => (
-                                <span class="modifier">{modifKind(k)}</span>
+                                <span class="cdx-member-modifier">{modifKind(k)}</span>
                             ))}
                         </div>
                     )}

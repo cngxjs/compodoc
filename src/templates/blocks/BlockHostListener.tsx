@@ -30,9 +30,9 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
                             {(m.modifierKind ?? []).map((k: number) => (
-                                <span class="modifier">{modifKind(k)}</span>
+                                <span class="cdx-member-modifier">{modifKind(k)}</span>
                             ))}
-                            {m.optional && <span class="modifier">{t('optional')}</span>}
+                            {m.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
                             <span class={`cdx-member-name-text${m.deprecated ? ' cdx-member-name--deprecated' : ''}`}>{m.name}</span>
                             <a href={`#${m.name}`} class="cdx-member-permalink" aria-label={`Link to ${m.name}`}>#</a>
                         </span>

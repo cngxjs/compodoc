@@ -496,21 +496,21 @@ describe('CLI simple generation - big app', () => {
     it('should have parsed correctly private, public, and static methods or properties', () => {
         expect(aboutComponentFile).to.contain('<code>privateStaticMethod()');
         expect(aboutComponentFile).to.contain(
-            `<span class="modifier">Private</span>${eol}                                    <span class="modifier">Static</span>`
+            `<span class="cdx-member-modifier">Private</span>${eol}                                    <span class="cdx-member-modifier">Static</span>`
         );
         expect(aboutComponentFile).to.contain('<code>protectedStaticMethod()');
         expect(aboutComponentFile).to.contain(
-            `<span class="modifier">Protected</span>${eol}                                    <span class="modifier">Static</span>`
+            `<span class="cdx-member-modifier">Protected</span>${eol}                                    <span class="cdx-member-modifier">Static</span>`
         );
         expect(aboutComponentFile).to.contain('<code>publicMethod()');
         expect(aboutComponentFile).to.contain('<code>publicStaticMethod()');
         expect(aboutComponentFile).to.contain('<code>staticMethod()');
         expect(aboutComponentFile).to.contain('staticReadonlyVariable');
         expect(aboutComponentFile).to.contain(
-            `<span class="modifier">Static</span>${eol}                                    <span class="modifier">Readonly</span>`
+            `<span class="cdx-member-modifier">Static</span>${eol}                                    <span class="cdx-member-modifier">Readonly</span>`
         );
         expect(aboutComponentFile).to.contain(
-            `<span class="modifier">Public</span>${eol}                                    <span class="modifier">Async</span>`
+            `<span class="cdx-member-modifier">Public</span>${eol}                                    <span class="cdx-member-modifier">Async</span>`
         );
     });
 
@@ -620,7 +620,7 @@ describe('CLI simple generation - big app', () => {
 
     it('should support private for constructor', () => {
         const file = read(distFolder + '/classes/PrivateConstructor.html');
-        expect(file).to.contain('<span class="modifier">Private</span>');
+        expect(file).to.contain('<span class="cdx-member-modifier">Private</span>');
     });
 
     it('should support union type with array', () => {
@@ -740,8 +740,8 @@ describe('CLI simple generation - big app', () => {
     });
 
     it('correct support of abstract and async modifiers', () => {
-        expect(todoClassFile).to.contain('<span class="modifier">Abstract</span>');
-        expect(todoClassFile).to.contain('<span class="modifier">Async</span>');
+        expect(todoClassFile).to.contain('<span class="cdx-member-modifier">Abstract</span>');
+        expect(todoClassFile).to.contain('<span class="cdx-member-modifier">Async</span>');
     });
 
     it('correct support function with empty typed arguments', () => {

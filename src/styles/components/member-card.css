@@ -69,12 +69,12 @@
     flex-shrink: 0;
 }
 
-.cdx-member-card .modifier {
+.cdx-member-card .cdx-member-modifier {
     display: inline-block;
     font-family: var(--font-code);
     font-size: 0.7rem;
     font-weight: 600;
-    padding: var(--spacing-cdx-xs) var(--spacing-cdx-sm);
+    padding: 1px 5px;
     border-radius: var(--radius-cdx-sm);
     margin-right: var(--spacing-cdx-sm);
     background: var(--color-cdx-bg-alt);

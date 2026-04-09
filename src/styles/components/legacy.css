@@ -118,13 +118,13 @@ i {
     margin-bottom: var(--spacing-cdx-sm);
 }
 
-.modifier {
+.cdx-member-modifier {
     background: #636363;
     padding: 1px 5px;
     color: white;
     border-radius: var(--radius-cdx-sm);
 }
-.modifier:empty {
+.cdx-member-modifier:empty {
     display: none;
 }
 

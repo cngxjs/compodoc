@@ -29,9 +29,9 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
                             {(p.modifierKind ?? []).map((k: number) => (
-                                <span class="modifier">{modifKind(k)}</span>
+                                <span class="cdx-member-modifier">{modifKind(k)}</span>
                             ))}
-                            {p.optional && <span class="modifier">{t('optional')}</span>}
+                            {p.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
                             <span class={`cdx-member-name-text${p.deprecated ? ' cdx-member-name--deprecated' : ''}`}>
                                 {p.name}
                             </span>

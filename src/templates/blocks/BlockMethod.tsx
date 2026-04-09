@@ -34,7 +34,7 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                             {(m.modifierKind ?? []).map((k: number) => (
                                 <span class="cdx-member-modifier">{modifKind(k)}</span>
                             ))}
-                            {m.optional && <span class="cdk-member-modifier">{t('optional')}</span>}
+                            {m.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
                             <span
                                 class={`cdx-member-name-text${m.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
