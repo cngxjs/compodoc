@@ -40,7 +40,8 @@ export const TRANSLATION_ZH_CN = {
     'empty-dom-tree-desc': '需要模板才能生成 DOM 树。',
     'empty-dom-tree-title': '无可用 DOM 树',
     'empty-entity-action': '了解 JSDoc 标签',
-    'empty-entity-desc': '该 {{entityType}} 没有已记录文档的成员。请在代码中添加 JSDoc 注释以填充此页面。',
+    'empty-entity-desc':
+        '该 {{entityType}} 没有已记录文档的成员。请在代码中添加 JSDoc 注释以填充此页面。',
     'empty-entity-title': '暂无文档',
     'empty-enum-values': '无枚举值',
     'empty-examples-desc': '该组件未配置在线示例。',

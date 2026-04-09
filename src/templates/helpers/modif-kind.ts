@@ -7,7 +7,7 @@ const KIND_MAP: Partial<Record<SyntaxKind, string>> = {
     [SyntaxKind.PublicKeyword]: 'Public',
     [SyntaxKind.StaticKeyword]: 'Static',
     [SyntaxKind.AsyncKeyword]: 'Async',
-    [SyntaxKind.AbstractKeyword]: 'Abstract',
+    [SyntaxKind.AbstractKeyword]: 'Abstract'
 };
 
 /** Map a SyntaxKind modifier to its human-readable label. */

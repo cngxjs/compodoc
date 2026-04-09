@@ -1,17 +1,16 @@
-
-import { hasStderrError, temporaryDir, shell, exists } from '../helpers';
+import { exists, hasStderrError, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI option file', () => {
-    let stdoutString = undefined;
+    let stdoutString;
 
     const distFolder = 'test-config-file'; // Match /test/fixtures/todomvc-ng2/.compodocrc
 
     beforeAll(() => {
         tmp.create(distFolder);
 
-        let ls = shell('node', [
+        const ls = shell('node', [
             './bin/index-cli.js',
             '-c',
             './test/fixtures/todomvc-ng2/.compodocrc',
@@ -24,7 +23,6 @@ describe('CLI option file', () => {
             throw new Error('error');
         }
         stdoutString = ls.stdout.toString();
-
     });
     afterAll(() => {
         tmp.clean(distFolder);
@@ -40,11 +38,11 @@ describe('CLI option file', () => {
     });
 
     it('should have generated main pages', () => {
-        const isIndexExists = exists(distFolder + '/index.html');
+        const isIndexExists = exists(`${distFolder}/index.html`);
         expect(isIndexExists).to.be.true;
-        const isModulesExists = exists(distFolder + '/modules.html');
+        const isModulesExists = exists(`${distFolder}/modules.html`);
         expect(isModulesExists).to.be.true;
-        const isRoutesExists = exists(distFolder + '/routes.html');
+        const isRoutesExists = exists(`${distFolder}/routes.html`);
         expect(isRoutesExists).to.be.true;
     });
 });

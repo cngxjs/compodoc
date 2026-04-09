@@ -1,15 +1,15 @@
+import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI max search results', () => {
-    const distFolder = tmp.name + '-maxSearchResults';
+    const distFolder = `${tmp.name}-maxSearchResults`;
 
     describe('custom maxSearchResults', () => {
         let coverageFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -36,7 +36,7 @@ describe('CLI max search results', () => {
         let coverageFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',

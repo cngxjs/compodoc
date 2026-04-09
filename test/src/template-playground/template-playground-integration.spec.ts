@@ -1,6 +1,6 @@
+import { tmpdir } from 'node:os';
+import * as path from 'node:path';
 import * as fs from 'fs-extra';
-import { tmpdir } from 'os';
-import * as path from 'path';
 
 import request from 'supertest';
 import { TemplatePlaygroundServer } from '../../../src/template-playground/template-playground-server';
@@ -10,8 +10,7 @@ describe('Template Playground Integration Tests', () => {
     let testDir: string;
     let originalCwd: string;
 
-    beforeEach(async function() {
-
+    beforeEach(async () => {
         originalCwd = process.cwd();
         testDir = path.join(process.cwd(), 'test-temp-integration');
         await fs.ensureDir(testDir);
@@ -26,29 +25,45 @@ describe('Template Playground Integration Tests', () => {
         await fs.ensureDir(path.join(playgroundDemoDir, 'src', 'app', 'interfaces'));
 
         // Create package.json
-        await fs.writeFile(path.join(playgroundDemoDir, 'package.json'), JSON.stringify({
-            name: "compodoc-playground-demo",
-            version: "1.0.0",
-            dependencies: {
-                "@angular/core": "^18.0.0",
-                "@angular/common": "^18.0.0"
-            }
-        }, null, 2));
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'package.json'),
+            JSON.stringify(
+                {
+                    name: 'compodoc-playground-demo',
+                    version: '1.0.0',
+                    dependencies: {
+                        '@angular/core': '^18.0.0',
+                        '@angular/common': '^18.0.0'
+                    }
+                },
+                null,
+                2
+            )
+        );
 
         // Create tsconfig.json
-        await fs.writeFile(path.join(playgroundDemoDir, 'tsconfig.json'), JSON.stringify({
-            compilerOptions: {
-                target: "es2015",
-                module: "commonjs",
-                lib: ["es2015", "dom"],
-                experimentalDecorators: true,
-                emitDecoratorMetadata: true
-            },
-            include: ["src/**/*"]
-        }, null, 2));
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'tsconfig.json'),
+            JSON.stringify(
+                {
+                    compilerOptions: {
+                        target: 'es2015',
+                        module: 'commonjs',
+                        lib: ['es2015', 'dom'],
+                        experimentalDecorators: true,
+                        emitDecoratorMetadata: true
+                    },
+                    include: ['src/**/*']
+                },
+                null,
+                2
+            )
+        );
 
         // Create realistic Angular components
-        await fs.writeFile(path.join(playgroundDemoDir, 'src', 'app', 'app.component.ts'), `
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'src', 'app', 'app.component.ts'),
+            `
 import { Component } from '@angular/core';
 
 /**
@@ -66,9 +81,12 @@ export class AppComponent {
    */
   title = 'Playground Demo App';
 }
-`);
+`
+        );
 
-        await fs.writeFile(path.join(playgroundDemoDir, 'src', 'app', 'components', 'user.component.ts'), `
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'src', 'app', 'components', 'user.component.ts'),
+            `
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { User } from '../interfaces/user.interface';
 
@@ -90,9 +108,12 @@ export class UserComponent {
    */
   @Output() userSelected = new EventEmitter<User>();
 }
-`);
+`
+        );
 
-        await fs.writeFile(path.join(playgroundDemoDir, 'src', 'app', 'services', 'user.service.ts'), `
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'src', 'app', 'services', 'user.service.ts'),
+            `
 import { Injectable } from '@angular/core';
 import { User } from '../interfaces/user.interface';
 
@@ -121,9 +142,12 @@ export class UserService {
     this.users.push(user);
   }
 }
-`);
+`
+        );
 
-        await fs.writeFile(path.join(playgroundDemoDir, 'src', 'app', 'interfaces', 'user.interface.ts'), `
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'src', 'app', 'interfaces', 'user.interface.ts'),
+            `
 /**
  * User interface
  */
@@ -143,13 +167,16 @@ export interface User {
    */
   email: string;
 }
-`);
+`
+        );
 
         // Create comprehensive template set
         const templatesDir = path.join(srcDir, 'templates');
         await fs.ensureDir(path.join(templatesDir, 'partials'));
 
-        await fs.writeFile(path.join(templatesDir, 'page.hbs'), `
+        await fs.writeFile(
+            path.join(templatesDir, 'page.hbs'),
+            `
 <!DOCTYPE html>
 <html>
 <head>
@@ -162,9 +189,12 @@ export interface User {
     </div>
 </body>
 </html>
-`);
+`
+        );
 
-        await fs.writeFile(path.join(templatesDir, 'partials', 'component.hbs'), `
+        await fs.writeFile(
+            path.join(templatesDir, 'partials', 'component.hbs'),
+            `
 <div class="component-doc">
     <h2>{{component.name}}</h2>
     <p>{{component.description}}</p>
@@ -177,9 +207,12 @@ export interface User {
     </ul>
     {{/if}}
 </div>
-`);
+`
+        );
 
-        await fs.writeFile(path.join(templatesDir, 'partials', 'service.hbs'), `
+        await fs.writeFile(
+            path.join(templatesDir, 'partials', 'service.hbs'),
+            `
 <div class="service-doc">
     <h2>{{service.name}}</h2>
     <p>{{service.description}}</p>
@@ -192,7 +225,8 @@ export interface User {
     </ul>
     {{/if}}
 </div>
-`);
+`
+        );
 
         // Create static resources
         const resourcesDir = path.join(srcDir, 'resources');
@@ -202,7 +236,9 @@ export interface User {
         await fs.ensureDir(path.join(resourcesDir, 'styles'));
 
         // Create minimal template playground app files
-        await fs.writeFile(path.join(resourcesDir, 'template-playground-app', 'index.html'), `
+        await fs.writeFile(
+            path.join(resourcesDir, 'template-playground-app', 'index.html'),
+            `
 <!DOCTYPE html>
 <html>
 <head><title>Template Playground</title></head>
@@ -211,11 +247,15 @@ export interface User {
     <script src="app.js"></script>
 </body>
 </html>
-`);
+`
+        );
 
-        await fs.writeFile(path.join(resourcesDir, 'template-playground-app', 'app.js'), `
+        await fs.writeFile(
+            path.join(resourcesDir, 'template-playground-app', 'app.js'),
+            `
 console.log('Template playground app loaded');
-`);
+`
+        );
 
         process.chdir(testDir);
 
@@ -223,8 +263,7 @@ console.log('Template playground app loaded');
         await server.start();
     });
 
-    afterEach(async function() {
-
+    afterEach(async () => {
         if (server) {
             await server.stop();
         }
@@ -236,9 +275,10 @@ console.log('Template playground app loaded');
         try {
             const tempDir = tmpdir();
             const files = await fs.readdir(tempDir);
-            const sessionDirs = files.filter(file =>
-                file.startsWith('hbs-templates-copy-') ||
-                file.startsWith('generated-documentation-')
+            const sessionDirs = files.filter(
+                file =>
+                    file.startsWith('hbs-templates-copy-') ||
+                    file.startsWith('generated-documentation-')
             );
             for (const dir of sessionDirs) {
                 await fs.remove(path.join(tempDir, dir)).catch(() => {});
@@ -249,8 +289,7 @@ console.log('Template playground app loaded');
     });
 
     describe('Full Workflow Integration', () => {
-        it('should complete full template customization workflow', async function() {
-
+        it('should complete full template customization workflow', async () => {
             // 1. Create session via API
             const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
@@ -277,7 +316,7 @@ console.log('Template playground app loaded');
             expect(originalContent).to.include('component-doc');
 
             // 4. Modify template
-            const modifiedContent = originalContent + '\n<!-- Modified for integration testing -->';
+            const modifiedContent = `${originalContent}\n<!-- Modified for integration testing -->`;
             await request(server.getHttpServer())
                 .post(`/api/session/${sessionId}/template/partials/component.hbs`)
                 .send({ content: modifiedContent })
@@ -303,17 +342,16 @@ console.log('Template playground app loaded');
                 .expect(200);
 
             expect(zipResponse.headers['content-type']).to.include('application/zip');
-            
+
             // Check ZIP content using content-length header (more reliable for binary data)
-            const contentLength = parseInt(zipResponse.headers['content-length']);
+            const contentLength = parseInt(zipResponse.headers['content-length'], 10);
             expect(contentLength).to.be.greaterThan(0);
-            
+
             // Also verify body exists (supertest populates it as object for binary)
             expect(zipResponse.body).to.not.be.undefined;
         });
 
-        it('should handle concurrent sessions with isolation', async function() {
-
+        it('should handle concurrent sessions with isolation', async () => {
             // Create multiple sessions
             const sessions = [];
             for (let i = 0; i < 3; i++) {
@@ -345,8 +383,7 @@ console.log('Template playground app loaded');
             }
         });
 
-        it('should preserve modifications across multiple operations', async function() {
-
+        it('should preserve modifications across multiple operations', async () => {
             // Create session
             const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
@@ -356,9 +393,19 @@ console.log('Template playground app loaded');
 
             // Make multiple template modifications
             const modifications = [
-                { path: 'page.hbs', content: '<html><head><title>Custom Title</title></head><body>{{{content}}}</body></html>' },
-                { path: 'partials/component.hbs', content: '<div class="custom-component">{{component.name}}</div>' },
-                { path: 'partials/service.hbs', content: '<div class="custom-service">{{service.name}}</div>' }
+                {
+                    path: 'page.hbs',
+                    content:
+                        '<html><head><title>Custom Title</title></head><body>{{{content}}}</body></html>'
+                },
+                {
+                    path: 'partials/component.hbs',
+                    content: '<div class="custom-component">{{component.name}}</div>'
+                },
+                {
+                    path: 'partials/service.hbs',
+                    content: '<div class="custom-service">{{service.name}}</div>'
+                }
             ];
 
             // Apply modifications
@@ -391,7 +438,7 @@ console.log('Template playground app loaded');
                 .expect(200);
 
             // Check ZIP content using content-length header (more reliable for binary data)
-            const contentLength = parseInt(zipResponse.headers['content-length']);
+            const contentLength = parseInt(zipResponse.headers['content-length'], 10);
             expect(contentLength).to.be.greaterThan(0);
 
             // Verify modifications are still intact after ZIP creation
@@ -406,8 +453,7 @@ console.log('Template playground app loaded');
     });
 
     describe('Error Recovery Integration', () => {
-        it('should handle API errors gracefully', async function() {
-
+        it('should handle API errors gracefully', async () => {
             // Try to access non-existent session
             await request(server.getHttpServer())
                 .get('/api/session/invalid-session/templates')
@@ -435,8 +481,7 @@ console.log('Template playground app loaded');
             expect(templatesResponse.body.templates.length).to.be.greaterThan(0);
         });
 
-        it('should handle malformed requests', async function() {
-
+        it('should handle malformed requests', async () => {
             // Create session
             const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
@@ -467,8 +512,7 @@ console.log('Template playground app loaded');
     });
 
     describe('Resource Management', () => {
-        it('should handle multiple sessions efficiently', async function() {
-
+        it('should handle multiple sessions efficiently', async () => {
             const sessions = [];
             const numSessions = 5;
 
@@ -504,8 +548,8 @@ console.log('Template playground app loaded');
                     .expect(200);
 
                 // Check ZIP content using content-length header (more reliable for binary data)
-            const contentLength = parseInt(zipResponse.headers['content-length']);
-            expect(contentLength).to.be.greaterThan(0);
+                const contentLength = parseInt(zipResponse.headers['content-length'], 10);
+                expect(contentLength).to.be.greaterThan(0);
             }
 
             // Verify all sessions are still accessible

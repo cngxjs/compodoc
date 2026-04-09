@@ -1,5 +1,5 @@
+import { hasStderrError, shell, shellAsync, temporaryDir } from '../helpers';
 
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 // Helper function to strip ANSI escape codes
@@ -8,7 +8,7 @@ function stripAnsi(str: string): string {
 }
 
 describe('CLI serving', () => {
-    const distFolder = tmp.name + '-serving',
+    const distFolder = `${tmp.name}-serving`,
         TIMEOUT = 8000;
 
     describe('when serving with -s flag in another directory', () => {
@@ -16,7 +16,7 @@ describe('CLI serving', () => {
             child;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', ['./bin/index-cli.js', '-s', '-d', distFolder], {
+            const ls = shell('node', ['./bin/index-cli.js', '-s', '-d', distFolder], {
                 timeout: TIMEOUT
             });
 
@@ -52,7 +52,7 @@ describe('CLI serving', () => {
                 let output = '';
                 let errorOutput = '';
 
-                child.stdout.on('data', (data) => {
+                child.stdout.on('data', data => {
                     output += data.toString();
                     // Look for the serving message
                     if (output.includes('Serving documentation from')) {
@@ -61,11 +61,11 @@ describe('CLI serving', () => {
                     }
                 });
 
-                child.stderr.on('data', (data) => {
+                child.stderr.on('data', data => {
                     errorOutput += data.toString();
                 });
 
-                child.on('error', (err) => {
+                child.on('error', err => {
                     console.error(`Process error: ${err}`);
                     reject(err);
                 });
@@ -122,20 +122,23 @@ describe('CLI serving', () => {
                 let output = '';
                 let errorOutput = '';
 
-                child.stdout.on('data', (data) => {
+                child.stdout.on('data', data => {
                     output += data.toString();
                     // Look for the serving message with 127.0.0.1 host
-                    if (output.includes('Serving documentation from') && output.includes('127.0.0.1')) {
+                    if (
+                        output.includes('Serving documentation from') &&
+                        output.includes('127.0.0.1')
+                    ) {
                         stdoutString = output;
                         child.kill('SIGTERM');
                     }
                 });
 
-                child.stderr.on('data', (data) => {
+                child.stderr.on('data', data => {
                     errorOutput += data.toString();
                 });
 
-                child.on('error', (err) => {
+                child.on('error', err => {
                     console.error(`Process error: ${err}`);
                     reject(err);
                 });
@@ -182,7 +185,7 @@ describe('CLI serving', () => {
         let stdoutString = '',
             child;
         beforeAll(() => {
-            let ls = shell('node', ['./bin/index-cli.js', '-s', '-d', './documentation/'], {
+            const ls = shell('node', ['./bin/index-cli.js', '-s', '-d', './documentation/'], {
                 timeout: TIMEOUT
             });
 
@@ -204,7 +207,7 @@ describe('CLI serving', () => {
         let stdoutString = '',
             child;
         beforeAll(() => {
-            let ls = shell('node', ['./bin/index-cli.js', '-s'], { timeout: TIMEOUT });
+            const ls = shell('node', ['./bin/index-cli.js', '-s'], { timeout: TIMEOUT });
 
             if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);

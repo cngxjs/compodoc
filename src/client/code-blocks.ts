@@ -1,4 +1,3 @@
-
 const LANG_MAP: Record<string, string> = {
     typescript: 'TypeScript',
     javascript: 'JavaScript',
@@ -10,16 +9,19 @@ const LANG_MAP: Record<string, string> = {
     markdown: 'Markdown'
 };
 
-const prefersReducedMotion = () =>
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const flashLine = (el: Element) => {
     el.classList.add('cdx-line-highlight');
     if (!prefersReducedMotion()) {
         el.classList.add('cdx-line-flash');
-        el.addEventListener('animationend', () => {
-            el.classList.remove('cdx-line-flash');
-        }, { once: true });
+        el.addEventListener(
+            'animationend',
+            () => {
+                el.classList.remove('cdx-line-flash');
+            },
+            { once: true }
+        );
     }
 };
 
@@ -38,20 +40,26 @@ const highlightLines = (container: Element, start: number, end: number) => {
         const nr = parseInt(line.dataset.cdxLineNr || '0', 10);
         if (nr >= start && nr <= end) {
             line.classList.add('cdx-line-highlight');
-            if (!firstMatch) firstMatch = line;
+            if (!firstMatch) {
+                firstMatch = line;
+            }
         }
     });
 
     if (firstMatch) {
-        const behavior = prefersReducedMotion() ? 'auto' as const : 'smooth' as const;
+        const behavior = prefersReducedMotion() ? ('auto' as const) : ('smooth' as const);
         firstMatch.scrollIntoView({ behavior, block: 'center' });
-        if (start === end) flashLine(firstMatch);
+        if (start === end) {
+            flashLine(firstMatch);
+        }
     }
 };
 
 const parseLineHash = (hash: string): { start: number; end: number } | null => {
     const match = hash.match(/^#L(\d+)(?:-L(\d+))?$/);
-    if (!match) return null;
+    if (!match) {
+        return null;
+    }
     const start = parseInt(match[1], 10);
     const end = match[2] ? parseInt(match[2], 10) : start;
     return { start: Math.min(start, end), end: Math.max(start, end) };
@@ -74,11 +82,15 @@ const initCopyButtons = () => {
             pre.setAttribute('role', 'region');
             pre.setAttribute('aria-label', 'Source code');
         }
-        pre.querySelectorAll('.cdx-line-number, .line-number, .line-numbers-rows span').forEach(el => {
-            el.setAttribute('aria-hidden', 'true');
-        });
+        pre.querySelectorAll('.cdx-line-number, .line-number, .line-numbers-rows span').forEach(
+            el => {
+                el.setAttribute('aria-hidden', 'true');
+            }
+        );
 
-        if (pre.querySelector('.cdx-code-copy')) return;
+        if (pre.querySelector('.cdx-code-copy')) {
+            return;
+        }
 
         const btn = document.createElement('button');
         btn.className = 'cdx-code-copy';
@@ -106,14 +118,18 @@ const initCopyButtons = () => {
 
 const initLinkToSource = () => {
     document.querySelectorAll<HTMLAnchorElement>('.cdx-link-to-source').forEach(link => {
-        if (link.dataset.cdxBound) return;
+        if (link.dataset.cdxBound) {
+            return;
+        }
         link.dataset.cdxBound = '1';
 
-        link.addEventListener('click', (e) => {
+        link.addEventListener('click', e => {
             e.preventDefault();
             const targetLine = link.getAttribute('data-cdx-line');
             const sourceTab = document.querySelector<HTMLElement>('#source-tab');
-            if (sourceTab) sourceTab.click();
+            if (sourceTab) {
+                sourceTab.click();
+            }
 
             if (targetLine) {
                 const lineNr = parseInt(targetLine, 10);
@@ -121,7 +137,9 @@ const initLinkToSource = () => {
 
                 setTimeout(() => {
                     const pre = document.querySelector('.cdx-source-code pre');
-                    if (!pre) return;
+                    if (!pre) {
+                        return;
+                    }
                     highlightLines(pre, lineNr, lineNr);
                 }, 300);
             }
@@ -131,17 +149,23 @@ const initLinkToSource = () => {
 
 const initLinePermalinks = () => {
     document.querySelectorAll<HTMLElement>('.cdx-source-code pre').forEach(pre => {
-        if (pre.dataset.cdxPermalinks) return;
+        if (pre.dataset.cdxPermalinks) {
+            return;
+        }
         pre.dataset.cdxPermalinks = '1';
 
         let rangeStart: number | null = null;
 
-        pre.addEventListener('click', (e) => {
+        pre.addEventListener('click', e => {
             const target = e.target as HTMLElement;
-            if (!target.classList.contains('cdx-line-number')) return;
+            if (!target.classList.contains('cdx-line-number')) {
+                return;
+            }
 
             const lineNr = parseInt(target.dataset.cdxLineNr || '0', 10);
-            if (!lineNr) return;
+            if (!lineNr) {
+                return;
+            }
 
             if (e.shiftKey && rangeStart !== null) {
                 const start = Math.min(rangeStart, lineNr);
@@ -160,7 +184,9 @@ const initLinePermalinks = () => {
 const initHashHighlight = () => {
     const applyHash = () => {
         const range = parseLineHash(location.hash);
-        if (!range) return;
+        if (!range) {
+            return;
+        }
 
         const sourceTab = document.querySelector<HTMLElement>('#source-tab');
         if (sourceTab && !sourceTab.classList.contains('active')) {
@@ -170,7 +196,9 @@ const initHashHighlight = () => {
         // wait for tab switch animation
         setTimeout(() => {
             const pre = document.querySelector('.cdx-source-code pre');
-            if (pre) highlightLines(pre, range.start, range.end);
+            if (pre) {
+                highlightLines(pre, range.start, range.end);
+            }
         }, 100);
     };
 
@@ -181,12 +209,18 @@ const initHashHighlight = () => {
 const initSourceBreadcrumb = () => {
     document.querySelectorAll<HTMLElement>('.cdx-source-code').forEach(container => {
         const pre = container.querySelector('pre');
-        if (!pre) return;
+        if (!pre) {
+            return;
+        }
 
-        if (container.querySelector('.cdx-source-breadcrumb')) return;
+        if (container.querySelector('.cdx-source-breadcrumb')) {
+            return;
+        }
 
         const memberLines = pre.querySelectorAll<HTMLElement>('[data-cdx-member]');
-        if (memberLines.length === 0) return;
+        if (memberLines.length === 0) {
+            return;
+        }
 
         const bar = document.createElement('div');
         bar.className = 'cdx-source-breadcrumb';
@@ -206,16 +240,22 @@ const initSourceBreadcrumb = () => {
         let currentScope = '';
 
         const updateBreadcrumb = (name: string) => {
-            if (name === currentScope) return;
+            if (name === currentScope) {
+                return;
+            }
             currentScope = name;
 
             const parts = name.split('.');
-            bar.innerHTML = parts.map((part, i) => {
-                const isLast = i === parts.length - 1;
-                const fullName = parts.slice(0, i + 1).join('.');
-                const segment = `<span class="cdx-breadcrumb-segment" data-cdx-member-ref="${escapeAttr(fullName)}">${escapeHtmlClient(part)}</span>`;
-                return isLast ? segment : segment + '<span class="cdx-breadcrumb-sep">&rsaquo;</span>';
-            }).join('');
+            bar.innerHTML = parts
+                .map((part, i) => {
+                    const isLast = i === parts.length - 1;
+                    const fullName = parts.slice(0, i + 1).join('.');
+                    const segment = `<span class="cdx-breadcrumb-segment" data-cdx-member-ref="${escapeAttr(fullName)}">${escapeHtmlClient(part)}</span>`;
+                    return isLast
+                        ? segment
+                        : `${segment}<span class="cdx-breadcrumb-sep">&rsaquo;</span>`;
+                })
+                .join('');
 
             bar.querySelectorAll<HTMLElement>('.cdx-breadcrumb-segment').forEach(seg => {
                 seg.addEventListener('click', () => {
@@ -223,12 +263,17 @@ const initSourceBreadcrumb = () => {
                     const memberName = ref.split('.').pop() || '';
                     const infoTab = document.querySelector('#info');
                     if (infoTab) {
-                        const header = infoTab.querySelector(`[id*="${memberName}"], .cdx-member-name`) as HTMLElement;
-                        const allHeaders = infoTab.querySelectorAll<HTMLElement>('.cdx-member-name');
+                        const _header = infoTab.querySelector(
+                            `[id*="${memberName}"], .cdx-member-name`
+                        ) as HTMLElement;
+                        const allHeaders =
+                            infoTab.querySelectorAll<HTMLElement>('.cdx-member-name');
                         for (const h of allHeaders) {
                             if (h.textContent?.trim().includes(memberName)) {
                                 const infoTabBtn = document.querySelector<HTMLElement>('#info-tab');
-                                if (infoTabBtn) infoTabBtn.click();
+                                if (infoTabBtn) {
+                                    infoTabBtn.click();
+                                }
                                 setTimeout(() => {
                                     h.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 }, 100);
@@ -241,7 +286,7 @@ const initSourceBreadcrumb = () => {
         };
 
         const observer = new IntersectionObserver(
-            (entries) => {
+            entries => {
                 let topVisible: { name: string; top: number } | null = null;
 
                 for (const entry of entries) {
@@ -273,18 +318,23 @@ const initSourceBreadcrumb = () => {
 const escapeHtmlClient = (str: string) =>
     str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-const escapeAttr = (str: string) =>
-    str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+const escapeAttr = (str: string) => str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 const initLanguageChips = () => {
     document.querySelectorAll<HTMLElement>('pre:has(> code), pre.shiki').forEach(pre => {
-        if (pre.querySelector('.cdx-code-lang-chip') || pre.closest('.cdx-source-code')) return;
+        if (pre.querySelector('.cdx-code-lang-chip') || pre.closest('.cdx-source-code')) {
+            return;
+        }
 
         const code = pre.querySelector('code');
-        if (!code) return;
+        if (!code) {
+            return;
+        }
 
         const langClass = Array.from(code.classList).find(c => c.startsWith('language-'));
-        if (!langClass) return;
+        if (!langClass) {
+            return;
+        }
 
         const lang = langClass.replace('language-', '');
         const label = LANG_MAP[lang] || lang.toUpperCase();
@@ -299,14 +349,20 @@ const initLanguageChips = () => {
 
 const initExpandableSnippets = () => {
     document.querySelectorAll<HTMLElement>('pre:has(> code), pre.shiki').forEach(pre => {
-        if (pre.closest('.cdx-source-code') || pre.dataset.cdxExpandChecked) return;
+        if (pre.closest('.cdx-source-code') || pre.dataset.cdxExpandChecked) {
+            return;
+        }
         pre.dataset.cdxExpandChecked = '1';
 
         const code = pre.querySelector('code');
-        if (!code) return;
+        if (!code) {
+            return;
+        }
 
         const lineCount = (code.textContent || '').split('\n').length;
-        if (lineCount <= 10) return;
+        if (lineCount <= 10) {
+            return;
+        }
 
         const wrapper = document.createElement('div');
         wrapper.className = 'cdx-code-expandable';

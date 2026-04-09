@@ -2,8 +2,12 @@ import Html from '@kitajs/html';
 import { renderEntityPage } from './EntityPage';
 
 const classContextLine = (cls: any): string | undefined => {
-    if (cls.extends?.length) return `extends ${cls.extends[0]}`;
-    if (cls.implements?.length) return `implements ${cls.implements[0]}`;
+    if (cls.extends?.length) {
+        return `extends ${cls.extends[0]}`;
+    }
+    if (cls.implements?.length) {
+        return `implements ${cls.implements[0]}`;
+    }
     return undefined;
 };
 
@@ -27,5 +31,5 @@ export const ClassPage = (data: any): string =>
         showIndexSignatures: true,
         showAccessors: true,
         showJsdocBadges: true,
-        contextLine: classContextLine(data.class),
+        contextLine: classContextLine(data.class)
     });

@@ -6,6 +6,7 @@ const escapeHtml = (str: string): string =>
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;');
+
 import BasicTypeUtil from '../../utils/basic-type.util';
 
 // TODO: Refactor this helper to be more modular and testable, and to handle more complex type scenarios (e.g., generics, unions, intersections).
@@ -52,8 +53,12 @@ function handleFunction(arg: any): string {
     }
     const argums = arg.function.map((argu: any) => {
         const link = resolveTypeLink(argu.type);
-        if (link) return `${argu.name}${getOptionalString(arg)}: ${link}`;
-        if (argu.name && argu.type) return `${argu.name}${getOptionalString(arg)}: ${argu.type}`;
+        if (link) {
+            return `${argu.name}${getOptionalString(arg)}: ${link}`;
+        }
+        if (argu.name && argu.type) {
+            return `${argu.name}${getOptionalString(arg)}: ${argu.type}`;
+        }
         return argu.name?.text ?? '';
     });
     return `${arg.name}${getOptionalString(arg)}: (${argums.join(', ')}) => void`;
@@ -67,12 +72,16 @@ export const functionSignature = (method: any): string => {
 
     if (method.args) {
         method.args.forEach((arg: any) => {
-            if (arg.destructuredParameter) destructuredCounterInitial += 1;
+            if (arg.destructuredParameter) {
+                destructuredCounterInitial += 1;
+            }
         });
 
         method.args.forEach((arg: any, index: number) => {
             if (arg.destructuredParameter) {
-                if (destructuredCounterReal === 0) args += '__namedParameters: {';
+                if (destructuredCounterReal === 0) {
+                    args += '__namedParameters: {';
+                }
                 destructuredCounterReal += 1;
             }
 
@@ -95,7 +104,9 @@ export const functionSignature = (method: any): string => {
             ) {
                 args += '}';
             }
-            if (index < method.args.length - 1) args += ', ';
+            if (index < method.args.length - 1) {
+                args += ', ';
+            }
         });
     }
 

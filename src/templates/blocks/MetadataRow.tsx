@@ -21,7 +21,9 @@ export function MetadataSection(props: {
     readonly title?: string;
     readonly rows: string[];
 }): string {
-    if (props.rows.length === 0) return '';
+    if (props.rows.length === 0) {
+        return '';
+    }
     return (
         <section class="cdx-content-section" data-compodoc="block-metadata">
             <h3 class="cdx-section-heading">{props.title ?? t('metadata')}</h3>

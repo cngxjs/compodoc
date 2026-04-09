@@ -1,6 +1,6 @@
 import Html from '@kitajs/html';
+import { IconMoon, IconPalette, IconSearch, IconSun } from './components/Icons';
 import { relativeUrl } from './helpers';
-import { IconSearch, IconSun, IconMoon, IconPalette } from './components/Icons';
 
 export type PageData = {
     readonly documentationMainName: string;
@@ -55,17 +55,19 @@ const PageGlobals = (props: { data: PageData }) => {
     );
 };
 
-const GoogleAnalytics = (props: { gaID: string }) => (<>
-    <script async src={`https://www.googletagmanager.com/gtag/js?id=${props.gaID}`}></script>
-    <script>
-        {`
+const GoogleAnalytics = (props: { gaID: string }) => (
+    <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${props.gaID}`}></script>
+        <script>
+            {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', '${props.gaID}');
         `}
-    </script>
-</>);
+        </script>
+    </>
+);
 
 const CommandPalette = () =>
     (
@@ -160,7 +162,8 @@ const SidebarHeader = (props: {
     r: (path: string) => string;
 }): string => {
     // Show theme picker when using default theme (no --theme lock to a specific non-default one)
-    const isDefaultTheme = !props.lockedTheme || props.lockedTheme === 'default' || props.lockedTheme === 'gitbook';
+    const isDefaultTheme =
+        !props.lockedTheme || props.lockedTheme === 'default' || props.lockedTheme === 'gitbook';
     const showThemePicker = isDefaultTheme;
     const activeTheme = isDefaultTheme ? 'default' : props.lockedTheme!;
 
@@ -188,14 +191,16 @@ const SidebarHeader = (props: {
                             >
                                 {IconPalette()}
                             </button>
-                            <ul class="cdx-theme-picker-menu" role="listbox" aria-label="Theme" hidden>
+                            <ul class="cdx-theme-picker-menu" aria-label="Theme" hidden>
                                 {BUILTIN_THEMES.map(t => (
                                     <li
-                                        role="option"
                                         data-cdx-theme={t.id}
-                                        aria-selected={t.id === activeTheme ? 'true' : 'false'}
+                                        aria-current={t.id === activeTheme ? 'true' : undefined}
                                     >
-                                        <span class="cdx-theme-swatch" style={`--swatch: ${t.swatch}`}></span>
+                                        <span
+                                            class="cdx-theme-swatch"
+                                            style={`--swatch: ${t.swatch}`}
+                                        ></span>
                                         {t.name}
                                     </li>
                                 ))}
@@ -238,10 +243,13 @@ const SidebarHeader = (props: {
 /** Build a descriptive page title for browser tab + Pagefind indexing */
 const pageTitle = (data: PageData): string => {
     const base = data.documentationMainName;
-    if (!data.context || data.context === 'readme' || data.context === 'getting-started')
+    if (!data.context || data.context === 'readme' || data.context === 'getting-started') {
         return base;
+    }
     const name = data.name || data.filename || '';
-    if (!name) return base;
+    if (!name) {
+        return base;
+    }
     const ctx = data.context.replaceAll('-', ' ');
     return `${name} - ${ctx} - ${base}`;
 };
@@ -270,7 +278,11 @@ export const Layout = (props: LayoutProps): string => {
                 <link
                     id="cdx-theme-link"
                     rel="stylesheet"
-                    href={data.theme && !['default', 'gitbook'].includes(data.theme) ? r(`styles/${data.theme}.css`) : ''}
+                    href={
+                        data.theme && !['default', 'gitbook'].includes(data.theme)
+                            ? r(`styles/${data.theme}.css`)
+                            : ''
+                    }
                     data-base={r('')}
                 />
                 <script>{`(function(){try{var t=localStorage.getItem('compodoc-theme');if(t&&t!=='default'){var l=document.getElementById('cdx-theme-link');if(l)l.href=l.getAttribute('data-base')+'styles/'+t+'.css'}}catch(e){}}())`}</script>
@@ -278,7 +290,9 @@ export const Layout = (props: LayoutProps): string => {
             <body>
                 <script type="module" src={r('js/compodocx.js')}></script>
                 <script>{IframeTrackingScript}</script>
-                {data.entityIndex && <script>{`window.__CDX_ENTITIES__=${JSON.stringify(data.entityIndex)};`}</script>}
+                {data.entityIndex && (
+                    <script>{`window.__CDX_ENTITIES__=${JSON.stringify(data.entityIndex)};`}</script>
+                )}
 
                 <a href="#main-content" class="cdx-skip-link">
                     Skip to main content
@@ -314,20 +328,24 @@ export const Layout = (props: LayoutProps): string => {
                                 >
                                     {IconPalette()}
                                 </button>
-                                <ul class="cdx-theme-picker-menu" role="listbox" aria-label="Theme" hidden>
+                                <ul class="cdx-theme-picker-menu" aria-label="Theme" hidden>
                                     {BUILTIN_THEMES.map(t => (
                                         <li
-                                            role="option"
                                             data-cdx-theme={t.id}
-                                            aria-selected={t.id === 'default' ? 'true' : 'false'}
+                                            aria-current={t.id === 'default' ? 'true' : undefined}
                                         >
-                                            <span class="cdx-theme-swatch" style={`--swatch: ${t.swatch}`}></span>
+                                            <span
+                                                class="cdx-theme-swatch"
+                                                style={`--swatch: ${t.swatch}`}
+                                            ></span>
                                             {t.name}
                                         </li>
                                     ))}
                                 </ul>
                             </div>
-                        ) : ''}
+                        ) : (
+                            ''
+                        )}
                         {!data.hideDarkModeToggle && (
                             <button
                                 type="button"

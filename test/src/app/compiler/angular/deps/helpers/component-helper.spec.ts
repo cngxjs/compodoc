@@ -1,11 +1,8 @@
 import { Project, SyntaxKind, ts } from 'ts-morph';
 import {
-    ComponentHelper,
-    ComponentCache
+    ComponentCache,
+    ComponentHelper
 } from '../../../../../../../src/app/compiler/angular/deps/helpers/component-helper';
-import { ClassHelper } from '../../../../../../../src/app/compiler/angular/deps/helpers/class-helper';
-import { SymbolHelper } from '../../../../../../../src/app/compiler/angular/deps/helpers/symbol-helper';
-import { expect, vi } from 'vitest';
 
 describe('ComponentHelper', () => {
     let componentHelper: ComponentHelper;

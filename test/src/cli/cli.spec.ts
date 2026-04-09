@@ -1,13 +1,12 @@
-
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { exists, hasStderrError, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI simple flags', () => {
-    const distFolder = tmp.name + '-simple-flags';
+    const distFolder = `${tmp.name}-simple-flags`;
 
     describe('when no tsconfig.json provided', () => {
-        let command = undefined;
+        let command;
         beforeEach(() => {
             command = shell('node', ['./bin/index-cli.js']);
         });
@@ -25,7 +24,7 @@ describe('CLI simple flags', () => {
     });
 
     describe('when no tsconfig.json provided with just -p', () => {
-        let command = undefined;
+        let command;
         beforeEach(() => {
             command = shell('node', ['./bin/index-cli.js', '-p']);
         });
@@ -36,7 +35,7 @@ describe('CLI simple flags', () => {
     });
 
     describe('when no tsconfig.json is found in cwd', () => {
-        let command = undefined;
+        let command;
         beforeEach(() => {
             command = shell('node', ['./bin/index-cli.js', '-p', './test.json']);
         });
@@ -54,7 +53,7 @@ describe('CLI simple flags', () => {
     });
 
     describe('when just serving without generation', () => {
-        let command = undefined;
+        let command;
         beforeEach(() => {
             command = shell('node', ['./bin/index-cli.js', '-s']);
         });
@@ -76,7 +75,7 @@ describe('CLI simple flags', () => {
     });*/
 
     describe('when no README/package.json files available', () => {
-        let command = undefined;
+        let command;
 
         beforeEach(() => {
             tmp.create(distFolder);
@@ -108,7 +107,7 @@ describe('CLI simple flags', () => {
         beforeAll(() => {
             tmp.create(distFolder);
             tmp.copy('./test/fixtures/sample-files/', distFolder);
-            let ls = shell(
+            const ls = shell(
                 'node',
                 ['../bin/index-cli.js', '-p', 'tsconfig.entry.json', '-d', 'documentation'],
                 { cwd: distFolder }

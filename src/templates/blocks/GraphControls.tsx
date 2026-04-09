@@ -9,9 +9,15 @@ type GraphZoomControlsProps = {
 export function GraphZoomControls({ prefix = '' }: GraphZoomControlsProps): string {
     return (
         <div class="cdx-graph-zoom-controls">
-            <button id={`${prefix}zoom-in`} class="cdx-btn cdx-btn--sm">{t('zoomin')}</button>
-            <button id={`${prefix}reset`} class="cdx-btn cdx-btn--sm">{t('reset')}</button>
-            <button id={`${prefix}zoom-out`} class="cdx-btn cdx-btn--sm">{t('zoomout')}</button>
+            <button type="button" id={`${prefix}zoom-in`} class="cdx-btn cdx-btn--sm">
+                {t('zoomin')}
+            </button>
+            <button type="button" id={`${prefix}reset`} class="cdx-btn cdx-btn--sm">
+                {t('reset')}
+            </button>
+            <button type="button" id={`${prefix}zoom-out`} class="cdx-btn cdx-btn--sm">
+                {t('zoomout')}
+            </button>
         </div>
     ) as string;
 }
@@ -23,12 +29,17 @@ type LegendItem = {
 
 /** Colored-dot legend for dependency/module graphs. */
 export function GraphLegend(props: { readonly items: LegendItem[] }): string {
-    if (props.items.length === 0) return '';
+    if (props.items.length === 0) {
+        return '';
+    }
     return (
         <div class="cdx-graph-legend">
             {props.items.map(item => (
                 <div class="cdx-graph-legend-item">
-                    <span class="cdx-graph-legend-dot" style={`background: ${item.colorVar}`}></span>
+                    <span
+                        class="cdx-graph-legend-dot"
+                        style={`background: ${item.colorVar}`}
+                    ></span>
                     <span>{t(item.labelKey)}</span>
                 </div>
             ))}
@@ -42,5 +53,5 @@ export const DEPENDENCY_LEGEND_ITEMS: LegendItem[] = [
     { colorVar: 'var(--color-cdx-entity-directive)', labelKey: 'directive' },
     { colorVar: 'var(--color-cdx-entity-pipe)', labelKey: 'pipe' },
     { colorVar: 'var(--color-cdx-entity-module)', labelKey: 'module' },
-    { colorVar: 'var(--color-cdx-entity-service)', labelKey: 'injectable' },
+    { colorVar: 'var(--color-cdx-entity-service)', labelKey: 'injectable' }
 ];

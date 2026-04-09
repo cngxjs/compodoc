@@ -46,9 +46,10 @@
         "prepublishOnly": "npm run build && npm run backup-package-json && npm run copy-libs",
         "postpublish": "npm run restore-package-json",
         "*********QUALITY********": "*******************",
-        "lint": "eslint src/**/*.ts",
-        "format:check": "prettier --config ./.prettierrc --list-different \"src/**/*.ts\"",
-        "format:write": "prettier --config ./.prettierrc --write \"src/**/*.ts\""
+        "lint": "biome check",
+        "lint:fix": "biome check --fix",
+        "format:check": "biome format",
+        "format:write": "biome format --write"
     },
     "watch": {
         "build": {
@@ -114,6 +115,7 @@
         "uuid": "11.1.0"
     },
     "devDependencies": {
+        "@biomejs/biome": "2.4.10",
         "@kitajs/ts-html-plugin": "^4.1.4",
         "@playwright/test": "1.57.0",
         "@rollup/plugin-json": "^6.1.0",
@@ -127,18 +129,13 @@
         "@types/polka": "^0.5.8",
         "@types/semver": "7.7.1",
         "@types/traverse": "0.6.37",
-        "@typescript-eslint/eslint-plugin": "7.18.0",
-        "@typescript-eslint/parser": "7.18.0",
         "archiver": "^7.0.1",
         "auto-changelog": "2.5.0",
         "esbuild": "^0.27.4",
-        "eslint": "8.56.0",
-        "eslint-plugin-unused-imports": "^4.4.1",
         "husky": "9.1.7",
         "madge": "8.0.0",
         "npm-watch": "0.13.0",
         "pagefind": "^1.4.0",
-        "prettier": "3.8.0",
         "pretty-quick": "4.2.2",
         "rimraf": "6.1.2",
         "rollup": "4.55.1",

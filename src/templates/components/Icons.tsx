@@ -173,16 +173,22 @@ export const IconFunction = () =>
     ); // link/chain — standalone function
 export const IconVariable = () =>
     svg('<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M8 8h8"/>');
-    // box with lines — variable/constant
+// box with lines — variable/constant
 export const IconTypealias = () =>
-    svg('<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/>');
-    // T-shape — type alias
+    svg(
+        '<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/>'
+    );
+// T-shape — type alias
 export const IconEnum = () =>
-    svg('<line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/>');
-    // hash # — enumeration (named constants)
+    svg(
+        '<line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/>'
+    );
+// hash # — enumeration (named constants)
 export const IconProject = () =>
-    svg('<path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7-7H4a2 2 0 0 0-2 2z"/><path d="M14 2v7h7"/><path d="M12 18v-6"/><path d="M8 18v-1"/><path d="M16 18v-3"/>');
-    // file-bar-chart — project dashboard overview
+    svg(
+        '<path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7-7H4a2 2 0 0 0-2 2z"/><path d="M14 2v7h7"/><path d="M12 18v-6"/><path d="M8 18v-1"/><path d="M16 18v-3"/>'
+    );
+// file-bar-chart — project dashboard overview
 
 /**
  * Map legacy Ionicon class names to Lucide icon functions.

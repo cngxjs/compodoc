@@ -1,11 +1,11 @@
 import Html from '@kitajs/html';
-import { t } from '../helpers';
-import { GraphZoomControls, GraphLegend, DEPENDENCY_LEGEND_ITEMS } from '../blocks/GraphControls';
-import { iconFor } from '../components/Icons';
-import { EmptyState } from '../components/EmptyState';
-import { EmptyIconDashboard } from '../components/EmptyStateIcons';
+import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
 import { OverviewHero } from '../blocks/OverviewHero';
 import { OverviewStats } from '../blocks/OverviewStats';
+import { EmptyState } from '../components/EmptyState';
+import { EmptyIconDashboard } from '../components/EmptyStateIcons';
+import { iconFor } from '../components/Icons';
+import { t } from '../helpers';
 
 type OverviewProps = {
     readonly modules?: unknown[];
@@ -60,8 +60,8 @@ export const Overview = (props: OverviewProps): string => {
                 projectName: props.documentationMainName || t('overview'),
                 angularVersion: props.angularVersion || undefined,
                 hasZoneless: [
-                    ...(props.components as any[] ?? []),
-                    ...(props.directives as any[] ?? [])
+                    ...((props.components as any[]) ?? []),
+                    ...((props.directives as any[]) ?? [])
                 ].some((e: any) => e.zoneless),
                 generatedAt: props.generatedAt || new Date().toISOString()
             })}
@@ -70,10 +70,13 @@ export const Overview = (props: OverviewProps): string => {
             {showGraph && (
                 <div class="cdx-graph-container">
                     <div class="cdx-graph-viewport">
-                        <div id="module-graph-svg">
-                            {props.mainGraph}
-                        </div>
-                        <button id="fullscreen" class="cdx-graph-fullscreen-btn" aria-label="Fullscreen">
+                        <div id="module-graph-svg">{props.mainGraph}</div>
+                        <button
+                            type="button"
+                            id="fullscreen"
+                            class="cdx-graph-fullscreen-btn"
+                            aria-label="Fullscreen"
+                        >
                             {iconFor('ion-ios-resize')}
                         </button>
                     </div>
@@ -82,52 +85,55 @@ export const Overview = (props: OverviewProps): string => {
             )}
 
             {/* 2b. Dependency Graph (standalone apps without NgModules) */}
-            {showDepGraph && (<>
-                <script>{`window.DEPENDENCY_GRAPH = ${JSON.stringify(props.dependencyGraph)};`}</script>
-                {/* A11y: text alternative for screen readers (network graphs are inaccessible) */}
-                <ul class="sr-only" aria-label="Component dependency list">
-                    {props.dependencyGraph!.edges.map((e: any) => (
-                        <li>{e.source} imports {e.target}</li>
-                    ))}
-                </ul>
-                <div class="cdx-graph-container cdx-graph-container--compact">
-                    <div class="cdx-graph-viewport">
-                        <div id="dependency-graph-container"></div>
+            {showDepGraph && (
+                <>
+                    <script>{`window.DEPENDENCY_GRAPH = ${JSON.stringify(props.dependencyGraph)};`}</script>
+                    {/* A11y: text alternative for screen readers (network graphs are inaccessible) */}
+                    <ul class="sr-only" aria-label="Component dependency list">
+                        {props.dependencyGraph!.edges.map((e: any) => (
+                            <li>
+                                {e.source} imports {e.target}
+                            </li>
+                        ))}
+                    </ul>
+                    <div class="cdx-graph-container cdx-graph-container--compact">
+                        <div class="cdx-graph-viewport">
+                            <div id="dependency-graph-container"></div>
+                        </div>
+                        {GraphZoomControls({ prefix: 'dep-' })}
+                        {GraphLegend({ items: DEPENDENCY_LEGEND_ITEMS })}
                     </div>
-                    {GraphZoomControls({ prefix: 'dep-' })}
-                    {GraphLegend({ items: DEPENDENCY_LEGEND_ITEMS })}
-                </div>
-            </>)}
+                </>
+            )}
 
             {/* 3. Stats Grid or Empty State */}
             {hasAnyEntities(props)
                 ? OverviewStats({
-                    modules: props.modules as any[],
-                    components: props.components as any[],
-                    directives: props.directives as any[],
-                    injectables: props.injectables as any[],
-                    pipes: props.pipes as any[],
-                    classes: props.classes as any[],
-                    guards: props.guards as any[],
-                    interfaces: props.interfaces as any[],
-                    interceptors: props.interceptors as any[],
-                    entities: props.entities as any[],
-                    routes: props.routes as any[],
-                    routesLength: props.routesLength,
-                    appConfig: props.appConfig,
-                    coverageData: props.coverageData
-                })
+                      modules: props.modules as any[],
+                      components: props.components as any[],
+                      directives: props.directives as any[],
+                      injectables: props.injectables as any[],
+                      pipes: props.pipes as any[],
+                      classes: props.classes as any[],
+                      guards: props.guards as any[],
+                      interfaces: props.interfaces as any[],
+                      interceptors: props.interceptors as any[],
+                      entities: props.entities as any[],
+                      routes: props.routes as any[],
+                      routesLength: props.routesLength,
+                      appConfig: props.appConfig,
+                      coverageData: props.coverageData
+                  })
                 : EmptyState({
-                    icon: EmptyIconDashboard(),
-                    title: t('empty-overview-title'),
-                    description: t('empty-overview-desc'),
-                    action: {
-                        label: t('empty-overview-action'),
-                        href: 'https://compodocx.dev/guide/getting-started'
-                    },
-                    variant: 'page'
-                })
-            }
+                      icon: EmptyIconDashboard(),
+                      title: t('empty-overview-title'),
+                      description: t('empty-overview-desc'),
+                      action: {
+                          label: t('empty-overview-action'),
+                          href: 'https://compodocx.dev/guide/getting-started'
+                      },
+                      variant: 'page'
+                  })}
         </>
     ) as string;
 };

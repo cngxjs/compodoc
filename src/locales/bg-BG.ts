@@ -11,7 +11,8 @@ export const TRANSLATION_BG_BG = {
     components: 'Компоненти',
     constructor: 'Конструктор',
     coverage: 'Покритие',
-    'coverage-empty-description': 'Стартирайте compodoc с документирани елементи, за да видите покритието.',
+    'coverage-empty-description':
+        'Стартирайте compodoc с документирани елементи, за да видите покритието.',
     'coverage-overview': 'Покритие на документацията',
     'coverage-page-title': 'Coverage на документацията',
     declarations: 'Декларации',
@@ -40,7 +41,8 @@ export const TRANSLATION_BG_BG = {
     'empty-dom-tree-desc': 'Необходим е шаблон за генериране на DOM дървото.',
     'empty-dom-tree-title': 'DOM дървото не е налично',
     'empty-entity-action': 'Научете повече за JSDoc тагове',
-    'empty-entity-desc': 'Този {{entityType}} няма документирани членове. Добавете JSDoc коментари в кода, за да попълните тази страница.',
+    'empty-entity-desc':
+        'Този {{entityType}} няма документирани членове. Добавете JSDoc коментари в кода, за да попълните тази страница.',
     'empty-entity-title': 'Все още няма документация',
     'empty-enum-values': 'Няма стойности',
     'empty-examples-desc': 'За този компонент не са конфигурирани примери на живо.',

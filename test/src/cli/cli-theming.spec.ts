@@ -1,12 +1,12 @@
-import path from 'path';
-import { hasStderrError, temporaryDir, shell, exists, read } from '../helpers';
+import path from 'node:path';
 import fs from 'fs-extra';
+import { exists, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI theming', () => {
     describe('built-in themes', () => {
-        const distFolder = tmp.name + '-theme-builtin';
+        const distFolder = `${tmp.name}-theme-builtin`;
 
         beforeAll(() => {
             tmp.create(distFolder);
@@ -50,7 +50,7 @@ describe('CLI theming', () => {
     });
 
     describe('default theme', () => {
-        const distFolder = tmp.name + '-theme-default';
+        const distFolder = `${tmp.name}-theme-default`;
 
         beforeAll(() => {
             tmp.create(distFolder);
@@ -78,7 +78,7 @@ describe('CLI theming', () => {
     });
 
     describe('custom theme file', () => {
-        const distFolder = tmp.name + '-theme-custom';
+        const distFolder = `${tmp.name}-theme-custom`;
         const customThemePath = path.resolve(__dirname, '../../fixtures/custom-test-theme.css');
 
         beforeAll(() => {
@@ -181,7 +181,7 @@ describe('CLI theming', () => {
     });
 
     describe('--shikiTheme flag', () => {
-        const distFolder = tmp.name + '-theme-shiki';
+        const distFolder = `${tmp.name}-theme-shiki`;
 
         beforeAll(() => {
             tmp.create(distFolder);

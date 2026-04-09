@@ -1,11 +1,10 @@
+import * as path from 'node:path';
 import decache from 'decache';
 import * as fs from 'fs-extra';
-import * as path from 'path';
-
+import { markedAcl } from '../../utils/marked.acl';
 import FileEngine from './file.engine';
 import I18nEngine from './i18n.engine';
 import { highlightCode } from './syntax-highlight.engine';
-import { markedAcl } from '../../utils/marked.acl';
 
 export interface markdownReadedDatas {
     markdown: string;
@@ -55,10 +54,10 @@ export class MarkdownEngine {
             );
         };
 
-        renderer.image = function (href: string, title: string, text: string) {
-            let out = '<img src="' + href + '" alt="' + text + '" class="img-responsive"';
+        renderer.image = (href: string, title: string, text: string) => {
+            let out = `<img src="${href}" alt="${text}" class="img-responsive"`;
             if (title) {
-                out += ' title="' + title + '"';
+                out += ` title="${title}"`;
             }
             out += '>';
             return out;
@@ -78,8 +77,8 @@ export class MarkdownEngine {
     }
 
     public getTraditionalMarkdown(filepath: string): Promise<markdownReadedDatas> {
-        return FileEngine.get(process.cwd() + path.sep + filepath + '.md')
-            .catch(err => FileEngine.get(process.cwd() + path.sep + filepath))
+        return FileEngine.get(`${process.cwd() + path.sep + filepath}.md`)
+            .catch(_err => FileEngine.get(process.cwd() + path.sep + filepath))
             .then(data => {
                 const returnedData: markdownReadedDatas = {
                     markdown: this.markedInstance(data),
@@ -93,35 +92,16 @@ export class MarkdownEngine {
         return this.markedInstance(FileEngine.getSync(process.cwd() + path.sep + filepath));
     }
 
-    private getReadmeFile(): Promise<string> {
-        return FileEngine.get(process.cwd() + path.sep + 'README.md').then(data =>
-            this.markedInstance(data)
-        );
-    }
-
     public readNeighbourReadmeFile(file: string): string {
         const dirname = path.dirname(file);
-        const readmeFile = dirname + path.sep + path.basename(file, '.ts') + '.md';
+        const readmeFile = `${dirname + path.sep + path.basename(file, '.ts')}.md`;
         return fs.readFileSync(readmeFile, 'utf8');
     }
 
     public hasNeighbourReadmeFile(file: string): boolean {
         const dirname = path.dirname(file);
-        const readmeFile = dirname + path.sep + path.basename(file, '.ts') + '.md';
+        const readmeFile = `${dirname + path.sep + path.basename(file, '.ts')}.md`;
         return FileEngine.existsSync(readmeFile);
-    }
-
-    private componentReadmeFile(file: string): string {
-        const dirname = path.dirname(file);
-        const readmeFile = dirname + path.sep + 'README.md';
-        const readmeAlternativeFile = dirname + path.sep + path.basename(file, '.ts') + '.md';
-        let finalPath = '';
-        if (FileEngine.existsSync(readmeFile)) {
-            finalPath = readmeFile;
-        } else {
-            finalPath = readmeAlternativeFile;
-        }
-        return finalPath;
     }
 
     /**
@@ -136,7 +116,7 @@ export class MarkdownEngine {
     public listRootMarkdowns(): string[] {
         const foundFiles = this.markdownFiles.filter(
             x =>
-                FileEngine.existsSync(process.cwd() + path.sep + x + '.md') ||
+                FileEngine.existsSync(`${process.cwd() + path.sep + x}.md`) ||
                 FileEngine.existsSync(process.cwd() + path.sep + x)
         );
 
@@ -157,7 +137,7 @@ export class MarkdownEngine {
      * ['README'] => ['README', 'README.md']
      */
     private addEndings(files: Array<string>): Array<string> {
-        return files.flatMap(x => [x, x + '.md']);
+        return files.flatMap(x => [x, `${x}.md`]);
     }
 }
 

@@ -1,5 +1,5 @@
-import { IHtmlEngineHelper } from './html-engine-helper.interface';
 import Configuration from '../../configuration';
+import type { IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class IsNotToggleHelper implements IHtmlEngineHelper {
     constructor() {}

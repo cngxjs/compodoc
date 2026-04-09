@@ -7,13 +7,15 @@ type RoutesProps = {
 
 export const Routes = (props: RoutesProps): string => {
     const base = relativeUrl(props.depth);
-    return (<>
-        <ol class="cdx-breadcrumb">
-            <li class="">{t('routes')}</li>
-        </ol>
+    return (
+        <>
+            <ol class="cdx-breadcrumb">
+                <li class="">{t('routes')}</li>
+            </ol>
 
-        <div id="body-routes"></div>
+            <div id="body-routes"></div>
 
-        <script src={`${base}js/routes/routes_index.js`}></script>
-    </>) as string;
+            <script src={`${base}js/routes/routes_index.js`}></script>
+        </>
+    ) as string;
 };

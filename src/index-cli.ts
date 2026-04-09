@@ -1,31 +1,25 @@
+import os from 'node:os';
+import * as path from 'node:path';
+import { program } from 'commander';
+import { cosmiconfigSync } from 'cosmiconfig';
+import fg from 'fast-glob';
 import * as fs from 'fs-extra';
-import * as path from 'path';
-
+import minimist from 'minimist';
+import osName from 'os-name';
 import { ts } from 'ts-morph';
-
+import pkg from '../package.json';
 import { Application } from './app/application';
 import Configuration from './app/configuration';
 import FileEngine from './app/engines/file.engine';
 import I18nEngine from './app/engines/i18n.engine';
-
-import { ConfigurationFileInterface } from './app/interfaces/configuration-file.interface';
+import type { ConfigurationFileInterface } from './app/interfaces/configuration-file.interface';
 import AngularVersionUtil from './utils/angular-version.util';
+import { parseApiMarkdownExports } from './utils/api-markdown-parser.util';
 import { COMPODOC_DEFAULTS } from './utils/defaults';
 import { logger } from './utils/logger';
-
-import { readConfig, EXCLUDE_PATTERNS, INCLUDE_PATTERNS } from './utils/utils';
 import { parsePublicApi } from './utils/public-api-parser.util';
-import { parseApiMarkdownExports } from './utils/api-markdown-parser.util';
 import { createSourcePathMapper } from './utils/source-path-mapper.util';
-
-import { cosmiconfigSync } from 'cosmiconfig';
-
-import fg from 'fast-glob';
-import minimist from 'minimist';
-import os from 'os';
-import osName from 'os-name';
-import pkg from '../package.json';
-import { program } from 'commander';
+import { EXCLUDE_PATTERNS, INCLUDE_PATTERNS, readConfig } from './utils/utils';
 
 const cosmiconfigModuleName = 'compodoc';
 
@@ -76,7 +70,11 @@ export class CliApplication extends Application {
                 COMPODOC_DEFAULTS.serve
             )
             .option('--host [host]', 'Change default host address')
-            .option('-r, --port [port]', 'Change default serving port', String(COMPODOC_DEFAULTS.port))
+            .option(
+                '-r, --port [port]',
+                'Change default serving port',
+                String(COMPODOC_DEFAULTS.port)
+            )
             .option(
                 '-w, --watch',
                 'Watch source files after serve and force documentation rebuild',
@@ -95,7 +93,7 @@ export class CliApplication extends Application {
             )
             .option(
                 '--theme [theme]',
-                "Choose a built-in theme or path to a custom CSS file (built-in: default, ocean, ember, midnight, neon, brutalist, nord, rose-pine)"
+                'Choose a built-in theme or path to a custom CSS file (built-in: default, ocean, ember, midnight, neon, brutalist, nord, rose-pine)'
             )
             .option(
                 '--shikiTheme [theme]',
@@ -160,13 +158,37 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 COMPODOC_DEFAULTS.disableSourceCode
             )
             .option('--disableDomTree', 'Do not add dom tree tab', COMPODOC_DEFAULTS.disableDomTree)
-            .option('--disableTemplateTab', 'Do not add template tab', COMPODOC_DEFAULTS.disableTemplateTab)
+            .option(
+                '--disableTemplateTab',
+                'Do not add template tab',
+                COMPODOC_DEFAULTS.disableTemplateTab
+            )
             .option('--disableStyleTab', 'Do not add style tab', COMPODOC_DEFAULTS.disableStyleTab)
-            .option('--disableGraph', 'Do not add the dependency graph', COMPODOC_DEFAULTS.disableGraph)
-            .option('--disableCoverage', 'Do not add the documentation coverage report', COMPODOC_DEFAULTS.disableCoverage)
-            .option('--disablePrivate', 'Do not show private in generated documentation', COMPODOC_DEFAULTS.disablePrivate)
-            .option('--disableProtected', 'Do not show protected in generated documentation', COMPODOC_DEFAULTS.disableProtected)
-            .option('--disableInternal', 'Do not show @internal in generated documentation', COMPODOC_DEFAULTS.disableInternal)
+            .option(
+                '--disableGraph',
+                'Do not add the dependency graph',
+                COMPODOC_DEFAULTS.disableGraph
+            )
+            .option(
+                '--disableCoverage',
+                'Do not add the documentation coverage report',
+                COMPODOC_DEFAULTS.disableCoverage
+            )
+            .option(
+                '--disablePrivate',
+                'Do not show private in generated documentation',
+                COMPODOC_DEFAULTS.disablePrivate
+            )
+            .option(
+                '--disableProtected',
+                'Do not show protected in generated documentation',
+                COMPODOC_DEFAULTS.disableProtected
+            )
+            .option(
+                '--disableInternal',
+                'Do not show @internal in generated documentation',
+                COMPODOC_DEFAULTS.disableInternal
+            )
             .option(
                 '--disableLifeCycleHooks',
                 'Do not show Angular lifecycle hooks in generated documentation',
@@ -182,7 +204,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 'Do not add the routes graph',
                 COMPODOC_DEFAULTS.disableRoutesGraph
             )
-            .option('--disableSearch', 'Do not add the search input', COMPODOC_DEFAULTS.disableSearch)
+            .option(
+                '--disableSearch',
+                'Do not add the search input',
+                COMPODOC_DEFAULTS.disableSearch
+            )
             .option(
                 '--disableDependencies',
                 'Do not add the dependencies list',
@@ -193,9 +219,21 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 'Do not add the properties list',
                 COMPODOC_DEFAULTS.disableProperties
             )
-            .option('--disableFilePath', 'Do not add the file path', COMPODOC_DEFAULTS.disableFilePath)
-            .option('--disableOverview', 'Do not add the overview page', COMPODOC_DEFAULTS.disableOverview)
-            .option('--templatePlayground', 'Generate template playground page for customizing templates', false)
+            .option(
+                '--disableFilePath',
+                'Do not add the file path',
+                COMPODOC_DEFAULTS.disableFilePath
+            )
+            .option(
+                '--disableOverview',
+                'Do not add the overview page',
+                COMPODOC_DEFAULTS.disableOverview
+            )
+            .option(
+                '--templatePlayground',
+                'Generate template playground page for customizing templates',
+                false
+            )
             .option(
                 '--minimal',
                 'Minimal mode with only documentation. No search, no graph, no coverage.',
@@ -205,7 +243,10 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             .option('--customLogo [path]', 'Use a custom logo')
             .option('--gaID [id]', 'Google Analytics tracking ID')
             .option('--gaSite [site]', 'Google Analytics site name', COMPODOC_DEFAULTS.gaSite)
-            .option('--publicApiOnly [path]', 'Document only symbols exported from index.d.ts files in the specified dist folder')
+            .option(
+                '--publicApiOnly [path]',
+                'Document only symbols exported from index.d.ts files in the specified dist folder'
+            )
             .option(
                 '--maxSearchResults [maxSearchResults]',
                 'Max search results on the results page. To show all results, set to 0',
@@ -220,11 +261,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 '--groupBy [strategy]',
                 'Sidebar grouping strategy: folder, category, none (default: auto-detect)'
             )
-            .option(
-                '--groupDepth [depth]',
-                'Max folder depth for group names',
-                '2'
-            )
+            .option('--groupDepth [depth]', 'Max folder depth for group names', '2')
             .allowExcessArguments()
             .parse(process.argv);
 
@@ -301,7 +338,10 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
 
         // Detect custom theme file path (contains '/' or ends with '.css')
         const themeVal = Configuration.mainData.theme;
-        if (themeVal && (themeVal.includes('/') || themeVal.includes(path.sep) || themeVal.endsWith('.css'))) {
+        if (
+            themeVal &&
+            (themeVal.includes('/') || themeVal.includes(path.sep) || themeVal.endsWith('.css'))
+        ) {
             const resolved = path.resolve(cwd, themeVal);
             if (fs.existsSync(resolved)) {
                 Configuration.mainData.customThemePath = resolved;
@@ -489,11 +529,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
 
         if (configFile.coverageTestThresholdFail) {
             Configuration.mainData.coverageTestThresholdFail =
-                configFile.coverageTestThresholdFail === 'false' ? false : true;
+                configFile.coverageTestThresholdFail !== 'false';
         }
         if (programOptions.coverageTestThresholdFail) {
             Configuration.mainData.coverageTestThresholdFail =
-                programOptions.coverageTestThresholdFail === 'false' ? false : true;
+                programOptions.coverageTestThresholdFail !== 'false';
         }
 
         if (configFile.coverageTestShowOnlyFailed) {
@@ -623,7 +663,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         if (programOptions.disableFilePath) {
             Configuration.mainData.disableFilePath = programOptions.disableFilePath;
         }
-      
+
         if (configFile.disableOverview) {
             Configuration.mainData.disableOverview = configFile.disableOverview;
         }
@@ -689,12 +729,12 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 console.log(`TypeScript version used by Compodoc : ${ts.version}`);
                 console.log('');
 
-                if (FileEngine.existsSync(cwd + path.sep + 'package.json')) {
-                    const packageData = FileEngine.getSync(cwd + path.sep + 'package.json');
+                if (FileEngine.existsSync(`${cwd + path.sep}package.json`)) {
+                    const packageData = FileEngine.getSync(`${cwd + path.sep}package.json`);
                     if (packageData) {
                         const parsedData = JSON.parse(packageData);
                         const projectDevDependencies = parsedData.devDependencies;
-                        if (projectDevDependencies && projectDevDependencies.typescript) {
+                        if (projectDevDependencies?.typescript) {
                             const tsProjectVersion = AngularVersionUtil.cleanVersion(
                                 projectDevDependencies.typescript
                             );
@@ -786,7 +826,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
          * Check --files argument call
          */
         const argv = minimist(process.argv.slice(2));
-        if (argv && argv.files) {
+        if (argv?.files) {
             Configuration.mainData.hasFilesToCoverage = true;
             if (typeof argv.files === 'string') {
                 super.setFiles([argv.files]);
@@ -952,9 +992,14 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             logger.info('Checking for *.api.md files in source root');
             const apiMarkdownExports = await parseApiMarkdownExports(sourceRoot);
 
-            if (apiMarkdownExports.apiMdFiles.size > 0 && apiMarkdownExports.symbolToFiles.size > 0) {
-                logger.info(`Found ${apiMarkdownExports.apiMdFiles.size} relevant *.api.md file(s) with ${apiMarkdownExports.symbolToFiles.size} symbol(s)`);
-                
+            if (
+                apiMarkdownExports.apiMdFiles.size > 0 &&
+                apiMarkdownExports.symbolToFiles.size > 0
+            ) {
+                logger.info(
+                    `Found ${apiMarkdownExports.apiMdFiles.size} relevant *.api.md file(s) with ${apiMarkdownExports.symbolToFiles.size} symbol(s)`
+                );
+
                 // Map symbols from API markdown files directly to source files
                 const symbolToSourceFiles = new Map<string, Set<string>>();
 
@@ -984,11 +1029,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             } else {
                 // Fall back to index.d.ts parsing
                 logger.info('No relevant *.api.md files found, falling back to index.d.ts parsing');
-                
+
                 const publicApiExports = await parsePublicApi(distPath);
 
                 if (publicApiExports.symbolToFiles.size === 0) {
-                    logger.warn('No public API exports found in dist folder. Documentation will be empty.');
+                    logger.warn(
+                        'No public API exports found in dist folder. Documentation will be empty.'
+                    );
                     return;
                 }
 
@@ -1036,7 +1083,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         // Try to find the symbol in source files
         // This is a simplified approach - look for files that contain the symbol export
         const sourceFolder = sourceRoot;
-        
+
         try {
             const files = fg.sync(path.join(sourceFolder, '**/*.ts'), {
                 ignore: ['**/node_modules/**', '**/*.spec.ts', '**/*.d.ts']

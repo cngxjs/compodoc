@@ -1,41 +1,25 @@
-import * as path from 'path';
-
-import { Project, ts, SyntaxKind } from 'ts-morph';
-
-import { IsKindType, kindToType } from '../../utils/kind-to-type';
-import { logger } from '../../utils/logger';
-import { cleanLifecycleHooksFromMethods, markedtags, mergeTagsAndArgs } from '../../utils/utils';
-import ComponentsTreeEngine from '../engines/components-tree.engine';
-
-import { FrameworkDependencies } from './framework-dependencies';
-
-import ImportsUtil from '../../utils/imports.util';
-
+import * as crypto from 'node:crypto';
+import * as path from 'node:path';
+import { Project, SyntaxKind, ts } from 'ts-morph';
+import { v4 as uuidv4 } from 'uuid';
 import {
     getModuleWithProviders,
     isIgnore,
     isModuleWithProviders,
     JsdocParserUtil
 } from '../../utils';
-
 import ExtendsMerger from '../../utils/extends-merger.util';
-
+import ImportsUtil from '../../utils/imports.util';
+import { IsKindType, kindToType } from '../../utils/kind-to-type';
+import { logger } from '../../utils/logger';
+import { markedAcl } from '../../utils/marked.acl';
+import { getNodeDecorators, nodeHasDecorator } from '../../utils/node.util';
 import RouterParserUtil from '../../utils/router-parser.util';
-
-import { CodeGenerator } from './angular/code-generator';
-
-import { ComponentDepFactory } from './angular/deps/component-dep.factory';
-import { DirectiveDepFactory } from './angular/deps/directive-dep.factory';
-import { ComponentCache } from './angular/deps/helpers/component-helper';
-import { JsDocHelper } from './angular/deps/helpers/js-doc-helper';
-import { ModuleHelper } from './angular/deps/helpers/module-helper';
-import { SymbolHelper } from './angular/deps/helpers/symbol-helper';
-import { ModuleDepFactory } from './angular/deps/module-dep.factory';
-import { EntityDepFactory } from './angular/deps/entity-dep.factory';
-
+import { cleanLifecycleHooksFromMethods, markedtags, mergeTagsAndArgs } from '../../utils/utils';
 import Configuration from '../configuration';
-
-import {
+import ComponentsTreeEngine from '../engines/components-tree.engine';
+import { CodeGenerator } from './angular/code-generator';
+import type {
     IDep,
     IEnumDecDep,
     IFunctionDecDep,
@@ -44,17 +28,21 @@ import {
     IPipeDep,
     ITypeAliasDecDep
 } from './angular/dependencies.interfaces';
+import { ComponentDepFactory } from './angular/deps/component-dep.factory';
+import { DirectiveDepFactory } from './angular/deps/directive-dep.factory';
+import { EntityDepFactory } from './angular/deps/entity-dep.factory';
+import { ComponentCache } from './angular/deps/helpers/component-helper';
+import { JsDocHelper } from './angular/deps/helpers/js-doc-helper';
+import { ModuleHelper } from './angular/deps/helpers/module-helper';
+import { SymbolHelper } from './angular/deps/helpers/symbol-helper';
+import { ModuleDepFactory } from './angular/deps/module-dep.factory';
+import { FrameworkDependencies } from './framework-dependencies';
 
-import * as crypto from 'crypto';
-import { v4 as uuidv4 } from 'uuid';
-import { getNodeDecorators, nodeHasDecorator } from '../../utils/node.util';
-import { markedAcl } from '../../utils/marked.acl';
 const project = new Project();
 
 // TypeScript reference : https://github.com/Microsoft/TypeScript/blob/master/lib/typescript.d.ts
 
 export class AngularDependencies extends FrameworkDependencies {
-    private engine: any;
     private cache: ComponentCache = new ComponentCache();
     private moduleHelper = new ModuleHelper(this.cache);
     private jsDocHelper = new JsDocHelper();
@@ -72,9 +60,12 @@ export class AngularDependencies extends FrameworkDependencies {
      * Initialize public API filtering if enabled
      */
     private initializePublicApiFiltering(): void {
-        if (Configuration.mainData.publicApiOnly && Configuration.mainData.publicApiExports.size > 0) {
+        if (
+            Configuration.mainData.publicApiOnly &&
+            Configuration.mainData.publicApiExports.size > 0
+        ) {
             logger.info('Public API filtering enabled');
-            
+
             // Build set of allowed symbols and files
             for (const [symbolName, sourceFiles] of Configuration.mainData.publicApiExports) {
                 this.allowedSymbols.add(symbolName);
@@ -83,7 +74,9 @@ export class AngularDependencies extends FrameworkDependencies {
                 }
             }
 
-            logger.info(`Allowed ${this.allowedSymbols.size} public API symbol(s) from ${this.allowedFiles.size} file(s)`);
+            logger.info(
+                `Allowed ${this.allowedSymbols.size} public API symbol(s) from ${this.allowedFiles.size} file(s)`
+            );
         }
     }
 
@@ -107,26 +100,12 @@ export class AngularDependencies extends FrameworkDependencies {
         if (this.allowedSymbols.has(symbolName)) {
             // Verify the symbol is from an allowed file
             const allowedSourceFiles = Configuration.mainData.publicApiExports.get(symbolName);
-            if (allowedSourceFiles && allowedSourceFiles.has(resolvedFileName)) {
+            if (allowedSourceFiles?.has(resolvedFileName)) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    /**
-     * Check if dependencies of an allowed symbol should be included
-     */
-    private isDependencyOfAllowedSymbol(symbolName: string, fileName: string): boolean {
-        // If public API filtering is not enabled, allow all
-        if (!Configuration.mainData.publicApiOnly) {
-            return true;
-        }
-
-        // Check if the file contains any allowed symbols
-        const resolvedFileName = path.resolve(fileName);
-        return this.allowedFiles.has(resolvedFileName);
     }
 
     public getDependencies() {
@@ -163,15 +142,15 @@ export class AngularDependencies extends FrameworkDependencies {
             const filePath = file.fileName;
 
             if (path.extname(filePath) === '.ts' || path.extname(filePath) === '.tsx') {
-                    if (
-                        filePath.lastIndexOf('.d.ts') === -1 &&
-                        filePath.lastIndexOf('spec.ts') === -1
-                    ) {
-                        logger.info('parsing', filePath);
-                        this.getTypescriptExportsAliases(file, deps);
-                        this.getTypescriptImportsAliases(file, deps);
-                        this.getSourceFileDecorators(file, deps);
-                    }
+                if (
+                    filePath.lastIndexOf('.d.ts') === -1 &&
+                    filePath.lastIndexOf('spec.ts') === -1
+                ) {
+                    logger.info('parsing', filePath);
+                    this.getTypescriptExportsAliases(file, deps);
+                    this.getTypescriptImportsAliases(file, deps);
+                    this.getSourceFileDecorators(file, deps);
+                }
             }
 
             return deps;
@@ -283,7 +262,6 @@ export class AngularDependencies extends FrameworkDependencies {
             RouterParserUtil.constructModulesTree();
 
             deps.routesTree = RouterParserUtil.constructRoutesTree();
-
         }
 
         return deps;
@@ -296,7 +274,7 @@ export class AngularDependencies extends FrameworkDependencies {
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
         const deps: any = {
             name,
-            id: 'class-' + name + '-' + hash,
+            id: `class-${name}-${hash}`,
             file: file,
             deprecated: IO.deprecated,
             deprecationMessage: IO.deprecationMessage,
@@ -312,10 +290,11 @@ export class AngularDependencies extends FrameworkDependencies {
         deps.inputsClass = IO.inputs ?? [];
         deps.outputsClass = IO.outputs ?? [];
         if (IO.properties) {
-            const {inputSignals, outputSignals, properties} = this.componentHelper.getInputOutputSignals(IO.properties);
+            const { inputSignals, outputSignals, properties } =
+                this.componentHelper.getInputOutputSignals(IO.properties);
 
-            deps.inputsClass = deps.inputsClass.concat(inputSignals)
-            deps.outputsClass = deps.outputsClass.concat(outputSignals)
+            deps.inputsClass = deps.inputsClass.concat(inputSignals);
+            deps.outputsClass = deps.outputsClass.concat(outputSignals);
             deps.properties = properties;
         }
         if (IO.description) {
@@ -385,7 +364,7 @@ export class AngularDependencies extends FrameworkDependencies {
                     if (namedImports && namedImports.length > 0) {
                         namedImports.forEach(namedImport => {
                             if (namedImport.getAliasNode()) {
-                                if (outputSymbols.aliases.hasOwnProperty(namedImport.getName())) {
+                                if (Object.hasOwn(outputSymbols.aliases, namedImport.getName())) {
                                     outputSymbols.aliases[namedImport.getName()].push(
                                         namedImport.getAliasNode().getText()
                                     );
@@ -419,7 +398,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             namedExports.forEach(namedExport => {
                                 if (namedExport.getAliasNode()) {
                                     if (
-                                        outputSymbols.aliases.hasOwnProperty(namedExport.getName())
+                                        Object.hasOwn(outputSymbols.aliases, namedExport.getName())
                                     ) {
                                         outputSymbols.aliases[namedExport.getName()].push(
                                             namedExport.getAliasNode().getText()
@@ -463,11 +442,10 @@ export class AngularDependencies extends FrameworkDependencies {
                     if (variableDeclarations[i].compilerNode.type) {
                         if (
                             (variableDeclarations[i].compilerNode.type as any).typeName &&
-                            (variableDeclarations[i].compilerNode.type as any).typeName.text === 'Routes'
+                            (variableDeclarations[i].compilerNode.type as any).typeName.text ===
+                                'Routes'
                         ) {
                             hasRoutesStatements = true;
-                            
-
                         }
                     }
                 }
@@ -501,17 +479,17 @@ export class AngularDependencies extends FrameworkDependencies {
                 if (nodeHasDecorator(node)) {
                     let classWithCustomDecorator = false;
                     const nodeDecorators = getNodeDecorators(node);
-                    const visitDecorator = (visitedDecorator, index) => {
+                    const visitDecorator = (visitedDecorator, _index) => {
                         let deps: IDep;
 
                         const name = this.getSymboleName(node);
-                        
+
                         // Check if this decorated class is allowed by public API filter
                         if (!this.isSymbolAllowed(name, file)) {
                             logger.debug(`Skipping decorated class ${name} (not in public API)`);
                             return;
                         }
-                        
+
                         const props = this.findProperties(visitedDecorator, srcFile);
                         const IO = this.componentHelper.getComponentIO(
                             file,
@@ -570,7 +548,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         } else if (this.isInjectable(visitedDecorator)) {
                             const injectableDeps: IInjectableDep = {
                                 name,
-                                id: 'injectable-' + name + '-' + hash,
+                                id: `injectable-${name}-${hash}`,
                                 file: file,
                                 properties: IO.properties,
                                 methods: IO.methods,
@@ -586,7 +564,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                 // Custom JSDoc tags
                                 ...(IO.beta && { beta: true }),
                                 ...(IO.since && { since: IO.since }),
-                                ...(IO.breaking && { breaking: IO.breaking }),
+                                ...(IO.breaking && { breaking: IO.breaking })
                             };
                             if (IO.constructor && !Configuration.mainData.disableConstructors) {
                                 injectableDeps.constructorObj = IO.constructor;
@@ -624,7 +602,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         } else if (this.isPipe(visitedDecorator)) {
                             const pipeDeps: IPipeDep = {
                                 name,
-                                id: 'pipe-' + name + '-' + hash,
+                                id: `pipe-${name}-${hash}`,
                                 file: file,
                                 type: 'pipe',
                                 deprecated: IO.deprecated,
@@ -637,12 +615,10 @@ export class AngularDependencies extends FrameworkDependencies {
                                 // Custom JSDoc tags
                                 ...(IO.beta && { beta: true }),
                                 ...(IO.since && { since: IO.since }),
-                                standalone: this.componentHelper.getComponentStandalone(
+                                standalone: !!this.componentHelper.getComponentStandalone(
                                     props,
                                     srcFile
-                                )
-                                    ? true
-                                    : false,
+                                ),
                                 pure: this.componentHelper.getComponentPure(props, srcFile),
                                 ngname: this.componentHelper.getComponentName(props, srcFile),
                                 sourceCode: srcFile.getText(),
@@ -677,7 +653,14 @@ export class AngularDependencies extends FrameworkDependencies {
                                 !hasMultipleDecoratorsWithInternalOne
                             ) {
                                 classWithCustomDecorator = true;
-                                this.processClass(node, file, srcFile, outputSymbols, fileBody, astFile);
+                                this.processClass(
+                                    node,
+                                    file,
+                                    srcFile,
+                                    outputSymbols,
+                                    fileBody,
+                                    astFile
+                                );
                             }
                         }
                         this.cache.set(name, deps);
@@ -690,7 +673,7 @@ export class AngularDependencies extends FrameworkDependencies {
                     };
 
                     const filterByDecorators = filteredNode => {
-                        if (filteredNode.expression && filteredNode.expression.expression) {
+                        if (filteredNode.expression?.expression) {
                             let _test = /(NgModule|Component|Injectable|Pipe|Directive)/.test(
                                 filteredNode.expression.expression.text
                             );
@@ -717,17 +700,17 @@ export class AngularDependencies extends FrameworkDependencies {
                         this.processClass(node, file, srcFile, outputSymbols, fileBody, astFile);
                     } else if (node.symbol.flags === ts.SymbolFlags.Interface) {
                         const name = this.getSymboleName(node);
-                        
+
                         // Check if interface is allowed by public API filter
                         if (!this.isSymbolAllowed(name, file)) {
                             logger.debug(`Skipping interface ${name} (not in public API)`);
                             return;
                         }
-                        
+
                         const IO = this.getInterfaceIO(file, srcFile, node, fileBody, astFile);
                         const interfaceDeps: IInterfaceDep = {
                             name,
-                            id: 'interface-' + name + '-' + hash,
+                            id: `interface-${name}-${hash}`,
                             file: file,
                             deprecated: IO.deprecated,
                             deprecationMessage: IO.deprecationMessage,
@@ -762,13 +745,13 @@ export class AngularDependencies extends FrameworkDependencies {
                     } else if (ts.isFunctionDeclaration(node)) {
                         const infos = this.visitFunctionDeclaration(node);
                         const name = infos.name;
-                        
+
                         // Check if function is allowed by public API filter
                         if (!this.isSymbolAllowed(name, file)) {
                             logger.debug(`Skipping function ${name} (not in public API)`);
                             return;
                         }
-                        
+
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
                         const category = infos.category || '';
@@ -788,14 +771,23 @@ export class AngularDependencies extends FrameworkDependencies {
                             functionDep.factoryKind = factoryKind;
                         }
                         // Detect functional guard/resolver/interceptor from return type
-                        const functionalKind = this.detectFunctionalAngularKind(infos.returnType, name);
+                        const functionalKind = this.detectFunctionalAngularKind(
+                            infos.returnType,
+                            name
+                        );
                         if (functionalKind) {
                             (functionDep as any).functionalKind = functionalKind;
                         }
                         // Custom JSDoc tags
-                        if (infos.signal) (functionDep as any).signal = true;
-                        if (infos.beta) (functionDep as any).beta = true;
-                        if (infos.since) (functionDep as any).since = infos.since;
+                        if (infos.signal) {
+                            (functionDep as any).signal = true;
+                        }
+                        if (infos.beta) {
+                            (functionDep as any).beta = true;
+                        }
+                        if (infos.since) {
+                            (functionDep as any).since = infos.since;
+                        }
                         if (infos.args) {
                             functionDep.args = infos.args;
                         }
@@ -819,13 +811,13 @@ export class AngularDependencies extends FrameworkDependencies {
                     } else if (ts.isEnumDeclaration(node)) {
                         const infos = this.visitEnumDeclaration(node);
                         const name = infos.name;
-                        
+
                         // Check if enum is allowed by public API filter
                         if (!this.isSymbolAllowed(name, file)) {
                             logger.debug(`Skipping enum ${name} (not in public API)`);
                             return;
                         }
-                        
+
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
                         const category = infos.category || '';
@@ -849,13 +841,13 @@ export class AngularDependencies extends FrameworkDependencies {
                     } else if (ts.isTypeAliasDeclaration(node)) {
                         const infos = this.visitTypeDeclaration(node);
                         const name = infos.name;
-                        
+
                         // Check if type alias is allowed by public API filter
                         if (!this.isSymbolAllowed(name, file)) {
                             logger.debug(`Skipping type alias ${name} (not in public API)`);
                             return;
                         }
-                        
+
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
                         const category = infos.category || '';
@@ -897,7 +889,10 @@ export class AngularDependencies extends FrameworkDependencies {
                         }
                     } else if (ts.isModuleDeclaration(node)) {
                         if (node.body) {
-                            if ((node.body as any).statements && (node.body as any).statements.length > 0) {
+                            if (
+                                (node.body as any).statements &&
+                                (node.body as any).statements.length > 0
+                            ) {
                                 (node.body as any).statements.forEach(statement =>
                                     parseNode(file, srcFile, statement, node.body, astFile)
                                 );
@@ -910,7 +905,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         let newRoutes;
                         try {
                             newRoutes = RouterParserUtil.cleanRawRouteParsed(IO.routes);
-                        } catch (e) {
+                        } catch (_e) {
                             // tslint:disable-next-line:max-line-length
                             logger.error(
                                 'Routes parsing error, maybe a trailing comma or an external variable, trying to fix that later after sources scanning.'
@@ -952,7 +947,8 @@ export class AngularDependencies extends FrameworkDependencies {
                                     (node as any).thenStatement.statements &&
                                     (node as any).thenStatement.statements.length > 0
                                 ) {
-                                    const firstStatement = (node as any).thenStatement.statements[0];
+                                    const firstStatement = (node as any).thenStatement
+                                        .statements[0];
                                     resultNode = this.findExpressionByNameInExpressions(
                                         firstStatement.expression,
                                         'bootstrapModule'
@@ -990,207 +986,248 @@ export class AngularDependencies extends FrameworkDependencies {
                         // Process all variables, including exported routes variables for miscellaneous
                         if (!isRoutesVariable || this.isExportedVariable(node)) {
                             let isDestructured = false;
-                        // Check for destructuring array
-                        const nodeVariableDeclarations = node.declarationList.declarations;
-                        if (nodeVariableDeclarations) {
-                            if (nodeVariableDeclarations.length > 0) {
-                                if (
-                                    nodeVariableDeclarations[0].name &&
-                                    nodeVariableDeclarations[0].name.kind ===
-                                        SyntaxKind.ArrayBindingPattern
-                                ) {
-                                    isDestructured = true;
+                            // Check for destructuring array
+                            const nodeVariableDeclarations = node.declarationList.declarations;
+                            if (nodeVariableDeclarations) {
+                                if (nodeVariableDeclarations.length > 0) {
+                                    if (
+                                        nodeVariableDeclarations[0].name &&
+                                        nodeVariableDeclarations[0].name.kind ===
+                                            SyntaxKind.ArrayBindingPattern
+                                    ) {
+                                        isDestructured = true;
+                                    }
                                 }
                             }
-                        }
 
-                        const visitVariableNode = variableNode => {
-                            const infos: any = this.visitVariableDeclaration(variableNode);
-                            if (infos) {
-                                const name = infos.name;
-                                const deprecated = infos.deprecated;
-                                const deprecationMessage = infos.deprecationMessage;
-                                const category = infos.category || '';
-                                const deps: any = {
-                                    name,
-                                    ctype: 'miscellaneous',
-                                    subtype: 'variable',
-                                    file: file,
-                                    deprecated,
-                                    deprecationMessage,
-                                    category
-                                };
-                                deps.type = infos.type ? infos.type : '';
-                                if (infos.defaultValue) {
-                                    deps.defaultValue = infos.defaultValue;
-                                }
-                                if (infos.initializer) {
-                                    deps.initializer = infos.initializer;
-                                }
-                                if (
-                                    variableNode.jsDoc &&
-                                    variableNode.jsDoc.length > 0 &&
-                                    variableNode.jsDoc[0].comment
-                                ) {
-                                    const rawDescription = this.jsdocParserUtil.parseJSDocNode(
-                                        variableNode.jsDoc[0]
-                                    );
-                                    deps.rawdescription = rawDescription;
-                                    deps.description = markedAcl(rawDescription);
-                                }
-                                // Detect ApplicationConfig declarations
-                                if (infos.type === 'ApplicationConfig' && infos.initializer) {
-                                    const providers = this.extractProviderCalls(infos.initializer);
-                                    const appConfigDep: any = {
-                                        name,
-                                        file,
-                                        type: 'app-config',
-                                        description: deps.description || '',
-                                        rawdescription: deps.rawdescription || '',
-                                        providers,
-                                        deprecated: deps.deprecated || false,
-                                        deprecationMessage: deps.deprecationMessage || '',
-                                        category: deps.category || '',
-                                        since: infos.since || '',
-                                    };
-                                    if (!isIgnore(variableNode)) {
-                                        if (!this.isSymbolAllowed(name, file)) {
-                                            logger.debug(`Skipping ApplicationConfig ${name} (not in public API)`);
-                                            return;
-                                        }
-                                        this.debug(appConfigDep);
-                                        if (!outputSymbols.appConfig) outputSymbols.appConfig = [];
-                                        outputSymbols.appConfig.push(appConfigDep);
-                                    }
-                                    return;
-                                }
-
-                                // Detect InjectionToken declarations
-                                if (this.isInjectionToken(infos.initializer)) {
-                                    const tokenDep: IInjectableDep = {
-                                        name,
-                                        id: 'injectable-' + name + '-' + crypto.createHash('sha512').update(name + file).digest('hex'),
-                                        file,
-                                        type: 'injectable',
-                                        properties: [],
-                                        methods: [],
-                                        deprecated: deps.deprecated || false,
-                                        deprecationMessage: deps.deprecationMessage || '',
-                                        category: deps.category || '',
-                                        description: deps.description || '',
-                                        rawdescription: deps.rawdescription || '',
-                                        sourceCode: '',
-                                        isToken: true,
-                                        tokenType: this.getInjectionTokenType(infos.initializer),
-                                        providedIn: this.getInjectionTokenProvidedIn(infos.initializer)
-                                    };
-                                    if (!isIgnore(variableNode)) {
-                                        if (!this.isSymbolAllowed(name, file)) {
-                                            logger.debug(`Skipping InjectionToken ${name} (not in public API)`);
-                                            return;
-                                        }
-                                        this.debug(tokenDep);
-                                        outputSymbols.injectables.push(tokenDep);
-                                    }
-                                    return;
-                                }
-
-                                // Detect functional guard/interceptor from type annotation
-                                const functionalKind = this.detectFunctionalAngularKind(infos.type, name);
-                                if (functionalKind && !isIgnore(variableNode)) {
-                                    if (!this.isSymbolAllowed(name, file)) {
-                                        logger.debug(`Skipping functional ${functionalKind} ${name} (not in public API)`);
-                                        return;
-                                    }
-                                    const guardDep: any = {
-                                        name,
-                                        id: `${functionalKind}-${name}-${crypto.createHash('sha512').update(name + file).digest('hex')}`,
-                                        file,
-                                        type: functionalKind,
-                                        properties: [],
-                                        methods: [],
-                                        deprecated: deps.deprecated || false,
-                                        deprecationMessage: deps.deprecationMessage || '',
-                                        category: deps.category || '',
-                                        description: deps.description || '',
-                                        rawdescription: deps.rawdescription || '',
-                                        sourceCode: srcFile.getText(),
-                                        functionalKind,
-                                    };
-                                    if (infos.since) guardDep.since = infos.since;
-                                    if (infos.beta) guardDep.beta = true;
-                                    this.debug(guardDep);
-                                    if (functionalKind === 'guard') {
-                                        outputSymbols.guards.push(guardDep);
-                                    } else if (functionalKind === 'interceptor') {
-                                        outputSymbols.interceptors.push(guardDep);
-                                    }
-                                    return;
-                                }
-
-                                if (isModuleWithProviders(variableNode)) {
-                                    const routingInitializer = getModuleWithProviders(variableNode);
-                                    RouterParserUtil.addModuleWithRoutes(
-                                        name,
-                                        [routingInitializer],
-                                        file
-                                    );
-                                    RouterParserUtil.addModule(name, [routingInitializer]);
-                                }
-                                if (!isIgnore(variableNode)) {
-                                    // Check if variable is allowed by public API filter
-                                    if (!this.isSymbolAllowed(name, file)) {
-                                        logger.debug(`Skipping variable ${name} (not in public API)`);
-                                        return;
-                                    }
-                                    this.debug(deps);
-                                    outputSymbols.miscellaneous.variables.push(deps);
-                                }
-                            }
-                        };
-
-                        if (isDestructured) {
-                            if ((nodeVariableDeclarations[0].name as any).elements) {
-                                const destructuredVariables =
-                                    (nodeVariableDeclarations[0].name as any).elements;
-
-                                for (let i = 0; i < destructuredVariables.length; i++) {
-                                    const destructuredVariable = destructuredVariables[i];
-                                    const name = destructuredVariable.name
-                                        ? destructuredVariable.name.escapedText
-                                        : '';
+                            const visitVariableNode = variableNode => {
+                                const infos: any = this.visitVariableDeclaration(variableNode);
+                                if (infos) {
+                                    const name = infos.name;
+                                    const deprecated = infos.deprecated;
+                                    const deprecationMessage = infos.deprecationMessage;
+                                    const category = infos.category || '';
                                     const deps: any = {
                                         name,
                                         ctype: 'miscellaneous',
                                         subtype: 'variable',
-                                        file: file
+                                        file: file,
+                                        deprecated,
+                                        deprecationMessage,
+                                        category
                                     };
-                                    if (nodeVariableDeclarations[0].initializer) {
-                                        if ((nodeVariableDeclarations[0].initializer as any).elements) {
-                                            deps.initializer =
-                                                (nodeVariableDeclarations[0].initializer as any).elements[i];
+                                    deps.type = infos.type ? infos.type : '';
+                                    if (infos.defaultValue) {
+                                        deps.defaultValue = infos.defaultValue;
+                                    }
+                                    if (infos.initializer) {
+                                        deps.initializer = infos.initializer;
+                                    }
+                                    if (
+                                        variableNode.jsDoc &&
+                                        variableNode.jsDoc.length > 0 &&
+                                        variableNode.jsDoc[0].comment
+                                    ) {
+                                        const rawDescription = this.jsdocParserUtil.parseJSDocNode(
+                                            variableNode.jsDoc[0]
+                                        );
+                                        deps.rawdescription = rawDescription;
+                                        deps.description = markedAcl(rawDescription);
+                                    }
+                                    // Detect ApplicationConfig declarations
+                                    if (infos.type === 'ApplicationConfig' && infos.initializer) {
+                                        const providers = this.extractProviderCalls(
+                                            infos.initializer
+                                        );
+                                        const appConfigDep: any = {
+                                            name,
+                                            file,
+                                            type: 'app-config',
+                                            description: deps.description || '',
+                                            rawdescription: deps.rawdescription || '',
+                                            providers,
+                                            deprecated: deps.deprecated || false,
+                                            deprecationMessage: deps.deprecationMessage || '',
+                                            category: deps.category || '',
+                                            since: infos.since || ''
+                                        };
+                                        if (!isIgnore(variableNode)) {
+                                            if (!this.isSymbolAllowed(name, file)) {
+                                                logger.debug(
+                                                    `Skipping ApplicationConfig ${name} (not in public API)`
+                                                );
+                                                return;
+                                            }
+                                            this.debug(appConfigDep);
+                                            if (!outputSymbols.appConfig) {
+                                                outputSymbols.appConfig = [];
+                                            }
+                                            outputSymbols.appConfig.push(appConfigDep);
                                         }
-                                        deps.defaultValue = deps.initializer
-                                            ? this.classHelper.stringifyDefaultValue(
-                                                  deps.initializer
-                                              )
-                                            : undefined;
+                                        return;
                                     }
 
-                                    if (!isIgnore(destructuredVariables[i])) {
+                                    // Detect InjectionToken declarations
+                                    if (this.isInjectionToken(infos.initializer)) {
+                                        const tokenDep: IInjectableDep = {
+                                            name,
+                                            id:
+                                                'injectable-' +
+                                                name +
+                                                '-' +
+                                                crypto
+                                                    .createHash('sha512')
+                                                    .update(name + file)
+                                                    .digest('hex'),
+                                            file,
+                                            type: 'injectable',
+                                            properties: [],
+                                            methods: [],
+                                            deprecated: deps.deprecated || false,
+                                            deprecationMessage: deps.deprecationMessage || '',
+                                            category: deps.category || '',
+                                            description: deps.description || '',
+                                            rawdescription: deps.rawdescription || '',
+                                            sourceCode: '',
+                                            isToken: true,
+                                            tokenType: this.getInjectionTokenType(
+                                                infos.initializer
+                                            ),
+                                            providedIn: this.getInjectionTokenProvidedIn(
+                                                infos.initializer
+                                            )
+                                        };
+                                        if (!isIgnore(variableNode)) {
+                                            if (!this.isSymbolAllowed(name, file)) {
+                                                logger.debug(
+                                                    `Skipping InjectionToken ${name} (not in public API)`
+                                                );
+                                                return;
+                                            }
+                                            this.debug(tokenDep);
+                                            outputSymbols.injectables.push(tokenDep);
+                                        }
+                                        return;
+                                    }
+
+                                    // Detect functional guard/interceptor from type annotation
+                                    const functionalKind = this.detectFunctionalAngularKind(
+                                        infos.type,
+                                        name
+                                    );
+                                    if (functionalKind && !isIgnore(variableNode)) {
+                                        if (!this.isSymbolAllowed(name, file)) {
+                                            logger.debug(
+                                                `Skipping functional ${functionalKind} ${name} (not in public API)`
+                                            );
+                                            return;
+                                        }
+                                        const guardDep: any = {
+                                            name,
+                                            id: `${functionalKind}-${name}-${crypto
+                                                .createHash('sha512')
+                                                .update(name + file)
+                                                .digest('hex')}`,
+                                            file,
+                                            type: functionalKind,
+                                            properties: [],
+                                            methods: [],
+                                            deprecated: deps.deprecated || false,
+                                            deprecationMessage: deps.deprecationMessage || '',
+                                            category: deps.category || '',
+                                            description: deps.description || '',
+                                            rawdescription: deps.rawdescription || '',
+                                            sourceCode: srcFile.getText(),
+                                            functionalKind
+                                        };
+                                        if (infos.since) {
+                                            guardDep.since = infos.since;
+                                        }
+                                        if (infos.beta) {
+                                            guardDep.beta = true;
+                                        }
+                                        this.debug(guardDep);
+                                        if (functionalKind === 'guard') {
+                                            outputSymbols.guards.push(guardDep);
+                                        } else if (functionalKind === 'interceptor') {
+                                            outputSymbols.interceptors.push(guardDep);
+                                        }
+                                        return;
+                                    }
+
+                                    if (isModuleWithProviders(variableNode)) {
+                                        const routingInitializer =
+                                            getModuleWithProviders(variableNode);
+                                        RouterParserUtil.addModuleWithRoutes(
+                                            name,
+                                            [routingInitializer],
+                                            file
+                                        );
+                                        RouterParserUtil.addModule(name, [routingInitializer]);
+                                    }
+                                    if (!isIgnore(variableNode)) {
                                         // Check if variable is allowed by public API filter
                                         if (!this.isSymbolAllowed(name, file)) {
-                                            logger.debug(`Skipping destructured variable ${name} (not in public API)`);
-                                            continue;
+                                            logger.debug(
+                                                `Skipping variable ${name} (not in public API)`
+                                            );
+                                            return;
                                         }
                                         this.debug(deps);
                                         outputSymbols.miscellaneous.variables.push(deps);
                                     }
                                 }
+                            };
+
+                            if (isDestructured) {
+                                if ((nodeVariableDeclarations[0].name as any).elements) {
+                                    const destructuredVariables = (
+                                        nodeVariableDeclarations[0].name as any
+                                    ).elements;
+
+                                    for (let i = 0; i < destructuredVariables.length; i++) {
+                                        const destructuredVariable = destructuredVariables[i];
+                                        const name = destructuredVariable.name
+                                            ? destructuredVariable.name.escapedText
+                                            : '';
+                                        const deps: any = {
+                                            name,
+                                            ctype: 'miscellaneous',
+                                            subtype: 'variable',
+                                            file: file
+                                        };
+                                        if (nodeVariableDeclarations[0].initializer) {
+                                            if (
+                                                (nodeVariableDeclarations[0].initializer as any)
+                                                    .elements
+                                            ) {
+                                                deps.initializer = (
+                                                    nodeVariableDeclarations[0].initializer as any
+                                                ).elements[i];
+                                            }
+                                            deps.defaultValue = deps.initializer
+                                                ? this.classHelper.stringifyDefaultValue(
+                                                      deps.initializer
+                                                  )
+                                                : undefined;
+                                        }
+
+                                        if (!isIgnore(destructuredVariables[i])) {
+                                            // Check if variable is allowed by public API filter
+                                            if (!this.isSymbolAllowed(name, file)) {
+                                                logger.debug(
+                                                    `Skipping destructured variable ${name} (not in public API)`
+                                                );
+                                                continue;
+                                            }
+                                            this.debug(deps);
+                                            outputSymbols.miscellaneous.variables.push(deps);
+                                        }
+                                    }
+                                }
+                            } else {
+                                visitVariableNode(node);
                             }
-                        } else {
-                            visitVariableNode(node);
-                        }
                         } // End of new if condition for isRoutesVariable || isExportedVariable
                     }
                     if (ts.isTypeAliasDeclaration(node)) {
@@ -1299,8 +1336,8 @@ export class AngularDependencies extends FrameworkDependencies {
      * @param store Store
      */
     private addNewEntityInStore(entity, store) {
-        const findSameEntityInStore = store.filter(el =>
-            el.name === entity.name && el.id === entity.id && el.file === entity.file
+        const findSameEntityInStore = store.filter(
+            el => el.name === entity.name && el.id === entity.id && el.file === entity.file
         );
         if (findSameEntityInStore.length === 0) {
             store.push(entity);
@@ -1335,7 +1372,7 @@ export class AngularDependencies extends FrameworkDependencies {
 
     private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
         tags.forEach(tag => {
-            if (tag.tagName && tag.tagName.text) {
+            if (tag.tagName?.text) {
                 if (tag.tagName.text.indexOf('deprecated') > -1) {
                     result.deprecated = true;
                     result.deprecationMessage = tag.comment || '';
@@ -1350,10 +1387,18 @@ export class AngularDependencies extends FrameworkDependencies {
 
     private extractCustomTags(tags: any[], result: { [key in string | number]: any }) {
         for (const tag of tags) {
-            if (!tag.tagName || !tag.tagName.text) continue;
+            if (!tag.tagName?.text) {
+                continue;
+            }
             const name = tag.tagName.text;
             const rawComment = tag.comment;
-            const comment = (typeof rawComment === 'string' ? rawComment : Array.isArray(rawComment) ? rawComment.map((c: any) => c.text || '').join('') : '').trim();
+            const comment = (
+                typeof rawComment === 'string'
+                    ? rawComment
+                    : Array.isArray(rawComment)
+                      ? rawComment.map((c: any) => c.text || '').join('')
+                      : ''
+            ).trim();
 
             switch (name) {
                 case 'signal':
@@ -1388,7 +1433,9 @@ export class AngularDependencies extends FrameworkDependencies {
                     break;
                 case 'slot': {
                     // @slot name - description
-                    if (!result.slots) result.slots = [];
+                    if (!result.slots) {
+                        result.slots = [];
+                    }
                     const parts = comment.match(/^(\S+)\s*-?\s*(.*)$/);
                     if (parts) {
                         result.slots.push({ name: parts[1], description: parts[2] || '' });
@@ -1407,14 +1454,21 @@ export class AngularDependencies extends FrameworkDependencies {
      */
     private extractProviderCalls(initializer: any): Array<{ name: string; features: string[] }> {
         const providers: Array<{ name: string; features: string[] }> = [];
-        if (!initializer || !ts.isObjectLiteralExpression(initializer)) return providers;
+        if (!initializer || !ts.isObjectLiteralExpression(initializer)) {
+            return providers;
+        }
 
         const providersProp = initializer.properties.find(
-            (p: any) => ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === 'providers'
+            (p: any) =>
+                ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === 'providers'
         );
-        if (!providersProp || !ts.isPropertyAssignment(providersProp)) return providers;
+        if (!providersProp || !ts.isPropertyAssignment(providersProp)) {
+            return providers;
+        }
         const arr = providersProp.initializer;
-        if (!ts.isArrayLiteralExpression(arr)) return providers;
+        if (!ts.isArrayLiteralExpression(arr)) {
+            return providers;
+        }
 
         for (const element of arr.elements) {
             if (ts.isCallExpression(element)) {
@@ -1437,7 +1491,9 @@ export class AngularDependencies extends FrameworkDependencies {
     }
 
     private isInjectionToken(initializer: any): boolean {
-        if (!initializer) return false;
+        if (!initializer) {
+            return false;
+        }
         // Match: new InjectionToken(...)
         if (ts.isNewExpression(initializer)) {
             const expr = initializer.expression;
@@ -1449,7 +1505,9 @@ export class AngularDependencies extends FrameworkDependencies {
     }
 
     private getInjectionTokenType(initializer: any): string {
-        if (!initializer || !ts.isNewExpression(initializer)) return '';
+        if (!initializer || !ts.isNewExpression(initializer)) {
+            return '';
+        }
         // Extract generic type argument: InjectionToken<SomeType>
         if (initializer.typeArguments && initializer.typeArguments.length > 0) {
             return initializer.typeArguments[0].getText();
@@ -1458,12 +1516,17 @@ export class AngularDependencies extends FrameworkDependencies {
     }
 
     private getInjectionTokenProvidedIn(initializer: any): string {
-        if (!initializer || !ts.isNewExpression(initializer)) return '';
+        if (!initializer || !ts.isNewExpression(initializer)) {
+            return '';
+        }
         // Second argument to InjectionToken constructor is the options object
         const args = initializer.arguments;
         if (args && args.length >= 2 && ts.isObjectLiteralExpression(args[1])) {
             const providedInProp = args[1].properties.find(
-                (p: any) => ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === 'providedIn'
+                (p: any) =>
+                    ts.isPropertyAssignment(p) &&
+                    ts.isIdentifier(p.name) &&
+                    p.name.text === 'providedIn'
             );
             if (providedInProp && ts.isPropertyAssignment(providedInProp)) {
                 return providedInProp.initializer.getText();
@@ -1472,34 +1535,59 @@ export class AngularDependencies extends FrameworkDependencies {
         return '';
     }
 
-    private detectFunctionalAngularKind(returnType: string | undefined, name: string): string | undefined {
-        if (!returnType) return undefined;
+    private detectFunctionalAngularKind(
+        returnType: string | undefined,
+        name: string
+    ): string | undefined {
+        if (!returnType) {
+            return undefined;
+        }
         const rt = returnType.trim();
         // Check return type annotations
-        if (/CanActivateFn|CanActivate|CanDeactivate|CanMatch|CanLoad|boolean\s*\|\s*UrlTree/.test(rt)) return 'guard';
-        if (/ResolveFn|Resolve</.test(rt)) return 'resolver';
-        if (/HttpInterceptorFn|HttpHandlerFn/.test(rt)) return 'interceptor';
+        if (
+            /CanActivateFn|CanActivate|CanDeactivate|CanMatch|CanLoad|boolean\s*\|\s*UrlTree/.test(
+                rt
+            )
+        ) {
+            return 'guard';
+        }
+        if (/ResolveFn|Resolve</.test(rt)) {
+            return 'resolver';
+        }
+        if (/HttpInterceptorFn|HttpHandlerFn/.test(rt)) {
+            return 'interceptor';
+        }
         // Check variable type annotations (for arrow function exports)
-        if (/Guard/i.test(name) && /boolean|Observable<boolean>|Promise<boolean>/.test(rt)) return 'guard';
+        if (/Guard/i.test(name) && /boolean|Observable<boolean>|Promise<boolean>/.test(rt)) {
+            return 'guard';
+        }
         return undefined;
     }
 
     private detectFactoryKind(name: string): IFunctionDecDep['factoryKind'] | undefined {
-        if (/^provide[A-Z]/.test(name)) return 'provider';
-        if (/^with[A-Z]/.test(name)) return 'feature';
-        if (/^inject[A-Z]/.test(name)) return 'inject';
-        if (/^create[A-Z]/.test(name)) return 'factory';
+        if (/^provide[A-Z]/.test(name)) {
+            return 'provider';
+        }
+        if (/^with[A-Z]/.test(name)) {
+            return 'feature';
+        }
+        if (/^inject[A-Z]/.test(name)) {
+            return 'inject';
+        }
+        if (/^create[A-Z]/.test(name)) {
+            return 'factory';
+        }
         return undefined;
     }
 
     private findExpressionByNameInExpressions(entryNode, name) {
         let result;
-        const loop = function (node, z) {
+        const loop = (node, z) => {
             if (node) {
                 if (node.expression && !node.expression.name) {
                     loop(node.expression, z);
                 }
-                if (node.expression && node.expression.name) {
+                if (node.expression?.name) {
                     if (node.expression.name.text === z) {
                         result = node;
                     } else {
@@ -1514,16 +1602,16 @@ export class AngularDependencies extends FrameworkDependencies {
 
     private findExpressionByNameInExpressionArguments(arg, name) {
         let result;
-        const that = this;
+
         let i = 0;
         const len = arg.length;
-        const loop = function (node, z) {
+        const loop = (node, z) => {
             if (node.body) {
                 if (node.body.statements && node.body.statements.length > 0) {
                     let j = 0;
                     const leng = node.body.statements.length;
                     for (j; j < leng; j++) {
-                        result = that.findExpressionByNameInExpressions(node.body.statements[j], z);
+                        result = this.findExpressionByNameInExpressions(node.body.statements[j], z);
                     }
                 }
             }
@@ -1537,7 +1625,7 @@ export class AngularDependencies extends FrameworkDependencies {
     private parseDecorators(decorators, type: string): boolean {
         let result = false;
         if (decorators.length > 1) {
-            decorators.forEach(function (decorator: any) {
+            decorators.forEach((decorator: any) => {
                 if (decorator.expression.expression) {
                     if (decorator.expression.expression.text === type) {
                         result = true;
@@ -1623,9 +1711,9 @@ export class AngularDependencies extends FrameworkDependencies {
         ) {
             const pop = (visitedNode.expression as any).arguments[0];
 
-            if (pop && pop.properties && pop.properties.length >= 0) {
+            if (pop?.properties && pop.properties.length >= 0) {
                 return pop.properties;
-            } else if (pop && pop.kind && pop.kind === SyntaxKind.StringLiteral) {
+            } else if (pop?.kind && pop.kind === SyntaxKind.StringLiteral) {
                 return [pop];
             } else {
                 logger.warn('Empty metadatas, trying to find it with imports.');
@@ -1634,27 +1722,6 @@ export class AngularDependencies extends FrameworkDependencies {
         }
 
         return [];
-    }
-
-    private isAngularLifecycleHook(methodName) {
-        /**
-         * Copyright https://github.com/ng-bootstrap/ng-bootstrap
-         */
-        const ANGULAR_LIFECYCLE_METHODS = [
-            'ngOnInit',
-            'ngOnChanges',
-            'ngDoCheck',
-            'ngOnDestroy',
-            'ngAfterContentInit',
-            'ngAfterContentChecked',
-            'ngAfterViewInit',
-            'ngAfterViewChecked',
-            'writeValue',
-            'registerOnChange',
-            'registerOnTouched',
-            'setDisabledState'
-        ];
-        return ANGULAR_LIFECYCLE_METHODS.indexOf(methodName) >= 0;
     }
 
     private visitTypeDeclaration(node: ts.TypeAliasDeclaration) {
@@ -1686,7 +1753,7 @@ export class AngularDependencies extends FrameworkDependencies {
                 return result;
             });
 
-            if (arg.name.elements && arg.type && arg.type.members) {
+            if (arg.name.elements && arg.type?.members) {
                 if (arg.name.elements.length === arg.type.members.length) {
                     for (let i = 0; i < arg.name.elements.length; i++) {
                         results[i].type = this.classHelper.visitType(arg.type.members[i]);
@@ -1694,7 +1761,7 @@ export class AngularDependencies extends FrameworkDependencies {
                 }
             }
 
-            if (arg.name.elements && arg.type && arg.type.typeName) {
+            if (arg.name.elements && arg.type?.typeName) {
                 results[0].type = this.classHelper.visitType(arg.type);
             }
 
@@ -1761,7 +1828,7 @@ export class AngularDependencies extends FrameworkDependencies {
         let result = false;
         if (tags) {
             tags.forEach(tag => {
-                if (tag.tagName && tag.tagName.text && tag.tagName.text === 'private') {
+                if (tag.tagName?.text && tag.tagName.text === 'private') {
                     result = true;
                 }
             });
@@ -1839,39 +1906,30 @@ export class AngularDependencies extends FrameworkDependencies {
     }
 
     private visitVariableDeclaration(node) {
-        if (node.declarationList && node.declarationList.declarations) {
-            let i = 0;
-            const len = node.declarationList.declarations.length;
-            for (i; i < len; i++) {
-                const result: any = {
-                    name: node.declarationList.declarations[i].name.text,
-                    defaultValue: node.declarationList.declarations[i].initializer
-                        ? this.classHelper.stringifyDefaultValue(
-                              node.declarationList.declarations[i].initializer
-                          )
-                        : undefined,
-                    deprecated: false,
-                    deprecationMessage: ''
-                };
-                if (node.declarationList.declarations[i].initializer) {
-                    result.initializer = node.declarationList.declarations[i].initializer;
-                }
-                if (node.declarationList.declarations[i].type) {
-                    result.type = this.classHelper.visitType(
-                        node.declarationList.declarations[i].type
-                    );
-                }
-                if (typeof result.type === 'undefined' && result.initializer) {
-                    result.type = kindToType(result.initializer.kind);
-                }
-                const jsdoctags = this.jsdocParserUtil.getJSDocs(
-                    node.declarationList.declarations[i]
-                );
-                if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
-                    this.checkForDeprecation((jsdoctags[0] as any).tags, result);
-                }
-                return result;
+        const decl = node.declarationList?.declarations?.[0];
+        if (decl) {
+            const result: any = {
+                name: decl.name.text,
+                defaultValue: decl.initializer
+                    ? this.classHelper.stringifyDefaultValue(decl.initializer)
+                    : undefined,
+                deprecated: false,
+                deprecationMessage: ''
+            };
+            if (decl.initializer) {
+                result.initializer = decl.initializer;
             }
+            if (decl.type) {
+                result.type = this.classHelper.visitType(decl.type);
+            }
+            if (typeof result.type === 'undefined' && result.initializer) {
+                result.type = kindToType(result.initializer.kind);
+            }
+            const jsdoctags = this.jsdocParserUtil.getJSDocs(decl);
+            if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
+                this.checkForDeprecation((jsdoctags[0] as any).tags, result);
+            }
+            return result;
         }
     }
 
@@ -1912,7 +1970,11 @@ export class AngularDependencies extends FrameworkDependencies {
                         : (node.members[i].initializer as any).text;
                 }
                 memberjsdoctags = [...this.jsdocParserUtil.getJSDocs(node.members[i])];
-                if (memberjsdoctags && memberjsdoctags.length >= 1 && (memberjsdoctags[0] as any).tags) {
+                if (
+                    memberjsdoctags &&
+                    memberjsdoctags.length >= 1 &&
+                    (memberjsdoctags[0] as any).tags
+                ) {
                     this.checkForDeprecation((memberjsdoctags[0] as any).tags, member);
                 }
                 result.members.push(member);
@@ -1926,23 +1988,16 @@ export class AngularDependencies extends FrameworkDependencies {
     }
 
     private visitEnumDeclarationForRoutes(fileName, node) {
-        if (node.declarationList.declarations) {
-            let i = 0;
-            const len = node.declarationList.declarations.length;
-            for (i; i < len; i++) {
-                const routesInitializer = node.declarationList.declarations[i].initializer;
-                const data = new CodeGenerator().generate(routesInitializer);
-                RouterParserUtil.addRoute({
-                    name: node.declarationList.declarations[i].name.text,
-                    data: RouterParserUtil.cleanRawRoute(data),
-                    filename: fileName
-                });
-                return [
-                    {
-                        routes: data
-                    }
-                ];
-            }
+        const decl = node.declarationList?.declarations?.[0];
+        if (decl) {
+            const routesInitializer = decl.initializer;
+            const data = new CodeGenerator().generate(routesInitializer);
+            RouterParserUtil.addRoute({
+                name: decl.name.text,
+                data: RouterParserUtil.cleanRawRoute(data),
+                filename: fileName
+            });
+            return [{ routes: data }];
         }
         return [];
     }
@@ -2028,8 +2083,6 @@ export class AngularDependencies extends FrameworkDependencies {
      */
     private isExportedVariable(node: any): boolean {
         // Check if the node has export modifiers
-        return !!(node.modifiers && node.modifiers.some(modifier => 
-            modifier.kind === SyntaxKind.ExportKeyword
-        ));
+        return !!node.modifiers?.some(modifier => modifier.kind === SyntaxKind.ExportKeyword);
     }
 }

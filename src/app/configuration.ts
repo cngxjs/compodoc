@@ -1,9 +1,9 @@
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
 
-import { ConfigurationInterface } from './interfaces/configuration.interface';
-import { CoverageData } from './interfaces/coverageData.interface';
-import { MainDataInterface } from './interfaces/main-data.interface';
-import { PageInterface } from './interfaces/page.interface';
+import type { ConfigurationInterface } from './interfaces/configuration.interface';
+import type { CoverageData } from './interfaces/coverageData.interface';
+import type { MainDataInterface } from './interfaces/main-data.interface';
+import type { PageInterface } from './interfaces/page.interface';
 
 export class Configuration implements ConfigurationInterface {
     private _pages: PageInterface[] = [];
@@ -170,7 +170,7 @@ export class Configuration implements ConfigurationInterface {
     get pages(): PageInterface[] {
         return this._pages;
     }
-    set pages(pages: PageInterface[]) {
+    set pages(_pages: PageInterface[]) {
         this._pages = [];
     }
 

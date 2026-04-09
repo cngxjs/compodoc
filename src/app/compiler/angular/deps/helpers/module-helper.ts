@@ -1,7 +1,7 @@
-import { SymbolHelper, IParseDeepIdentifierResult } from './symbol-helper';
-import { ComponentCache } from './component-helper';
-import { Deps } from '../../dependencies.interfaces';
-import { ts } from 'ts-morph';
+import type { ts } from 'ts-morph';
+import type { Deps } from '../../dependencies.interfaces';
+import type { ComponentCache } from './component-helper';
+import { type IParseDeepIdentifierResult, SymbolHelper } from './symbol-helper';
 
 export class ModuleHelper {
     constructor(
@@ -77,7 +77,7 @@ export class ModuleHelper {
 
     public getModuleImportsRaw(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
-        srcFile: ts.SourceFile
+        _srcFile: ts.SourceFile
     ): Array<ts.ObjectLiteralElementLike> {
         return this.symbolHelper.getSymbolDepsRaw(props, 'imports');
     }

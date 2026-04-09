@@ -1,29 +1,29 @@
-@import 'tailwindcss';
-@import './components/layout.css';
-@import './components/buttons.css';
-@import './components/icons.css';
-@import './components/breadcrumb.css';
-@import './components/topbar.css';
-@import './components/sidebar.css';
-@import './components/toc.css';
-@import './components/command-palette.css';
-@import './components/badges.css';
-@import './components/app-config.css';
-@import './components/tab-bar.css';
-@import './components/entity-hero.css';
-@import './components/content-sections.css';
-@import './components/member-card.css';
-@import './components/code-blocks.css';
-@import './components/empty-state.css';
-@import './components/coverage.css';
-@import './components/overview.css';
-@import './components/modules.css';
-@import './components/graphs.css';
-@import './components/keyboard.css';
-@import './components/tables.css';
-@import './components/unit-test.css';
-@import './components/examples.css';
-@import './components/legacy.css';
+@import "tailwindcss";
+@import "./components/layout.css";
+@import "./components/buttons.css";
+@import "./components/icons.css";
+@import "./components/breadcrumb.css";
+@import "./components/topbar.css";
+@import "./components/sidebar.css";
+@import "./components/toc.css";
+@import "./components/command-palette.css";
+@import "./components/badges.css";
+@import "./components/app-config.css";
+@import "./components/tab-bar.css";
+@import "./components/entity-hero.css";
+@import "./components/content-sections.css";
+@import "./components/member-card.css";
+@import "./components/code-blocks.css";
+@import "./components/empty-state.css";
+@import "./components/coverage.css";
+@import "./components/overview.css";
+@import "./components/modules.css";
+@import "./components/graphs.css";
+@import "./components/keyboard.css";
+@import "./components/tables.css";
+@import "./components/unit-test.css";
+@import "./components/examples.css";
+@import "./components/legacy.css";
 
 @source "../templates/**/*.hbs";
 @source "../templates/**/*.tsx";
@@ -72,13 +72,15 @@
     --color-cdx-border-focus: hsl(222 68% 52%);
 
     /* --- Typography --- */
-    --font-heading: 'Instrument Sans', system-ui, sans-serif;
-    --font-body: 'Source Sans 3', system-ui, sans-serif;
-    --font-code: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+    --font-heading: "Instrument Sans", system-ui, sans-serif;
+    --font-body: "Source Sans 3", system-ui, sans-serif;
+    --font-code:
+        ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
 
     /* Tailwind built-in font aliases — override these in custom themes too */
-    --font-sans: 'Source Sans 3', system-ui, sans-serif;
-    --font-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+    --font-sans: "Source Sans 3", system-ui, sans-serif;
+    --font-mono:
+        ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
 
     /* --- Shadows --- */
     --shadow-cdx-sm: 0 1px 2px hsl(220 20% 14% / 0.06);

@@ -1,15 +1,16 @@
-import vm from 'vm';
+import vm from 'node:vm';
 
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { hasStderrError, read, shell, temporaryDir } from '../helpers';
+
 const tmp = temporaryDir();
 
 describe('CLI i18n', () => {
-    const distFolder = tmp.name + '-i18n';
+    const distFolder = `${tmp.name}-i18n`;
 
     const checkWcMenuFile = (lang, message) => {
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -27,7 +28,7 @@ describe('CLI i18n', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('it should contain a sentence in the correct language', () => {
-            let file = read(distFolder + '/js/menu-wc.js');
+            const file = read(`${distFolder}/js/menu-wc.js`);
             try {
                 const script = new vm.Script(file);
             } catch (e) {
@@ -93,7 +94,7 @@ describe('CLI i18n', () => {
         let indexFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -108,12 +109,11 @@ describe('CLI i18n', () => {
                 throw new Error('error');
             }
             indexFile = read(`${distFolder}/js/menu-wc.js`);
-
         });
         afterAll(() => tmp.clean(distFolder));
 
         it('it should contain a sentence in the correct language', () => {
-            let file = read(distFolder + '/js/menu-wc.js');
+            const file = read(`${distFolder}/js/menu-wc.js`);
             expect(file).to.contain('Documentation generated using');
         });
     });

@@ -1,7 +1,7 @@
 import { SyntaxKind, ts } from 'ts-morph';
 import { detectIndent } from '../../../../../utils';
-import { ClassHelper } from './class-helper';
-import { IParseDeepIdentifierResult, SymbolHelper } from './symbol-helper';
+import type { ClassHelper } from './class-helper';
+import { type IParseDeepIdentifierResult, SymbolHelper } from './symbol-helper';
 
 export class ComponentHelper {
     constructor(
@@ -60,9 +60,7 @@ export class ComponentHelper {
         const result = [];
 
         if (
-            hostDirectiveSymbol &&
-            hostDirectiveSymbol.initializer &&
-            hostDirectiveSymbol.initializer.elements &&
+            hostDirectiveSymbol?.initializer?.elements &&
             hostDirectiveSymbol.initializer.elements.length > 0
         ) {
             hostDirectiveSymbol.initializer.elements.forEach(element => {
@@ -86,8 +84,7 @@ export class ComponentHelper {
                             parsedDirective.name = property.initializer.escapedText;
                         } else if (property.name.escapedText === 'inputs') {
                             if (
-                                property.initializer &&
-                                property.initializer.elements &&
+                                property.initializer?.elements &&
                                 property.initializer.elements.length > 0
                             ) {
                                 property.initializer.elements.forEach(propertyElement => {
@@ -96,8 +93,7 @@ export class ComponentHelper {
                             }
                         } else if (property.name.escapedText === 'outputs') {
                             if (
-                                property.initializer &&
-                                property.initializer.elements &&
+                                property.initializer?.elements &&
                                 property.initializer.elements.length > 0
                             ) {
                                 property.initializer.elements.forEach(propertyElement => {
@@ -143,20 +139,20 @@ export class ComponentHelper {
         props.forEach(prop => {
             const inputSignal = this.getInputSignal(prop);
             if (inputSignal) {
-                inputSignals.push(inputSignal)
+                inputSignals.push(inputSignal);
             }
 
             const outputSignal = this.getOutputSignal(prop);
             if (outputSignal) {
-                outputSignals.push(outputSignal)
+                outputSignals.push(outputSignal);
             }
 
             if (!inputSignal && !outputSignal) {
-                properties.push(prop)
+                properties.push(prop);
             }
         });
 
-        return {inputSignals, outputSignals, properties}
+        return { inputSignals, outputSignals, properties };
     }
 
     public getInputSignal(prop) {
@@ -165,7 +161,7 @@ export class ComponentHelper {
             this.getSignalConfig('model', prop.defaultValue);
 
         if (config) {
-            return  {
+            return {
                 ...prop,
                 ...config
             };
@@ -180,7 +176,7 @@ export class ComponentHelper {
             this.getSignalConfig('model', prop.defaultValue);
 
         if (config) {
-            return  {
+            return {
                 ...prop,
                 ...config
             };
@@ -243,9 +239,9 @@ export class ComponentHelper {
         // adjust union string expression like: 'foo' | 'bar' | 'test'
         // which should be outputed as: "foo" | "bar" | "test"
 
-        const unionTypeRegex = /^'([\w-]+)'\s?\|\s?('([\w-]+)'|.*)$/
+        const unionTypeRegex = /^'([\w-]+)'\s?\|\s?('([\w-]+)'|.*)$/;
         let typeRest = type;
-        let newType = "";
+        let newType = '';
         let typeMatch: RegExpMatchArray;
         while ((typeMatch = typeRest.match(unionTypeRegex))) {
             const [, first, rest, second] = typeMatch;
@@ -395,11 +391,9 @@ export class ComponentHelper {
 
     public getComponentExampleUrls(text: string): Array<string> | undefined {
         const exampleUrlsMatches = text.match(/<example-url>(.*?)<\/example-url>/g);
-        let exampleUrls = undefined;
-        if (exampleUrlsMatches && exampleUrlsMatches.length) {
-            exampleUrls = exampleUrlsMatches.map(function (val) {
-                return val.replace(/<\/?example-url>/g, '');
-            });
+        let exampleUrls;
+        if (exampleUrlsMatches?.length) {
+            exampleUrls = exampleUrlsMatches.map(val => val.replace(/<\/?example-url>/g, ''));
         }
         return exampleUrls;
     }
@@ -431,7 +425,7 @@ export class ComponentHelper {
     public getSymbolDepsObject(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
         type: string,
-        multiLine?: boolean
+        _multiLine?: boolean
     ): Map<string, string> {
         let i = 0,
             len = props.length,

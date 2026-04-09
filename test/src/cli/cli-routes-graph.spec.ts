@@ -1,9 +1,9 @@
+import { exists, hasStderrError, read, shell, temporaryDir } from '../helpers';
 
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI Routes graph', () => {
-    const distFolder = tmp.name + '-routes-graph';
+    const distFolder = `${tmp.name}-routes-graph`;
 
     describe('disable it', () => {
         beforeAll(() => {
@@ -49,7 +49,7 @@ describe('CLI Routes graph', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should clean forRoot and forChild in modules imports', () => {
-            const file = read(distFolder + '/modules/AppModule.html');
+            const file = read(`${distFolder}/modules/AppModule.html`);
             expect(file).to.contain('<a href="../modules/HomeModule.html">HomeModule</a>');
         });
     });

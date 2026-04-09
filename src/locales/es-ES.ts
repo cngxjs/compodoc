@@ -11,7 +11,8 @@ export const TRANSLATION_ES_ES = {
     components: 'Componentes',
     constructor: 'Constructor',
     coverage: 'Cobertura',
-    'coverage-empty-description': 'Ejecute compodoc con entidades documentadas para ver la cobertura.',
+    'coverage-empty-description':
+        'Ejecute compodoc con entidades documentadas para ver la cobertura.',
     'coverage-overview': 'Cobertura de documentación',
     'coverage-page-title': 'Cobertura de la documentación',
     declarations: 'Declaraciones',
@@ -40,7 +41,8 @@ export const TRANSLATION_ES_ES = {
     'empty-dom-tree-desc': 'Se necesita una plantilla para generar el árbol DOM.',
     'empty-dom-tree-title': 'Árbol DOM no disponible',
     'empty-entity-action': 'Conoce las etiquetas JSDoc',
-    'empty-entity-desc': 'Este {{entityType}} no tiene miembros documentados. Añade comentarios JSDoc a tu código para completar esta página.',
+    'empty-entity-desc':
+        'Este {{entityType}} no tiene miembros documentados. Añade comentarios JSDoc a tu código para completar esta página.',
     'empty-entity-title': 'Nada documentado aún',
     'empty-enum-values': 'Sin valores',
     'empty-examples-desc': 'No hay ejemplos en vivo configurados para este componente.',

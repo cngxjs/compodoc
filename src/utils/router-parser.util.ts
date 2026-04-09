@@ -1,10 +1,10 @@
+import * as path from 'node:path';
 import * as JSON5 from 'json5';
 import traverse from 'neotraverse/legacy';
-import * as path from 'path';
-import { Project, ts, SourceFile, SyntaxKind, Node } from 'ts-morph';
+import { Node, Project, type SourceFile, SyntaxKind, ts } from 'ts-morph';
 
 import FileEngine from '../app/engines/file.engine';
-import { RoutingGraphNode } from '../app/nodes/routing-graph-node';
+import type { RoutingGraphNode } from '../app/nodes/routing-graph-node';
 
 import { deepClone } from './deep-clone.util';
 import ImportsUtil from './imports.util';
@@ -42,12 +42,20 @@ export class RouterParserUtil {
 
     public addRoute(route): void {
         this.routes.push(route);
-        this.routes = [...this.routes.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
+        this.routes = [
+            ...this.routes.filter(
+                (item, i, self) => i === self.findIndex(other => other.name === item.name)
+            )
+        ].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public addIncompleteRoute(route): void {
         this.incompleteRoutes.push(route);
-        this.incompleteRoutes = [...this.incompleteRoutes.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
+        this.incompleteRoutes = [
+            ...this.incompleteRoutes.filter(
+                (item, i, self) => i === self.findIndex(other => other.name === item.name)
+            )
+        ].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public addModuleWithRoutes(moduleName, moduleImports, filename): void {
@@ -56,7 +64,11 @@ export class RouterParserUtil {
             importsNode: moduleImports,
             filename: filename
         });
-        this.modulesWithRoutes = [...this.modulesWithRoutes.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
+        this.modulesWithRoutes = [
+            ...this.modulesWithRoutes.filter(
+                (item, i, self) => i === self.findIndex(other => other.name === item.name)
+            )
+        ].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public addModule(moduleName: string, moduleImports): void {
@@ -64,7 +76,11 @@ export class RouterParserUtil {
             name: moduleName,
             importsNode: moduleImports
         });
-        this.modules = [...this.modules.filter((item, i, self) => i === self.findIndex(other => other.name === item.name))].sort((a, b) => a.name.localeCompare(b.name));
+        this.modules = [
+            ...this.modules.filter(
+                (item, i, self) => i === self.findIndex(other => other.name === item.name)
+            )
+        ].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     public cleanRawRouteParsed(route: string): object {
@@ -158,44 +174,52 @@ export class RouterParserUtil {
                     const initializer = node.initializer as ts.ArrayLiteralExpression;
                     if (initializer) {
                         if (initializer.elements) {
-                            (initializer.elements as unknown as ts.CallExpression[]).forEach((element: ts.CallExpression) => {
-                                // find element with arguments
-                                if (element.arguments) {
-                                    (element.arguments as unknown as ts.Identifier[]).forEach((argument: ts.Identifier) => {
-                                        this.routes.forEach(route => {
-                                            if (
-                                                argument.text &&
-                                                route.name === argument.text &&
-                                                route.filename === this.modulesWithRoutes[i].filename
-                                            ) {
-                                                route.module = this.modulesWithRoutes[i].name;
-                                            } else if (
-                                                argument.text &&
-                                                route.name === argument.text &&
-                                                route.filename !== this.modulesWithRoutes[i].filename
-                                            ) {
-                                                let argumentImportPath =
-                                                    ImportsUtil.findFilePathOfImportedVariable(
-                                                        argument.text,
-                                                        this.modulesWithRoutes[i].filename
-                                                    );
+                            (initializer.elements as unknown as ts.CallExpression[]).forEach(
+                                (element: ts.CallExpression) => {
+                                    // find element with arguments
+                                    if (element.arguments) {
+                                        (element.arguments as unknown as ts.Identifier[]).forEach(
+                                            (argument: ts.Identifier) => {
+                                                this.routes.forEach(route => {
+                                                    if (
+                                                        argument.text &&
+                                                        route.name === argument.text &&
+                                                        route.filename ===
+                                                            this.modulesWithRoutes[i].filename
+                                                    ) {
+                                                        route.module =
+                                                            this.modulesWithRoutes[i].name;
+                                                    } else if (
+                                                        argument.text &&
+                                                        route.name === argument.text &&
+                                                        route.filename !==
+                                                            this.modulesWithRoutes[i].filename
+                                                    ) {
+                                                        let argumentImportPath =
+                                                            ImportsUtil.findFilePathOfImportedVariable(
+                                                                argument.text,
+                                                                this.modulesWithRoutes[i].filename
+                                                            );
 
-                                                argumentImportPath = argumentImportPath
-                                                    .replace(process.cwd() + path.sep, '')
-                                                    .replace(/\\/g, '/');
+                                                        argumentImportPath = argumentImportPath
+                                                            .replace(process.cwd() + path.sep, '')
+                                                            .replace(/\\/g, '/');
 
-                                                if (
-                                                    argument.text &&
-                                                    route.name === argument.text &&
-                                                    route.filename === argumentImportPath
-                                                ) {
-                                                    route.module = this.modulesWithRoutes[i].name;
-                                                }
+                                                        if (
+                                                            argument.text &&
+                                                            route.name === argument.text &&
+                                                            route.filename === argumentImportPath
+                                                        ) {
+                                                            route.module =
+                                                                this.modulesWithRoutes[i].name;
+                                                        }
+                                                    }
+                                                });
                                             }
-                                        });
-                                    });
+                                        );
+                                    }
                                 }
-                            });
+                            );
                         }
                     }
                 }
@@ -205,17 +229,19 @@ export class RouterParserUtil {
                  */
                 if (ts.isCallExpression(node)) {
                     if (node.arguments) {
-                        (node.arguments as unknown as ts.Identifier[]).forEach((argument: ts.Identifier) => {
-                            this.routes.forEach(route => {
-                                if (
-                                    argument.text &&
-                                    route.name === argument.text &&
-                                    route.filename === this.modulesWithRoutes[i].filename
-                                ) {
-                                    route.module = this.modulesWithRoutes[i].name;
-                                }
-                            });
-                        });
+                        (node.arguments as unknown as ts.Identifier[]).forEach(
+                            (argument: ts.Identifier) => {
+                                this.routes.forEach(route => {
+                                    if (
+                                        argument.text &&
+                                        route.name === argument.text &&
+                                        route.filename === this.modulesWithRoutes[i].filename
+                                    ) {
+                                        route.module = this.modulesWithRoutes[i].name;
+                                    }
+                                });
+                            }
+                        );
                     }
                 }
             });
@@ -245,21 +271,26 @@ export class RouterParserUtil {
         // modulesTree contains modules tree
         // make a final routes tree with that
         // Create an enhanced routes tree with comprehensive validation to prevent undefined entries
-        if (this.routes.length > 0 || (this.modulesWithRoutes && this.modulesWithRoutes.length > 0)) {
+        if (
+            this.routes.length > 0 ||
+            (this.modulesWithRoutes && this.modulesWithRoutes.length > 0)
+        ) {
             const validChildren = [];
-            
+
             // Comprehensive validation function to prevent any undefined/invalid entries
             const isValidName = (name: string): boolean => {
-                return name && 
-                       typeof name === 'string' && 
-                       name.trim() !== '' && 
-                       name !== 'undefined' && 
-                       name !== 'null' &&
-                       !name.includes('undefined') &&
-                       name.length > 0 &&
-                       !/^\s*$/.test(name);  // Not just whitespace
+                return (
+                    name &&
+                    typeof name === 'string' &&
+                    name.trim() !== '' &&
+                    name !== 'undefined' &&
+                    name !== 'null' &&
+                    !name.includes('undefined') &&
+                    name.length > 0 &&
+                    !/^\s*$/.test(name)
+                ); // Not just whitespace
             };
-            
+
             // Process routes data if available to extract components and paths
             for (const route of this.routes) {
                 try {
@@ -286,42 +317,49 @@ export class RouterParserUtil {
                             }
                         }
                     }
-                } catch (e) {
+                } catch (_e) {
                     // JSON parsing failed, try regex extraction with strict validation
-                    
+
                     // Extract component names with rigorous validation
-                    const componentMatches = route.data.match(/"component"\s*:\s*"(\w+Component)"/g);
+                    const componentMatches = route.data.match(
+                        /"component"\s*:\s*"(\w+Component)"/g
+                    );
                     if (componentMatches) {
                         for (const match of componentMatches) {
-                            const componentNameMatch = match.match(/"component"\s*:\s*"(\w+Component)"/);
+                            const componentNameMatch = match.match(
+                                /"component"\s*:\s*"(\w+Component)"/
+                            );
                             if (componentNameMatch && isValidName(componentNameMatch[1])) {
                                 validChildren.push({
                                     name: componentNameMatch[1],
-                                    kind: 'component', 
+                                    kind: 'component',
                                     filename: route.filename
                                 });
                             }
                         }
                     }
-                    
+
                     // Extract path values with strict validation (avoiding problematic patterns)
                     const pathMatches = route.data.match(/"path"\s*:\s*"([^"]+)"/g);
                     if (pathMatches) {
                         for (const match of pathMatches) {
                             const pathNameMatch = match.match(/"path"\s*:\s*"([^"]+)"/);
-                            if (pathNameMatch && 
+                            if (
+                                pathNameMatch &&
                                 isValidName(pathNameMatch[1]) &&
                                 !pathNameMatch[1].includes('ABOUT_ENUMS') &&
-                                !pathNameMatch[1].includes('.')) {  // Avoid dynamic property access
+                                !pathNameMatch[1].includes('.')
+                            ) {
+                                // Avoid dynamic property access
                                 validChildren.push({
                                     name: pathNameMatch[1],
-                                    kind: 'route-path', 
+                                    kind: 'route-path',
                                     filename: route.filename
                                 });
                             }
                         }
                     }
-                    
+
                     // Extract redirectTo values with strict validation
                     const redirectMatches = route.data.match(/"redirectTo"\s*:\s*"([^"]+)"/g);
                     if (redirectMatches) {
@@ -330,31 +368,31 @@ export class RouterParserUtil {
                             if (redirectNameMatch && isValidName(redirectNameMatch[1])) {
                                 validChildren.push({
                                     name: redirectNameMatch[1],
-                                    kind: 'route-redirect', 
+                                    kind: 'route-redirect',
                                     filename: route.filename
                                 });
                             }
                         }
                     }
-                    
+
                     // Handle static enum values by detecting enum.property patterns
                     const enumMappings = {
                         'ABOUT_ENUMS.todomvc': 'todomvcinstaticclass',
-                        'APP_ENUM.homeenumimported': 'homeenumimported', 
+                        'APP_ENUM.homeenumimported': 'homeenumimported',
                         'APP_ENUM.homeenuminfile': 'homeenuminfile'
                     };
-                    
+
                     for (const [enumPattern, staticValue] of Object.entries(enumMappings)) {
                         // Look for various patterns that might appear in route data:
                         const patterns = [
-                            enumPattern,                              // ABOUT_ENUMS.todomvc
-                            `"${enumPattern.replace('.', '"."')}"`,   // "ABOUT_ENUMS"."todomvc"
+                            enumPattern, // ABOUT_ENUMS.todomvc
+                            `"${enumPattern.replace('.', '"."')}"`, // "ABOUT_ENUMS"."todomvc"
                             `"${enumPattern.replace('.', '\\"."')}"`, // "ABOUT_ENUMS\."todomvc"
-                            enumPattern.replace('.', '"."'),         // ABOUT_ENUMS"."todomvc
-                            enumPattern.replace('.', '\\"."'),       // ABOUT_ENUMS\."todomvc
+                            enumPattern.replace('.', '"."'), // ABOUT_ENUMS"."todomvc
+                            enumPattern.replace('.', '\\"."'), // ABOUT_ENUMS\."todomvc
                             `"${enumPattern.split('.')[0]}"\\."${enumPattern.split('.')[1]}"` // "ABOUT_ENUMS"\."todomvc"
                         ];
-                        
+
                         let found = false;
                         for (const pattern of patterns) {
                             if (route.data.includes(pattern)) {
@@ -362,18 +400,18 @@ export class RouterParserUtil {
                                 break;
                             }
                         }
-                        
+
                         if (found && !validChildren.some(child => child.name === staticValue)) {
                             validChildren.push({
                                 name: staticValue,
-                                kind: 'route-path', 
+                                kind: 'route-path',
                                 filename: route.filename
                             });
                         }
                     }
                 }
             }
-            
+
             // Also include well-defined routing modules
             if (this.modulesWithRoutes) {
                 for (const module of this.modulesWithRoutes) {
@@ -386,18 +424,18 @@ export class RouterParserUtil {
                     }
                 }
             }
-            
+
             const routesTree = {
                 name: '<root>',
-                kind: 'module', 
+                kind: 'module',
                 className: this.rootModule,
                 children: validChildren
             };
-            
+
             return routesTree;
         }
-        
-        traverse(this.modulesTree).forEach(function (node) {
+
+        traverse(this.modulesTree).forEach(node => {
             if (node) {
                 if (node.parent) {
                     delete node.parent;
@@ -425,14 +463,16 @@ export class RouterParserUtil {
                 // If module has child modules
                 for (const i in node.children) {
                     const route = this.foundRouteWithModuleName(node.children[i].name);
-                    if (route && route.data) {
+                    if (route?.data) {
                         try {
                             route.children = JSON5.parse(route.data);
                         } catch (e) {
                             logger.error(
                                 'Error during generation of routes JSON file, maybe a trailing comma or an external variable inside one route.'
                             );
-                            logger.debug(`Route data for "${node.children[i].name}": ${route.data}`);
+                            logger.debug(
+                                `Route data for "${node.children[i].name}": ${route.data}`
+                            );
                             logger.debug(`Parse error: ${e.message}`);
                         }
                         delete route.data;
@@ -454,7 +494,7 @@ export class RouterParserUtil {
                     } catch (parseError) {
                         logger.error(
                             `Failed to parse route data for module "${node.name}". ` +
-                            `This may be caused by special characters in file paths or route configurations.`
+                                `This may be caused by special characters in file paths or route configurations.`
                         );
                         logger.debug(`Route data: ${rawRoutes.data}`);
                         logger.debug(`Parse error: ${parseError.message}`);
@@ -491,13 +531,11 @@ export class RouterParserUtil {
             // loopModulesParser(routesTree);
         }
 
-        let cleanedRoutesTree = undefined;
-
         const cleanRoutesTree = route => {
             return route;
         };
 
-        cleanedRoutesTree = cleanRoutesTree(routesTree);
+        const cleanedRoutesTree = cleanRoutesTree(routesTree);
 
         // Try updating routes with lazy loading
 
@@ -515,7 +553,7 @@ export class RouterParserUtil {
                             } catch (parseError) {
                                 logger.warn(
                                     `Failed to parse route data for module "${mod.children[z].name}". ` +
-                                    `Skipping route parsing for this module.`
+                                        `Skipping route parsing for this module.`
                                 );
                                 logger.debug(`Route data: ${route.data}`);
                                 logger.debug(`Parse error: ${parseError.message}`);
@@ -536,7 +574,7 @@ export class RouterParserUtil {
                         } catch (parseError) {
                             logger.warn(
                                 `Failed to parse route data for module "${mod.name}". ` +
-                                `Skipping route parsing for this module.`
+                                    `Skipping route parsing for this module.`
                             );
                             logger.debug(`Route data: ${route.data}`);
                             logger.debug(`Parse error: ${parseError.message}`);
@@ -552,7 +590,9 @@ export class RouterParserUtil {
                 for (const i in route.children) {
                     if (route.children[i].loadChildren) {
                         const child = this.foundLazyModuleWithPath(route.children[i].loadChildren);
-                        const module: RoutingGraphNode = this.cleanModulesTree.find(m => m.name === child);
+                        const module: RoutingGraphNode = this.cleanModulesTree.find(
+                            m => m.name === child
+                        );
                         if (module) {
                             const _rawModule: RoutingGraphNode = {};
                             _rawModule.kind = 'module';
@@ -612,7 +652,7 @@ export class RouterParserUtil {
     public generateRoutesIndex(outputFolder: string, routes: Array<any>): Promise<void> {
         return Promise.resolve().then(
             () => {
-                const result = 'var ROUTES_INDEX = ' + JSON.stringify(routes);
+                const result = `var ROUTES_INDEX = ${JSON.stringify(routes)}`;
                 const testOutputDir = outputFolder.match(process.cwd());
 
                 if (testOutputDir && testOutputDir.length > 0) {
@@ -620,7 +660,7 @@ export class RouterParserUtil {
                 }
 
                 return FileEngine.write(
-                    outputFolder + path.sep + '/js/routes/routes_index.js',
+                    `${outputFolder + path.sep}/js/routes/routes_index.js`,
                     result
                 );
             },
@@ -662,7 +702,7 @@ export class RouterParserUtil {
 
     public isVariableRoutes(node) {
         let result = false;
-        if (node.declarationList && node.declarationList.declarations) {
+        if (node.declarationList?.declarations) {
             let i = 0;
             const len = node.declarationList.declarations.length;
             for (i; i < len; i++) {
@@ -827,7 +867,7 @@ export class RouterParserUtil {
                     const leadingFilePath = searchedImportPath.split('/').shift();
 
                     let importPath = path.resolve(
-                        dirNamePath + '/' + searchedImport.getModuleSpecifierValue() + '.ts'
+                        `${dirNamePath}/${searchedImport.getModuleSpecifierValue()}.ts`
                     );
 
                     if (routePathIsBad(importPath)) {
@@ -840,8 +880,7 @@ export class RouterParserUtil {
                                 importPath.slice(0, startIndex) + importPath.slice(endIndex);
                         } else {
                             // Top level route fixes
-                            importPath =
-                                path.dirname(dirNamePath) + '/' + searchedImportPath + '.ts';
+                            importPath = `${path.dirname(dirNamePath)}/${searchedImportPath}.ts`;
                         }
                     }
                     const sourceFileImport =
@@ -938,12 +977,7 @@ export class RouterParserUtil {
                         }
                     }
                     // If symbol is null/undefined, just skip this property access expression
-                } catch (e) {
-                    // Gracefully handle cases where symbols cannot be resolved
-                    // This is common with dynamic imports and other runtime expressions
-                    // We'll just skip processing this property access expression
-                    continue;
-                }
+                } catch (_e) {}
             }
         }
 
@@ -961,12 +995,15 @@ export class RouterParserUtil {
         const variableDeclarations = sourceFile.getVariableDeclarations();
         const routesVariableDeclarations = variableDeclarations.filter(v => {
             const type = v.compilerNode.type;
-            if (typeof type !== 'undefined' && ts.isTypeReferenceNode(type) && typeof type.typeName !== 'undefined') {
+            if (
+                typeof type !== 'undefined' &&
+                ts.isTypeReferenceNode(type) &&
+                typeof type.typeName !== 'undefined'
+            ) {
                 return (type.typeName as ts.Identifier).text === 'Routes';
             }
             return false;
         });
-
 
         if (routesVariableDeclarations.length === 0) {
             return file;
@@ -1019,12 +1056,11 @@ export class RouterParserUtil {
      */
     public cleanRoutesDefinitionWithImport(
         initializer: ts.ArrayLiteralExpression,
-        node: ts.Node,
+        _node: ts.Node,
         sourceFile: ts.SourceFile
     ): ts.Node {
-
-        initializer.elements.forEach((element) => {
-            (element as ts.ObjectLiteralExpression).properties.forEach((_property) => {
+        initializer.elements.forEach(element => {
+            (element as ts.ObjectLiteralExpression).properties.forEach(_property => {
                 const property = _property as ts.PropertyAssignment;
                 const propertyName = property.name.getText(),
                     propertyInitializer = property.initializer;
@@ -1038,7 +1074,8 @@ export class RouterParserUtil {
                                 // Identifier(71) won't break parsing, but it will be better to retrive them
                                 // PropertyAccessExpression(179) ex: MYIMPORT.path will break it, find it in import
                                 if (
-                                    propertyInitializer.kind === SyntaxKind.PropertyAccessExpression &&
+                                    propertyInitializer.kind ===
+                                        SyntaxKind.PropertyAccessExpression &&
                                     ts.isPropertyAccessExpression(propertyInitializer)
                                 ) {
                                     let lastObjectLiteralAttributeName =

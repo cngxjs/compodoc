@@ -1,14 +1,15 @@
-import { initSidebar } from './sidebar';
-import { initTabs } from './tabs';
-import { initCodeBlocks } from './code-blocks';
-import { initTheme } from './theme';
-import { initRouter } from './router';
-import { initCommandPalette } from './command-palette';
-import { initGraphs } from './graphs';
-import { initStackblitz } from './stackblitz';
-import { initCoverage } from './coverage';
-import { initKeyboard } from './keyboard';
 import { initAnimations } from './animate';
+import { initCodeBlocks } from './code-blocks';
+import { initCommandPalette } from './command-palette';
+import { initCoverage } from './coverage';
+import { initGraphs } from './graphs';
+import { initKeyboard } from './keyboard';
+import { initRouter } from './router';
+import { initSidebar } from './sidebar';
+import { initStackblitz } from './stackblitz';
+import { initTabs } from './tabs';
+import { initTheme } from './theme';
+
 // import { initToc } from './toc';
 
 // Theme must run before DOMContentLoaded to prevent flash

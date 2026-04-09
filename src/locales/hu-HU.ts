@@ -11,7 +11,8 @@ export const TRANSLATION_HU_HU = {
     components: 'Komponensek',
     constructor: 'Konstruktor',
     coverage: 'Lefedettség',
-    'coverage-empty-description': 'Futtassa a compodoc-ot dokumentált entitásokkal a lefedettség megtekintéséhez.',
+    'coverage-empty-description':
+        'Futtassa a compodoc-ot dokumentált entitásokkal a lefedettség megtekintéséhez.',
     'coverage-overview': 'Dokumentáció lefedettség',
     'coverage-page-title': 'Dokumentáció lefedettség',
     declarations: 'Deklarációk',
@@ -40,7 +41,8 @@ export const TRANSLATION_HU_HU = {
     'empty-dom-tree-desc': 'A DOM-fa generálásához sablon szükséges.',
     'empty-dom-tree-title': 'Nem elérhető DOM-fa',
     'empty-entity-action': 'Tudj meg többet a JSDoc-tagekről',
-    'empty-entity-desc': 'Ennek a(z) {{entityType}} elemnek nincsenek dokumentált tagjai. Adj JSDoc-kommenteket a kódhoz, hogy ez az oldal tartalommal teljen meg.',
+    'empty-entity-desc':
+        'Ennek a(z) {{entityType}} elemnek nincsenek dokumentált tagjai. Adj JSDoc-kommenteket a kódhoz, hogy ez az oldal tartalommal teljen meg.',
     'empty-entity-title': 'Még semmi nincs dokumentálva',
     'empty-enum-values': 'Nincsenek értékek',
     'empty-examples-desc': 'Ehhez a komponenshez nincsenek élő példák konfigurálva.',

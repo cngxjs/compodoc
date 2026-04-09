@@ -1,5 +1,5 @@
-import { execSync } from 'child_process';
-import * as path from 'path';
+import { execSync } from 'node:child_process';
+import * as path from 'node:path';
 
 import { logger } from '../../utils/logger';
 
@@ -13,10 +13,10 @@ export function runPagefindIndex(outputFolder: string): void {
     logger.info('Indexing search with Pagefind');
 
     try {
-        execSync(
-            `npx pagefind --site "${resolved}" --output-subdir pagefind`,
-            { stdio: 'pipe', timeout: 60_000 }
-        );
+        execSync(`npx pagefind --site "${resolved}" --output-subdir pagefind`, {
+            stdio: 'pipe',
+            timeout: 60_000
+        });
         logger.info('Search index generated');
     } catch (err) {
         logger.error('Pagefind indexing failed', (err as Error).message);

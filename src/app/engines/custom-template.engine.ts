@@ -1,13 +1,13 @@
-import * as path from 'path';
-import FileEngine from './file.engine';
-import { logger } from '../../utils/logger';
+import * as path from 'node:path';
 import * as helpers from '../../templates/helpers';
+import { logger } from '../../utils/logger';
+import FileEngine from './file.engine';
 
 export type CustomTemplateFn = (data: any, helpers: typeof templateHelpers) => string;
 
 /** All template helpers exposed to custom JS templates. */
 const templateHelpers = {
-    ...helpers,
+    ...helpers
 };
 
 /** Loaded custom templates: name -> render function */
@@ -19,26 +19,32 @@ const customTemplates: Record<string, CustomTemplateFn> = {};
  * Each file should: `module.exports = function(data, helpers) { return '...'; }`
  */
 export function loadCustomTemplates(templatePath: string): void {
-    if (!templatePath) return;
+    if (!templatePath) {
+        return;
+    }
 
     const resolvedPath = path.isAbsolute(templatePath)
         ? templatePath
         : path.resolve(process.cwd() + path.sep + templatePath);
 
     if (!FileEngine.existsSync(resolvedPath)) {
-        logger.warn('Template path specified but does not exist: ' + resolvedPath);
+        logger.warn(`Template path specified but does not exist: ${resolvedPath}`);
         return;
     }
 
-    const partialsDir = path.resolve(resolvedPath + path.sep + 'partials');
-    if (!FileEngine.existsSync(partialsDir)) return;
+    const partialsDir = path.resolve(`${resolvedPath + path.sep}partials`);
+    if (!FileEngine.existsSync(partialsDir)) {
+        return;
+    }
 
     // Scan for .js files
-    const fs = require('fs');
+    const fs = require('node:fs');
     const files: string[] = fs.readdirSync(partialsDir);
 
     for (const file of files) {
-        if (!file.endsWith('.js')) continue;
+        if (!file.endsWith('.js')) {
+            continue;
+        }
         const name = file.replace('.js', '');
         const fullPath = path.resolve(partialsDir + path.sep + file);
 
@@ -47,12 +53,12 @@ export function loadCustomTemplates(templatePath: string): void {
             const fn = typeof mod === 'function' ? mod : mod.default;
             if (typeof fn === 'function') {
                 customTemplates[name] = fn;
-                logger.info('Loaded custom template: ' + name);
+                logger.info(`Loaded custom template: ${name}`);
             } else {
-                logger.warn('Custom template ' + file + ' does not export a function');
+                logger.warn(`Custom template ${file} does not export a function`);
             }
         } catch (err) {
-            logger.error('Failed to load custom template ' + file + ': ' + err);
+            logger.error(`Failed to load custom template ${file}: ${err}`);
         }
     }
 }
@@ -71,7 +77,9 @@ export function getCustomTemplate(name: string): CustomTemplateFn | null {
  */
 export function renderCustomTemplate(name: string, data: any): string | null {
     const fn = customTemplates[name];
-    if (!fn) return null;
+    if (!fn) {
+        return null;
+    }
     return fn(data, templateHelpers);
 }
 

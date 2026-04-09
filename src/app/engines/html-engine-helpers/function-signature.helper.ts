@@ -1,10 +1,9 @@
 import Handlebars from 'handlebars';
-import { IHtmlEngineHelper } from './html-engine-helper.interface';
-
-import DependenciesEngine from '../dependencies.engine';
 import AngularVersionUtil from '../../../utils/angular-version.util';
 import BasicTypeUtil from '../../../utils/basic-type.util';
 import Configuration from '../../configuration';
+import DependenciesEngine from '../dependencies.engine';
+import type { IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class FunctionSignatureHelper implements IHtmlEngineHelper {
     constructor() {}
@@ -87,7 +86,7 @@ export class FunctionSignatureHelper implements IHtmlEngineHelper {
         return arg.optional ? '?' : '';
     }
 
-    public helperFunc(context: any, method) {
+    public helperFunc(_context: any, method) {
         let args = '';
 
         let argDestructuredCounterInitial = 0;

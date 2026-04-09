@@ -1,13 +1,5 @@
-import * as path from 'path';
-
-import { logger } from '../../utils/logger';
-import FileEngine from './file.engine';
-
-import * as cheerio from 'cheerio';
-
 class ComponentsTreeEngine {
     private components: any[] = [];
-    private componentsForTree: any[] = [];
 
     private static instance: ComponentsTreeEngine;
     private constructor() {}
@@ -20,98 +12,6 @@ class ComponentsTreeEngine {
 
     public addComponent(component) {
         this.components.push(component);
-    }
-
-    private readTemplates() {
-        return new Promise<void>((resolve, reject) => {
-            let i = 0;
-            const len = this.componentsForTree.length;
-            const loop = () => {
-                if (i <= len - 1) {
-                    if (this.componentsForTree[i].templateUrl) {
-                        const filePath =
-                            process.cwd() +
-                            path.sep +
-                            path.dirname(this.componentsForTree[i].file) +
-                            path.sep +
-                            this.componentsForTree[i].templateUrl;
-                        FileEngine.get(filePath).then(
-                            templateData => {
-                                this.componentsForTree[i].templateData = templateData;
-                                i++;
-                                loop();
-                            },
-                            e => {
-                                logger.error(e);
-                                reject();
-                            }
-                        );
-                    } else {
-                        this.componentsForTree[i].templateData = this.componentsForTree[i].template;
-                        i++;
-                        loop();
-                    }
-                } else {
-                    resolve();
-                }
-            };
-            loop();
-        });
-    }
-
-    private findChildrenAndParents() {
-        return new Promise<void>((resolve, reject) => {
-            this.componentsForTree.forEach(component => {
-                const $ = cheerio.load(component.templateData);
-                const $component = $.root();
-                this.componentsForTree.forEach(componentToFind => {
-                    if ($component.find(componentToFind.selector).length > 0) {
-                        console.log(componentToFind.name + ' found in ' + component.name);
-                        component.children.push(componentToFind.name);
-                    }
-                });
-            });
-            resolve();
-        });
-    }
-
-    private createTreesForComponents() {
-        return new Promise<void>((resolve, reject) => {
-            this.components.forEach(component => {
-                const _component = {
-                    name: component.name,
-                    file: component.file,
-                    selector: component.selector,
-                    children: [],
-                    template: '',
-                    templateUrl: ''
-                };
-                if (typeof component.template !== 'undefined') {
-                    _component.template = component.template;
-                }
-                if (component.templateUrl.length > 0) {
-                    _component.templateUrl = component.templateUrl[0];
-                }
-                this.componentsForTree.push(_component);
-            });
-            this.readTemplates().then(
-                () => {
-                    this.findChildrenAndParents().then(
-                        () => {
-                            // console.log('this.componentsForTree: ', this.componentsForTree);
-                            resolve();
-                        },
-                        e => {
-                            logger.error(e);
-                            reject();
-                        }
-                    );
-                },
-                e => {
-                    logger.error(e);
-                }
-            );
-        });
     }
 }
 

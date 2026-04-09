@@ -12,11 +12,15 @@ const buildToc = () => {
 
     // Only show on entity detail pages (pages with tabs)
     const infoPanel = document.querySelector('.cdx-tab-panel#info.active, .cdx-tab-panel#info');
-    if (!infoPanel) return;
+    if (!infoPanel) {
+        return;
+    }
 
     // Collect h3 headings with text content
     const headings = Array.from(infoPanel.querySelectorAll<HTMLHeadingElement>('h3'));
-    if (headings.length < 2) return;
+    if (headings.length < 2) {
+        return;
+    }
 
     // Ensure headings have IDs for anchor links
     headings.forEach((h, i) => {
@@ -47,7 +51,7 @@ const buildToc = () => {
         const a = document.createElement('a');
         a.href = `#${h.id}`;
         a.textContent = h.textContent?.trim() ?? '';
-        a.addEventListener('click', (e) => {
+        a.addEventListener('click', e => {
             e.preventDefault();
             h.scrollIntoView({ behavior: 'smooth', block: 'start' });
             history.replaceState(null, '', `#${h.id}`);
@@ -59,7 +63,9 @@ const buildToc = () => {
 
     // Insert as first child so it appears at top on narrow screens
     const contentData = document.querySelector('.content-data');
-    if (!contentData) return;
+    if (!contentData) {
+        return;
+    }
     contentData.prepend(nav);
 
     // ScrollSpy: observe headings
@@ -67,7 +73,9 @@ const buildToc = () => {
     let activeIndex = 0;
 
     const updateIndicator = (index: number) => {
-        if (index === activeIndex && links[index]?.classList.contains('active')) return;
+        if (index === activeIndex && links[index]?.classList.contains('active')) {
+            return;
+        }
         activeIndex = index;
         links.forEach(l => l.classList.remove('active'));
         if (links[index]) {
@@ -82,7 +90,9 @@ const buildToc = () => {
     };
 
     const scrollContainer = document.querySelector('.content') as HTMLElement;
-    if (!scrollContainer) return;
+    if (!scrollContainer) {
+        return;
+    }
 
     const onScroll = () => {
         let current = 0;

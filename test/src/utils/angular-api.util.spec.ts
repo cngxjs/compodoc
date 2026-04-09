@@ -1,4 +1,3 @@
-
 import { AngularApiUtil } from '../../../src/utils/angular-api.util';
 
 describe('Utils - AngularApiUtil', () => {

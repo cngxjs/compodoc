@@ -1,6 +1,5 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
-
 import Configuration from '../../configuration';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class IsInfoSectionHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, sectionId: string, options: IHandlebarsOptions) {

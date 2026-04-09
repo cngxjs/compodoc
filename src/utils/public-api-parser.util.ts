@@ -1,9 +1,8 @@
+import * as path from 'node:path';
+import fg from 'fast-glob';
 import * as fs from 'fs-extra';
-import * as path from 'path';
 import { ts } from 'ts-morph';
 import { logger } from './logger';
-
-import fg from 'fast-glob';
 
 /**
  * Result of parsing public API exports
@@ -255,7 +254,7 @@ export class PublicApiParser {
         const baseDir = path.dirname(fromFile);
 
         // Try with .d.ts extension
-        let resolvedPath = path.resolve(baseDir, modulePath + '.d.ts');
+        let resolvedPath = path.resolve(baseDir, `${modulePath}.d.ts`);
         if (fs.existsSync(resolvedPath)) {
             return resolvedPath;
         }

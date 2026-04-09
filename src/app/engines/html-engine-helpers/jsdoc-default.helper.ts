@@ -1,5 +1,5 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
-import { JsdocTagInterface } from '../../interfaces/jsdoc-tag.interface';
+import type { JsdocTagInterface } from '../../interfaces/jsdoc-tag.interface';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class JsdocDefaultHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, jsdocTags: JsdocTagInterface[], options: IHandlebarsOptions) {
@@ -13,7 +13,7 @@ export class JsdocDefaultHelper implements IHtmlEngineHelper {
                 if (jsdocTags[i].tagName) {
                     if (jsdocTags[i].tagName.text === 'default') {
                         defaultValue = true;
-                        if (jsdocTags[i].typeExpression && jsdocTags[i].typeExpression.type.name) {
+                        if (jsdocTags[i].typeExpression?.type.name) {
                             tag.type = jsdocTags[i].typeExpression.type.name.text;
                         }
                         if (jsdocTags[i].comment) {

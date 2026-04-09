@@ -16,16 +16,20 @@ type JsdocExamplesBlockProps = {
  * - `level: 'section'` wraps in `<section>` with `<h3>` (EntityPage style)
  * - `level: 'inline'` (default) renders bare content
  */
-export function JsdocExamplesBlock({ tags, variant = 'code', cssClass, level = 'inline' }: JsdocExamplesBlockProps): string {
-    const examples = variant === 'code'
-        ? extractJsdocCodeExamples(tags)
-        : extractJsdocExamples(tags);
+export function JsdocExamplesBlock({
+    tags,
+    variant = 'code',
+    cssClass,
+    level = 'inline'
+}: JsdocExamplesBlockProps): string {
+    const examples =
+        variant === 'code' ? extractJsdocCodeExamples(tags) : extractJsdocExamples(tags);
 
-    if (examples.length === 0) return '';
+    if (examples.length === 0) {
+        return '';
+    }
 
-    const items = examples.map(ex =>
-        (<div class={cssClass}>{ex.comment}</div>) as string
-    ).join('');
+    const items = examples.map(ex => (<div class={cssClass}>{ex.comment}</div>) as string).join('');
 
     if (level === 'section') {
         return (
@@ -36,8 +40,10 @@ export function JsdocExamplesBlock({ tags, variant = 'code', cssClass, level = '
         ) as string;
     }
 
-    return (<>
-        <b>{t('example')} :</b>
-        {items}
-    </>) as string;
+    return (
+        <>
+            <b>{t('example')} :</b>
+            {items}
+        </>
+    ) as string;
 }

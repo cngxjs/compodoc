@@ -1,15 +1,15 @@
+import { exists, hasStderrError, read, shell, temporaryDir } from '../helpers';
 
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI coverage report', () => {
-    const distFolder = tmp.name + '-coverage';
+    const distFolder = `${tmp.name}-coverage`;
 
     describe('excluding coverage', () => {
-        let stdoutString = undefined;
+        const stdoutString = undefined;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -32,10 +32,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage test command above', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -59,10 +59,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage test command above with src folder provided in arguments', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 './test/fixtures/sample-files/',
                 '-p',
@@ -87,10 +87,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage test command under', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -114,10 +114,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage test per file command under', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -143,10 +143,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage test per file command under with --coverageTestShowOnlyFailed', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -172,10 +172,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage test per file command over', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -199,10 +199,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage test per file command over and global threshold - 1/4', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -233,10 +233,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage test per file command over and global threshold - 2/4', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -267,10 +267,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage test per file command over and global threshold - 3/4', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -299,10 +299,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage test per file command over and global threshold - 4/4', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -331,11 +331,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage page', () => {
-        let stdoutString = undefined,
-            coverageFile;
+        let stdoutString, coverageFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -364,11 +363,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage page links', () => {
-        let stdoutString = undefined,
-            coverageFile;
+        let stdoutString, coverageFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
@@ -414,10 +412,10 @@ describe('CLI coverage report', () => {
     });
 
     describe('coverage test per file command under with one file through --files', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '--files',
                 './test/fixtures/sample-files/bar.directive.ts',

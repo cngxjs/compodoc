@@ -1,6 +1,6 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
-import { JsdocTagInterface } from '../../interfaces/jsdoc-tag.interface';
 import { kindToType } from '../../../utils/kind-to-type';
+import type { JsdocTagInterface } from '../../interfaces/jsdoc-tag.interface';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class JsdocParamsHelper implements IHtmlEngineHelper {
     public helperFunc(
@@ -16,10 +16,10 @@ export class JsdocParamsHelper implements IHtmlEngineHelper {
             if (jsdocTags[i].tagName) {
                 if (jsdocTags[i].tagName.text === 'param') {
                     const tag = {} as JsdocTagInterface;
-                    if (jsdocTags[i].typeExpression && jsdocTags[i].typeExpression.type.kind) {
+                    if (jsdocTags[i].typeExpression?.type.kind) {
                         tag.type = kindToType(jsdocTags[i].typeExpression.type.kind);
                     }
-                    if (jsdocTags[i].typeExpression && jsdocTags[i].typeExpression.type.name) {
+                    if (jsdocTags[i].typeExpression?.type.name) {
                         tag.type = jsdocTags[i].typeExpression.type.name.text;
                     } else {
                         tag.type = jsdocTags[i].type;

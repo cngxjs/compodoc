@@ -1,8 +1,8 @@
-import * as crypto from 'crypto';
-import { IDep } from '../dependencies.interfaces';
-import { ComponentHelper } from './helpers/component-helper';
-import Configuration from '../../../configuration';
+import * as crypto from 'node:crypto';
 import { cleanLifecycleHooksFromMethods } from '../../../../utils';
+import Configuration from '../../../configuration';
+import type { IDep } from '../dependencies.interfaces';
+import type { ComponentHelper } from './helpers/component-helper';
 
 export class DirectiveDepFactory {
     constructor(private helper: ComponentHelper) {}
@@ -12,7 +12,7 @@ export class DirectiveDepFactory {
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
         const directiveDeps: IDirectiveDep = {
             name,
-            id: 'directive-' + name + '-' + hash,
+            id: `directive-${name}-${hash}`,
             file: file,
             type: 'directive',
             description: IO.description,
@@ -23,7 +23,7 @@ export class DirectiveDepFactory {
             exportAs: this.helper.getComponentExportAs(props, srcFile),
             hostDirectives: [...this.helper.getComponentHostDirectives(props)],
 
-            standalone: this.helper.getComponentStandalone(props, srcFile) ? true : false,
+            standalone: !!this.helper.getComponentStandalone(props, srcFile),
 
             inputsClass: IO.inputs,
             outputsClass: IO.outputs,
@@ -67,19 +67,20 @@ export class DirectiveDepFactory {
             directiveDeps.accessors = IO.accessors;
         }
         if (IO.properties) {
-            const {inputSignals, outputSignals, properties} = this.helper.getInputOutputSignals(IO.properties);
+            const { inputSignals, outputSignals, properties } = this.helper.getInputOutputSignals(
+                IO.properties
+            );
 
-            directiveDeps.inputsClass = directiveDeps.inputsClass.concat(inputSignals)
-            directiveDeps.outputsClass = directiveDeps.outputsClass.concat(outputSignals)
+            directiveDeps.inputsClass = directiveDeps.inputsClass.concat(inputSignals);
+            directiveDeps.outputsClass = directiveDeps.outputsClass.concat(outputSignals);
             directiveDeps.propertiesClass = properties;
         }
 
         // Parse host: {} metadata into structured hostBindings/hostListeners
         const host = this.helper.getComponentHost(props);
         if (host && typeof host === 'object') {
-            const hostEntries = host instanceof Map
-                ? Array.from(host.entries())
-                : Object.entries(host);
+            const hostEntries =
+                host instanceof Map ? Array.from(host.entries()) : Object.entries(host);
 
             for (const [key, value] of hostEntries) {
                 const k = String(key).trim();
@@ -91,7 +92,7 @@ export class DirectiveDepFactory {
                         args: [],
                         description: `host: { '(${eventName})': '${v}' }`,
                         line: 0,
-                        signalKind: 'host-listener',
+                        signalKind: 'host-listener'
                     });
                 } else if (k.startsWith('[') && k.endsWith(']')) {
                     const bindingName = k.slice(1, -1);
@@ -101,7 +102,7 @@ export class DirectiveDepFactory {
                         type: '',
                         description: `host: { '${k}': '${v}' }`,
                         line: 0,
-                        signalKind: 'host-binding',
+                        signalKind: 'host-binding'
                     });
                 }
             }

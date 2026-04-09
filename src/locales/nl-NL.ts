@@ -11,7 +11,8 @@ export const TRANSLATION_NL_NL = {
     components: 'Componenten',
     constructor: 'Constructor',
     coverage: 'Dekking',
-    'coverage-empty-description': 'Voer compodoc uit met gedocumenteerde entiteiten om de dekking te zien.',
+    'coverage-empty-description':
+        'Voer compodoc uit met gedocumenteerde entiteiten om de dekking te zien.',
     'coverage-overview': 'Documentatiedekking',
     'coverage-page-title': 'Documentatie coverage',
     declarations: 'Declaraties',
@@ -40,7 +41,8 @@ export const TRANSLATION_NL_NL = {
     'empty-dom-tree-desc': 'Er is een template nodig om de DOM-boom te genereren.',
     'empty-dom-tree-title': 'Geen DOM-boom beschikbaar',
     'empty-entity-action': 'Meer over JSDoc-tags',
-    'empty-entity-desc': 'Deze {{entityType}} heeft geen gedocumenteerde leden. Voeg JSDoc-commentaar toe aan uw code om deze pagina te vullen.',
+    'empty-entity-desc':
+        'Deze {{entityType}} heeft geen gedocumenteerde leden. Voeg JSDoc-commentaar toe aan uw code om deze pagina te vullen.',
     'empty-entity-title': 'Nog niets gedocumenteerd',
     'empty-enum-values': 'Geen waarden',
     'empty-examples-desc': 'Geen live voorbeelden geconfigureerd voor dit component.',
@@ -60,7 +62,8 @@ export const TRANSLATION_NL_NL = {
     'empty-methods': 'Geen methoden',
     'empty-outputs': 'Geen outputs gedefinieerd',
     'empty-overview-action': 'Controleer uw tsconfig',
-    'empty-overview-desc': 'Er zijn geen modules, componenten of andere Angular-artefacten gevonden.',
+    'empty-overview-desc':
+        'Er zijn geen modules, componenten of andere Angular-artefacten gevonden.',
     'empty-overview-title': 'Geen projectdata',
     'empty-pipes-desc': 'Dit project heeft geen aangepaste pipes.',
     'empty-pipes-title': 'Geen pipes',

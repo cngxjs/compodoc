@@ -1,4 +1,4 @@
-import { IAngularApi } from './angular-api.util';
+import type { IAngularApi } from './angular-api.util';
 
 export class AngularVersionUtil {
     private static readonly CorePackage = '@angular/core';

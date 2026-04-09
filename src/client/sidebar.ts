@@ -15,7 +15,9 @@ const saveState = () => {
             states[el.id] = el.classList.contains('in');
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
-    } catch { /* localStorage blocked */ }
+    } catch {
+        /* localStorage blocked */
+    }
 };
 
 /** Apply saved state to all collapses. Without saved state, respect server-rendered state. */
@@ -37,19 +39,23 @@ const restoreState = () => {
                 el.style.display = 'none';
             }
         });
-    } catch { /* localStorage blocked or invalid JSON */ }
+    } catch {
+        /* localStorage blocked or invalid JSON */
+    }
 };
 
 const toggleCollapse = (targetId: string) => {
     // Use getElementById to handle IDs with special chars (e.g. slashes from folder paths)
     const id = targetId.startsWith('#') ? targetId.slice(1) : targetId;
     const target = document.getElementById(id) as HTMLElement | null;
-    if (!target) return;
+    if (!target) {
+        return;
+    }
 
     const isOpen = target.classList.contains('in');
     if (isOpen) {
         target.style.overflow = 'hidden';
-        target.style.maxHeight = target.scrollHeight + 'px';
+        target.style.maxHeight = `${target.scrollHeight}px`;
         requestAnimationFrame(() => {
             target.style.maxHeight = '0';
             target.style.transition = `max-height ${ANIMATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`;
@@ -67,7 +73,7 @@ const toggleCollapse = (targetId: string) => {
         target.style.overflow = 'hidden';
         target.style.maxHeight = '0';
         requestAnimationFrame(() => {
-            target.style.maxHeight = target.scrollHeight + 'px';
+            target.style.maxHeight = `${target.scrollHeight}px`;
             target.style.transition = `max-height ${ANIMATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`;
         });
         setTimeout(() => {
@@ -93,9 +99,11 @@ const toggleCollapse = (targetId: string) => {
 
 const bindTogglers = () => {
     document.querySelectorAll<HTMLElement>('[data-cdx-toggle="collapse"]').forEach(toggler => {
-        toggler.addEventListener('click', (e) => {
+        toggler.addEventListener('click', e => {
             const target = toggler.getAttribute('data-cdx-target');
-            if (!target) return;
+            if (!target) {
+                return;
+            }
 
             const clickedEl = e.target as HTMLElement;
             const link = toggler.closest('a');
@@ -124,9 +132,13 @@ const syncChevrons = () => {
     document.querySelectorAll<HTMLElement>('.menu .collapse[id]').forEach(el => {
         const isOpen = el.classList.contains('in');
         const toggler = document.querySelector(`[data-cdx-target="#${el.id}"]`);
-        if (!toggler) return;
+        if (!toggler) {
+            return;
+        }
         const chevron = toggler.querySelector('.cdx-chevron');
-        if (chevron) chevron.classList.toggle('cdx-chevron--open', isOpen);
+        if (chevron) {
+            chevron.classList.toggle('cdx-chevron--open', isOpen);
+        }
         toggler.setAttribute('aria-expanded', String(isOpen));
     });
 };
@@ -143,7 +155,9 @@ const isMobileSidebarOpen = (): boolean =>
     sidebarEl?.classList.contains('cdx-sidebar--open') ?? false;
 
 const openMobileSidebar = () => {
-    if (!sidebarEl || !backdropEl) return;
+    if (!sidebarEl || !backdropEl) {
+        return;
+    }
     sidebarEl.classList.add('cdx-sidebar--open');
     backdropEl.style.display = 'block';
     requestAnimationFrame(() => backdropEl!.classList.add('cdx-backdrop--visible'));
@@ -156,7 +170,9 @@ const openMobileSidebar = () => {
 };
 
 const closeMobileSidebar = () => {
-    if (!sidebarEl || !backdropEl) return;
+    if (!sidebarEl || !backdropEl) {
+        return;
+    }
     sidebarEl.classList.remove('cdx-sidebar--open');
     backdropEl.classList.remove('cdx-backdrop--visible');
     document.body.style.overflow = '';
@@ -194,7 +210,7 @@ const bindMobileMenu = () => {
     backdropEl?.addEventListener('click', closeMobileSidebar);
 
     // Escape key closes sidebar
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
         if (e.key === 'Escape' && isMobileSidebarOpen()) {
             closeMobileSidebar();
         }
@@ -210,12 +226,16 @@ const bindMobileMenu = () => {
     });
 
     // Focus trap: cycle Tab within sidebar when mobile overlay is open
-    sidebarEl?.addEventListener('keydown', (e) => {
-        if (e.key !== 'Tab' || !isMobileSidebarOpen()) return;
+    sidebarEl?.addEventListener('keydown', e => {
+        if (e.key !== 'Tab' || !isMobileSidebarOpen()) {
+            return;
+        }
         const focusable = sidebarEl!.querySelectorAll<HTMLElement>(
             'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
-        if (!focusable.length) return;
+        if (!focusable.length) {
+            return;
+        }
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
         if (e.shiftKey && document.activeElement === first) {
@@ -229,7 +249,7 @@ const bindMobileMenu = () => {
 
     // Close mobile sidebar on resize to desktop
     const mq = window.matchMedia('(min-width: 1024px)');
-    mq.addEventListener('change', (e) => {
+    mq.addEventListener('change', e => {
         if (e.matches && isMobileSidebarOpen()) {
             closeMobileSidebar();
         }
@@ -254,7 +274,9 @@ export const expandToActive = () => {
     const active = document.querySelector<HTMLElement>(
         '.menu a.active[data-type="entity-link"], .menu a.active[data-type="chapter-link"]'
     );
-    if (!active) return;
+    if (!active) {
+        return;
+    }
 
     // Walk up the DOM, force-open every .collapse ancestor
     let parent = active.closest('.collapse') as HTMLElement | null;
@@ -267,7 +289,9 @@ export const expandToActive = () => {
         const toggler = document.querySelector(`[data-cdx-target="#${parent.id}"]`);
         if (toggler) {
             const chevron = toggler.querySelector('.cdx-chevron');
-            if (chevron) chevron.classList.toggle('cdx-chevron--open', true);
+            if (chevron) {
+                chevron.classList.toggle('cdx-chevron--open', true);
+            }
             toggler.setAttribute('aria-expanded', 'true');
         }
         parent = parent.parentElement?.closest('.collapse') as HTMLElement | null;
@@ -280,7 +304,9 @@ export const expandToActive = () => {
         const collapse = ancestor.querySelector(':scope > ul.links.collapse');
         if (collapse && !collapse.classList.contains('in')) {
             const toggler = ancestor.querySelector(':scope > .menu-toggler');
-            if (toggler) toggler.classList.add('cdx-contains-active');
+            if (toggler) {
+                toggler.classList.add('cdx-contains-active');
+            }
         }
         ancestor = ancestor.parentElement?.closest('.chapter.inner') as HTMLElement | null;
     }

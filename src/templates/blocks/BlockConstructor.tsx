@@ -1,11 +1,5 @@
 import Html from '@kitajs/html';
-import {
-    functionSignature,
-    hasJsdocParams,
-    modifKind,
-    parseDescription,
-    t,
-} from '../helpers';
+import { functionSignature, hasJsdocParams, modifKind, parseDescription, t } from '../helpers';
 import { DefinedInRow } from './DefinedInRow';
 import { JsdocExamplesBlock } from './JsdocExamplesBlock';
 import { ParamsTable } from './ParamsTable';
@@ -36,11 +30,17 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
                     </div>
                     {DefinedInRow({ line: ctor.line, file: props.file, navTabs: props.navTabs })}
                     {ctor.description && (
-                        <div class="cdx-member-description">{parseDescription(ctor.description, props.depth ?? 0)}</div>
+                        <div class="cdx-member-description">
+                            {parseDescription(ctor.description, props.depth ?? 0)}
+                        </div>
                     )}
                     {ctor.jsdoctags && hasJsdocParams(ctor.jsdoctags) && (
                         <div>
-                            {ParamsTable({ jsdocTags: ctor.jsdoctags, depth: props.depth ?? 0, showOptional: true })}
+                            {ParamsTable({
+                                jsdocTags: ctor.jsdoctags,
+                                depth: props.depth ?? 0,
+                                showOptional: true
+                            })}
                             {JsdocExamplesBlock({ tags: ctor.jsdoctags, variant: 'text' })}
                         </div>
                     )}

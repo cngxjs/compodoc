@@ -37,10 +37,11 @@ export const TRANSLATION_IT_IT = {
     'empty-coverage-title': 'Nessuna copertura della documentazione',
     'empty-directives-desc': 'Questo progetto non ha direttive personalizzate.',
     'empty-directives-title': 'Nessuna direttiva',
-    'empty-dom-tree-desc': 'È necessario un template per generare l\'albero DOM.',
+    'empty-dom-tree-desc': "È necessario un template per generare l'albero DOM.",
     'empty-dom-tree-title': 'Albero DOM non disponibile',
     'empty-entity-action': 'Scopri i tag JSDoc',
-    'empty-entity-desc': 'Questo {{entityType}} non ha membri documentati. Aggiungi commenti JSDoc al codice per popolare questa pagina.',
+    'empty-entity-desc':
+        'Questo {{entityType}} non ha membri documentati. Aggiungi commenti JSDoc al codice per popolare questa pagina.',
     'empty-entity-title': 'Ancora nulla di documentato',
     'empty-enum-values': 'Nessun valore',
     'empty-examples-desc': 'Nessun esempio interattivo configurato per questo componente.',

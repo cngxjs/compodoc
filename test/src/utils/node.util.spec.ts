@@ -1,6 +1,5 @@
-
 import { Project, SyntaxKind } from 'ts-morph';
-import { nodeHasDecorator, getNodeDecorators } from '../../../src/utils/node.util';
+import { getNodeDecorators, nodeHasDecorator } from '../../../src/utils/node.util';
 
 describe('Utils - NodeUtil', () => {
     let project: Project;
@@ -11,10 +10,13 @@ describe('Utils - NodeUtil', () => {
 
     describe('nodeHasDecorator()', () => {
         it('should return true for a class with decorators', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 @Component({})
                 class TestClass {}
-            `);
+            `
+            );
             const classDeclaration = sourceFile.getClass('TestClass');
 
             const result = nodeHasDecorator(classDeclaration!.compilerNode);
@@ -23,12 +25,15 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return true for a method with decorators', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 class TestClass {
                     @HostListener('click')
                     onClick() {}
                 }
-            `);
+            `
+            );
             const method = sourceFile.getClass('TestClass')!.getMethod('onClick');
 
             const result = nodeHasDecorator(method!.compilerNode);
@@ -37,12 +42,15 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return true for a property with decorators', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 class TestClass {
                     @Input()
                     prop: string;
                 }
-            `);
+            `
+            );
             const property = sourceFile.getClass('TestClass')!.getProperty('prop');
 
             const result = nodeHasDecorator(property!.compilerNode);
@@ -51,9 +59,12 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return false for a class without decorators', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 class TestClass {}
-            `);
+            `
+            );
             const classDeclaration = sourceFile.getClass('TestClass');
 
             const result = nodeHasDecorator(classDeclaration!.compilerNode);
@@ -62,11 +73,14 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return false for a method without decorators', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 class TestClass {
                     onClick() {}
                 }
-            `);
+            `
+            );
             const method = sourceFile.getClass('TestClass')!.getMethod('onClick');
 
             const result = nodeHasDecorator(method!.compilerNode);
@@ -75,11 +89,14 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return false for a property without decorators', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 class TestClass {
                     prop: string;
                 }
-            `);
+            `
+            );
             const property = sourceFile.getClass('TestClass')!.getProperty('prop');
 
             const result = nodeHasDecorator(property!.compilerNode);
@@ -88,9 +105,12 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return false for a function declaration', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 function testFunction() {}
-            `);
+            `
+            );
             const functionDeclaration = sourceFile.getFunction('testFunction');
 
             const result = nodeHasDecorator(functionDeclaration!.compilerNode);
@@ -99,9 +119,12 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return false for a variable declaration', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 const x = 1;
-            `);
+            `
+            );
             const variableDeclaration = sourceFile.getVariableDeclaration('x');
 
             const result = nodeHasDecorator(variableDeclaration!.compilerNode);
@@ -112,10 +135,13 @@ describe('Utils - NodeUtil', () => {
 
     describe('getNodeDecorators()', () => {
         it('should return decorators for a class with single decorator', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 @Component({})
                 class TestClass {}
-            `);
+            `
+            );
             const classDeclaration = sourceFile.getClass('TestClass');
 
             const result = getNodeDecorators(classDeclaration!.compilerNode);
@@ -125,11 +151,14 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return decorators for a class with multiple decorators', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 @Component({})
                 @Injectable()
                 class TestClass {}
-            `);
+            `
+            );
             const classDeclaration = sourceFile.getClass('TestClass');
 
             const result = getNodeDecorators(classDeclaration!.compilerNode);
@@ -140,12 +169,15 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return decorators for a method with decorator', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 class TestClass {
                     @HostListener('click')
                     onClick() {}
                 }
-            `);
+            `
+            );
             const method = sourceFile.getClass('TestClass')!.getMethod('onClick');
 
             const result = getNodeDecorators(method!.compilerNode);
@@ -155,12 +187,15 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return decorators for a property with decorator', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 class TestClass {
                     @Input()
                     prop: string;
                 }
-            `);
+            `
+            );
             const property = sourceFile.getClass('TestClass')!.getProperty('prop');
 
             const result = getNodeDecorators(property!.compilerNode);
@@ -170,9 +205,12 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return empty array for a class without decorators', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 class TestClass {}
-            `);
+            `
+            );
             const classDeclaration = sourceFile.getClass('TestClass');
 
             const result = getNodeDecorators(classDeclaration!.compilerNode);
@@ -181,11 +219,14 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return empty array for a method without decorators', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 class TestClass {
                     onClick() {}
                 }
-            `);
+            `
+            );
             const method = sourceFile.getClass('TestClass')!.getMethod('onClick');
 
             const result = getNodeDecorators(method!.compilerNode);
@@ -194,11 +235,14 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return empty array for a property without decorators', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 class TestClass {
                     prop: string;
                 }
-            `);
+            `
+            );
             const property = sourceFile.getClass('TestClass')!.getProperty('prop');
 
             const result = getNodeDecorators(property!.compilerNode);
@@ -207,9 +251,12 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return empty array for a function declaration', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 function testFunction() {}
-            `);
+            `
+            );
             const functionDeclaration = sourceFile.getFunction('testFunction');
 
             const result = getNodeDecorators(functionDeclaration!.compilerNode);
@@ -218,9 +265,12 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return empty array for a variable declaration', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 const x = 1;
-            `);
+            `
+            );
             const variableDeclaration = sourceFile.getVariableDeclaration('x');
 
             const result = getNodeDecorators(variableDeclaration!.compilerNode);
@@ -229,10 +279,13 @@ describe('Utils - NodeUtil', () => {
         });
 
         it('should return a copy of the decorators array, not the original', () => {
-            const sourceFile = project.createSourceFile('test.ts', `
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                `
                 @Component({})
                 class TestClass {}
-            `);
+            `
+            );
             const classDeclaration = sourceFile.getClass('TestClass');
 
             const result1 = getNodeDecorators(classDeclaration!.compilerNode);

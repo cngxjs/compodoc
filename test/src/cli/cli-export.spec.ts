@@ -1,17 +1,16 @@
-import fs from 'fs-extra';
+import { exists, hasStderrError, read, shell, temporaryDir } from '../helpers';
 
-import { hasStderrError, exists, read, shell, temporaryDir } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI Export', () => {
-    const distFolder = tmp.name + '-export';
+    const distFolder = `${tmp.name}-export`;
 
     describe('when specified JSON', () => {
-        let stdoutString = undefined;
+        let stdoutString;
 
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
@@ -116,7 +115,7 @@ describe('CLI Export', () => {
         });
 
         it('should create json file', () => {
-            let isFileExists = exists(`${distFolder}/documentation.json`);
+            const isFileExists = exists(`${distFolder}/documentation.json`);
             expect(isFileExists).to.be.true;
         });
 
@@ -267,11 +266,11 @@ describe('CLI Export', () => {
     });
 
     describe('when specified JSON and disable things', () => {
-        let stdoutString = undefined;
+        let stdoutString;
 
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
@@ -296,7 +295,7 @@ describe('CLI Export', () => {
         });
 
         it('should create json file', () => {
-            let isFileExists = exists(`${distFolder}/documentation.json`);
+            const isFileExists = exists(`${distFolder}/documentation.json`);
             expect(isFileExists).to.be.true;
         });
 
@@ -370,11 +369,11 @@ describe('CLI Export', () => {
     });*/
 
     describe('when specified not supported format', () => {
-        let stdoutString = undefined;
+        let stdoutString;
 
         beforeAll(() => {
             tmp.create();
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',

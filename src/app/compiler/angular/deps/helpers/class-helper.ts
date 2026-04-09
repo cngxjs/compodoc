@@ -1,19 +1,17 @@
-import { ts, SyntaxKind } from 'ts-morph';
-
-import { getNamesCompareFn, mergeTagsAndArgs, markedtags } from '../../../../../utils/utils';
-import { kindToType } from '../../../../../utils/kind-to-type';
-import { JsdocParserUtil } from '../../../../../utils/jsdoc-parser.util';
+import * as crypto from 'node:crypto';
+import { SyntaxKind, ts } from 'ts-morph';
 import { isIgnore } from '../../../../../utils';
 import AngularVersionUtil from '../../../../..//utils/angular-version.util';
-import BasicTypeUtil from '../../../../../utils/basic-type.util';
-import { StringifyObjectLiteralExpression } from '../../../../../utils/object-literal-expression.util';
-
-import DependenciesEngine from '../../../../engines/dependencies.engine';
-import Configuration from '../../../../configuration';
 import { StringifyArrowFunction } from '../../../../../utils/arrow-function.util';
-import * as crypto from 'crypto';
-import { getNodeDecorators, nodeHasDecorator } from '../../../../../utils/node.util';
+import BasicTypeUtil from '../../../../../utils/basic-type.util';
+import { JsdocParserUtil } from '../../../../../utils/jsdoc-parser.util';
+import { kindToType } from '../../../../../utils/kind-to-type';
 import { markedAcl } from '../../../../../utils/marked.acl';
+import { getNodeDecorators, nodeHasDecorator } from '../../../../../utils/node.util';
+import { StringifyObjectLiteralExpression } from '../../../../../utils/object-literal-expression.util';
+import { getNamesCompareFn, markedtags, mergeTagsAndArgs } from '../../../../../utils/utils';
+import Configuration from '../../../../configuration';
+import DependenciesEngine from '../../../../engines/dependencies.engine';
 
 export class ClassHelper {
     private jsdocParserUtil = new JsdocParserUtil();
@@ -40,7 +38,7 @@ export class ClassHelper {
 
     private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
         tags.forEach(tag => {
-            if (tag.tagName && tag.tagName.text) {
+            if (tag.tagName?.text) {
                 if (tag.tagName.text.indexOf('deprecated') > -1) {
                     result.deprecated = true;
                     result.deprecationMessage = tag.comment || '';
@@ -57,10 +55,18 @@ export class ClassHelper {
 
     private extractCustomTags(tags: any[], result: { [key in string | number]: any }) {
         for (const tag of tags) {
-            if (!tag.tagName || !tag.tagName.text) continue;
+            if (!tag.tagName?.text) {
+                continue;
+            }
             const name = tag.tagName.text;
             const rawComment = tag.comment;
-            const comment = (typeof rawComment === 'string' ? rawComment : Array.isArray(rawComment) ? rawComment.map((c: any) => c.text || '').join('') : '').trim();
+            const comment = (
+                typeof rawComment === 'string'
+                    ? rawComment
+                    : Array.isArray(rawComment)
+                      ? rawComment.map((c: any) => c.text || '').join('')
+                      : ''
+            ).trim();
 
             switch (name) {
                 case 'signal':
@@ -94,10 +100,12 @@ export class ClassHelper {
                     result.figmaUrl = comment.split('\n')[0].trim();
                     break;
                 case 'slot': {
-                    if (!result.slots) result.slots = [];
+                    if (!result.slots) {
+                        result.slots = [];
+                    }
                     const parts = comment.match(/^(\S+)\s*-?\s*(.*)$/);
                     const slotName = parts ? parts[1] : comment;
-                    const slotDesc = parts ? (parts[2] || '') : '';
+                    const slotDesc = parts ? parts[2] || '' : '';
                     if (slotName && !result.slots.some((s: any) => s.name === slotName)) {
                         result.slots.push({ name: slotName, description: slotDesc });
                     }
@@ -110,14 +118,10 @@ export class ClassHelper {
     /**
      * Process JSDoc tags and apply them to a result object
      */
-    private processJSDocTags(
-        jsdoctags: any,
-        result: any,
-        includeTagsArray: boolean = true
-    ): void {
+    private processJSDocTags(jsdoctags: any, result: any, includeTagsArray: boolean = true): void {
         if (jsdoctags && jsdoctags.length >= 1) {
             const jsdoc = jsdoctags[0];
-            if (jsdoc && jsdoc.tags) {
+            if (jsdoc?.tags) {
                 this.checkForDeprecation(jsdoc.tags as unknown as any[], result);
                 if (includeTagsArray) {
                     result.jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
@@ -129,11 +133,7 @@ export class ClassHelper {
     /**
      * Extract and process JSDoc comment for a node
      */
-    private extractAndProcessJSDocComment(
-        node: any,
-        sourceFile: ts.SourceFile,
-        result: any
-    ): void {
+    private extractAndProcessJSDocComment(node: any, sourceFile: ts.SourceFile, result: any): void {
         if (node.jsDoc) {
             const comment = this.jsdocParserUtil.getMainCommentOfNode(node, sourceFile);
             if (typeof comment !== 'undefined') {
@@ -151,8 +151,12 @@ export class ClassHelper {
      * Detect Angular signal primitives from a property's stringified default value.
      * Returns the signal kind and optional extracted type.
      */
-    private detectSignalKind(defaultValue: string): { kind: string; signalType?: string; required?: boolean } | undefined {
-        if (!defaultValue) return undefined;
+    private detectSignalKind(
+        defaultValue: string
+    ): { kind: string; signalType?: string; required?: boolean } | undefined {
+        if (!defaultValue) {
+            return undefined;
+        }
         const cleaned = defaultValue.replace(/\n/g, '');
 
         // Order matters: check specific patterns before generic ones
@@ -176,15 +180,19 @@ export class ClassHelper {
             { pattern: /^afterEveryRender\s*\(/, kind: 'after-every-render' },
             { pattern: /^afterNextRender\s*\(/, kind: 'after-next-render' },
             { pattern: /^afterRender\s*\(/, kind: 'after-render' },
-            { pattern: /^inject\s*\(\s*([A-Z_]\w*)/, kind: 'inject' },
+            { pattern: /^inject\s*\(\s*([A-Z_]\w*)/, kind: 'inject' }
         ];
 
         for (const { pattern, kind } of patterns) {
             const match = pattern.exec(cleaned);
             if (match) {
                 const result: { kind: string; signalType?: string; required?: boolean } = { kind };
-                if (match[1]) result.signalType = match[1].trim();
-                if (cleaned.includes('.required')) result.required = true;
+                if (match[1]) {
+                    result.signalType = match[1].trim();
+                }
+                if (cleaned.includes('.required')) {
+                    result.required = true;
+                }
                 return result;
             }
         }
@@ -228,7 +236,9 @@ export class ClassHelper {
             if (!result.modifierKind) {
                 result.modifierKind = [];
             }
-            const hasAlreadyPrivateKeyword = result.modifierKind.includes(SyntaxKind.PrivateKeyword);
+            const hasAlreadyPrivateKeyword = result.modifierKind.includes(
+                SyntaxKind.PrivateKeyword
+            );
             if (!hasAlreadyPrivateKeyword) {
                 result.modifierKind.push(SyntaxKind.PrivateKeyword);
             }
@@ -268,7 +278,7 @@ export class ClassHelper {
         } else {
             if (len === 1) {
                 const expr = decorators[0].expression as any;
-                if (expr && expr.expression) {
+                if (expr?.expression) {
                     if (expr.expression.text === decoratorType) {
                         result.push(decorators[0]);
                         return result;
@@ -381,11 +391,11 @@ export class ClassHelper {
                 } else if (arg.function) {
                     return this.handleFunction(arg);
                 } else if (arg.expression && arg.name) {
-                    return arg.expression.text + '.' + arg.name.text;
+                    return `${arg.expression.text}.${arg.name.text}`;
                 } else if (arg.expression && arg.kind === SyntaxKind.NewExpression) {
-                    return 'new ' + arg.expression.text + '()';
+                    return `new ${arg.expression.text}()`;
                 } else if (arg.kind && arg.kind === SyntaxKind.StringLiteral) {
-                    return `'` + arg.text + `'`;
+                    return `'${arg.text}'`;
                 } else if (
                     arg.kind &&
                     arg.kind === SyntaxKind.ArrayLiteralExpression &&
@@ -396,7 +406,7 @@ export class ClassHelper {
                         len = arg.elements.length,
                         result = '[';
                     for (i; i < len; i++) {
-                        result += `'` + arg.elements[i].text + `'`;
+                        result += `'${arg.elements[i].text}'`;
                         if (i < len - 1) {
                             result += ', ';
                         }
@@ -436,7 +446,7 @@ export class ClassHelper {
                             finalStringifiedArgument += this.getOptionalString(arg);
                         }
                         if (arg.type) {
-                            finalStringifiedArgument += separator + ' ' + this.visitType(arg.type);
+                            finalStringifiedArgument += `${separator} ${this.visitType(arg.type)}`;
                         }
                         return finalStringifiedArgument;
                     } else if (arg.text) {
@@ -453,7 +463,7 @@ export class ClassHelper {
 
     private getPosition(node: ts.Node, sourceFile: ts.SourceFile): ts.LineAndCharacter {
         let position: ts.LineAndCharacter;
-        if ((node as any).name && (node as any).name.end) {
+        if ((node as any).name?.end) {
             position = ts.getLineAndCharacterOfPosition(sourceFile, (node as any).name.end);
         } else {
             position = ts.getLineAndCharacterOfPosition(sourceFile, node.pos);
@@ -489,7 +499,10 @@ export class ClassHelper {
                 this.processJSDocTags(jsdoctags, setSignature);
 
                 if (setSignature.jsdoctags && setSignature.jsdoctags.length > 0) {
-                    setSignature.jsdoctags = mergeTagsAndArgs(setSignature.args, setSignature.jsdoctags);
+                    setSignature.jsdoctags = mergeTagsAndArgs(
+                        setSignature.args,
+                        setSignature.jsdoctags
+                    );
                 } else if (setSignature.args && setSignature.args.length > 0) {
                     setSignature.jsdoctags = mergeTagsAndArgs(setSignature.args);
                 }
@@ -541,7 +554,7 @@ export class ClassHelper {
             }
         }
         // Check for ECMAScript Private Fields
-        if (member.name && member.name.escapedText) {
+        if (member.name?.escapedText) {
             const isPrivate: boolean = member.name.escapedText.indexOf('#') === 0;
             if (isPrivate) {
                 return true;
@@ -632,7 +645,7 @@ export class ClassHelper {
     ): any {
         const symbol = this.typeChecker.getSymbolAtLocation(classDeclaration.name);
         let rawdescription = '';
-        let deprecation = this.initializeDocumentationFields();
+        const deprecation = this.initializeDocumentationFields();
         let description = '';
         let jsdoctags: any[] = [];
 
@@ -644,17 +657,21 @@ export class ClassHelper {
                 return [{ ignore: true }];
             }
             if (symbol.declarations && symbol.declarations.length > 0) {
-                const declarationsjsdoctags = this.jsdocParserUtil.getJSDocs(symbol.declarations[0]);
+                const declarationsjsdoctags = this.jsdocParserUtil.getJSDocs(
+                    symbol.declarations[0]
+                );
                 this.processJSDocTags(declarationsjsdoctags, deprecation, false);
                 if (isIgnore(symbol.declarations[0])) {
                     return [{ ignore: true }];
                 }
             }
             if (symbol.valueDeclaration) {
-                jsdoctags = this.jsdocParserUtil.getJSDocs(symbol.valueDeclaration) as unknown as any[];
+                jsdoctags = this.jsdocParserUtil.getJSDocs(
+                    symbol.valueDeclaration
+                ) as unknown as any[];
                 if (jsdoctags && jsdoctags.length >= 1) {
                     const jsdoc = jsdoctags[0] as any;
-                    if (jsdoc && jsdoc.tags) {
+                    if (jsdoc?.tags) {
                         this.checkForDeprecation(jsdoc.tags, deprecation);
                         jsdoctags = markedtags(jsdoc.tags);
                     }
@@ -1002,7 +1019,11 @@ export class ClassHelper {
             return typeName.text;
         }
         if ((typeName as any).left && (typeName as any).right) {
-            return this.visitTypeName((typeName as any).left) + '.' + this.visitTypeName((typeName as any).right);
+            return (
+                this.visitTypeName((typeName as any).left) +
+                '.' +
+                this.visitTypeName((typeName as any).right)
+            );
         }
         return '';
     }
@@ -1017,8 +1038,7 @@ export class ClassHelper {
         if (
             node.type &&
             node.type.kind === SyntaxKind.IndexedAccessType &&
-            node.type.indexType &&
-            node.type.indexType.literal
+            node.type.indexType?.literal
         ) {
             return this.visitTypeName(node.type.indexType.literal);
         }
@@ -1059,7 +1079,7 @@ export class ClassHelper {
                 const _firstPart = this.visitType(node.type.elementType);
                 _return = _firstPart + kindToType(node.type.kind);
                 if (node.type.elementType.kind === SyntaxKind.ParenthesizedType) {
-                    _return = '(' + _firstPart + ')' + kindToType(node.type.kind);
+                    _return = `(${_firstPart})${kindToType(node.type.kind)}`;
                 }
             }
 
@@ -1072,21 +1092,21 @@ export class ClassHelper {
                     if (type.elementType) {
                         const _firstPart = this.visitType(type.elementType);
                         if (type.elementType.kind === SyntaxKind.ParenthesizedType) {
-                            _return += '(' + _firstPart + ')' + kindToType(type.kind);
+                            _return += `(${_firstPart})${kindToType(type.kind)}`;
                         } else {
                             _return += _firstPart + kindToType(type.kind);
                         }
                     } else {
                         if (ts.isLiteralTypeNode(type) && type.literal) {
                             if ((type.literal as any).text) {
-                                _return += '"' + (type.literal as any).text + '"';
+                                _return += `"${(type.literal as any).text}"`;
                             } else {
                                 _return += kindToType(type.literal.kind);
                             }
                         } else if ((type as any).typeName) {
                             _return += this.visitTypeName((type as any).typeName);
                         } else if (type.kind === SyntaxKind.RestType && type.type) {
-                            _return += '...' + this.visitType(type.type);
+                            _return += `...${this.visitType(type.type)}`;
                         } else {
                             _return += kindToType(type.kind);
                         }
@@ -1135,13 +1155,13 @@ export class ClassHelper {
                         }
                         if (ts.isLiteralTypeNode(type) && type.literal) {
                             if ((type.literal as any).text) {
-                                _return += '"' + (type.literal as any).text + '"';
+                                _return += `"${(type.literal as any).text}"`;
                             } else {
                                 _return += kindToType(type.literal.kind);
                             }
                         }
                         if (type.kind === SyntaxKind.RestType && type.type) {
-                            _return += '...' + this.visitType(type.type);
+                            _return += `...${this.visitType(type.type)}`;
                         }
 
                         if (
@@ -1162,8 +1182,7 @@ export class ClassHelper {
             if (
                 node.type &&
                 node.type.kind === SyntaxKind.IndexedAccessType &&
-                node.type.objectType &&
-                node.type.objectType.typeName
+                node.type.objectType?.typeName
             ) {
                 _return = this.visitTypeName(node.type.objectType.typeName);
             }
@@ -1180,7 +1199,7 @@ export class ClassHelper {
                 const type = node.types[i];
                 if (ts.isLiteralTypeNode(type) && type.literal) {
                     if ((type.literal as any).text) {
-                        _return += '"' + (type.literal as any).text + '"';
+                        _return += `"${(type.literal as any).text}"`;
                     } else {
                         _return += kindToType(type.literal.kind);
                     }
@@ -1232,7 +1251,7 @@ export class ClassHelper {
         const sourceCode = sourceFile.getText();
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
         const result: any = {
-            id: 'call-declaration-' + hash,
+            id: `call-declaration-${hash}`,
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             returnType: this.visitType(method.type),
             line: this.getPosition(method, sourceFile).line + 1,
@@ -1251,7 +1270,7 @@ export class ClassHelper {
         const sourceCode = sourceFile.getText();
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
         const result = {
-            id: 'index-declaration-' + hash,
+            id: `index-declaration-${hash}`,
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             returnType: this.visitType(method.type),
             line: this.getPosition(method, sourceFile).line + 1,
@@ -1322,9 +1341,7 @@ export class ClassHelper {
 
         const result: any = {
             name: propertyName,
-            defaultValue: initializer
-                ? this.stringifyDefaultValue(initializer)
-                : undefined,
+            defaultValue: initializer ? this.stringifyDefaultValue(initializer) : undefined,
             ...this.initializeDocumentationFields(),
             type: this.visitType(property),
             indexKey: this.visitTypeIndex(property),
@@ -1342,8 +1359,12 @@ export class ClassHelper {
             const signalKind = this.detectSignalKind(result.defaultValue);
             if (signalKind) {
                 result.signalKind = signalKind.kind;
-                if (signalKind.signalType) result.type = signalKind.signalType;
-                if (signalKind.required) result.required = true;
+                if (signalKind.signalType) {
+                    result.type = signalKind.signalType;
+                }
+                if (signalKind.required) {
+                    result.required = true;
+                }
             }
         }
 
@@ -1368,7 +1389,7 @@ export class ClassHelper {
         const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
         if (jsdoctags && jsdoctags.length >= 1) {
             const jsdoc = jsdoctags[0] as any;
-            if (jsdoc && jsdoc.tags) {
+            if (jsdoc?.tags) {
                 this.checkForDeprecation(jsdoc.tags, result);
                 if ((property as any).jsDoc) {
                     result.jsdoctags = markedtags(jsdoc.tags);
@@ -1409,13 +1430,11 @@ export class ClassHelper {
                         constrTags.forEach(tag => {
                             _parameters.forEach(param => {
                                 if (
-                                    tag.tagName &&
-                                    tag.tagName.escapedText &&
+                                    tag.tagName?.escapedText &&
                                     tag.tagName.escapedText === 'param'
                                 ) {
                                     if (
-                                        tag.name &&
-                                        tag.name.escapedText &&
+                                        tag.name?.escapedText &&
                                         tag.name.escapedText === param.name
                                     ) {
                                         param.description = tag.comment;
@@ -1432,9 +1451,13 @@ export class ClassHelper {
         }
     }
 
-    private visitMethodDeclaration(method: ts.MethodDeclaration | ts.MethodSignature, sourceFile: ts.SourceFile) {
+    private visitMethodDeclaration(
+        method: ts.MethodDeclaration | ts.MethodSignature,
+        sourceFile: ts.SourceFile
+    ) {
         const result: any = {
-            name: (method.name as any).text || (ts.isIdentifier(method.name) ? method.name.text : ''),
+            name:
+                (method.name as any).text || (ts.isIdentifier(method.name) ? method.name.text : ''),
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             optional: typeof method.questionToken !== 'undefined',
             returnType: this.visitType(method.type),
@@ -1458,7 +1481,7 @@ export class ClassHelper {
                             const returnType = signature.getReturnType();
                             result.returnType = this.typeChecker.typeToString(returnType);
                             // tslint:disable-next-line:no-empty
-                        } catch (error) {}
+                        } catch (_error) {}
                     }
                 }
             }
@@ -1502,7 +1525,11 @@ export class ClassHelper {
     ) {
         const inArgs = (outDecorator.expression as any).arguments;
         const _return: any = {
-            name: inArgs.length > 0 ? (inArgs[0] as any).text : ((property.name as any).text || (ts.isIdentifier(property.name) ? property.name.text : '')),
+            name:
+                inArgs.length > 0
+                    ? (inArgs[0] as any).text
+                    : (property.name as any).text ||
+                      (ts.isIdentifier(property.name) ? property.name.text : ''),
             defaultValue: property.initializer
                 ? this.stringifyDefaultValue(property.initializer)
                 : undefined,
@@ -1541,7 +1568,7 @@ export class ClassHelper {
             dotDotDotToken: !!arg.dotDotDotToken,
             ...this.initializeDocumentationFields()
         };
-        if (arg.type && arg.type.kind && ts.isFunctionTypeNode(arg.type)) {
+        if (arg.type?.kind && ts.isFunctionTypeNode(arg.type)) {
             _result.function = arg.type.parameters
                 ? arg.type.parameters.map(prop => this.visitArgument(prop))
                 : [];

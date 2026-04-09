@@ -1,12 +1,13 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Compodoc page', () => {
     test('should support dark mode', async ({ page }) => {
         await page.goto('/');
 
-        const hasDark = await page.evaluate(() =>
-            document.documentElement.classList.contains('dark') ||
-            document.body.classList.contains('dark')
+        const hasDark = await page.evaluate(
+            () =>
+                document.documentElement.classList.contains('dark') ||
+                document.body.classList.contains('dark')
         );
         expect(hasDark).toBe(true);
 

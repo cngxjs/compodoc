@@ -1,9 +1,8 @@
-import { IHtmlEngineHelper } from './html-engine-helper.interface';
-
 import { SyntaxKind } from 'ts-morph';
+import type { IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class ModifIconHelper implements IHtmlEngineHelper {
-    public helperFunc(context: any, kind: SyntaxKind): string {
+    public helperFunc(_context: any, kind: SyntaxKind): string {
         let _kindText = '';
         switch (kind) {
             case SyntaxKind.PrivateKeyword:

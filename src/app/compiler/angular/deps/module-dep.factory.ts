@@ -1,8 +1,8 @@
-import * as crypto from 'crypto';
-import { ts } from 'ts-morph';
+import * as crypto from 'node:crypto';
+import type { ts } from 'ts-morph';
 
-import { IDep } from '../dependencies.interfaces';
-import { ModuleHelper } from './helpers/module-helper';
+import type { IDep } from '../dependencies.interfaces';
+import type { ModuleHelper } from './helpers/module-helper';
 
 export class ModuleDepFactory {
     constructor(private moduleHelper: ModuleHelper) {}
@@ -18,7 +18,7 @@ export class ModuleDepFactory {
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
         return {
             name,
-            id: 'module-' + name + '-' + hash,
+            id: `module-${name}-${hash}`,
             file: file,
             ngid: this.moduleHelper.getModuleId(properties, srcFile),
             providers: this.moduleHelper.getModuleProviders(properties, srcFile),

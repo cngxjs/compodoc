@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 // ─── Sidebar ─────────────────────────────────────────────
 
@@ -171,7 +171,9 @@ test.describe('Component page', () => {
         await page.goto('/components/UserCardComponent.html');
         expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--beta').count()).toBe(1);
         expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--since').count()).toBe(1);
-        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--since').textContent()).toContain('v1.0.0');
+        expect(
+            await page.locator('.cdx-entity-hero-badges .cdx-badge--since').textContent()
+        ).toContain('v1.0.0');
     });
 
     test('UserCardComponent: template tab shows ng-content', async ({ page }) => {
@@ -260,7 +262,9 @@ test.describe('Component page', () => {
 test.describe('Directive page', () => {
     test('HighlightDirective: standalone badge', async ({ page }) => {
         await page.goto('/directives/HighlightDirective.html');
-        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--standalone').count()).toBe(1);
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--standalone').count()).toBe(
+            1
+        );
     });
 });
 
@@ -269,7 +273,9 @@ test.describe('Directive page', () => {
 test.describe('Pipe page', () => {
     test('GreetingPipe: standalone badge', async ({ page }) => {
         await page.goto('/pipes/GreetingPipe.html');
-        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--standalone').count()).toBe(1);
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--standalone').count()).toBe(
+            1
+        );
     });
 });
 
@@ -530,7 +536,9 @@ test.describe('Dependency Graph — Component Tab', () => {
 test.describe('Keyboard navigation', () => {
     test('? opens shortcut overlay dialog', async ({ page }) => {
         await page.goto('/injectables/UserService.html');
-        await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true })));
+        await page.evaluate(() =>
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true }))
+        );
         const dialog = page.locator('#cdx-shortcuts-dialog');
         await expect(dialog).toBeVisible();
         await expect(dialog).toContainText('Keyboard Shortcuts');
@@ -538,7 +546,9 @@ test.describe('Keyboard navigation', () => {
 
     test('Escape closes shortcut overlay', async ({ page }) => {
         await page.goto('/injectables/UserService.html');
-        await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true })));
+        await page.evaluate(() =>
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true }))
+        );
         const dialog = page.locator('#cdx-shortcuts-dialog');
         await expect(dialog).toBeVisible();
         await page.keyboard.press('Escape');
@@ -576,10 +586,18 @@ test.describe('Keyboard navigation', () => {
     test('shortcuts suppressed when dialog is open', async ({ page }) => {
         await page.goto('/injectables/UserService.html');
         // Open shortcut overlay
-        await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true, cancelable: true })));
+        await page.evaluate(() =>
+            document.dispatchEvent(
+                new KeyboardEvent('keydown', { key: '?', bubbles: true, cancelable: true })
+            )
+        );
         await page.waitForTimeout(200);
         // j should not navigate members while dialog is open
-        await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', bubbles: true, cancelable: true })));
+        await page.evaluate(() =>
+            document.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'j', bubbles: true, cancelable: true })
+            )
+        );
         await expect(page.locator('.cdx-member-card--focused')).toHaveCount(0);
     });
 });
@@ -647,7 +665,9 @@ test.describe('Mini code preview', () => {
         await expect(code).toBeVisible();
     });
 
-    test('declaration shows decorator + class signature, not full method bodies', async ({ page }) => {
+    test('declaration shows decorator + class signature, not full method bodies', async ({
+        page
+    }) => {
         await page.goto('/directives/HighlightDirective.html');
         const details = page.locator('details.cdx-code-preview');
         await details.locator('summary').click();
@@ -694,7 +714,7 @@ test.describe('Responsive member cards', () => {
         await page.setViewportSize({ width: 400, height: 800 });
         await page.goto('/injectables/UserService.html');
         const sig = page.locator('.cdx-member-signature').first();
-        if (await sig.count() > 0) {
+        if ((await sig.count()) > 0) {
             const wrap = await sig.evaluate(el => getComputedStyle(el).whiteSpace);
             expect(wrap).toBe('pre-wrap');
         }

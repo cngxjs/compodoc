@@ -1,7 +1,7 @@
-import { createRequire } from 'module';
-import * as path from 'path';
+import { createRequire } from 'node:module';
+import * as path from 'node:path';
 
-import { IApiSourceResult } from './api-source-result.interface';
+import type { IApiSourceResult } from './api-source-result.interface';
 
 const require = createRequire(import.meta.url);
 
@@ -10,7 +10,7 @@ let apiListPath = '../src/data/api-list.json';
 try {
     // First try relative path (works from source)
     require.resolve(apiListPath);
-} catch (e) {
+} catch (_e) {
     // Fallback to absolute path from cwd (works from bundled/test contexts)
     apiListPath = path.join(process.cwd(), 'src/data/api-list.json');
 }

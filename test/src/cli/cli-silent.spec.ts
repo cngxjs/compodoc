@@ -1,14 +1,14 @@
+import { exec, hasStderrError, shell, temporaryDir } from '../helpers';
 
-import { hasStderrError, exec, shell, temporaryDir } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI silent flag', () => {
-    const distFolder = tmp.name + '-silent';
+    const distFolder = `${tmp.name}-silent`;
     let stdoutString = '';
 
     beforeAll(() => {
         tmp.create(distFolder);
-        let ls = shell('node', [
+        const ls = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
@@ -35,7 +35,7 @@ describe('CLI silent flag - error', () => {
     let exitCode = 0;
     let stdoutString = '';
 
-    const distFolder = tmp.name + '-silent-error';
+    const distFolder = `${tmp.name}-silent-error`;
 
     beforeAll(() => {
         tmp.create(distFolder);
@@ -52,7 +52,7 @@ describe('CLI silent flag - error', () => {
                     '--includes',
                     './test/fixtures/todomvc-ng2/additional-doc-wrong'
                 ].join(' '),
-            (error, stdout) => {
+            (_error, stdout) => {
                 stdoutString = stdout;
             }
         );

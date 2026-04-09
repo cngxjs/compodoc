@@ -1,4 +1,4 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class ObjectLengthHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, obj: Object, operator: string, length: number) {
@@ -12,7 +12,7 @@ export class ObjectLengthHelper implements IHtmlEngineHelper {
         let size = 0,
             key;
         for (key in obj) {
-            if (obj.hasOwnProperty(key)) {
+            if (Object.hasOwn(obj, key)) {
                 size++;
             }
         }
@@ -29,7 +29,7 @@ export class ObjectLengthHelper implements IHtmlEngineHelper {
                 result = size > length;
                 break;
             default: {
-                throw new Error('helper {{objectLength}}: invalid operator: `' + operator + '`');
+                throw new Error(`helper {{objectLength}}: invalid operator: \`${operator}\``);
             }
         }
 

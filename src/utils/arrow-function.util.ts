@@ -8,7 +8,7 @@ export function StringifyArrowFunction(af) {
         result = '';
     }
     for (i; i < len; i++) {
-        if (af.parameters[i].name && af.parameters[i].name.escapedText) {
+        if (af.parameters[i].name?.escapedText) {
             result += af.parameters[i].name.escapedText;
         }
         if (i < len - 1) {
@@ -29,7 +29,7 @@ export function StringifyArrowFunction(af) {
             af.body.name
         ) {
             result += af.body.expression.escapedText;
-            result += '.' + af.body.name.escapedText;
+            result += `.${af.body.name.escapedText}`;
         } else if (af.body.kind === SyntaxKind.StringLiteral && af.body.text) {
             result += af.body.text;
         }

@@ -1,13 +1,8 @@
-import Configuration from '../configuration';
-import { MiscellaneousData } from '../interfaces/miscellaneous-data.interface';
-import { ParsedData } from '../interfaces/parsed-data.interface';
-import { RouteInterface } from '../interfaces/routes.interface';
-
+import traverse from 'neotraverse/legacy';
 import AngularApiUtil from '../../utils/angular-api.util';
-import { IApiSourceResult } from '../../utils/api-source-result.interface';
+import type { IApiSourceResult } from '../../utils/api-source-result.interface';
 import { getNamesCompareFn } from '../../utils/utils';
-
-import {
+import type {
     IDep,
     IEnumDecDep,
     IFunctionDecDep,
@@ -18,11 +13,13 @@ import {
     IPipeDep,
     ITypeAliasDecDep
 } from '../compiler/angular/dependencies.interfaces';
-
-import traverse from 'neotraverse/legacy';
-import { IComponentDep } from '../compiler/angular/deps/component-dep.factory';
-import { IDirectiveDep } from '../compiler/angular/deps/directive-dep.factory';
-import { IModuleDep } from '../compiler/angular/deps/module-dep.factory';
+import type { IComponentDep } from '../compiler/angular/deps/component-dep.factory';
+import type { IDirectiveDep } from '../compiler/angular/deps/directive-dep.factory';
+import type { IModuleDep } from '../compiler/angular/deps/module-dep.factory';
+import Configuration from '../configuration';
+import type { MiscellaneousData } from '../interfaces/miscellaneous-data.interface';
+import type { ParsedData } from '../interfaces/parsed-data.interface';
+import type { RouteInterface } from '../interfaces/routes.interface';
 
 export interface GroupNode {
     name: string; // segment name (single folder)
@@ -32,7 +29,9 @@ export interface GroupNode {
 }
 
 function deriveGroupKey(filePath: string, maxDepth: number): string {
-    if (!filePath) return '';
+    if (!filePath) {
+        return '';
+    }
 
     // Normalize path separators
     let rel = filePath.replaceAll('\\', '/');
@@ -48,7 +47,9 @@ function deriveGroupKey(filePath: string, maxDepth: number): string {
 
     // Take parent directory segments (exclude filename)
     const segments = rel.split('/').slice(0, -1);
-    if (segments.length === 0) return '';
+    if (segments.length === 0) {
+        return '';
+    }
 
     // Truncate at maxDepth — items from deeper folders merge into
     // the last allowed group (e.g. depth 2: features/admin/ui/settings → features/admin)
@@ -196,7 +197,7 @@ export class DependenciesEngine {
     }
 
     public init(data: ParsedData) {
-        traverse(data).forEach(function (node) {
+        traverse(data).forEach(node => {
             if (node) {
                 if (node.parent) {
                     delete node.parent;
@@ -368,7 +369,7 @@ export class DependenciesEngine {
     }
 
     private manageDuplicatesName() {
-        const processDuplicates = (element, index, array) => {
+        const processDuplicates = (element, _index, array) => {
             const elementsWithSameName = array.filter(
                 el => (el as any).name === (element as any).name
             );
@@ -379,9 +380,8 @@ export class DependenciesEngine {
                     if (typeof elementToEdit.isDuplicate === 'undefined') {
                         elementToEdit.isDuplicate = true;
                         elementToEdit.duplicateId = i;
-                        elementToEdit.duplicateName =
-                            elementToEdit.name + '-' + elementToEdit.duplicateId;
-                        elementToEdit.id = elementToEdit.id + '-' + elementToEdit.duplicateId;
+                        elementToEdit.duplicateName = `${elementToEdit.name}-${elementToEdit.duplicateId}`;
+                        elementToEdit.id = `${elementToEdit.id}-${elementToEdit.duplicateId}`;
                     }
                 }
             }
@@ -418,7 +418,7 @@ export class DependenciesEngine {
         ];
 
         let bestScore = 0;
-        let bestResult = undefined;
+        let bestResult;
 
         for (const searchFunction of searchFunctions) {
             const result = searchFunction();
@@ -591,11 +591,15 @@ export class DependenciesEngine {
     }
 
     private groupByStrategy(items: any[], strategy: string, depth: number): Record<string, any[]> {
-        if (strategy === 'none' || !strategy) return {};
+        if (strategy === 'none' || !strategy) {
+            return {};
+        }
 
         if (strategy === 'category') {
             const hasAnyCategory = items.some(item => item.category && item.category !== '');
-            if (!hasAnyCategory) return {};
+            if (!hasAnyCategory) {
+                return {};
+            }
             return items.reduce(
                 (groups, item) => {
                     const k = item.category || '';

@@ -23,7 +23,7 @@ export class NgdEngine {
         });
     }
 
-    public renderGraph(filepath: string, outputpath: string, type: string, name?: string) {
+    public renderGraph(_filepath: string, outputpath: string, type: string, name?: string) {
         this.engine.updateOutput(outputpath);
 
         if (type === 'f') {
@@ -57,9 +57,7 @@ export class NgdEngine {
                 const patched = this.patchSvgStyles(svg);
                 return FileEngine.write(filepath, patched).then(() => patched);
             })
-            .catch(err =>
-                Promise.reject('Error during graph read ' + name)
-            );
+            .catch(_err => Promise.reject(`Error during graph read ${name}`));
     }
 }
 

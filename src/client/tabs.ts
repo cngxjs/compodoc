@@ -37,7 +37,9 @@ const activateTab = (tab: HTMLElement, tabList: HTMLElement) => {
 export const initTabs = () => {
     document.querySelectorAll<HTMLElement>('.cdx-tab-bar, [role="tablist"]').forEach(tabList => {
         const tabs = Array.from(tabList.querySelectorAll<HTMLElement>('[role="tab"]'));
-        if (!tabs.length) return;
+        if (!tabs.length) {
+            return;
+        }
 
         // Click handler
         tabs.forEach(tab => {
@@ -50,10 +52,14 @@ export const initTabs = () => {
         // Keyboard navigation
         tabList.addEventListener('keydown', e => {
             const current = document.activeElement as HTMLElement;
-            if (!current?.matches('[role="tab"]')) return;
+            if (!current?.matches('[role="tab"]')) {
+                return;
+            }
 
             const idx = tabs.indexOf(current);
-            if (idx === -1) return;
+            if (idx === -1) {
+                return;
+            }
 
             let next: number | null = null;
 

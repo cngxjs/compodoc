@@ -2,9 +2,15 @@
 export const parseProperty = (value: unknown): string => {
     if (value && typeof value === 'object' && !Array.isArray(value)) {
         const obj = value as Record<string, unknown>;
-        if (obj['url'] !== undefined) return String(obj['url']);
-        if (obj['name'] !== undefined) return String(obj['name']);
-        if (Object.keys(obj).length === 0) return '';
+        if (obj['url'] !== undefined) {
+            return String(obj['url']);
+        }
+        if (obj['name'] !== undefined) {
+            return String(obj['name']);
+        }
+        if (Object.keys(obj).length === 0) {
+            return '';
+        }
     }
 
     if (typeof value === 'string' && value !== '' && value.includes('https')) {

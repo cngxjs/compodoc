@@ -1,18 +1,15 @@
 // @ts-nocheck
 
-
-import { ts, SyntaxKind } from 'ts-morph';
-
-import { TsPrinterUtil } from '../../../../../utils/ts-printer.util';
-
+import { SyntaxKind, ts } from 'ts-morph';
 import ImportsUtil from '../../../../../utils/imports.util';
+import { TsPrinterUtil } from '../../../../../utils/ts-printer.util';
 
 enum AngularProviderConfigProperties {
     Useclass = 'useClass',
     UseValue = 'useValue',
     UseFactory = 'useFactory',
-    UseExisting = 'useExisting',
-};
+    UseExisting = 'useExisting'
+}
 
 export class SymbolHelper {
     private readonly unknown = '???';
@@ -105,16 +102,18 @@ export class SymbolHelper {
      */
     public parseProviderConfiguration(node: ts.ObjectLiteralExpression): string {
         if (node.kind && node.kind === SyntaxKind.ObjectLiteralExpression) {
-            const provideProperty = node.properties.find((props) => props.name.getText() === 'provide');
+            const provideProperty = node.properties.find(
+                props => props.name.getText() === 'provide'
+            );
 
             if (!provideProperty) {
-                throw new Error("provide property not found in provider object config");
+                throw new Error('provide property not found in provider object config');
             }
 
-            const providerObjectProps = Object.values(AngularProviderConfigProperties)
+            const providerObjectProps = Object.values(AngularProviderConfigProperties);
             for (let i = 0; i < providerObjectProps.length; i++) {
                 const providerProp = providerObjectProps[i];
-                const prop = node.properties.find((props) => props.name.getText() === providerProp);
+                const prop = node.properties.find(props => props.name.getText() === providerProp);
                 if (prop) {
                     return prop.getLastToken().getText();
                 }
@@ -167,7 +166,7 @@ export class SymbolHelper {
         } else if (ts.isSpreadElement(node)) {
             // parse expressions such as: ...MYARRAY
             // Resolve MYARRAY in imports or local file variables after full scan, just return the name of the variable
-            if (node.expression && node.expression.text) {
+            if (node.expression?.text) {
                 return node.expression.text;
             }
         }
@@ -215,20 +214,15 @@ export class SymbolHelper {
         ) {
             return [localNode.initializer.text];
         } else if (
-            localNode.initializer &&
-            localNode.initializer.kind &&
+            localNode.initializer?.kind &&
             (localNode.initializer.kind === SyntaxKind.TrueKeyword ||
                 localNode.initializer.kind === SyntaxKind.FalseKeyword)
         ) {
-            return [localNode.initializer.kind === SyntaxKind.TrueKeyword ? true : false];
+            return [localNode.initializer.kind === SyntaxKind.TrueKeyword];
         } else if (localNode.initializer && ts.isPropertyAccessExpression(localNode.initializer)) {
             const identifier = this.parseSymbolElements(localNode.initializer);
             return [identifier];
-        } else if (
-            localNode.initializer &&
-            localNode.initializer.elements &&
-            localNode.initializer.elements.length > 0
-        ) {
+        } else if (localNode.initializer?.elements && localNode.initializer.elements.length > 0) {
             // Node replaced by ts-simple-ast & kind = 265
             return localNode.initializer.elements.map(x => this.parseSymbolElements(x));
         }
@@ -238,7 +232,7 @@ export class SymbolHelper {
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
         decoratorType: string,
         srcFile: ts.SourceFile,
-        multiLine?: boolean
+        _multiLine?: boolean
     ): Array<string> {
         if (props.length === 0) {
             return [];
@@ -260,7 +254,7 @@ export class SymbolHelper {
     public getSymbolDepsRaw(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
         type: string,
-        multiLine?: boolean
+        _multiLine?: boolean
     ): Array<ts.ObjectLiteralElementLike> {
         return props.filter(node => node.name.getText() === type);
     }

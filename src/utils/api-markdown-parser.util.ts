@@ -1,9 +1,8 @@
+import * as path from 'node:path';
+import fg from 'fast-glob';
 import * as fs from 'fs-extra';
-import * as path from 'path';
 import { ts } from 'ts-morph';
 import { logger } from './logger';
-
-import fg from 'fast-glob';
 
 /**
  * Result of parsing API markdown exports
@@ -63,7 +62,9 @@ export class ApiMarkdownParser {
             }
         }
 
-        logger.info(`Extracted ${this.symbolToFiles.size} public API symbol(s) from ${this.apiMdFiles.size} relevant *.api.md file(s)`);
+        logger.info(
+            `Extracted ${this.symbolToFiles.size} public API symbol(s) from ${this.apiMdFiles.size} relevant *.api.md file(s)`
+        );
 
         return {
             symbolToFiles: this.symbolToFiles,
@@ -81,10 +82,10 @@ export class ApiMarkdownParser {
     private async isRelevantApiMarkdownFile(filePath: string): Promise<boolean> {
         try {
             const content = fs.readFileSync(filePath, 'utf-8');
-            
+
             // Extract the TypeScript code block from the markdown file
             const tsCodeBlock = this.extractTypeScriptCodeBlock(content);
-            
+
             if (!tsCodeBlock) {
                 logger.debug(`No TypeScript code block found in ${filePath}`);
                 return false;
@@ -122,13 +123,13 @@ export class ApiMarkdownParser {
             const name = (statement as any).name?.text;
             return !!name && !this.isAngularInternalSymbol(name);
         }
-        
+
         // Handle: export interface Bar {}
         if (ts.isInterfaceDeclaration(statement)) {
             const name = (statement as any).name?.text;
             return !!name;
         }
-        
+
         // Handle: export const baz = ...
         if (ts.isVariableStatement(statement)) {
             const hasExportModifier = (statement as any).modifiers?.some(
@@ -145,34 +146,34 @@ export class ApiMarkdownParser {
             }
             return false;
         }
-        
+
         // Handle: export function foo() {}
         if (ts.isFunctionDeclaration(statement)) {
             const name = (statement as any).name?.text;
             return !!name && !this.isAngularInternalSymbol(name);
         }
-        
+
         // Handle: export type FooType = ...
         if (ts.isTypeAliasDeclaration(statement)) {
             const name = (statement as any).name?.text;
             return !!name;
         }
-        
+
         // Handle: export enum FooEnum {}
         if (ts.isEnumDeclaration(statement)) {
             const name = (statement as any).name?.text;
             return !!name;
         }
-        
+
         // Handle: export { Foo, Bar }
         if (ts.isExportDeclaration(statement)) {
             const exportClause = (statement as any).exportClause;
-            
+
             // Skip: export default _default
             if ((statement as any).isTypeOnly) {
                 return false;
             }
-            
+
             // Check if it's a named export declaration
             if (exportClause && ts.isNamedExports(exportClause)) {
                 const elements = exportClause.elements;
@@ -183,10 +184,10 @@ export class ApiMarkdownParser {
                     }
                 }
             }
-            
+
             return false;
         }
-        
+
         // Handle: export default Foo
         if (ts.isExportAssignment(statement)) {
             // export default _default is not meaningful
@@ -264,7 +265,7 @@ export class ApiMarkdownParser {
         try {
             const content = fs.readFileSync(filePath, 'utf-8');
             const tsCodeBlock = this.extractTypeScriptCodeBlock(content);
-            
+
             if (!tsCodeBlock) {
                 logger.debug(`No TypeScript code block found in ${filePath}`);
                 return;
@@ -382,4 +383,3 @@ export async function parseApiMarkdownExports(sourceRoot: string): Promise<ApiMa
     const parser = new ApiMarkdownParser(sourceRoot);
     return await parser.parseApiMarkdownFiles();
 }
-

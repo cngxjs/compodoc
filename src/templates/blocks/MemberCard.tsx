@@ -18,7 +18,13 @@ type MemberCardProps = {
  * an a11y violation (interactive elements inside `<summary>` are not
  * consistently accessible via keyboard/assistive technology).
  */
-export function MemberCard({ id, deprecated, collapsible, header, children }: MemberCardProps): string {
+export function MemberCard({
+    id,
+    deprecated,
+    collapsible,
+    header,
+    children
+}: MemberCardProps): string {
     const cardClass = deprecated
         ? 'cdx-member-card cdx-member-card--deprecated'
         : 'cdx-member-card';

@@ -6,7 +6,9 @@ type PackagePropertiesProps = {
 };
 
 export const PackageProperties = (props: PackagePropertiesProps): string => {
-    if (!props.packageProperties) return '';
+    if (!props.packageProperties) {
+        return '';
+    }
     return (
         <div class="cdx-prose">
             <section class="cdx-content-section">

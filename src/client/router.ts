@@ -6,20 +6,20 @@ declare function gtag(...args: unknown[]): void;
  * and swaps the content area without full page reload.
  */
 
-import { initTabs } from './tabs';
-import { initCodeBlocks } from './code-blocks';
-import { initGraphs } from './graphs';
-import { initCoverage } from './coverage';
 import { initAnimations } from './animate';
-import { expandToActive } from './sidebar';
+import { initCodeBlocks } from './code-blocks';
+import { initCoverage } from './coverage';
+import { initGraphs } from './graphs';
 import { resetKeyboardState } from './keyboard';
+import { expandToActive } from './sidebar';
+import { initTabs } from './tabs';
+
 // import { initToc } from './toc';
 
 const CONTENT_SELECTOR = '.content-data';
 
 /** Strip any existing relative prefix from a path */
-const stripPrefix = (path: string): string =>
-    path.replace(/^(\.\/|\.\.\/)+/, '');
+const stripPrefix = (path: string): string => path.replace(/^(\.\/|\.\.\/)+/, '');
 
 /** Rewrite relative sidebar links based on current page depth */
 const fixMenuLinks = () => {
@@ -28,14 +28,18 @@ const fixMenuLinks = () => {
 
     document.querySelectorAll<HTMLAnchorElement>('.menu a[data-type]').forEach(a => {
         const href = a.getAttribute('href');
-        if (!href || href.startsWith('/') || href.startsWith('http')) return;
+        if (!href || href.startsWith('/') || href.startsWith('http')) {
+            return;
+        }
         a.setAttribute('href', prefix + stripPrefix(href));
     });
 
     // Fix logo images
     document.querySelectorAll<HTMLImageElement>('.menu img[data-src]').forEach(img => {
         const src = img.getAttribute('data-src');
-        if (!src || src.startsWith('/') || src.startsWith('http')) return;
+        if (!src || src.startsWith('/') || src.startsWith('http')) {
+            return;
+        }
         img.src = prefix + stripPrefix(src);
     });
 };
@@ -45,13 +49,15 @@ const fixMenuLinks = () => {
  *  Returns a promise that resolves when all external scripts have loaded. */
 const executeContentScripts = (): Promise<void> => {
     const content = document.querySelector(CONTENT_SELECTOR);
-    if (!content) return Promise.resolve();
+    if (!content) {
+        return Promise.resolve();
+    }
 
     const promises: Promise<void>[] = [];
     content.querySelectorAll('script').forEach(oldScript => {
         const newScript = document.createElement('script');
         if (oldScript.src) {
-            const p = new Promise<void>((resolve) => {
+            const p = new Promise<void>(resolve => {
                 newScript.onload = () => resolve();
                 newScript.onerror = () => resolve();
             });
@@ -132,30 +138,49 @@ const updateGlobals = (doc: Document) => {
         const urlMatch = text.match(/COMPODOC_CURRENT_PAGE_URL\s*=\s*'([^']*)'/);
         const maxSearchMatch = text.match(/MAX_SEARCH_RESULTS\s*=\s*(\d+)/);
 
-        if (depthMatch) (window as any).COMPODOC_CURRENT_PAGE_DEPTH = parseInt(depthMatch[1], 10);
-        if (contextMatch) (window as any).COMPODOC_CURRENT_PAGE_CONTEXT = contextMatch[1];
-        if (urlMatch) (window as any).COMPODOC_CURRENT_PAGE_URL = urlMatch[1];
-        if (maxSearchMatch) (window as any).MAX_SEARCH_RESULTS = parseInt(maxSearchMatch[1], 10);
+        if (depthMatch) {
+            (window as any).COMPODOC_CURRENT_PAGE_DEPTH = parseInt(depthMatch[1], 10);
+        }
+        if (contextMatch) {
+            (window as any).COMPODOC_CURRENT_PAGE_CONTEXT = contextMatch[1];
+        }
+        if (urlMatch) {
+            (window as any).COMPODOC_CURRENT_PAGE_URL = urlMatch[1];
+        }
+        if (maxSearchMatch) {
+            (window as any).MAX_SEARCH_RESULTS = parseInt(maxSearchMatch[1], 10);
+        }
     });
 };
 
 /** Send navigation event to parent frame (Template Playground) */
 const notifyParentFrame = () => {
     if (window.parent && window.parent !== window) {
-        window.parent.postMessage({
-            type: 'compodoc-iframe-navigate',
-            url: window.location.pathname + window.location.hash
-        }, '*');
+        window.parent.postMessage(
+            {
+                type: 'compodoc-iframe-navigate',
+                url: window.location.pathname + window.location.hash
+            },
+            '*'
+        );
     }
 };
 
 /** Check if a URL is internal (same origin, not a hash-only link) */
 const isInternalLink = (anchor: HTMLAnchorElement): boolean => {
-    if (anchor.target === '_blank') return false;
-    if (anchor.hasAttribute('download')) return false;
-    if (anchor.origin !== window.location.origin) return false;
+    if (anchor.target === '_blank') {
+        return false;
+    }
+    if (anchor.hasAttribute('download')) {
+        return false;
+    }
+    if (anchor.origin !== window.location.origin) {
+        return false;
+    }
     // Allow hash-only links to work normally
-    if (anchor.pathname === window.location.pathname && anchor.hash) return false;
+    if (anchor.pathname === window.location.pathname && anchor.hash) {
+        return false;
+    }
     return true;
 };
 
@@ -164,22 +189,32 @@ const progressBar = () => document.querySelector<HTMLElement>('.cdx-progress-bar
 
 const showProgress = () => {
     const bar = progressBar();
-    if (!bar) return;
+    if (!bar) {
+        return;
+    }
     bar.className = 'cdx-progress-bar cdx-progress--loading';
 };
 
 const completeProgress = () => {
     const bar = progressBar();
-    if (!bar) return;
+    if (!bar) {
+        return;
+    }
     bar.className = 'cdx-progress-bar cdx-progress--done';
     setTimeout(() => {
         bar.classList.add('cdx-progress--hide');
-        setTimeout(() => { bar.className = 'cdx-progress-bar'; }, 200);
+        setTimeout(() => {
+            bar.className = 'cdx-progress-bar';
+        }, 200);
     }, 300);
 };
 
 /** Navigate to a new page via fetch */
-const navigate = async (url: string, pushState = true, clickedAnchor: HTMLAnchorElement | null = null) => {
+const navigate = async (
+    url: string,
+    pushState = true,
+    clickedAnchor: HTMLAnchorElement | null = null
+) => {
     try {
         showProgress();
 
@@ -228,7 +263,9 @@ const navigate = async (url: string, pushState = true, clickedAnchor: HTMLAnchor
 
         // Send GA4 pageview on SPA navigation
         if (typeof gtag === 'function') {
-            gtag('event', 'page_view', { page_path: new URL(url, window.location.origin).pathname });
+            gtag('event', 'page_view', {
+                page_path: new URL(url, window.location.origin).pathname
+            });
         }
 
         // Fix sidebar links for new page depth and update active state
@@ -255,7 +292,6 @@ const navigate = async (url: string, pushState = true, clickedAnchor: HTMLAnchor
 
         // Notify parent frame
         notifyParentFrame();
-
     } catch {
         // Fallback to full page load on error
         window.location.href = url;
@@ -268,13 +304,19 @@ export const initRouter = () => {
     updateActiveLink(window.location.href);
 
     // Intercept link clicks
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', e => {
         const anchor = (e.target as HTMLElement).closest('a');
-        if (!anchor) return;
-        if (!isInternalLink(anchor)) return;
+        if (!anchor) {
+            return;
+        }
+        if (!isInternalLink(anchor)) {
+            return;
+        }
 
         const href = anchor.href;
-        if (!href || href === '#') return;
+        if (!href || href === '#') {
+            return;
+        }
 
         e.preventDefault();
         // If clicked link is in sidebar, pass it as the active hint

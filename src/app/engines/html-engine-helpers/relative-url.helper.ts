@@ -1,7 +1,7 @@
-import { IHtmlEngineHelper } from './html-engine-helper.interface';
+import type { IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class RelativeURLHelper implements IHtmlEngineHelper {
-    public helperFunc(context: any, currentDepth: number, options): string {
+    public helperFunc(_context: any, currentDepth: number, _options): string {
         switch (currentDepth) {
             case 0:
                 return './';

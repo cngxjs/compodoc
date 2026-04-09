@@ -11,6 +11,7 @@ import {
     TRANSLATION_HU_HU,
     TRANSLATION_IT_IT,
     TRANSLATION_JA_JP,
+    TRANSLATION_KA_GE,
     TRANSLATION_KO_KR,
     TRANSLATION_NL_NL,
     TRANSLATION_PL_PL,
@@ -18,8 +19,7 @@ import {
     TRANSLATION_RU_RU,
     TRANSLATION_SK_SK,
     TRANSLATION_ZH_CN,
-    TRANSLATION_ZH_TW,
-    TRANSLATION_KA_GE
+    TRANSLATION_ZH_TW
 } from '../../locales';
 
 class I18nEngine {
@@ -32,7 +32,7 @@ class I18nEngine {
         return I18nEngine.instance;
     }
 
-    private availablesLanguages = {
+    private readonly availablesLanguages = {
         'bg-BG': 'bg-BG',
         'de-DE': 'de-DE',
         'en-US': 'en-US',

@@ -10,11 +10,13 @@
         "skipLibCheck": true,
         "strictFunctionTypes": true,
         "strictBindCallApply": true,
+        "noImplicitAny": false,
         "noImplicitThis": true,
         "jsx": "react",
         "jsxFactory": "Html.createElement",
         "jsxFragmentFactory": "Html.Fragment",
+        "types": ["vitest/globals"],
         "plugins": [{ "name": "@kitajs/ts-html-plugin" }]
     },
-    "exclude": ["test", "src/**/*.spec.ts", "src/resources/template-playground", "src/client", "doc/template-playground", "documentation/template-playground", "src/playground-demo"]
+    "exclude": ["src/resources/template-playground", "src/client", "doc/template-playground", "documentation/template-playground", "src/playground-demo"]
 }

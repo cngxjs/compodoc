@@ -11,7 +11,8 @@ export const TRANSLATION_PL_PL = {
     components: 'Komponenty',
     constructor: 'Konstruktor',
     coverage: 'Pokrycie',
-    'coverage-empty-description': 'Uruchom compodoc z udokumentowanymi elementami, aby zobaczyć pokrycie.',
+    'coverage-empty-description':
+        'Uruchom compodoc z udokumentowanymi elementami, aby zobaczyć pokrycie.',
     'coverage-overview': 'Pokrycie dokumentacji',
     'coverage-page-title': 'Pokrycie dokumentacją',
     declarations: 'Deklaracje',
@@ -40,7 +41,8 @@ export const TRANSLATION_PL_PL = {
     'empty-dom-tree-desc': 'Do wygenerowania drzewa DOM wymagany jest szablon.',
     'empty-dom-tree-title': 'Drzewo DOM niedostępne',
     'empty-entity-action': 'Dowiedz się więcej o tagach JSDoc',
-    'empty-entity-desc': 'Ten {{entityType}} nie ma udokumentowanych członków. Dodaj komentarze JSDoc do kodu, aby wypełnić tę stronę.',
+    'empty-entity-desc':
+        'Ten {{entityType}} nie ma udokumentowanych członków. Dodaj komentarze JSDoc do kodu, aby wypełnić tę stronę.',
     'empty-entity-title': 'Nic jeszcze nie udokumentowano',
     'empty-enum-values': 'Brak wartości',
     'empty-examples-desc': 'Brak skonfigurowanych przykładów na żywo dla tego komponentu.',
@@ -60,7 +62,8 @@ export const TRANSLATION_PL_PL = {
     'empty-methods': 'Brak metod',
     'empty-outputs': 'Brak zdefiniowanych wyjść',
     'empty-overview-action': 'Sprawdź swój tsconfig',
-    'empty-overview-desc': 'Nie wykryto żadnych modułów, komponentów ani innych artefaktów Angular.',
+    'empty-overview-desc':
+        'Nie wykryto żadnych modułów, komponentów ani innych artefaktów Angular.',
     'empty-overview-title': 'Brak danych projektu',
     'empty-pipes-desc': 'Ten projekt nie posiada własnych potoków.',
     'empty-pipes-title': 'Brak potoków',

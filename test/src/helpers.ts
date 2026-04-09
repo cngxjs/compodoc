@@ -1,17 +1,13 @@
 //import * as PDFJS from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-import { spawnSync, spawn, exec } from 'child_process';
+import { readFileSync } from 'node:fs';
+import path, { resolve } from 'node:path';
 import fs from 'fs-extra';
-import path from 'path';
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
 
 // JSON import with correct path from test/src/ (not test/dist/test/src/)
 const pkg = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf-8'));
 
-export const shell = spawnSync;
-export const shellAsync = spawn;
-export { spawn, exec, fs, path, pkg };
+export { fs, path, pkg };
 
 /**
  * Checks if stderr contains a real error (not just ANSI codes/whitespace from fancy-log).
@@ -20,14 +16,22 @@ export { spawn, exec, fs, path, pkg };
 export function hasStderrError(stderr: string): boolean {
     // Filter out Node.js ExperimentalWarning (from ESM-only deps loaded via require() in CJS dist)
     const stripped = stderr
-        .replace(/\x1b\[[0-9;]*m/g, '')
+        .replaceAll(/\x1b\[[0-9;]*m/g, '')
         .split('\n')
         .filter(line => {
             const trimmed = line.trim();
-            if (!trimmed) return false;
-            if (trimmed.includes('ExperimentalWarning')) return false;
-            if (trimmed.startsWith('Support for loading ES Module')) return false;
-            if (trimmed.startsWith('(Use `node --trace-warnings')) return false;
+            if (!trimmed) {
+                return false;
+            }
+            if (trimmed.includes('ExperimentalWarning')) {
+                return false;
+            }
+            if (trimmed.startsWith('Support for loading ES Module')) {
+                return false;
+            }
+            if (trimmed.startsWith('(Use `node --trace-warnings')) {
+                return false;
+            }
             return true;
         })
         .join('\n')
@@ -78,13 +82,17 @@ export function temporaryDir() {
             fs.copySync(source, destination);
         },
         create(param?) {
-            if (param) name = param;
+            if (param) {
+                name = param;
+            }
             if (!fs.existsSync(name)) {
                 fs.mkdirSync(name);
             }
         },
         clean(param?) {
-            if (param) name = param;
+            if (param) {
+                name = param;
+            }
             try {
                 cleanUp(name);
             } catch (e) {}
@@ -92,137 +100,9 @@ export function temporaryDir() {
     };
 }
 
-/*
-interface PdfResult {
-    numpages: number;
-    numrender: number;
-    info: any;
-    metadata: any;
-    text: string;
-    version: any;
-}*/
-
-/**
- * Copyright https://gitlab.com/autokent/pdf-parse , converted to ES6 promise for Node.js 6 support
- */
-/*export function readPDF(dataBuffer, options?): Promise<PdfResult> {
-    let ret = {
-        numpages: 0,
-        numrender: 0,
-        info: null,
-        metadata: null,
-        text: '',
-        version: null
-    };
-
-    function render_page(pageData) {
-        const render_options = {
-            //replaces all occurrences of whitespace with standard spaces (0x20). The default value is `false`.
-            normalizeWhitespace: false,
-            //do not attempt to combine same line TextItem's. The default value is `false`.
-            disableCombineTextItems: false
-        };
-
-        return pageData.getTextContent(render_options).then(function (textContent) {
-            let lastY,
-                text = '';
-            for (const item of textContent.items) {
-                if (lastY == item.transform[5] || !lastY) {
-                    text += item.str;
-                } else {
-                    text += '\n' + item.str;
-                }
-                lastY = item.transform[5];
-            }
-            return text;
-        });
-    }
-
-    const DEFAULT_OPTIONS = {
-        pagerender: render_page,
-        max: 0,
-        version: 'v2.1.266'
-    };
-
-    if (typeof options === 'undefined') {
-        options = DEFAULT_OPTIONS;
-    }
-    if (typeof options.pagerender !== 'function') {
-        options.pagerender = DEFAULT_OPTIONS.pagerender;
-    }
-    if (typeof options.max !== 'number') {
-        options.max = DEFAULT_OPTIONS.max;
-    }
-    if (typeof options.version !== 'string') {
-        options.version = DEFAULT_OPTIONS.version;
-    }
-    if (options.version === 'default') {
-        options.version = DEFAULT_OPTIONS.version;
-    }
-
-    ret.version = PDFJS.version;
-
-    // Disable workers to avoid yet another cross-origin issue (workers need
-    // the URL of the script to be loaded, and dynamically loading a cross-origin
-    // script does not work).
-    // PDFJS.disableWorker = true;
-    let doc;
-
-    return new Promise((resolve, reject) => {
-        PDFJS.getDocument(dataBuffer)
-            .promise.then(document => {
-                doc = document;
-                ret.numpages = doc.numPages;
-
-                let metaData;
-
-                doc.getMetadata()
-                    .then(metadata => {
-                        metaData = metadata;
-                        ret.info = metaData ? metaData.info : undefined;
-                        ret.metadata = metaData ? metaData.metadata : undefined;
-
-                        let counter = options.max <= 0 ? doc.numPages : options.max;
-                        counter = counter > doc.numPages ? doc.numPages : counter;
-
-                        ret.text = '';
-
-                        let i = 1;
-
-                        const loop = () => {
-                            return new Promise((resolveRead, rejectRead) => {
-                                if (i <= counter) {
-                                    doc.getPage(i)
-                                        .then(pageData => options.pagerender(pageData))
-                                        .then(pageText => {
-                                            i++;
-                                            ret.text = `${ret.text}\n\n${pageText}`;
-                                            resolveRead(loop());
-                                        })
-                                        .catch(err => {
-                                            rejectRead(err);
-                                        });
-                                } else {
-                                    resolveRead(true);
-                                }
-                            });
-                        };
-                        loop()
-                            .then(() => {
-                                ret.numrender = counter;
-                                doc.destroy();
-                                resolve(ret);
-                            })
-                            .catch(function (err) {
-                                reject(err);
-                            });
-                    })
-                    .catch(function (err) {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            });
-    });
-}*/
+export {
+    exec,
+    spawn as shellAsync,
+    spawn,
+    spawnSync as shell
+} from 'node:child_process';

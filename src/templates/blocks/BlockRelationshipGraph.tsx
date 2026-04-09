@@ -1,6 +1,6 @@
 import Html from '@kitajs/html';
-import { linkTypeHtml, t } from '../helpers';
 import { IconArrowLeft, IconArrowRight } from '../components/Icons';
+import { linkTypeHtml, t } from '../helpers';
 
 type RelationshipNode = {
     readonly name: string;
@@ -13,11 +13,19 @@ type BlockRelationshipGraphProps = {
     readonly entityName: string;
 };
 
-const RelationshipList = (props: { items: RelationshipNode[]; title: string; iconHtml: string }): string => {
-    if (!props.items?.length) return '';
+const RelationshipList = (props: {
+    items: RelationshipNode[];
+    title: string;
+    iconHtml: string;
+}): string => {
+    if (!props.items?.length) {
+        return '';
+    }
     return (
         <div class="cdx-relationship-group">
-            <h4>{props.iconHtml} {props.title}</h4>
+            <h4>
+                {props.iconHtml} {props.title}
+            </h4>
             <ul class="cdx-relationship-list">
                 {props.items.map(item => (
                     <li>
@@ -31,14 +39,24 @@ const RelationshipList = (props: { items: RelationshipNode[]; title: string; ico
 };
 
 export const BlockRelationshipGraph = (props: BlockRelationshipGraphProps): string => {
-    if (!props.incoming?.length && !props.outgoing?.length) return '';
+    if (!props.incoming?.length && !props.outgoing?.length) {
+        return '';
+    }
 
     return (
         <section class="cdx-content-section" data-compodoc="block-relationships">
             <h3 class="cdx-section-heading">{t('relationships') || 'Relationships'}</h3>
             <div class="cdx-relationships">
-                {RelationshipList({ items: props.incoming, title: t('relationships-used-by') || 'Used by', iconHtml: IconArrowLeft() })}
-                {RelationshipList({ items: props.outgoing, title: t('relationships-depends-on') || 'Depends on', iconHtml: IconArrowRight() })}
+                {RelationshipList({
+                    items: props.incoming,
+                    title: t('relationships-used-by') || 'Used by',
+                    iconHtml: IconArrowLeft()
+                })}
+                {RelationshipList({
+                    items: props.outgoing,
+                    title: t('relationships-depends-on') || 'Depends on',
+                    iconHtml: IconArrowRight()
+                })}
             </div>
         </section>
     ) as string;

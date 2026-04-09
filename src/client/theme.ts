@@ -20,7 +20,9 @@ const applyDarkMode = (dark: boolean) => {
     });
     try {
         localStorage.setItem(DARK_STORAGE_KEY, String(dark));
-    } catch { /* localStorage blocked */ }
+    } catch {
+        /* localStorage blocked */
+    }
 };
 
 /* ----------------------------------------------------------------
@@ -29,25 +31,34 @@ const applyDarkMode = (dark: boolean) => {
 
 const applyTheme = (themeId: string) => {
     const link = document.getElementById('cdx-theme-link') as HTMLLinkElement | null;
-    if (!link) return;
+    if (!link) {
+        return;
+    }
     const base = link.getAttribute('data-base') ?? '';
     link.href = themeId === 'default' ? '' : `${base}styles/${themeId}.css`;
 
     // Update picker selection
     document.querySelectorAll<HTMLElement>('[data-cdx-theme]').forEach(opt => {
-        opt.setAttribute('aria-selected', opt.getAttribute('data-cdx-theme') === themeId ? 'true' : 'false');
+        opt.setAttribute(
+            'aria-selected',
+            opt.getAttribute('data-cdx-theme') === themeId ? 'true' : 'false'
+        );
     });
 
     try {
         localStorage.setItem(THEME_STORAGE_KEY, themeId);
-    } catch { /* localStorage blocked */ }
+    } catch {
+        /* localStorage blocked */
+    }
 };
 
 const bindThemePicker = () => {
     document.querySelectorAll<HTMLElement>('[data-cdx-theme-picker]').forEach(picker => {
         const btn = picker.querySelector<HTMLElement>('button');
         const menu = picker.querySelector<HTMLElement>('.cdx-theme-picker-menu');
-        if (!btn || !menu) return;
+        if (!btn || !menu) {
+            return;
+        }
 
         const open = () => {
             menu.hidden = false;
@@ -57,9 +68,9 @@ const bindThemePicker = () => {
             menu.hidden = true;
             btn.setAttribute('aria-expanded', 'false');
         };
-        const toggle = () => menu.hidden ? open() : close();
+        const toggle = () => (menu.hidden ? open() : close());
 
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', e => {
             e.stopPropagation();
             toggle();
         });
@@ -68,18 +79,22 @@ const bindThemePicker = () => {
         menu.querySelectorAll<HTMLElement>('[data-cdx-theme]').forEach(opt => {
             opt.addEventListener('click', () => {
                 const themeId = opt.getAttribute('data-cdx-theme');
-                if (themeId) applyTheme(themeId);
+                if (themeId) {
+                    applyTheme(themeId);
+                }
                 close();
             });
         });
 
         // Close on outside click
-        document.addEventListener('click', (e) => {
-            if (!picker.contains(e.target as Node)) close();
+        document.addEventListener('click', e => {
+            if (!picker.contains(e.target as Node)) {
+                close();
+            }
         });
 
         // Close on Escape
-        picker.addEventListener('keydown', (e) => {
+        picker.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 close();
                 btn.focus();
@@ -92,11 +107,15 @@ const bindThemePicker = () => {
         const saved = localStorage.getItem(THEME_STORAGE_KEY);
         if (saved) {
             document.querySelectorAll<HTMLElement>('[data-cdx-theme]').forEach(opt => {
-                opt.setAttribute('aria-selected',
-                    opt.getAttribute('data-cdx-theme') === saved ? 'true' : 'false');
+                opt.setAttribute(
+                    'aria-selected',
+                    opt.getAttribute('data-cdx-theme') === saved ? 'true' : 'false'
+                );
             });
         }
-    } catch { /* localStorage blocked */ }
+    } catch {
+        /* localStorage blocked */
+    }
 };
 
 export const initTheme = () => {

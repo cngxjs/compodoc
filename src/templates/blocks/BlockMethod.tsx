@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { IconChevronRight } from '../components/Icons';
 import {
     functionSignature,
     hasJsdocParams,
@@ -8,7 +9,6 @@ import {
     parseDescription,
     t
 } from '../helpers';
-import { IconChevronRight } from '../components/Icons';
 import { DefinedInRow } from './DefinedInRow';
 import { MemberCard } from './MemberCard';
 import { ParamsTable } from './ParamsTable';
@@ -129,7 +129,9 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                             </div>
                         )}
                         {m.returnType && m.jsdoctags && (
-                            <div class="cdx-member-description">{jsdocReturnsComment(m.jsdoctags)}</div>
+                            <div class="cdx-member-description">
+                                {jsdocReturnsComment(m.jsdoctags)}
+                            </div>
                         )}
                     </>
                 ) as string;

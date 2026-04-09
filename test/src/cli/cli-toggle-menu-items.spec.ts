@@ -1,16 +1,14 @@
+import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI toggle menu items', () => {
     describe('with a list', () => {
-        const distFolder = tmp.name + '-toggle';
-        let stdoutString = undefined,
-            fooIndexFile,
-            fooServiceFile;
+        const distFolder = `${tmp.name}-toggle`;
+        let stdoutString, fooIndexFile, fooServiceFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',

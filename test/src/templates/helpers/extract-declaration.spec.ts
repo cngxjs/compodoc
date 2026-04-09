@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import { extractDeclaration } from '../../../../src/templates/helpers/extract-declaration';
 
 describe('extractDeclaration', () => {
@@ -141,8 +140,9 @@ export abstract class BaseService {
 
     it('should truncate declarations over 20 lines with summary', () => {
         // Generate a class with many members
-        const members = Array.from({ length: 15 }, (_, i) =>
-            `  method${i}() {\n    return ${i};\n  }`
+        const members = Array.from(
+            { length: 15 },
+            (_, i) => `  method${i}() {\n    return ${i};\n  }`
         ).join('\n\n');
         const source = `@Component({ selector: 'app-big' })\nexport class BigComponent {\n${members}\n}`;
         const result = extractDeclaration(source)!;

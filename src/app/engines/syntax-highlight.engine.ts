@@ -1,6 +1,6 @@
 type ShikiTransformer = {
-    line?: (this: unknown, hast: HastElement, line: number) => HastElement | void;
-    postprocess?: (this: unknown, html: string, options: unknown) => string | void;
+    line?: (this: unknown, hast: HastElement, line: number) => HastElement | undefined;
+    postprocess?: (this: unknown, html: string, options: unknown) => string | undefined;
 };
 
 type HastElement = {
@@ -61,7 +61,9 @@ export interface HighlightOptions {
 
 /** Initialize the Shiki highlighter singleton. Call once before any highlight calls. */
 export async function initHighlighter(shikiTheme?: string): Promise<void> {
-    if (highlighter) return;
+    if (highlighter) {
+        return;
+    }
 
     if (shikiTheme) {
         const parts = shikiTheme.split(':');
@@ -93,9 +95,8 @@ export async function initHighlighter(shikiTheme?: string): Promise<void> {
  * Falls back to escaped plain text if the highlighter is not initialized.
  */
 export function highlightCode(code: string, optionsOrLang?: HighlightOptions | string): string {
-    const opts: HighlightOptions = typeof optionsOrLang === 'string'
-        ? { lang: optionsOrLang }
-        : optionsOrLang ?? {};
+    const opts: HighlightOptions =
+        typeof optionsOrLang === 'string' ? { lang: optionsOrLang } : (optionsOrLang ?? {});
 
     const lang = opts.lang ?? 'typescript';
     const mode = opts.mode ?? 'snippet';
@@ -144,16 +145,26 @@ export function detectFoldRegions(code: string): FoldRegion[] {
     for (let i = 0; i < lines.length; i++) {
         const trimmed = lines[i].trim();
         if (trimmed.startsWith('import ') || trimmed.startsWith('import{')) {
-            if (importStart === -1) importStart = i;
+            if (importStart === -1) {
+                importStart = i;
+            }
             importEnd = i;
             importCount++;
             if (!trimmed.includes(';') && !trimmed.endsWith("';") && !trimmed.endsWith('";')) {
                 for (let j = i + 1; j < lines.length; j++) {
                     importEnd = j;
-                    if (lines[j].includes(';')) break;
+                    if (lines[j].includes(';')) {
+                        break;
+                    }
                 }
             }
-        } else if (importStart !== -1 && trimmed !== '' && !trimmed.startsWith('//') && !trimmed.startsWith('/*') && !trimmed.startsWith('*')) {
+        } else if (
+            importStart !== -1 &&
+            trimmed !== '' &&
+            !trimmed.startsWith('//') &&
+            !trimmed.startsWith('/*') &&
+            !trimmed.startsWith('*')
+        ) {
             break;
         }
     }
@@ -178,8 +189,12 @@ export function detectFoldRegions(code: string): FoldRegion[] {
 
             for (let j = i; j < lines.length; j++) {
                 for (const ch of lines[j]) {
-                    if (ch === '{') braceDepth++;
-                    if (ch === '}') braceDepth--;
+                    if (ch === '{') {
+                        braceDepth++;
+                    }
+                    if (ch === '}') {
+                        braceDepth--;
+                    }
                 }
                 if (braceDepth <= 0) {
                     endIdx = j;
@@ -210,9 +225,13 @@ const MEMBER_PATTERNS: Array<{ pattern: RegExp; kind: string }> = [
     { pattern: /^\s*(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/, kind: 'class' },
     { pattern: /^\s*(?:export\s+)?(?:abstract\s+)?interface\s+(\w+)/, kind: 'interface' },
     { pattern: /^\s*(?:export\s+)?enum\s+(\w+)/, kind: 'enum' },
-    { pattern: /^\s*(?:public|private|protected|readonly|static|abstract|async|override|get|set)\s+(\w+)\s*[\(:]/, kind: 'member' },
+    {
+        pattern:
+            /^\s*(?:public|private|protected|readonly|static|abstract|async|override|get|set)\s+(\w+)\s*[(:]/,
+        kind: 'member'
+    },
     { pattern: /^\s+(\w+)\s*\([^)]*\)\s*[:{]/, kind: 'method' },
-    { pattern: /^\s+(?:readonly\s+)?(\w+)\s*[=:;]/, kind: 'property' },
+    { pattern: /^\s+(?:readonly\s+)?(\w+)\s*[=:;]/, kind: 'property' }
 ];
 
 /** Detect class members and type declarations. Line-by-line patterns, not a full parser. */
@@ -226,7 +245,23 @@ export function detectMembers(code: string): MemberInfo[] {
             const match = lines[i].match(pattern);
             if (match) {
                 const name = match[1];
-                if (['if', 'for', 'while', 'switch', 'return', 'const', 'let', 'var', 'import', 'from', 'type'].includes(name)) continue;
+                if (
+                    [
+                        'if',
+                        'for',
+                        'while',
+                        'switch',
+                        'return',
+                        'const',
+                        'let',
+                        'var',
+                        'import',
+                        'from',
+                        'type'
+                    ].includes(name)
+                ) {
+                    continue;
+                }
 
                 if (kind === 'class' || kind === 'interface' || kind === 'enum') {
                     currentClass = name;
@@ -285,7 +320,9 @@ function memberMarkerTransformer(members: MemberInfo[]): ShikiTransformer {
 
 /** Shiki postprocessor: wrap fold regions in <details> elements. */
 function foldRegionPostprocessor(regions: FoldRegion[]): ShikiTransformer {
-    if (regions.length === 0) return {};
+    if (regions.length === 0) {
+        return {};
+    }
 
     return {
         postprocess(html: string) {
@@ -299,25 +336,38 @@ function foldRegionPostprocessor(regions: FoldRegion[]): ShikiTransformer {
                 const nextLineMarker = `data-cdx-line-nr="${region.endLine + 1}"`;
 
                 const startIdx = result.indexOf(startMarker);
-                if (startIdx === -1) continue;
+                if (startIdx === -1) {
+                    continue;
+                }
 
                 const tagStart = result.lastIndexOf('<span', startIdx);
-                if (tagStart === -1) continue;
+                if (tagStart === -1) {
+                    continue;
+                }
 
                 let lineEnd: number;
                 const nextIdx = result.indexOf(nextLineMarker, startIdx);
                 if (nextIdx !== -1) {
                     lineEnd = result.lastIndexOf('<span', nextIdx);
-                    if (lineEnd === -1) continue;
+                    if (lineEnd === -1) {
+                        continue;
+                    }
                 } else {
                     lineEnd = result.indexOf('</code>', startIdx);
-                    if (lineEnd === -1) continue;
+                    if (lineEnd === -1) {
+                        continue;
+                    }
                 }
 
                 const detailsOpen = `<details class="cdx-fold-region" data-cdx-fold="${region.kind}"><summary class="cdx-fold-summary">${escapeHtml(region.label)}</summary>`;
                 const detailsClose = '</details>';
 
-                result = result.slice(0, tagStart) + detailsOpen + result.slice(tagStart, lineEnd) + detailsClose + result.slice(lineEnd);
+                result =
+                    result.slice(0, tagStart) +
+                    detailsOpen +
+                    result.slice(tagStart, lineEnd) +
+                    detailsClose +
+                    result.slice(lineEnd);
             }
 
             return result;

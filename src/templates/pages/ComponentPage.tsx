@@ -1,19 +1,5 @@
 import Html from '@kitajs/html';
-import { IconComponent, IconExternalLink, IconFile, IconGitBranch } from '../components/Icons';
-import {
-    isInfoSection,
-    isInitialTab,
-    isTabEnabled,
-    linkTypeHtml,
-    parseDescription,
-    relativeUrl,
-    extractReadmeHeadings,
-    isReadmeEmpty,
-    t
-} from '../helpers';
-import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
-import { GraphZoomControls, GraphLegend, DEPENDENCY_LEGEND_ITEMS } from '../blocks/GraphControls';
-import { MetadataRow, MetadataCodeRow, MetadataSection } from '../blocks/MetadataRow';
+import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockIndex } from '../blocks/BlockIndex';
@@ -21,14 +7,35 @@ import { BlockInput } from '../blocks/BlockInput';
 import { BlockMethod } from '../blocks/BlockMethod';
 import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
-import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
+import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
+import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
+import { MetadataCodeRow, MetadataRow, MetadataSection } from '../blocks/MetadataRow';
 import { EmptyState } from '../components/EmptyState';
-import { EmptyIconBook, EmptyIconHtml, EmptyIconPalette, EmptyIconTree } from '../components/EmptyStateIcons';
+import {
+    EmptyIconBook,
+    EmptyIconHtml,
+    EmptyIconPalette,
+    EmptyIconTree
+} from '../components/EmptyStateIcons';
+import { IconComponent, IconExternalLink, IconFile, IconGitBranch } from '../components/Icons';
+import {
+    extractReadmeHeadings,
+    isInfoSection,
+    isInitialTab,
+    isReadmeEmpty,
+    isTabEnabled,
+    linkTypeHtml,
+    parseDescription,
+    relativeUrl,
+    t
+} from '../helpers';
 import { shortPath } from '../helpers/short-url';
 
 const escapeSimpleQuote = (text: string): string => {
-    if (!text) return '';
+    if (!text) {
+        return '';
+    }
     return text.replaceAll("'", String.raw`\'`).replaceAll(/(\r\n|\n|\r)/gm, '');
 };
 
@@ -50,7 +57,9 @@ const breakComma = (text: string): string => {
 };
 
 const ComponentMetadata = (c: any): string => {
-    if (!isInfoSection('metadata')) return '';
+    if (!isInfoSection('metadata')) {
+        return '';
+    }
 
     const rows: string[] = [];
     const codeField = (label: string, value: unknown) => {
@@ -60,52 +69,91 @@ const ComponentMetadata = (c: any): string => {
     };
 
     codeField('selector', c.selector);
-    if (c.standalone) codeField('standalone', String(c.standalone));
+    if (c.standalone) {
+        codeField('standalone', String(c.standalone));
+    }
 
     if (c.imports?.length > 0) {
-        rows.push(MetadataRow('imports', c.imports.map((imp: any) => linkTypeHtml(imp.name)).join(' ')));
+        rows.push(
+            MetadataRow('imports', c.imports.map((imp: any) => linkTypeHtml(imp.name)).join(' '))
+        );
     }
 
     if (c.providers?.length > 0) {
-        rows.push(MetadataRow('providers', c.providers.map((p: any) => linkTypeHtml(p.name)).join(' ')));
+        rows.push(
+            MetadataRow('providers', c.providers.map((p: any) => linkTypeHtml(p.name)).join(' '))
+        );
     }
 
     if (c.viewProviders?.length > 0) {
-        rows.push(MetadataRow('viewProviders', c.viewProviders.map((vp: any) => linkTypeHtml(vp.name)).join(' ')));
+        rows.push(
+            MetadataRow(
+                'viewProviders',
+                c.viewProviders.map((vp: any) => linkTypeHtml(vp.name)).join(' ')
+            )
+        );
     }
 
     codeField('changeDetection', c.changeDetection);
     codeField('encapsulation', c.encapsulation);
     codeField('animations', c.animations);
     codeField('exportAs', c.exportAs);
-    if (c.host) rows.push(MetadataRow('host', `<code>${formatObject(c.host)}</code>`));
+    if (c.host) {
+        rows.push(MetadataRow('host', `<code>${formatObject(c.host)}</code>`));
+    }
     codeField('interpolation', c.interpolation);
     codeField('moduleId', c.moduleId);
-    if (c.hasOwnProperty('preserveWhitespaces'))
+    if (Object.hasOwn(c, 'preserveWhitespaces')) {
         codeField('preserveWhitespaces', c.preserveWhitespaces);
+    }
     codeField('queries', c.queries);
 
     if (c.hostDirectives?.length > 0) {
-        rows.push(MetadataRow(t('hostdirectives'), c.hostDirectives.map((hd: any) => {
-            let html = linkTypeHtml(hd.name);
-            if (hd.inputs?.length > 0) html += ` <span class="cdx-metadata-label">${t('inputs')}:</span> ${hd.inputs.join(', ')}`;
-            if (hd.outputs?.length > 0) html += ` <span class="cdx-metadata-label">${t('outputs')}:</span> ${hd.outputs.join(', ')}`;
-            return html;
-        }).join(' ')));
+        rows.push(
+            MetadataRow(
+                t('hostdirectives'),
+                c.hostDirectives
+                    .map((hd: any) => {
+                        let html = linkTypeHtml(hd.name);
+                        if (hd.inputs?.length > 0) {
+                            html += ` <span class="cdx-metadata-label">${t('inputs')}:</span> ${hd.inputs.join(', ')}`;
+                        }
+                        if (hd.outputs?.length > 0) {
+                            html += ` <span class="cdx-metadata-label">${t('outputs')}:</span> ${hd.outputs.join(', ')}`;
+                        }
+                        return html;
+                    })
+                    .join(' ')
+            )
+        );
     }
 
     if (c.entryComponents?.length > 0) {
-        rows.push(MetadataRow('entryComponents', c.entryComponents.map((ec: any) => linkTypeHtml(ec.name)).join(' ')));
+        rows.push(
+            MetadataRow(
+                'entryComponents',
+                c.entryComponents.map((ec: any) => linkTypeHtml(ec.name)).join(' ')
+            )
+        );
     }
 
     codeField('templateUrl', c.templateUrl);
-    if (c.styleUrls?.length > 0) codeField('styleUrls', breakComma(c.styleUrls));
+    if (c.styleUrls?.length > 0) {
+        codeField('styleUrls', breakComma(c.styleUrls));
+    }
 
     if (c.extends?.length > 0) {
-        rows.push(MetadataRow('extends', (c.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')));
+        rows.push(
+            MetadataRow('extends', (c.extends as string[]).map(ext => linkTypeHtml(ext)).join(' '))
+        );
     }
     if (c.implements?.length > 0) {
-        rows.push(MetadataRow('implements', (c.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')));
+        rows.push(
+            MetadataRow(
+                'implements',
+                (c.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')
+            )
+        );
     }
 
     codeField('tag', c.tag);
@@ -138,7 +186,8 @@ const InfoContent = (data: any): string => {
                 </section>
             )}
 
-            {isInfoSection('examples') && c.jsdoctags &&
+            {isInfoSection('examples') &&
+                c.jsdoctags &&
                 JsdocExamplesBlock({ tags: c.jsdoctags, variant: 'code', level: 'section' })}
 
             {(c.storybookUrl || c.figmaUrl || c.route) && (
@@ -177,10 +226,14 @@ const InfoContent = (data: any): string => {
                 <section class="cdx-content-section">
                     <h3 class="cdx-section-heading">Content Slots</h3>
                     <dl class="cdx-metadata-card">
-                        {c.slots.map((slot: any) => (<>
-                            <dt><code>{slot.name}</code></dt>
-                            <dd>{slot.description}</dd>
-                        </>))}
+                        {c.slots.map((slot: any) => (
+                            <>
+                                <dt>
+                                    <code>{slot.name}</code>
+                                </dt>
+                                <dd>{slot.description}</dd>
+                            </>
+                        ))}
                     </dl>
                 </section>
             )}
@@ -252,7 +305,8 @@ const InfoContent = (data: any): string => {
                     navTabs: data.navTabs
                 })}
             {isInfoSection('accessors') &&
-                c.accessors && Object.keys(c.accessors).length > 0 &&
+                c.accessors &&
+                Object.keys(c.accessors).length > 0 &&
                 BlockAccessors({
                     accessors: c.accessors,
                     file: c.file,
@@ -270,37 +324,63 @@ export const ComponentPage = (data: any): string => {
     const navTabs = data.navTabs;
     const hasStandaloneImports = c.standalone && c.imports?.length > 0;
 
-    const componentDepGraph = hasStandaloneImports ? (() => {
-        const allComponents = data.components as any[] ?? [];
-        const allDirectives = data.directives as any[] ?? [];
-        const allPipes = data.pipes as any[] ?? [];
-        const allModules = data.modules as any[] ?? [];
-        const allInjectables = data.injectables as any[] ?? [];
-        const entityMap = new Map<string, { type: string; url?: string }>();
-        for (const x of allComponents) entityMap.set(x.name, { type: 'component', url: `${base}components/${x.name}.html` });
-        for (const x of allDirectives) entityMap.set(x.name, { type: 'directive', url: `${base}directives/${x.name}.html` });
-        for (const x of allPipes) entityMap.set(x.name, { type: 'pipe', url: `${base}pipes/${x.name}.html` });
-        for (const x of allModules) entityMap.set(x.name, { type: 'module', url: `${base}modules/${x.name}.html` });
-        for (const x of allInjectables) entityMap.set(x.name, { type: 'injectable', url: `${base}injectables/${x.name}.html` });
-        const nodes = [
-            { name: c.name, type: 'component', url: undefined },
-            ...c.imports.map((imp: any) => {
-                const n = typeof imp === 'string' ? imp : imp.name;
-                const info = entityMap.get(n);
-                return { name: n, type: info?.type ?? 'module', url: info?.url };
-            })
-        ];
-        const edges = c.imports.map((imp: any) => ({
-            source: c.name,
-            target: typeof imp === 'string' ? imp : imp.name
-        }));
-        return { nodes, edges };
-    })() : null;
+    const componentDepGraph = hasStandaloneImports
+        ? (() => {
+              const allComponents = (data.components as any[]) ?? [];
+              const allDirectives = (data.directives as any[]) ?? [];
+              const allPipes = (data.pipes as any[]) ?? [];
+              const allModules = (data.modules as any[]) ?? [];
+              const allInjectables = (data.injectables as any[]) ?? [];
+              const entityMap = new Map<string, { type: string; url?: string }>();
+              for (const x of allComponents) {
+                  entityMap.set(x.name, {
+                      type: 'component',
+                      url: `${base}components/${x.name}.html`
+                  });
+              }
+              for (const x of allDirectives) {
+                  entityMap.set(x.name, {
+                      type: 'directive',
+                      url: `${base}directives/${x.name}.html`
+                  });
+              }
+              for (const x of allPipes) {
+                  entityMap.set(x.name, { type: 'pipe', url: `${base}pipes/${x.name}.html` });
+              }
+              for (const x of allModules) {
+                  entityMap.set(x.name, { type: 'module', url: `${base}modules/${x.name}.html` });
+              }
+              for (const x of allInjectables) {
+                  entityMap.set(x.name, {
+                      type: 'injectable',
+                      url: `${base}injectables/${x.name}.html`
+                  });
+              }
+              const nodes = [
+                  { name: c.name, type: 'component', url: undefined },
+                  ...c.imports.map((imp: any) => {
+                      const n = typeof imp === 'string' ? imp : imp.name;
+                      const info = entityMap.get(n);
+                      return { name: n, type: info?.type ?? 'module', url: info?.url };
+                  })
+              ];
+              const edges = c.imports.map((imp: any) => ({
+                  source: c.name,
+                  target: typeof imp === 'string' ? imp : imp.name
+              }));
+              return { nodes, edges };
+          })()
+        : null;
 
     return (
         <>
-            <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-entity-component)">
-                <div class="cdx-entity-hero-watermark" aria-hidden="true">{IconComponent()}</div>
+            <div
+                class="cdx-entity-hero"
+                style="--cdx-hero-color: var(--color-cdx-entity-component)"
+            >
+                <div class="cdx-entity-hero-watermark" aria-hidden="true">
+                    {IconComponent()}
+                </div>
                 <nav aria-label="Breadcrumb">
                     <ol class="cdx-breadcrumb">
                         <li>{t('components')}</li>
@@ -312,22 +392,30 @@ export const ComponentPage = (data: any): string => {
                 </h1>
                 <div class="cdx-entity-hero-badges">
                     <span class="cdx-badge cdx-badge--entity-component">Component</span>
-                    {c.standalone ? <span class="cdx-badge cdx-badge--standalone">Standalone</span> : ''}
+                    {c.standalone ? (
+                        <span class="cdx-badge cdx-badge--standalone">Standalone</span>
+                    ) : (
+                        ''
+                    )}
                     {c.zoneless ? <span class="cdx-badge cdx-badge--zoneless">Zoneless</span> : ''}
                     {c.beta ? <span class="cdx-badge cdx-badge--beta">Beta</span> : ''}
                     {c.since ? <span class="cdx-badge cdx-badge--since">v{c.since}</span> : ''}
-                    {c.breaking ? <span class="cdx-badge cdx-badge--breaking">Breaking {c.breaking}</span> : ''}
+                    {c.breaking ? (
+                        <span class="cdx-badge cdx-badge--breaking">Breaking {c.breaking}</span>
+                    ) : (
+                        ''
+                    )}
                 </div>
                 {c.selector ? <p class="cdx-entity-hero-context">{c.selector}</p> : ''}
                 {!data.disableFilePath && c.file && (
-                    <p class="cdx-entity-hero-file" aria-label="Source file">
+                    <p class="cdx-entity-hero-file" title="Source file">
                         {IconFile()}
                         <span>{c.file}</span>
                     </p>
                 )}
             </div>
 
-            <ul class="cdx-tab-bar" role="tablist">
+            <ul class="cdx-tab-bar">
                 {navTabs.map((tab: any, i: number) => (
                     <li role="presentation">
                         <a
@@ -381,10 +469,19 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="readme-tab"
                     >
-                        {isReadmeEmpty(c.readme)
-                            ? <>{extractReadmeHeadings(c.readme)}{EmptyState({ icon: EmptyIconBook(), title: t('empty-readme-title'), description: t('empty-readme-desc'), variant: 'full' })}</>
-                            : <p>{c.readme}</p>
-                        }
+                        {isReadmeEmpty(c.readme) ? (
+                            <>
+                                {extractReadmeHeadings(c.readme)}
+                                {EmptyState({
+                                    icon: EmptyIconBook(),
+                                    title: t('empty-readme-title'),
+                                    description: t('empty-readme-desc'),
+                                    variant: 'full'
+                                })}
+                            </>
+                        ) : (
+                            <p>{c.readme}</p>
+                        )}
                     </div>
                 )}
 
@@ -396,8 +493,15 @@ export const ComponentPage = (data: any): string => {
                         aria-labelledby="source-tab"
                     >
                         <div class="cdx-source-code">
-                            {c.file && <div class="cdx-source-header"><span>{shortPath(c.file)}</span></div>}
-                            {highlightCode(c.sourceCode ?? '', { lang: 'typescript', mode: 'source' })}
+                            {c.file && (
+                                <div class="cdx-source-header">
+                                    <span>{shortPath(c.file)}</span>
+                                </div>
+                            )}
+                            {highlightCode(c.sourceCode ?? '', {
+                                lang: 'typescript',
+                                mode: 'source'
+                            })}
                         </div>
                     </div>
                 )}
@@ -409,13 +513,23 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="templateData-tab"
                     >
-                        {c.templateData?.trim()
-                            ? <div class="cdx-source-code">
-                                {c.templateUrl?.[0] && <div class="cdx-source-header"><span>{shortPath(c.templateUrl[0])}</span></div>}
+                        {c.templateData?.trim() ? (
+                            <div class="cdx-source-code">
+                                {c.templateUrl?.[0] && (
+                                    <div class="cdx-source-header">
+                                        <span>{shortPath(c.templateUrl[0])}</span>
+                                    </div>
+                                )}
                                 {highlightCode(c.templateData, { lang: 'html', mode: 'source' })}
-                              </div>
-                            : EmptyState({ icon: EmptyIconHtml(), title: t('empty-template-title'), description: t('empty-template-desc'), variant: 'full' })
-                        }
+                            </div>
+                        ) : (
+                            EmptyState({
+                                icon: EmptyIconHtml(),
+                                title: t('empty-template-title'),
+                                description: t('empty-template-desc'),
+                                variant: 'full'
+                            })
+                        )}
                     </div>
                 )}
 
@@ -428,21 +542,32 @@ export const ComponentPage = (data: any): string => {
                     >
                         {c.styleUrlsData?.length > 0
                             ? c.styleUrlsData.map((s: any) => (
-                                <div class="cdx-source-code">
-                                    {s.styleUrl && <div class="cdx-source-header"><span>{shortPath(s.styleUrl)}</span></div>}
-                                    {highlightCode(s.data, { lang: 'scss', mode: 'source' })}
-                                </div>
-                            ))
+                                  <div class="cdx-source-code">
+                                      {s.styleUrl && (
+                                          <div class="cdx-source-header">
+                                              <span>{shortPath(s.styleUrl)}</span>
+                                          </div>
+                                      )}
+                                      {highlightCode(s.data, { lang: 'scss', mode: 'source' })}
+                                  </div>
+                              ))
                             : ''}
                         {c.stylesData && c.stylesData !== '' && (
                             <div class="cdx-source-code">
-                                <div class="cdx-source-header"><span>Inline Styles</span></div>
+                                <div class="cdx-source-header">
+                                    <span>Inline Styles</span>
+                                </div>
                                 {highlightCode(c.stylesData, { lang: 'scss', mode: 'source' })}
                             </div>
                         )}
-                        {!(c.styleUrlsData?.length > 0) && !(c.stylesData && c.stylesData !== '') &&
-                            EmptyState({ icon: EmptyIconPalette(), title: t('empty-styles-title'), description: t('empty-styles-desc'), variant: 'full' })
-                        }
+                        {!(c.styleUrlsData?.length > 0) &&
+                            !(c.stylesData && c.stylesData !== '') &&
+                            EmptyState({
+                                icon: EmptyIconPalette(),
+                                title: t('empty-styles-title'),
+                                description: t('empty-styles-desc'),
+                                variant: 'full'
+                            })}
                     </div>
                 )}
 
@@ -455,14 +580,29 @@ export const ComponentPage = (data: any): string => {
                     >
                         <div id="tree-container">
                             {!(c.template || c.templateData) &&
-                                EmptyState({ icon: EmptyIconTree(), title: t('empty-dom-tree-title'), description: t('empty-dom-tree-desc'), variant: 'full' })
-                            }
+                                EmptyState({
+                                    icon: EmptyIconTree(),
+                                    title: t('empty-dom-tree-title'),
+                                    description: t('empty-dom-tree-desc'),
+                                    variant: 'full'
+                                })}
                         </div>
-                        {GraphLegend({ items: [
-                            { colorVar: 'var(--color-cdx-bg-elevated)', labelKey: 'html-element' },
-                            { colorVar: 'var(--color-cdx-entity-component)', labelKey: 'component' },
-                            { colorVar: 'var(--color-cdx-entity-directive)', labelKey: 'html-element-with-directive' },
-                        ] })}
+                        {GraphLegend({
+                            items: [
+                                {
+                                    colorVar: 'var(--color-cdx-bg-elevated)',
+                                    labelKey: 'html-element'
+                                },
+                                {
+                                    colorVar: 'var(--color-cdx-entity-component)',
+                                    labelKey: 'component'
+                                },
+                                {
+                                    colorVar: 'var(--color-cdx-entity-directive)',
+                                    labelKey: 'html-element-with-directive'
+                                }
+                            ]
+                        })}
                     </div>
                 )}
 
@@ -475,7 +615,9 @@ export const ComponentPage = (data: any): string => {
                     >
                         <ul class="sr-only" aria-label="Component dependency list">
                             {c.imports.map((imp: any) => (
-                                <li>{c.name} imports {typeof imp === 'string' ? imp : imp.name}</li>
+                                <li>
+                                    {c.name} imports {typeof imp === 'string' ? imp : imp.name}
+                                </li>
                             ))}
                         </ul>
                         <div class="cdx-graph-container">
@@ -496,7 +638,7 @@ export const ComponentPage = (data: any): string => {
                         aria-labelledby="example-tab"
                     >
                         {c.exampleUrls.map((url: string) => (
-                            <iframe class="cdx-example-container" src={url}>
+                            <iframe class="cdx-example-container" src={url} title="Example preview">
                                 <p>{t('no-iframes')}</p>
                             </iframe>
                         ))}

@@ -1,5 +1,5 @@
+import * as path from 'node:path';
 import * as fs from 'fs-extra';
-import * as path from 'path';
 import { logger } from './logger';
 
 /**
@@ -28,16 +28,16 @@ export class SourcePathMapper {
         }
 
         const result = this.findSourceFile(distFilePath);
-        
+
         // Cache the result (even if null)
         this.cachedMappings.set(distFilePath, result);
-        
+
         if (result) {
             logger.debug(`Mapped ${distFilePath} -> ${result}`);
         } else {
             logger.debug(`Could not map dist file to source: ${distFilePath}`);
         }
-        
+
         return result;
     }
 
@@ -47,20 +47,20 @@ export class SourcePathMapper {
     private findSourceFile(distFilePath: string): string | null {
         // Get the relative path from dist root
         const relativePath = path.relative(this.distPath, distFilePath);
-        
+
         // Remove .d.ts extension, leaving .ts
         const withoutDTs = relativePath.replace(/\.d\.ts$/, '.ts');
-        
+
         // Try common patterns
         const patterns = this.generateSourcePatterns(withoutDTs);
-        
+
         for (const pattern of patterns) {
             const fullPath = path.join(this.sourceRoot, pattern);
             if (fs.existsSync(fullPath)) {
                 return fullPath;
             }
         }
-        
+
         return null;
     }
 
@@ -70,11 +70,11 @@ export class SourcePathMapper {
      */
     private generateSourcePatterns(relativePath: string): string[] {
         const patterns: string[] = [];
-        
+
         // Pattern 1: Direct mapping
         // dist/libs/my-lib/core/index.d.ts -> libs/my-lib/core/src/index.ts
         patterns.push(relativePath);
-        
+
         // Pattern 2: Add 'src' directory
         // dist/libs/my-lib/core/index.d.ts -> libs/my-lib/core/src/index.ts
         const parts = relativePath.split(path.sep);
@@ -84,10 +84,13 @@ export class SourcePathMapper {
             const dirs = parts.slice(0, -1);
             patterns.push(path.join(...dirs, 'src', filename));
         }
-        
+
         // Pattern 3: ng-packagr pattern - remove dist prefix and add src
         // dist/libs/my-lib/core/core.module.d.ts -> libs/my-lib/core/src/core.module.ts
-        if (relativePath.startsWith('libs' + path.sep) || relativePath.startsWith('packages' + path.sep)) {
+        if (
+            relativePath.startsWith(`libs${path.sep}`) ||
+            relativePath.startsWith(`packages${path.sep}`)
+        ) {
             const withoutLeading = relativePath;
             const pathParts = withoutLeading.split(path.sep);
             if (pathParts.length > 2) {
@@ -96,11 +99,11 @@ export class SourcePathMapper {
                 patterns.push(path.join(...dirs, 'src', filename));
             }
         }
-        
+
         // Pattern 4: Flat structure with src
         // dist/core/index.d.ts -> src/core/index.ts
         patterns.push(path.join('src', relativePath));
-        
+
         // Pattern 5: Handle esm2022 and fesm2022 folders (skip them)
         // dist/esm2022/core/index.mjs -> libs/core/src/index.ts
         const cleanedPath = relativePath
@@ -109,7 +112,7 @@ export class SourcePathMapper {
             .replace(/\.mjs$/, '.ts');
         patterns.push(cleanedPath);
         patterns.push(path.join('src', cleanedPath));
-        
+
         return patterns;
     }
 
@@ -118,14 +121,14 @@ export class SourcePathMapper {
      */
     public mapMultipleDistToSource(distFiles: Set<string>): Map<string, string> {
         const result = new Map<string, string>();
-        
+
         for (const distFile of distFiles) {
             const sourceFile = this.mapDistToSource(distFile);
             if (sourceFile) {
                 result.set(distFile, sourceFile);
             }
         }
-        
+
         return result;
     }
 
@@ -137,19 +140,19 @@ export class SourcePathMapper {
         symbolToFiles: Map<string, Set<string>>
     ): Set<string> {
         const sourceFiles = new Set<string>();
-        
+
         const declarationFiles = symbolToFiles.get(symbolName);
         if (!declarationFiles) {
             return sourceFiles;
         }
-        
+
         for (const declFile of declarationFiles) {
             const sourceFile = this.mapDistToSource(declFile);
             if (sourceFile) {
                 sourceFiles.add(sourceFile);
             }
         }
-        
+
         return sourceFiles;
     }
 }
@@ -163,4 +166,3 @@ export function createSourcePathMapper(
 ): SourcePathMapper {
     return new SourcePathMapper(distPath, sourceRoot);
 }
-

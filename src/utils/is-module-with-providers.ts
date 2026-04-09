@@ -1,11 +1,11 @@
-import { ts } from 'ts-morph';
+import type { ts } from 'ts-morph';
 
 export function isModuleWithProviders(node: ts.VariableStatement): boolean {
     let result = false;
     if (node.declarationList) {
         if (node.declarationList.declarations && node.declarationList.declarations.length > 0) {
             let i = 0,
-                declarations = node.declarationList.declarations,
+                _declarations = node.declarationList.declarations,
                 len = node.declarationList.declarations.length;
 
             for (i; i < len; i++) {

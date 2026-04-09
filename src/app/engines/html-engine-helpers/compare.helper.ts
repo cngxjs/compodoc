@@ -1,4 +1,4 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class CompareHelper implements IHtmlEngineHelper {
     public helperFunc(
@@ -27,7 +27,7 @@ export class CompareHelper implements IHtmlEngineHelper {
                 result = a > b;
                 break;
             default: {
-                throw new Error('helper {{compare}}: invalid operator: `' + operator + '`');
+                throw new Error(`helper {{compare}}: invalid operator: \`${operator}\``);
             }
         }
 

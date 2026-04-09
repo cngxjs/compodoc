@@ -17,5 +17,5 @@ export const InterfacePage = (data: any): string =>
         showIndexSignatures: true,
         showAccessors: true,
         contextLine: undefined,
-        showJsdocBadges: true,
+        showJsdocBadges: true
     });

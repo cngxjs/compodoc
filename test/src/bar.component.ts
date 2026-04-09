@@ -29,7 +29,5 @@ export class BarComponent implements OnInit {
      */
     privateCommentMethod() {}
 
-    private privateMethod() {}
-
     ngOnInit() {}
 }

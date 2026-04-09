@@ -1,9 +1,9 @@
 import Html from '@kitajs/html';
-import { t, shortPath, computeCoverageStats } from '../helpers';
-import { DonutChart } from '../blocks/DonutChart';
 import { CoverageSummary } from '../blocks/CoverageSummary';
+import { DonutChart } from '../blocks/DonutChart';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconChart } from '../components/EmptyStateIcons';
+import { computeCoverageStats, shortPath, t } from '../helpers';
 
 type CoverageFile = {
     readonly status: string;
@@ -89,8 +89,12 @@ const fallbackMeta: GroupMeta & { singular: string } = {
 /* ---- Progress bar color helper ---- */
 
 const coverageFillClass = (pct: number): string => {
-    if (pct <= 33) return 'cdx-coverage-fill--low';
-    if (pct <= 66) return 'cdx-coverage-fill--medium';
+    if (pct <= 33) {
+        return 'cdx-coverage-fill--low';
+    }
+    if (pct <= 66) {
+        return 'cdx-coverage-fill--medium';
+    }
     return 'cdx-coverage-fill--high';
 };
 
@@ -99,14 +103,13 @@ const coverageFillClass = (pct: number): string => {
 const fileLink = (f: CoverageFile): string => {
     if (f.linksubtype) {
         const suffix = f.type === 'type alias' ? 'es' : 's';
-        return `./` + f.linktype + '/' + f.linksubtype + suffix + '.html#' + f.name;
+        return `./${f.linktype}/${f.linksubtype}${suffix}.html#${f.name}`;
     }
     if (f.linktype === 'entity') {
         return `./entities/${f.name}.html`;
     }
     return `./${f.linktype}s/${f.name}.html`;
 };
-
 
 const ChevronIcon = (): string =>
     (
@@ -123,7 +126,7 @@ const ChevronIcon = (): string =>
         </svg>
     ) as string;
 
-const ProgressBar = (pct: number, mini = false): string => {
+const _ProgressBar = (pct: number, mini = false): string => {
     const barClass = mini ? 'cdx-coverage-bar-mini' : 'cdx-coverage-bar';
     const fillClass = mini ? 'cdx-coverage-bar-mini-fill' : 'cdx-coverage-bar-fill';
     return (
@@ -165,7 +168,9 @@ export const CoverageReport = (props: CoverageReportProps): string => {
     const groups = new Map<string, CoverageFile[]>();
     for (const f of files) {
         const key = f.type;
-        if (!groups.has(key)) groups.set(key, []);
+        if (!groups.has(key)) {
+            groups.set(key, []);
+        }
         groups.get(key)!.push(f);
     }
 
@@ -185,13 +190,35 @@ export const CoverageReport = (props: CoverageReportProps): string => {
                 <li>{t('coverage-page-title')}</li>
             </ol>
             {CoverageSummary({
-                donutHtml: DonutChart({ percent: overallPct, documented, partial, undocumented, total, size: 'lg' }),
+                donutHtml: DonutChart({
+                    percent: overallPct,
+                    documented,
+                    partial,
+                    undocumented,
+                    total,
+                    size: 'lg'
+                }),
                 stats: [
                     { value: total, label: t('total'), subtitle: `${files.length} files` },
-                    { value: documented, label: t('documented'), modifier: 'documented', subtitle: total > 0 ? `${Math.round(documented / total * 100)}%` : '0%' },
-                    { value: partial, label: t('partial'), modifier: 'partial', subtitle: total > 0 ? `${Math.round(partial / total * 100)}%` : '0%' },
-                    { value: undocumented, label: t('undocumented'), modifier: 'undocumented', subtitle: total > 0 ? `${Math.round(undocumented / total * 100)}%` : '0%' },
-                ],
+                    {
+                        value: documented,
+                        label: t('documented'),
+                        modifier: 'documented',
+                        subtitle: total > 0 ? `${Math.round((documented / total) * 100)}%` : '0%'
+                    },
+                    {
+                        value: partial,
+                        label: t('partial'),
+                        modifier: 'partial',
+                        subtitle: total > 0 ? `${Math.round((partial / total) * 100)}%` : '0%'
+                    },
+                    {
+                        value: undocumented,
+                        label: t('undocumented'),
+                        modifier: 'undocumented',
+                        subtitle: total > 0 ? `${Math.round((undocumented / total) * 100)}%` : '0%'
+                    }
+                ]
             })}
 
             <div class="cdx-coverage-filter">
@@ -223,7 +250,7 @@ export const CoverageReport = (props: CoverageReportProps): string => {
                 groupFiles.sort((a, b) => a.coveragePercent - b.coveragePercent);
 
                 const groupDocumented = groupFiles.filter(f => f.coveragePercent === 100).length;
-                const groupPct =
+                const _groupPct =
                     groupFiles.length > 0
                         ? Math.round(
                               groupFiles.reduce((sum, f) => sum + f.coveragePercent, 0) /

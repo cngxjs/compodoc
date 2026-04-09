@@ -40,7 +40,8 @@ export const TRANSLATION_ZH_TW = {
     'empty-dom-tree-desc': '需要範本才能產生 DOM 樹。',
     'empty-dom-tree-title': '無可用 DOM 樹',
     'empty-entity-action': '了解 JSDoc 標籤',
-    'empty-entity-desc': '此 {{entityType}} 沒有已記錄文件的成員。請在程式碼中加入 JSDoc 註解以填充此頁面。',
+    'empty-entity-desc':
+        '此 {{entityType}} 沒有已記錄文件的成員。請在程式碼中加入 JSDoc 註解以填充此頁面。',
     'empty-entity-title': '尚無文件',
     'empty-enum-values': '無列舉值',
     'empty-examples-desc': '此元件未設定線上範例。',

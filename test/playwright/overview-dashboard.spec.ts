@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Overview Dashboard', () => {
     test.describe('Hero', () => {
@@ -136,7 +136,7 @@ test.describe('Overview Dashboard', () => {
             await page.goto('/overview.html');
 
             const linkChips = page.locator('a.cdx-overview-chip');
-            if (await linkChips.count() > 0) {
+            if ((await linkChips.count()) > 0) {
                 const href = await linkChips.first().getAttribute('href');
                 expect(href).toBeTruthy();
                 expect(href).toMatch(/\.html/);
@@ -214,7 +214,7 @@ test.describe('Overview Dashboard', () => {
             await page.goto('/overview.html');
 
             const kpis = page.locator('.cdx-overview-kpi');
-            if (await kpis.count() >= 2) {
+            if ((await kpis.count()) >= 2) {
                 const box1 = await kpis.nth(0).boundingBox();
                 const box2 = await kpis.nth(1).boundingBox();
                 // At narrow width, first two should be side by side (same y)
@@ -228,7 +228,7 @@ test.describe('Overview Dashboard', () => {
             await page.goto('/overview.html');
 
             const chips = page.locator('.cdx-overview-chip');
-            if (await chips.count() >= 2) {
+            if ((await chips.count()) >= 2) {
                 const box1 = await chips.nth(0).boundingBox();
                 const box2 = await chips.nth(1).boundingBox();
                 const hGap = box2!.x - (box1!.x + box1!.width);

@@ -1,7 +1,6 @@
 import DependenciesEngine from '../../app/engines/dependencies.engine';
-import ExtendsMerger from '../../utils/extends-merger.util';
 import BasicTypeUtil from '../../utils/basic-type.util';
-import Configuration from '../../app/configuration';
+import ExtendsMerger from '../../utils/extends-merger.util';
 
 export type ResolvedType = {
     readonly raw: string;
@@ -14,7 +13,7 @@ const miscSubtypeToPage: Record<string, string> = {
     enum: 'enumerations',
     function: 'functions',
     typealias: 'typealiases',
-    variable: 'variables',
+    variable: 'variables'
 };
 
 /**
@@ -25,7 +24,9 @@ export const resolveType = (name: string, indexKey?: string): ResolvedType | nul
     let result = DependenciesEngine.find(name);
     if (!result) {
         const alias = ExtendsMerger.findInAliases(name);
-        if (alias) result = DependenciesEngine.find(alias);
+        if (alias) {
+            result = DependenciesEngine.find(alias);
+        }
     }
 
     if (result) {
@@ -33,26 +34,27 @@ export const resolveType = (name: string, indexKey?: string): ResolvedType | nul
 
         if (result.source === 'internal') {
             const data = result.data;
-            if (
-                data.type === 'miscellaneous' ||
-                (data.ctype && data.ctype === 'miscellaneous')
-            ) {
+            if (data.type === 'miscellaneous' || (data.ctype && data.ctype === 'miscellaneous')) {
                 const page = miscSubtypeToPage[data.subtype] ?? '';
-                let href = '../' + (data.ctype || data.type) + '/' + page + '.html';
-                if (data.name) href += '#' + data.name;
+                let href = `../${data.ctype || data.type}/${page}.html`;
+                if (data.name) {
+                    href += `#${data.name}`;
+                }
                 return { ...resolved, href };
             }
 
             const typePath = data.type === 'class' ? 'classe' : data.type;
-            let href = '../' + typePath + 's/' + data.name + '.html';
-            if (indexKey) href += '#' + indexKey;
+            let href = `../${typePath}s/${data.name}.html`;
+            if (indexKey) {
+                href += `#${indexKey}`;
+            }
             return { ...resolved, href, indexKey: indexKey ?? '' };
         }
 
         return {
             ...resolved,
             href: `https://angular.dev/${result.data.path}`,
-            target: '_blank',
+            target: '_blank'
         };
     }
 
@@ -61,7 +63,7 @@ export const resolveType = (name: string, indexKey?: string): ResolvedType | nul
             raw: name,
             href: BasicTypeUtil.getTypeUrl(name),
             target: '_blank',
-            indexKey: '',
+            indexKey: ''
         };
     }
 
@@ -74,7 +76,9 @@ export const linkTypeHtml = (
     options?: { withLine?: boolean; line?: number; indexKey?: string }
 ): string => {
     const resolved = resolveType(name, options?.indexKey);
-    if (!resolved) return `<code>${name}</code>`;
+    if (!resolved) {
+        return `<code>${name}</code>`;
+    }
 
     if (options?.withLine && options.line) {
         return `<code><a href="${resolved.href}#source" target="${resolved.target}" >${resolved.raw}:${options.line}</a></code>`;

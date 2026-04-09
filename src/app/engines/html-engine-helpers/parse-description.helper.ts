@@ -1,13 +1,13 @@
-import { IHtmlEngineHelper } from './html-engine-helper.interface';
 import { extractLeadingText, splitLinkText } from '../../../utils/link-parser';
 import DependenciesEngine from '../dependencies.engine';
+import type { IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class ParseDescriptionHelper implements IHtmlEngineHelper {
     constructor() {}
 
-    public helperFunc(context: any, description: string, depth: number) {
-        const tagRegExpLight = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i');
-        const tagRegExpFull = new RegExp('\\{@link\\s+((?:.|\n)+?)\\}', 'i');
+    public helperFunc(_context: any, description: string, depth: number) {
+        const tagRegExpLight = /\{@link\s+((?:.|\n)+?)\}/i;
+        const tagRegExpFull = /\{@link\s+((?:.|\n)+?)\}/i;
         let tagRegExp;
         let matches;
         let previousString;
@@ -47,9 +47,9 @@ export class ParseDescriptionHelper implements IHtmlEngineHelper {
                 pageName = resultInCompodoc.name;
 
                 if (leadingText) {
-                    stringtoReplace = '[' + leadingText + ']' + matchedTag.completeTag;
+                    stringtoReplace = `[${leadingText}]${matchedTag.completeTag}`;
                 } else if (leading.leadingText !== undefined) {
-                    stringtoReplace = '[' + leading.leadingText + ']' + matchedTag.completeTag;
+                    stringtoReplace = `[${leading.leadingText}]${matchedTag.completeTag}`;
                 } else if (typeof split.linkText !== 'undefined') {
                     stringtoReplace = matchedTag.completeTag;
                 } else {
@@ -64,7 +64,7 @@ export class ParseDescriptionHelper implements IHtmlEngineHelper {
                 ) {
                     resultInCompodoc.type = 'miscellaneous'; // Not a typo, it is for matching other single types : component, module etc
                     label = resultInCompodoc.name;
-                    anchor = '#' + resultInCompodoc.name;
+                    anchor = `#${resultInCompodoc.name}`;
                     if (resultInCompodoc.subtype === 'enum') {
                         pageName = 'enumerations';
                     } else if (resultInCompodoc.subtype === 'function') {
@@ -111,9 +111,9 @@ export class ParseDescriptionHelper implements IHtmlEngineHelper {
             } else if (!resultInCompodoc && typeof split.linkText !== 'undefined') {
                 newLink = `<a href="${split.target}">${split.linkText}</a>`;
                 if (leadingText) {
-                    stringtoReplace = '[' + leadingText + ']' + matchedTag.completeTag;
+                    stringtoReplace = `[${leadingText}]${matchedTag.completeTag}`;
                 } else if (leading.leadingText !== undefined) {
-                    stringtoReplace = '[' + leading.leadingText + ']' + matchedTag.completeTag;
+                    stringtoReplace = `[${leading.leadingText}]${matchedTag.completeTag}`;
                 } else if (typeof split.linkText !== 'undefined') {
                     stringtoReplace = matchedTag.completeTag;
                 } else {
@@ -123,9 +123,9 @@ export class ParseDescriptionHelper implements IHtmlEngineHelper {
             } else if (!resultInCompodoc && leading && typeof leading.leadingText !== 'undefined') {
                 newLink = `<a href="${split.target}">${leading.leadingText}</a>`;
                 if (leadingText) {
-                    stringtoReplace = '[' + leadingText + ']' + matchedTag.completeTag;
+                    stringtoReplace = `[${leadingText}]${matchedTag.completeTag}`;
                 } else if (leading.leadingText !== undefined) {
-                    stringtoReplace = '[' + leading.leadingText + ']' + matchedTag.completeTag;
+                    stringtoReplace = `[${leading.leadingText}]${matchedTag.completeTag}`;
                 } else if (typeof split.linkText !== 'undefined') {
                     stringtoReplace = matchedTag.completeTag;
                 } else {
@@ -135,9 +135,9 @@ export class ParseDescriptionHelper implements IHtmlEngineHelper {
             } else if (!resultInCompodoc && typeof split.linkText === 'undefined') {
                 newLink = `<a href="${split.target}">${split.target}</a>`;
                 if (leadingText) {
-                    stringtoReplace = '[' + leadingText + ']' + matchedTag.completeTag;
+                    stringtoReplace = `[${leadingText}]${matchedTag.completeTag}`;
                 } else if (leading.leadingText !== undefined) {
-                    stringtoReplace = '[' + leading.leadingText + ']' + matchedTag.completeTag;
+                    stringtoReplace = `[${leading.leadingText}]${matchedTag.completeTag}`;
                 } else {
                     stringtoReplace = matchedTag.completeTag;
                 }
@@ -169,7 +169,7 @@ export class ParseDescriptionHelper implements IHtmlEngineHelper {
 
             if (insideMarkedATagResults && insideMarkedATagResults.length > 0) {
                 for (let i = 0; i < insideMarkedATagResults.length; i++) {
-                    const markedATagRegExp = new RegExp('<a [^>]+>([^<]+)</a>', 'gm');
+                    const markedATagRegExp = /<a [^>]+>([^<]+)<\/a>/gm;
                     const parsedATag = markedATagRegExp.exec(description);
                     if (parsedATag && parsedATag.length === 2) {
                         const insideMarkedATag = parsedATag[1];

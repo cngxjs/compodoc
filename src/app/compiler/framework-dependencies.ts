@@ -1,9 +1,7 @@
 import { ts } from 'ts-morph';
-
+import { compilerHost } from '../../utils';
 import { ClassHelper } from './angular/deps/helpers/class-helper';
 import { ComponentHelper } from './angular/deps/helpers/component-helper';
-
-import { compilerHost } from '../../utils';
 
 export class FrameworkDependencies {
     public files: string[];

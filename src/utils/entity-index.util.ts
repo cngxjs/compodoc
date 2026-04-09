@@ -1,4 +1,3 @@
-
 export interface EntityIndexEntry {
     href: string;
     kind: string;
@@ -22,7 +21,7 @@ const ENTITY_COLLECTIONS: Array<{ key: string; path: string; kind: string }> = [
     { key: 'classes', path: 'classes', kind: 'class' },
     { key: 'interfaces', path: 'interfaces', kind: 'interface' },
     { key: 'guards', path: 'guards', kind: 'guard' },
-    { key: 'interceptors', path: 'interceptors', kind: 'interceptor' },
+    { key: 'interceptors', path: 'interceptors', kind: 'interceptor' }
 ];
 
 /** Build the entity index from mainData. Call after entity collection, before rendering. */
@@ -31,12 +30,14 @@ export function buildEntityIndex(mainData: Record<string, unknown>): EntityIndex
 
     for (const { key, path, kind } of ENTITY_COLLECTIONS) {
         const entities = mainData[key] as EntityLike[] | undefined;
-        if (!entities) continue;
+        if (!entities) {
+            continue;
+        }
 
         for (const entity of entities) {
             let pageName = entity.name;
             if (entity.isDuplicate && entity.duplicateId !== undefined) {
-                pageName += '-' + entity.duplicateId;
+                pageName += `-${entity.duplicateId}`;
             }
             index[entity.name] = {
                 href: `${path}/${pageName}.html`,
@@ -51,11 +52,13 @@ export function buildEntityIndex(mainData: Record<string, unknown>): EntityIndex
             { key: 'functions', kind: 'function' },
             { key: 'variables', kind: 'variable' },
             { key: 'typealiases', kind: 'typealias' },
-            { key: 'enumerations', kind: 'enum' },
+            { key: 'enumerations', kind: 'enum' }
         ];
         for (const { key, kind } of miscKinds) {
             const items = misc[key];
-            if (!items) continue;
+            if (!items) {
+                continue;
+            }
             for (const item of items) {
                 index[item.name] = {
                     href: `miscellaneous/${kind === 'typealias' ? 'typealiases' : key}.html`,
