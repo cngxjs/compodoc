@@ -1,6 +1,6 @@
+import { tmpdir } from 'node:os';
+import * as path from 'node:path';
 import * as fs from 'fs-extra';
-import { tmpdir } from 'os';
-import * as path from 'path';
 
 import request from 'supertest';
 import { TemplatePlaygroundServer } from '../../../src/template-playground/template-playground-server';
@@ -10,8 +10,7 @@ describe('TemplatePlaygroundServer', () => {
     let testDir: string;
     let originalCwd: string;
 
-    beforeEach(async function() {
-
+    beforeEach(async () => {
         originalCwd = process.cwd();
         testDir = path.join(process.cwd(), 'test-temp');
         await fs.ensureDir(testDir);
@@ -19,19 +18,28 @@ describe('TemplatePlaygroundServer', () => {
         // Create test playground-demo project
         const playgroundDemoDir = path.join(testDir, 'src', 'playground-demo');
         await fs.ensureDir(playgroundDemoDir);
-        await fs.writeFile(path.join(playgroundDemoDir, 'tsconfig.json'), JSON.stringify({
-            compilerOptions: {
-                target: "es2015",
-                module: "commonjs",
-                experimentalDecorators: true,
-                emitDecoratorMetadata: true
-            },
-            include: ["src/**/*"]
-        }, null, 2));
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'tsconfig.json'),
+            JSON.stringify(
+                {
+                    compilerOptions: {
+                        target: 'es2015',
+                        module: 'commonjs',
+                        experimentalDecorators: true,
+                        emitDecoratorMetadata: true
+                    },
+                    include: ['src/**/*']
+                },
+                null,
+                2
+            )
+        );
 
         // Create minimal Angular structure
         await fs.ensureDir(path.join(playgroundDemoDir, 'src', 'app'));
-        await fs.writeFile(path.join(playgroundDemoDir, 'src', 'app', 'app.component.ts'), `
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'src', 'app', 'app.component.ts'),
+            `
 import { Component } from '@angular/core';
 
 @Component({
@@ -41,21 +49,32 @@ import { Component } from '@angular/core';
 export class AppComponent {
   title = 'Test App';
 }
-`);
+`
+        );
 
         // Create test templates
         const templatesDir = path.join(testDir, 'src', 'templates');
         await fs.ensureDir(path.join(templatesDir, 'partials'));
-        await fs.writeFile(path.join(templatesDir, 'page.hbs'), '<html><body>{{content}}</body></html>');
-        await fs.writeFile(path.join(templatesDir, 'partials', 'component.hbs'), '<div>{{component.name}}</div>');
+        await fs.writeFile(
+            path.join(templatesDir, 'page.hbs'),
+            '<html><body>{{content}}</body></html>'
+        );
+        await fs.writeFile(
+            path.join(templatesDir, 'partials', 'component.hbs'),
+            '<div>{{component.name}}</div>'
+        );
 
         // Create minimal static resources
         const resourcesDir = path.join(testDir, 'src', 'resources');
         await fs.ensureDir(path.join(resourcesDir, 'template-playground-app'));
-        await fs.writeFile(path.join(resourcesDir, 'template-playground-app', 'index.html'),
-            '<html><body>Playground</body></html>');
-        await fs.writeFile(path.join(resourcesDir, 'template-playground-app', 'app.js'),
-            'console.log("test");');
+        await fs.writeFile(
+            path.join(resourcesDir, 'template-playground-app', 'index.html'),
+            '<html><body>Playground</body></html>'
+        );
+        await fs.writeFile(
+            path.join(resourcesDir, 'template-playground-app', 'app.js'),
+            'console.log("test");'
+        );
 
         // Change to test directory
         process.chdir(testDir);
@@ -65,8 +84,7 @@ export class AppComponent {
         await server.start();
     });
 
-    afterEach(async function() {
-
+    afterEach(async () => {
         if (server) {
             await server.stop();
         }
@@ -78,9 +96,10 @@ export class AppComponent {
         try {
             const tempDir = tmpdir();
             const files = await fs.readdir(tempDir);
-            const sessionDirs = files.filter(file =>
-                file.startsWith('hbs-templates-copy-') ||
-                file.startsWith('generated-documentation-')
+            const sessionDirs = files.filter(
+                file =>
+                    file.startsWith('hbs-templates-copy-') ||
+                    file.startsWith('generated-documentation-')
             );
             for (const dir of sessionDirs) {
                 await fs.remove(path.join(tempDir, dir)).catch(() => {});
@@ -92,17 +111,13 @@ export class AppComponent {
 
     describe('Server HTTP API', () => {
         it('should serve the playground index page', async () => {
-            const response = await request(server.getHttpServer())
-                .get('/')
-                .expect(200);
+            const response = await request(server.getHttpServer()).get('/').expect(200);
 
             expect(response.text).to.include('Playground');
         });
 
         it('should create session and return session ID', async () => {
-            const response = await request(server.getHttpServer())
-                .post('/api/session')
-                .expect(200);
+            const response = await request(server.getHttpServer()).post('/api/session').expect(200);
 
             expect(response.body).to.have.property('sessionId');
             expect(response.body.sessionId).to.be.a('string');
@@ -125,7 +140,8 @@ export class AppComponent {
             expect(templatesResponse.body).to.have.property('templates');
             expect(templatesResponse.body.templates).to.be.an('array');
             expect(templatesResponse.body.templates.length).to.be.greaterThan(0);
-            expect(templatesResponse.body.templates.some((t: any) => t.path === 'page.hbs')).to.be.true;
+            expect(templatesResponse.body.templates.some((t: any) => t.path === 'page.hbs')).to.be
+                .true;
         });
 
         it('should get template content', async () => {
@@ -168,8 +184,7 @@ export class AppComponent {
             expect(templateResponse.body.content).to.equal(newContent);
         });
 
-        it('should generate documentation for session', async function() {
-
+        it('should generate documentation for session', async () => {
             // Create session
             const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
@@ -185,8 +200,7 @@ export class AppComponent {
             expect(docsResponse.body).to.have.property('success', true);
         });
 
-        it('should download template package as ZIP', async function() {
-
+        it('should download template package as ZIP', async () => {
             // Create session
             const sessionResponse = await request(server.getHttpServer())
                 .post('/api/session')
@@ -200,11 +214,11 @@ export class AppComponent {
                 .expect(200);
 
             expect(zipResponse.headers['content-type']).to.include('application/zip');
-            
+
             // Check ZIP content using content-length header (more reliable for binary data)
-            const contentLength = parseInt(zipResponse.headers['content-length']);
+            const contentLength = parseInt(zipResponse.headers['content-length'], 10);
             expect(contentLength).to.be.greaterThan(0);
-            
+
             // Also verify body exists (supertest populates it as object for binary)
             expect(zipResponse.body).to.not.be.undefined;
         });
@@ -342,7 +356,9 @@ export class AppComponent {
                 .get(`/api/session/${sessionId}/templates`)
                 .expect(200);
 
-            expect(finalTemplates.body.templates.length).to.equal(initialTemplates.body.templates.length);
+            expect(finalTemplates.body.templates.length).to.equal(
+                initialTemplates.body.templates.length
+            );
 
             // Verify structure is maintained
             const templatePaths = finalTemplates.body.templates.map((t: any) => t.path);

@@ -11,7 +11,8 @@ export const TRANSLATION_DE_DE = {
     components: 'Komponenten',
     constructor: 'Konstruktor',
     coverage: 'Abdeckung',
-    'coverage-empty-description': 'Führen Sie compodoc mit dokumentierten Elementen aus, um die Abdeckung zu sehen.',
+    'coverage-empty-description':
+        'Führen Sie compodoc mit dokumentierten Elementen aus, um die Abdeckung zu sehen.',
     'coverage-overview': 'Dokumentationsabdeckung',
     'coverage-page-title': 'Dokumentation Abdeckung',
     declarations: 'Declarations',
@@ -40,7 +41,8 @@ export const TRANSLATION_DE_DE = {
     'empty-dom-tree-desc': 'Ein Template wird benötigt, um den DOM-Baum zu erzeugen.',
     'empty-dom-tree-title': 'Kein DOM-Baum verfügbar',
     'empty-entity-action': 'Mehr über JSDoc-Tags erfahren',
-    'empty-entity-desc': 'Diese {{entityType}} hat keine dokumentierten Mitglieder. Fügen Sie JSDoc-Kommentare zu Ihrem Code hinzu.',
+    'empty-entity-desc':
+        'Diese {{entityType}} hat keine dokumentierten Mitglieder. Fügen Sie JSDoc-Kommentare zu Ihrem Code hinzu.',
     'empty-entity-title': 'Noch nichts dokumentiert',
     'empty-enum-values': 'Keine Werte',
     'empty-examples-desc': 'Keine Live-Beispiele für diese Komponente konfiguriert.',
@@ -65,7 +67,8 @@ export const TRANSLATION_DE_DE = {
     'empty-pipes-desc': 'Dieses Projekt hat keine eigenen Pipes.',
     'empty-pipes-title': 'Keine Pipes',
     'empty-properties': 'Keine Eigenschaften',
-    'empty-readme-desc': 'Legen Sie eine README.md neben der Quelldatei ab, um sie hier anzuzeigen.',
+    'empty-readme-desc':
+        'Legen Sie eine README.md neben der Quelldatei ab, um sie hier anzuzeigen.',
     'empty-readme-title': 'Kein README',
     'empty-search-desc': 'Versuchen Sie einen anderen Suchbegriff.',
     'empty-search-title': 'Keine Ergebnisse gefunden',

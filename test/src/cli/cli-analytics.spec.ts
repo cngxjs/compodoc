@@ -1,15 +1,15 @@
+import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI Analytics tracking', () => {
-    const distFolder = tmp.name + '-tracking';
+    const distFolder = `${tmp.name}-tracking`;
 
     describe('add tracking code', () => {
         let coverageFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -30,8 +30,8 @@ describe('CLI Analytics tracking', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('it should contain tracking code', () => {
-            expect(coverageFile).to.contain('www.google-analytics.com');
-            expect(coverageFile).to.contain('demo');
+            expect(coverageFile).to.contain('googletagmanager.com/gtag/js');
+            expect(coverageFile).to.contain('UA-XXXXX-Y');
         });
     });
 });

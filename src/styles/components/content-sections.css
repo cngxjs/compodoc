@@ -83,6 +83,11 @@
     padding-top: 0;
     border-top: none;
 }
+.cdx-entity-hero + .cdx-content-section > .cdx-section-heading {
+    margin-top: var(--spacing-cdx-lg);
+    padding-top: 0;
+    border-top: none;
+}
 
 .cdx-metadata-card {
     display: grid;
@@ -138,6 +143,157 @@
 .cdx-metadata-value code {
     font-family: var(--font-code);
     font-size: 0.8125rem;
+}
+
+/* ── Entity chips inside metadata values ──────────────────
+ * Rendered by MetadataChipsRow — each chip is a clickable entity
+ * reference (Module, Component, Directive, ...) rendered in a
+ * code-block style: dark bg, monospace, entity-coloured text.
+ * Matches the "Features" chip style on the AppConfig provider cards.
+ */
+
+.cdx-metadata-value .cdx-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    align-items: center;
+}
+
+.cdx-chip {
+    --cdx-chip-color: var(--color-cdx-text-secondary);
+
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1875rem 0.5rem;
+    border-radius: var(--radius-cdx-sm);
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid color-mix(in srgb, var(--cdx-chip-color) 28%, transparent);
+    color: var(--cdx-chip-color);
+    font-size: 0.75rem;
+    font-family: var(--font-code);
+    font-weight: 500;
+    text-decoration: none;
+    line-height: 1.4;
+    white-space: nowrap;
+    transition:
+        background 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease;
+}
+
+a.cdx-chip:hover {
+    background: color-mix(in srgb, var(--cdx-chip-color) 10%, var(--color-cdx-bg-elevated));
+    border-color: var(--cdx-chip-color);
+    color: var(--cdx-chip-color);
+    text-decoration: none;
+}
+
+.cdx-chip-label {
+    letter-spacing: 0;
+}
+
+/* Icons are no longer used in the code-block style — hide any leftover
+   icon spans if they land in the HTML so older rendered output doesn't
+   break the layout. */
+.cdx-chip-icon {
+    display: none;
+}
+
+/* Per-entity colour tokens */
+.cdx-chip--component {
+    --cdx-chip-color: var(--color-cdx-entity-component);
+}
+.cdx-chip--directive {
+    --cdx-chip-color: var(--color-cdx-entity-directive);
+}
+.cdx-chip--pipe {
+    --cdx-chip-color: var(--color-cdx-entity-pipe);
+}
+.cdx-chip--module {
+    --cdx-chip-color: var(--color-cdx-entity-module);
+}
+.cdx-chip--class {
+    --cdx-chip-color: var(--color-cdx-entity-class);
+}
+.cdx-chip--interface {
+    --cdx-chip-color: var(--color-cdx-entity-interface);
+}
+.cdx-chip--guard {
+    --cdx-chip-color: var(--color-cdx-entity-guard);
+}
+.cdx-chip--interceptor {
+    --cdx-chip-color: var(--color-cdx-entity-interceptor);
+}
+.cdx-chip--injectable,
+.cdx-chip--service {
+    --cdx-chip-color: var(--color-cdx-entity-service);
+}
+.cdx-chip--miscellaneous {
+    --cdx-chip-color: var(--color-cdx-entity-function);
+}
+.cdx-chip--entity {
+    --cdx-chip-color: var(--color-cdx-entity-component);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-chip {
+        transition: none;
+    }
+}
+
+/* ── Host directives (object literal style) ──────────────
+ * Rendered by MetadataHostDirectivesRow — each host directive is a
+ * TypeScript object literal printed in monospace that mirrors the
+ * original `@Component({ hostDirectives: [...] })` source. Only the
+ * directive identifier is a clickable link.
+ */
+
+.cdx-host-dir-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    align-items: stretch;
+}
+
+.cdx-host-dir-object {
+    white-space: pre;
+    color: var(--color-cdx-text);
+}
+
+.cdx-host-dir-punct {
+    color: var(--color-cdx-text-muted);
+}
+
+.cdx-host-dir-key {
+    color: var(--color-cdx-text-secondary);
+    font-weight: 500;
+}
+
+.cdx-host-dir-name {
+    color: var(--color-cdx-entity-directive);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 150ms ease;
+}
+
+.cdx-host-dir-name:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.cdx-host-dir-token {
+    color: var(--color-cdx-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-host-dir-name {
+        transition: none;
+    }
 }
 
 /* When value has multi-line code (template/styles), stack label above */
@@ -299,72 +455,4 @@
     }
 }
 
-/* Relationship graph (Used by / Depends on) */
-.cdx-relationships {
-    display: flex;
-    gap: var(--spacing-cdx-2xl);
-    flex-wrap: wrap;
-}
-
-.cdx-relationship-group {
-    flex: 1 1 240px;
-    min-width: 200px;
-    border: 1px solid var(--color-cdx-border);
-    border-radius: var(--radius-cdx-md);
-    background: var(--color-cdx-bg-elevated);
-    padding: var(--spacing-cdx-lg);
-}
-
-.cdx-relationship-group h4 {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-cdx-sm);
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-cdx-text-secondary);
-    margin: 0 0 var(--spacing-cdx-md) 0;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-}
-
-.cdx-relationship-group h4 .cdx-icon {
-    color: var(--color-cdx-text-muted);
-}
-
-.cdx-relationship-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-cdx-sm);
-}
-
-.cdx-relationship-list li {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-cdx-sm);
-    font-size: 0.875rem;
-}
-
-.cdx-relationship-list li a {
-    color: var(--color-cdx-primary);
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.cdx-relationship-list li a:hover {
-    text-decoration: underline;
-}
-
-.cdx-badge--entity-type {
-    font-size: 0.65rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 1px 5px;
-    border-radius: var(--radius-cdx-sm);
-    background: var(--color-cdx-bg-alt);
-    color: var(--color-cdx-text-muted);
-    border: 1px solid var(--color-cdx-border);
-}
+/* Relationships: see src/styles/components/relationships.css */

@@ -1,15 +1,14 @@
-
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI generation - TypeDoc examples', () => {
-    let stdoutString = undefined;
-    const distFolder = tmp.name + '-typedoc';
+    let stdoutString;
+    const distFolder = `${tmp.name}-typedoc`;
 
     beforeAll(() => {
         tmp.create(distFolder);
-        let ls = shell('node', [
+        const ls = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/typedoc-examples/tsconfig.json',

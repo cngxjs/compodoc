@@ -1,5 +1,5 @@
-import { cleanLifecycleHooksFromMethods, deepClone } from '.';
 import Configuration from '../app/configuration';
+import { cleanLifecycleHooksFromMethods, deepClone } from '.';
 
 export class ExtendsMerger {
     private components;

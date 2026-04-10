@@ -12,5 +12,5 @@ export const EntityDetailPage = (data: any): string =>
         disableFilePath: data.disableFilePath,
         contextLine: undefined,
         showProperties: true,
-        showJsdocBadges: true,
+        showJsdocBadges: true
     });

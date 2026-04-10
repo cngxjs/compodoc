@@ -1,4 +1,4 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class FilterAngular2ModulesHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, text: string, options: IHandlebarsOptions) {

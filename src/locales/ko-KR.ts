@@ -40,7 +40,8 @@ export const TRANSLATION_KO_KR = {
     'empty-dom-tree-desc': 'DOM 트리를 생성하려면 템플릿이 필요합니다.',
     'empty-dom-tree-title': 'DOM 트리를 사용할 수 없습니다',
     'empty-entity-action': 'JSDoc 태그 알아보기',
-    'empty-entity-desc': '이 {{entityType}}에는 문서화된 멤버가 없습니다. 코드에 JSDoc 주석을 추가하여 이 페이지를 채워보세요.',
+    'empty-entity-desc':
+        '이 {{entityType}}에는 문서화된 멤버가 없습니다. 코드에 JSDoc 주석을 추가하여 이 페이지를 채워보세요.',
     'empty-entity-title': '아직 문서가 없습니다',
     'empty-enum-values': '값 없음',
     'empty-examples-desc': '이 컴포넌트에 구성된 라이브 예제가 없습니다.',

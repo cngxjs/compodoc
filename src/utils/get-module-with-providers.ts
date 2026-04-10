@@ -1,4 +1,4 @@
-import { ts } from 'ts-morph';
+import type { ts } from 'ts-morph';
 
 export function getModuleWithProviders(node: ts.VariableStatement) {
     let result;

@@ -1,8 +1,9 @@
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 import { cleanLifecycleHooksFromMethods } from '../../../../utils';
 import Configuration from '../../../configuration';
-import { IDep } from '../dependencies.interfaces';
-import { ComponentHelper } from './helpers/component-helper';
+import type { IDep } from '../dependencies.interfaces';
+import type { ComponentHelper, HostDirectiveEntry, HostEntry } from './helpers/component-helper';
+import type { ProviderEntry } from './helpers/symbol-helper';
 
 export class ComponentDepFactory {
     constructor(private helper: ComponentHelper) {}
@@ -13,7 +14,7 @@ export class ComponentDepFactory {
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
         const componentDep: IComponentDep = {
             name,
-            id: 'component-' + name + '-' + hash,
+            id: `component-${name}-${hash}`,
             file: file,
             // animations?: string[]; // TODO
             changeDetection: this.helper.getComponentChangeDetection(props, srcFile),
@@ -21,6 +22,7 @@ export class ComponentDepFactory {
             entryComponents: this.helper.getComponentEntryComponents(props, srcFile),
             exportAs: this.helper.getComponentExportAs(props, srcFile),
             host: this.helper.getComponentHost(props),
+            hostStructured: this.helper.getComponentHostStructured(props),
             inputs: this.helper.getComponentInputsMetadata(props, srcFile),
             // interpolation?: string; // TODO waiting doc infos
             moduleId: this.helper.getComponentModuleId(props, srcFile),
@@ -33,7 +35,7 @@ export class ComponentDepFactory {
             template: this.helper.getComponentTemplate(props, srcFile),
             templateUrl: this.helper.getComponentTemplateUrl(props, srcFile),
             viewProviders: this.helper.getComponentViewProviders(props, srcFile),
-            hostDirectives: [...this.helper.getComponentHostDirectives(props)],
+            hostDirectives: [...this.helper.getComponentHostDirectives(props, srcFile)],
             inputsClass: IO.inputs,
             outputsClass: IO.outputs,
             propertiesClass: IO.properties,
@@ -54,12 +56,15 @@ export class ComponentDepFactory {
             order: IO.order || 0,
             storybookUrl: IO.storybookUrl || '',
             figmaUrl: IO.figmaUrl || '',
+            stackblitzUrl: IO.stackblitzUrl || '',
+            githubUrl: IO.githubUrl || '',
+            docsUrl: IO.docsUrl || '',
             slots: IO.slots || [],
 
             hostBindings: IO.hostBindings,
             hostListeners: IO.hostListeners,
 
-            standalone: this.helper.getComponentStandalone(props, srcFile) ? true : false,
+            standalone: !!this.helper.getComponentStandalone(props, srcFile),
             imports: this.helper.getComponentImports(props, srcFile),
 
             description: IO.description,
@@ -102,18 +107,21 @@ export class ComponentDepFactory {
             componentDep.accessors = IO.accessors;
         }
         if (IO.properties) {
-            const {inputSignals, outputSignals, properties} = this.helper.getInputOutputSignals(IO.properties);
+            const { inputSignals, outputSignals, properties } = this.helper.getInputOutputSignals(
+                IO.properties
+            );
 
-            componentDep.inputsClass = componentDep.inputsClass.concat(inputSignals)
-            componentDep.outputsClass = componentDep.outputsClass.concat(outputSignals)
+            componentDep.inputsClass = componentDep.inputsClass.concat(inputSignals);
+            componentDep.outputsClass = componentDep.outputsClass.concat(outputSignals);
             componentDep.propertiesClass = properties;
         }
 
         // Parse host: {} metadata into structured hostBindings/hostListeners
         if (componentDep.host && typeof componentDep.host === 'object') {
-            const hostEntries = componentDep.host instanceof Map
-                ? Array.from(componentDep.host.entries())
-                : Object.entries(componentDep.host);
+            const hostEntries =
+                componentDep.host instanceof Map
+                    ? Array.from(componentDep.host.entries())
+                    : Object.entries(componentDep.host);
 
             for (const [key, value] of hostEntries) {
                 const k = String(key).trim();
@@ -126,7 +134,7 @@ export class ComponentDepFactory {
                         args: [],
                         description: `host: { '(${eventName})': '${v}' }`,
                         line: 0,
-                        signalKind: 'host-listener',
+                        signalKind: 'host-listener'
                     });
                 } else if (k.startsWith('[') && k.endsWith(']')) {
                     // Property/attribute/class binding: [class.active] -> isActive
@@ -137,7 +145,7 @@ export class ComponentDepFactory {
                         type: '',
                         description: `host: { '${k}': '${v}' }`,
                         line: 0,
-                        signalKind: 'host-binding',
+                        signalKind: 'host-binding'
                     });
                 }
             }
@@ -153,9 +161,11 @@ export interface IComponentDep extends IDep {
     encapsulation: any;
     exportAs: any;
     host: any;
+    hostStructured?: HostEntry[];
+    hostDirectives: HostDirectiveEntry[];
     inputs: Array<any>;
     outputs: Array<any>;
-    providers: Array<any>;
+    providers: ProviderEntry[];
     moduleId: string;
     selector: string;
     styleUrls: Array<string>;
@@ -185,6 +195,9 @@ export interface IComponentDep extends IDep {
     order?: number;
     storybookUrl?: string;
     figmaUrl?: string;
+    stackblitzUrl?: string;
+    githubUrl?: string;
+    docsUrl?: string;
     slots?: Array<{ name: string; description: string }>;
 
     standalone: boolean;
@@ -193,7 +206,6 @@ export interface IComponentDep extends IDep {
     entryComponents: Array<any>;
 
     hostBindings: Array<any>;
-    hostDirectives: Array<any>;
     hostListeners: Array<any>;
 
     description: string;

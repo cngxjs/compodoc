@@ -1,6 +1,6 @@
+import * as path from 'node:path';
 import * as fs from 'fs-extra';
-import * as path from 'path';
-// @ts-ignore -- pdfmake has no type declarations
+// @ts-expect-error -- pdfmake has no type declarations
 import PdfPrinter from 'pdfmake';
 
 import Configuration from '../../configuration';
@@ -127,12 +127,12 @@ export class ExportPdfEngine {
         const pdfDoc = printer.createPdfKitDocument(docDefinition);
 
         return new Promise<void>((resolve, reject) => {
-            fs.ensureFile(outputFolder + path.sep + 'documentation.pdf', err => {
+            fs.ensureFile(`${outputFolder + path.sep}documentation.pdf`, err => {
                 if (err) {
                     reject(`Error during pdf generation: ${err}`);
                 } else {
                     pdfDoc.pipe(
-                        fs.createWriteStream(outputFolder + path.sep + 'documentation.pdf')
+                        fs.createWriteStream(`${outputFolder + path.sep}documentation.pdf`)
                     );
                     pdfDoc.end();
                     resolve();

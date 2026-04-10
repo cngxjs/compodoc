@@ -9,17 +9,21 @@ declare const COMPONENT_TEMPLATE: string;
 declare const COMPONENTS: Array<{ name: string; selector: string }>;
 declare const DIRECTIVES: Array<{ name: string; selector: string }>;
 declare const ACTUAL_COMPONENT: { name: string };
-declare const DEPENDENCY_GRAPH: {
-    nodes: Array<{ name: string; type: string; url?: string }>;
-    edges: Array<{ source: string; target: string }>;
-} | undefined;
+declare const DEPENDENCY_GRAPH:
+    | {
+          nodes: Array<{ name: string; type: string; url?: string }>;
+          edges: Array<{ source: string; target: string }>;
+      }
+    | undefined;
 
 type D3Module = typeof import('d3');
 
 let d3: D3Module | null = null;
 
 const loadD3 = async (): Promise<D3Module> => {
-    if (d3) return d3;
+    if (d3) {
+        return d3;
+    }
     d3 = await import('d3');
     return d3;
 };
@@ -27,7 +31,9 @@ const loadD3 = async (): Promise<D3Module> => {
 // Lazy SVG loading (replaces lazy-load-graphs.js)
 const initLazyGraphs = () => {
     const lazyEls = document.querySelectorAll<HTMLObjectElement>('[lazy]');
-    if (lazyEls.length === 0) return;
+    if (lazyEls.length === 0) {
+        return;
+    }
 
     // The scroll container is .content, not the viewport.
     // Use it as IntersectionObserver root so elements inside it are detected.
@@ -36,7 +42,9 @@ const initLazyGraphs = () => {
     const observer = new IntersectionObserver(
         entries => {
             entries.forEach(entry => {
-                if (!entry.isIntersecting) return;
+                if (!entry.isIntersecting) {
+                    return;
+                }
                 const el = entry.target as HTMLObjectElement;
                 const src = el.getAttribute('lazy');
                 if (src) {
@@ -55,10 +63,14 @@ const initLazyGraphs = () => {
 // SVG pan-zoom (replaces svg-pan-zoom lib)
 const initSvgPanZoom = async () => {
     const container = document.getElementById('module-graph-svg');
-    if (!container) return;
+    if (!container) {
+        return;
+    }
 
     const svgEl = container.querySelector('svg');
-    if (!svgEl) return;
+    if (!svgEl) {
+        return;
+    }
 
     // A11y: mark graph as decorative image with label
     svgEl.setAttribute('role', 'img');
@@ -139,7 +151,7 @@ const initSvgPanZoom = async () => {
                 isFullscreen = true;
                 fullscreen.setAttribute('aria-label', 'Exit fullscreen');
             }
-            svgEl.style.height = container.clientHeight + 'px';
+            svgEl.style.height = `${container.clientHeight}px`;
             svgSelection.transition().duration(300).call(zoomBehavior.transform, zoomIdentity);
         });
     }
@@ -155,14 +167,18 @@ const htmlEntities = (str: string): string =>
 
 const initRoutesGraph = async () => {
     const target = document.getElementById('body-routes');
-    if (!target || typeof ROUTES_INDEX === 'undefined') return;
+    if (!target || typeof ROUTES_INDEX === 'undefined') {
+        return;
+    }
 
     const { select, tree, hierarchy, linkHorizontal } = await loadD3();
 
     // Clean string children from route tree
     const cleanStringChildren = (obj: any) => {
         for (const prop in obj) {
-            if (!Object.prototype.hasOwnProperty.call(obj, prop)) continue;
+            if (!Object.hasOwn(obj, prop)) {
+                continue;
+            }
             if (prop === 'children' && Array.isArray(obj[prop])) {
                 obj[prop] = obj[prop].filter((c: any) => typeof c !== 'string');
             }
@@ -235,10 +251,18 @@ const initRoutesGraph = async () => {
     // Native SVG tooltip
     node.append('title').text((d: any) => {
         const parts = [d.data.path || d.data.name];
-        if (d.data.component) parts.push(`Component: ${d.data.component}`);
-        if (d.data.module) parts.push(`Module: ${d.data.module}`);
-        if (d.data.guarded) parts.push('Guarded');
-        if (d.data.redirectTo) parts.push(`→ ${d.data.redirectTo}`);
+        if (d.data.component) {
+            parts.push(`Component: ${d.data.component}`);
+        }
+        if (d.data.module) {
+            parts.push(`Module: ${d.data.module}`);
+        }
+        if (d.data.guarded) {
+            parts.push('Guarded');
+        }
+        if (d.data.redirectTo) {
+            parts.push(`→ ${d.data.redirectTo}`);
+        }
         return parts.join('\n');
     });
 
@@ -259,8 +283,12 @@ const initRoutesGraph = async () => {
         .attr('font-size', '13px')
         .attr('fill', 'var(--color-cdx-text-muted, #888)')
         .text((d: any) => {
-            if (d.data.loadChildren || d.data.loadComponent) return '\u21BB'; // ↻ lazy
-            if (d.data.guarded) return '\u26A0'; // ⚠ guarded
+            if (d.data.loadChildren || d.data.loadComponent) {
+                return '\u21BB'; // ↻ lazy
+            }
+            if (d.data.guarded) {
+                return '\u26A0'; // ⚠ guarded
+            }
             return '';
         });
 
@@ -303,7 +331,9 @@ const buildNodeLabel = (d: any): string => {
     if (d.kind === 'module') {
         if (d.module) {
             label += `<tspan x="0" dy="1.4em"><a href="./modules/${d.module}.html">${d.module}</a></tspan>`;
-            if (d.name) label += `<tspan x="0" dy="1.4em">${d.name}</tspan>`;
+            if (d.name) {
+                label += `<tspan x="0" dy="1.4em">${d.name}</tspan>`;
+            }
         } else {
             label += `<tspan x="0" dy="1.4em">${htmlEntities(d.name)}</tspan>`;
         }
@@ -314,7 +344,9 @@ const buildNodeLabel = (d: any): string => {
         } else if (d.name?.includes('Component')) {
             label += `<tspan x="0" dy="1.4em">${d.name}</tspan>`;
         }
-        if (d.outlet) label += `<tspan x="0" dy="1.4em">&lt;outlet&gt; : ${d.outlet}</tspan>`;
+        if (d.outlet) {
+            label += `<tspan x="0" dy="1.4em">&lt;outlet&gt; : ${d.outlet}</tspan>`;
+        }
     } else {
         label += `<tspan x="0" dy="1.4em">/${d.path || d.name}</tspan>`;
         if (d.component) {
@@ -325,15 +357,27 @@ const buildNodeLabel = (d: any): string => {
             const moduleName = parts[1] || parts[0];
             label += `<tspan x="0" dy="1.4em"><a href="./modules/${moduleName}.html">${moduleName}</a></tspan>`;
         }
-        if (d.canActivate) label += '<tspan x="0" dy="1.4em">&#10003; canActivate</tspan>';
-        if (d.canDeactivate)
+        if (d.canActivate) {
+            label += '<tspan x="0" dy="1.4em">&#10003; canActivate</tspan>';
+        }
+        if (d.canDeactivate) {
             label += '<tspan x="0" dy="1.4em">&#215;&nbsp;&nbsp;canDeactivate</tspan>';
-        if (d.canActivateChild)
+        }
+        if (d.canActivateChild) {
             label += '<tspan x="0" dy="1.4em">&#10003; canActivateChild</tspan>';
-        if (d.canLoad) label += '<tspan x="0" dy="1.4em">&#8594; canLoad</tspan>';
-        if (d.redirectTo) label += `<tspan x="0" dy="1.4em">&rarr; ${d.redirectTo}</tspan>`;
-        if (d.pathMatch) label += `<tspan x="0" dy="1.4em">&gt; ${d.pathMatch}</tspan>`;
-        if (d.outlet) label += `<tspan x="0" dy="1.4em">&lt;outlet&gt; : ${d.outlet}</tspan>`;
+        }
+        if (d.canLoad) {
+            label += '<tspan x="0" dy="1.4em">&#8594; canLoad</tspan>';
+        }
+        if (d.redirectTo) {
+            label += `<tspan x="0" dy="1.4em">&rarr; ${d.redirectTo}</tspan>`;
+        }
+        if (d.pathMatch) {
+            label += `<tspan x="0" dy="1.4em">&gt; ${d.pathMatch}</tspan>`;
+        }
+        if (d.outlet) {
+            label += `<tspan x="0" dy="1.4em">&lt;outlet&gt; : ${d.outlet}</tspan>`;
+        }
     }
     return label;
 };
@@ -389,13 +433,17 @@ const parseTemplate = (html: string): TreeNode => {
 
     // Get first element child of body
     const root = doc.body.firstElementChild;
-    if (!root) return { name: 'div', type: 'tag', children: [] };
+    if (!root) {
+        return { name: 'div', type: 'tag', children: [] };
+    }
     return walk(root);
 };
 
 const initDomTree = async () => {
     const container = document.getElementById('tree-container');
-    if (!container || typeof COMPONENT_TEMPLATE === 'undefined') return;
+    if (!container || typeof COMPONENT_TEMPLATE === 'undefined') {
+        return;
+    }
 
     const treeTab = document.getElementById('tree-tab');
 
@@ -461,16 +509,24 @@ const initDomTree = async () => {
             })
             .attr('ry', 15)
             .attr('fill', (d: any) => {
-                if (d.data.isComponent) return 'var(--color-cdx-entity-component, #14b8a6)';
-                if (d.data.isDirective) return 'var(--color-cdx-entity-directive, #7c3aed)';
+                if (d.data.isComponent) {
+                    return 'var(--color-cdx-entity-component, #14b8a6)';
+                }
+                if (d.data.isDirective) {
+                    return 'var(--color-cdx-entity-directive, #7c3aed)';
+                }
                 return 'var(--color-cdx-bg-elevated, #D2E5FF)';
             })
             .attr('stroke', 'var(--color-cdx-border, #ccc)');
 
         // Native SVG tooltip
         node.append('title').text((d: any) => {
-            if (d.data.isComponent && d.data.componentName) return `${d.data.name} (${d.data.componentName})`;
-            if (d.data.isDirective && d.data.componentName) return `${d.data.name} [${d.data.componentName}]`;
+            if (d.data.isComponent && d.data.componentName) {
+                return `${d.data.name} (${d.data.componentName})`;
+            }
+            if (d.data.isDirective && d.data.componentName) {
+                return `${d.data.name} [${d.data.componentName}]`;
+            }
             return d.data.name;
         });
 
@@ -537,7 +593,9 @@ const initDomTree = async () => {
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
-            if (container.offsetParent) renderTree();
+            if (container.offsetParent) {
+                renderTree();
+            }
         }, 250);
     });
 };
@@ -556,10 +614,24 @@ const entityColorMap: Record<string, string> = {
 // Standalone Component Dependency Graph (D3 force-directed)
 const initDependencyGraph = async () => {
     const container = document.getElementById('dependency-graph-container');
-    if (!container || typeof DEPENDENCY_GRAPH === 'undefined') return;
-    if (!DEPENDENCY_GRAPH.nodes.length) return;
+    if (!container || typeof DEPENDENCY_GRAPH === 'undefined') {
+        return;
+    }
+    if (!DEPENDENCY_GRAPH.nodes.length) {
+        return;
+    }
 
-    const { select, forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide, zoom, zoomIdentity, scaleSqrt } = await loadD3();
+    const {
+        select,
+        forceSimulation,
+        forceLink,
+        forceManyBody,
+        forceCenter,
+        forceCollide,
+        zoom,
+        zoomIdentity,
+        scaleSqrt
+    } = await loadD3();
 
     const width = container.clientWidth || 800;
     const height = Math.max(450, Math.min(700, DEPENDENCY_GRAPH.nodes.length * 25));
@@ -600,7 +672,8 @@ const initDependencyGraph = async () => {
     const g = svg.append('g');
 
     // Arrow marker for directed edges (source imports target)
-    svg.append('defs').append('marker')
+    svg.append('defs')
+        .append('marker')
         .attr('id', 'dep-arrow')
         .attr('viewBox', '0 -4 8 8')
         .attr('refX', 12)
@@ -614,7 +687,8 @@ const initDependencyGraph = async () => {
         .attr('fill-opacity', 0.6);
 
     // Draw links with arrows
-    const link = g.selectAll('.dep-link')
+    const link = g
+        .selectAll('.dep-link')
         .data(links)
         .enter()
         .append('line')
@@ -625,12 +699,13 @@ const initDependencyGraph = async () => {
         .attr('marker-end', 'url(#dep-arrow)');
 
     // Draw nodes
-    const node = g.selectAll('.dep-node')
+    const node = g
+        .selectAll('.dep-node')
         .data(nodes)
         .enter()
         .append('g')
         .attr('class', 'dep-node')
-        .style('cursor', (d: any) => d.url ? 'pointer' : 'default');
+        .style('cursor', (d: any) => (d.url ? 'pointer' : 'default'));
 
     node.append('circle')
         .attr('r', (d: any) => d.r)
@@ -651,16 +726,26 @@ const initDependencyGraph = async () => {
 
     // Click to navigate
     node.on('click', (_event: any, d: any) => {
-        if (d.url) document.location.href = d.url;
+        if (d.url) {
+            document.location.href = d.url;
+        }
     });
 
     // Force simulation
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const simulation = forceSimulation(nodes as any)
-        .force('link', forceLink(links).id((d: any) => d.name).distance(80))
+        .force(
+            'link',
+            forceLink(links)
+                .id((d: any) => d.name)
+                .distance(80)
+        )
         .force('charge', forceManyBody().strength(-120))
         .force('center', forceCenter(width / 2, height / 2))
-        .force('collide', forceCollide().radius((d: any) => d.r + 4));
+        .force(
+            'collide',
+            forceCollide().radius((d: any) => d.r + 4)
+        );
 
     // Shorten link endpoint to stop at target node edge (for arrow visibility)
     const updateLinks = () => {
@@ -679,7 +764,9 @@ const initDependencyGraph = async () => {
 
     if (reducedMotion) {
         simulation.stop();
-        for (let i = 0; i < 300; i++) simulation.tick();
+        for (let i = 0; i < 300; i++) {
+            simulation.tick();
+        }
         updateLinks();
         node.attr('transform', (d: any) => `translate(${d.x},${d.y})`);
     } else {

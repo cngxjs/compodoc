@@ -19,35 +19,57 @@ type BlockTypealiasProps = {
     readonly depth?: number;
 };
 
-export const BlockTypealias = (props: BlockTypealiasProps): string => (
-    <section data-compodoc="block-typealias">
-        {props.typealias.map(ta => {
-            const header = (
-                <header class="cdx-member-header">
-                    <span class="cdx-member-name">
-                        <span class={`cdx-member-name-text${ta.deprecated ? ' cdx-member-name--deprecated' : ''}`}>{ta.name}</span>
-                        <a href={`#${ta.name}`} class="cdx-member-permalink" aria-label={`Link to ${ta.name}`}>#</a>
-                    </span>
-                </header>
-            ) as string;
+export const BlockTypealias = (props: BlockTypealiasProps): string =>
+    (
+        <section data-compodoc="block-typealias">
+            {props.typealias.map(ta => {
+                const header = (
+                    <header class="cdx-member-header">
+                        <span class="cdx-member-name">
+                            <span
+                                class={`cdx-member-name-text${ta.deprecated ? ' cdx-member-name--deprecated' : ''}`}
+                            >
+                                {ta.name}
+                            </span>
+                            <a
+                                href={`#${ta.name}`}
+                                class="cdx-member-permalink"
+                                aria-label={`Link to ${ta.name}`}
+                            >
+                                #
+                            </a>
+                        </span>
+                    </header>
+                ) as string;
 
-            const body = (<>
-                {ta.deprecated && (
-                    <div class="cdx-member-deprecated">{ta.deprecationMessage || t('deprecated')}</div>
-                )}
-                {ta.description && (
-                    <div class="cdx-member-description">{parseDescription(ta.description, props.depth ?? 0)}</div>
-                )}
-                <div class="cdx-member-row">
-                    {ta.kind === 160 ? (
-                        <code>{functionSignature(ta)}</code>
-                    ) : (
-                        <code>{linkTypeHtml(ta.rawtype ?? '')}</code>
-                    )}
-                </div>
-            </>) as string;
+                const body = (
+                    <>
+                        {ta.deprecated && (
+                            <div class="cdx-member-deprecated">
+                                {ta.deprecationMessage || t('deprecated')}
+                            </div>
+                        )}
+                        {ta.description && (
+                            <div class="cdx-member-description">
+                                {parseDescription(ta.description, props.depth ?? 0)}
+                            </div>
+                        )}
+                        <div class="cdx-member-row">
+                            {ta.kind === 160 ? (
+                                <code>{functionSignature(ta)}</code>
+                            ) : (
+                                <code>{linkTypeHtml(ta.rawtype ?? '')}</code>
+                            )}
+                        </div>
+                    </>
+                ) as string;
 
-            return MemberCard({ id: ta.name, deprecated: ta.deprecated, header, children: body });
-        })}
-    </section>
-) as string;
+                return MemberCard({
+                    id: ta.name,
+                    deprecated: ta.deprecated,
+                    header,
+                    children: body
+                });
+            })}
+        </section>
+    ) as string;

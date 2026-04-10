@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "baseUrl": "",
+        "declaration": false,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "lib": ["es2022", "dom"],
+        "mapRoot": "./",
+        "module": "es2022",
+        "moduleResolution": "bundler",
+        "outDir": "../dist/out-tsc",
+        "sourceMap": true,
+        "target": "es2022",
+        "typeRoots": ["../node_modules/@types"],
+        "paths": {
+            "@core/*": ["src/app/core/*"],
+            "@shared/*": ["src/app/shared/*"]
+        }
+    },
+    "include": ["src/**/*.ts"]
+}

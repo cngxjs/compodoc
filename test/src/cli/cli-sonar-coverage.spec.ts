@@ -1,10 +1,9 @@
-
-import { temporaryDir, shell } from '../helpers';
+import { shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI Coverage - Targeted Line Execution', () => {
-    const distFolder = tmp.name + '-cli-coverage';
+    const distFolder = `${tmp.name}-cli-coverage`;
     let currentTestFolder: string;
 
     beforeAll(() => {
@@ -22,13 +21,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Application.ts lines 87-89, 92-93, 96-97 (constructor options)
     it('should execute constructor with various options - lines 87-89, 92-93, 96-97', () => {
-        currentTestFolder = distFolder + '-constructor';
+        currentTestFolder = `${distFolder}-constructor`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-constructor',
+            `${distFolder}-constructor`,
             '--silent',
             '--hideGenerator',
             '--disableSourceCode',
@@ -39,13 +38,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Application.ts lines 106-107 (process listeners)
     it('should execute process listener setup - lines 106-107', () => {
-        currentTestFolder = distFolder + '-listeners';
+        currentTestFolder = `${distFolder}-listeners`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-listeners',
+            `${distFolder}-listeners`,
             '--silent'
         ]);
         expect(command.status).to.equal(0);
@@ -53,13 +52,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Application.ts line 109 (I18n initialization)
     it('should execute I18n initialization - line 109', () => {
-        currentTestFolder = distFolder + '-i18n';
+        currentTestFolder = `${distFolder}-i18n`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-i18n',
+            `${distFolder}-i18n`,
             '--silent',
             '--language',
             'fr-FR'
@@ -69,13 +68,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Application.ts lines 111, 114 (output path formatting)
     it('should execute output path formatting - lines 111, 114', () => {
-        currentTestFolder = distFolder + '-output-format';
+        currentTestFolder = `${distFolder}-output-format`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-output-format',
+            `${distFolder}-output-format`,
             '--silent'
         ]);
         expect(command.status).to.equal(0);
@@ -83,13 +82,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Application.ts lines 117-118, 120-122 (export format)
     it('should execute export format handling - lines 117-118, 120-122', () => {
-        currentTestFolder = distFolder + '-export';
+        currentTestFolder = `${distFolder}-export`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-export',
+            `${distFolder}-export`,
             '--exportFormat',
             'json',
             '--silent'
@@ -99,13 +98,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Application.ts lines 126-127, 131-132, 135, 139-140, 143 (event handlers)
     it('should execute event handler setup - lines 126-127, 131-132, 135, 139-140, 143', () => {
-        currentTestFolder = distFolder + '-events';
+        currentTestFolder = `${distFolder}-events`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-events',
+            `${distFolder}-events`,
             '--silent',
             '--disableGraph' // Use a simple flag that doesn't start servers
         ]);
@@ -114,13 +113,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Application.ts line 150 (test coverage)
     it('should execute test coverage method - line 150', () => {
-        currentTestFolder = distFolder + '-coverage';
+        currentTestFolder = `${distFolder}-coverage`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-coverage',
+            `${distFolder}-coverage`,
             '--coverageTest',
             '20', // Set threshold below actual coverage (27%)
             '--silent'
@@ -130,13 +129,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Application.ts lines 158, 166 (file handling)
     it('should execute file handling - lines 158, 166', () => {
-        currentTestFolder = distFolder + '-files';
+        currentTestFolder = `${distFolder}-files`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-files',
+            `${distFolder}-files`,
             '--silent',
             '--includes',
             './test/fixtures/todomvc-ng2/additional-doc' // Use folder with markdown files
@@ -146,13 +145,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Application.ts lines 205-206, 210-215, 219, 222-223, 225, 227 (package.json processing)
     it('should execute package.json processing - lines 205-206, 210-215, 219, 222-223, 225, 227', () => {
-        currentTestFolder = distFolder + '-package';
+        currentTestFolder = `${distFolder}-package`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-package',
+            `${distFolder}-package`,
             '--silent'
         ]);
         expect(command.status).to.equal(0);
@@ -160,13 +159,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Application.ts lines 278-280, 282, 285-286 (error handling)
     it('should execute error handling paths - lines 278-280, 282, 285-286', () => {
-        currentTestFolder = distFolder + '-error';
+        currentTestFolder = `${distFolder}-error`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './nonexistent/tsconfig.json', // This should trigger error paths
             '-d',
-            distFolder + '-error',
+            `${distFolder}-error`,
             '--silent'
         ]);
         // Should handle the error gracefully (non-zero exit status)
@@ -175,13 +174,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Application.ts lines 294-297 (peer dependencies)
     it('should execute peer dependencies processing - lines 294-297', () => {
-        currentTestFolder = distFolder + '-peers';
+        currentTestFolder = `${distFolder}-peers`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-peers',
+            `${distFolder}-peers`,
             '--silent'
         ]);
         expect(command.status).to.equal(0);
@@ -189,13 +188,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Utils.ts lines 16-18, 21, 25, 29, 32 (string utilities)
     it('should execute string manipulation utilities - lines 16-18, 21, 25, 29, 32', () => {
-        currentTestFolder = distFolder + '-strings';
+        currentTestFolder = `${distFolder}-strings`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-strings',
+            `${distFolder}-strings`,
             '--silent',
             '--disableGraph'
         ]);
@@ -204,13 +203,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Utils.ts lines 39-43, 45, 49-51, 54-60 (file path handling)
     it('should execute file path handling - lines 39-43, 45, 49-51, 54-60', () => {
-        currentTestFolder = distFolder + '-paths';
+        currentTestFolder = `${distFolder}-paths`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-paths',
+            `${distFolder}-paths`,
             '--silent',
             '--assetsFolder',
             './test/fixtures/sample-files'
@@ -220,13 +219,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Utils.ts lines 66-68, 72, 77, 81, 85-86 (config reading)
     it('should execute configuration reading - lines 66-68, 72, 77, 81, 85-86', () => {
-        currentTestFolder = distFolder + '-config';
+        currentTestFolder = `${distFolder}-config`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-config',
+            `${distFolder}-config`,
             '--silent'
         ]);
         expect(command.status).to.equal(0);
@@ -234,13 +233,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Utils.ts lines 88, 92, 96-99, 101 (markdown processing)
     it('should execute markdown processing - lines 88, 92, 96-99, 101', () => {
-        currentTestFolder = distFolder + '-markdown';
+        currentTestFolder = `${distFolder}-markdown`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-markdown',
+            `${distFolder}-markdown`,
             '--silent',
             '--theme',
             'gitbook'
@@ -250,13 +249,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Utils.ts lines 105-106, 108, 112, 116-118 (lifecycle processing)
     it('should execute lifecycle processing - lines 105-106, 108, 112, 116-118', () => {
-        currentTestFolder = distFolder + '-lifecycle';
+        currentTestFolder = `${distFolder}-lifecycle`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-lifecycle',
+            `${distFolder}-lifecycle`,
             '--silent',
             '--disableLifeCycleHooks'
         ]);
@@ -265,13 +264,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Utils.ts lines 120-122, 126, 130-136 (pattern matching)
     it('should execute pattern matching - lines 120-122, 126, 130-136', () => {
-        currentTestFolder = distFolder + '-patterns';
+        currentTestFolder = `${distFolder}-patterns`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-patterns',
+            `${distFolder}-patterns`,
             '--silent'
         ]);
         expect(command.status).to.equal(0);
@@ -279,13 +278,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target Utils.ts lines 140, 144-146, 155-158 (TypeScript compilation)
     it('should execute TypeScript compilation utilities - lines 140, 144-146, 155-158', () => {
-        currentTestFolder = distFolder + '-typescript';
+        currentTestFolder = `${distFolder}-typescript`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-typescript',
+            `${distFolder}-typescript`,
             '--silent'
         ]);
         expect(command.status).to.equal(0);
@@ -293,13 +292,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Target remaining Utils.ts lines with advanced flags
     it('should execute advanced utility functions - remaining lines', () => {
-        currentTestFolder = distFolder + '-advanced';
+        currentTestFolder = `${distFolder}-advanced`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-advanced',
+            `${distFolder}-advanced`,
             '--silent',
             '--minimal',
             '--hideDarkModeToggle',
@@ -312,13 +311,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Additional edge cases and error paths
     it('should execute with additional flags to trigger more paths', () => {
-        currentTestFolder = distFolder + '-additional';
+        currentTestFolder = `${distFolder}-additional`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-additional',
+            `${distFolder}-additional`,
             '--silent',
             '--disableCoverage',
             '--disableSearch'
@@ -328,13 +327,13 @@ describe('CLI Coverage - Targeted Line Execution', () => {
 
     // Test with custom configuration file
     it('should execute with custom config to trigger config reading paths', () => {
-        currentTestFolder = distFolder + '-custom-config';
+        currentTestFolder = `${distFolder}-custom-config`;
         const command = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
-            distFolder + '-custom-config',
+            `${distFolder}-custom-config`,
             '--silent',
             '--customFavicon',
             './test/fixtures/todomvc-ng2/additional-doc/edition.md'

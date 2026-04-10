@@ -1,6 +1,9 @@
 import Html from '@kitajs/html';
-import { t } from '../helpers';
-import { iconFor, IconSettings } from '../components/Icons';
+import { EmptyState } from '../components/EmptyState';
+import { EmptyIconBolt } from '../components/EmptyStateIcons';
+import { IconFile, IconSettings, iconFor } from '../components/Icons';
+import { parseDescription, t } from '../helpers';
+import { resolveType } from '../helpers/link-type';
 
 type ProviderCall = {
     readonly name: string;
@@ -13,64 +16,147 @@ type AppConfigData = {
     readonly description?: string;
     readonly providers: ProviderCall[];
     readonly since?: string;
+    readonly zoneless?: boolean;
 };
 
 const providerIcon = (name: string): string => {
-    if (name.includes('Router')) return 'ion-ios-git-branch';
-    if (name.includes('Http')) return 'ion-ios-cloud';
-    if (name.includes('Animation')) return 'ion-ios-film';
-    if (name.includes('Zoneless')) return 'ion-ios-flash';
-    if (name.includes('Store') || name.includes('State')) return 'ion-ios-filing';
+    if (name.includes('Router')) {
+        return 'ion-ios-git-branch';
+    }
+    if (name.includes('Http')) {
+        return 'ion-ios-cloud';
+    }
+    if (name.includes('Animation')) {
+        return 'ion-ios-film';
+    }
+    if (name.includes('Zoneless') || name.includes('Zone')) {
+        return 'ion-ios-flash';
+    }
+    if (name.includes('Store') || name.includes('State')) {
+        return 'ion-ios-filing';
+    }
     return 'ion-ios-settings';
 };
 
-const ProviderCard = (provider: ProviderCall): string => (
-    <div class="cdx-provider-card">
-        <div class="cdx-provider-header">
-            {iconFor(providerIcon(provider.name))}
-            <code class="cdx-provider-name">{provider.name}()</code>
-        </div>
-        {provider.features.length > 0 && (
-            <div class="cdx-provider-features">
-                <span class="cdx-provider-features-label">Features:</span>
-                {provider.features.map(f => (
-                    <span class="cdx-badge cdx-badge--factory">{f}()</span>
-                ))}
+/** Link a function name to Angular API docs or internal docs via DependenciesEngine. */
+const linkedName = (name: string): string => {
+    const resolved = resolveType(name);
+    if (resolved) {
+        return `<a href="${resolved.href}" target="${resolved.target}">${name}()</a>`;
+    }
+    return `${name}()`;
+};
+
+const ProviderCard = (provider: ProviderCall): string =>
+    (
+        <div class="cdx-provider-card">
+            <div class="cdx-provider-header">
+                {iconFor(providerIcon(provider.name))}
+                <code class="cdx-provider-name" title={`${provider.name}()`}>
+                    {linkedName(provider.name)}
+                </code>
             </div>
-        )}
-    </div>
-) as string;
+            {provider.features.length > 0 && (
+                <div class="cdx-provider-features">
+                    <span class="cdx-provider-features-label">Features:</span>
+                    {provider.features.map(f => (
+                        <code class="cdx-provider-feature">{linkedName(f)}</code>
+                    ))}
+                </div>
+            )}
+        </div>
+    ) as string;
+
+/** Zoneless provider names -- absorbed into the Zoneless badge */
+const ZONELESS_PROVIDERS = new Set([
+    'provideZonelessChangeDetection',
+    'provideExperimentalZonelessChangeDetection'
+]);
 
 export const AppConfigPage = (data: any): string => {
     const configs: AppConfigData[] = data.appConfig || [];
-    if (configs.length === 0) return '';
+    if (configs.length === 0) {
+        return '';
+    }
 
-    return (<>
-        <ol class="cdx-breadcrumb">
-            <li class="">Application Configuration</li>
-        </ol>
+    return (
+        <>
+            {configs.map(config => {
+                // When zoneless, the badge in the hero already conveys this,
+                // so filter out the redundant provider card.
+                const providers = config.zoneless
+                    ? config.providers.filter(p => !ZONELESS_PROVIDERS.has(p.name))
+                    : config.providers;
+                return (
+                    <>
+                        <div
+                            class="cdx-entity-hero"
+                            style="--cdx-hero-color: var(--color-cdx-entity-service)"
+                        >
+                            <div class="cdx-entity-hero-watermark" aria-hidden="true">
+                                {IconSettings()}
+                            </div>
+                            <nav aria-label="Breadcrumb">
+                                <ol class="cdx-breadcrumb">
+                                    <li>{t('application-configuration')}</li>
+                                    <li aria-current="page">{config.name}</li>
+                                </ol>
+                            </nav>
+                            <h1 class="cdx-entity-hero-name">{config.name}</h1>
+                            <div class="cdx-entity-hero-badges">
+                                <span class="cdx-badge cdx-badge--entity-injectable">Config</span>
+                                {config.zoneless && (
+                                    <span class="cdx-badge cdx-badge--standalone">Zoneless</span>
+                                )}
+                                {config.since && (
+                                    <span class="cdx-badge cdx-badge--since">v{config.since}</span>
+                                )}
+                                <span class="cdx-badge cdx-badge--outline">
+                                    {providers.length}{' '}
+                                    {providers.length === 1 ? 'provider' : 'providers'}
+                                </span>
+                            </div>
+                            <p
+                                class="cdx-entity-hero-file"
+                                title="Source file"
+                                aria-label="Source file"
+                            >
+                                {IconFile()}
+                                <span>{config.file}</span>
+                            </p>
+                        </div>
 
-        {configs.map(config => (<>
-            <div class="cdx-app-config">
-                {config.description && (
-                    <p class="cdx-app-config-desc">{config.description}</p>
-                )}
+                        {/* Description */}
+                        {config.description && (
+                            <section class="cdx-content-section">
+                                <h3 class="cdx-section-heading">{t('description')}</h3>
+                                <div class="cdx-prose">
+                                    {parseDescription(config.description, data.depth ?? 0)}
+                                </div>
+                            </section>
+                        )}
 
-                <div class="cdx-app-config-meta">
-                    <span class="cdx-badge cdx-badge--standalone">{config.name}</span>
-                    {config.since && <span class="cdx-badge cdx-badge--since">v{config.since}</span>}
-                    <code class="cdx-app-config-file">{config.file}</code>
-                </div>
-
-                {config.providers.length > 0 ? (<>
-                    <h3>Providers ({config.providers.length})</h3>
-                    <div class="cdx-providers-grid">
-                        {config.providers.map(p => ProviderCard(p))}
-                    </div>
-                </>) : (
-                    <p>No providers configured.</p>
-                )}
-            </div>
-        </>))}
-    </>) as string;
+                        {/* Providers */}
+                        <section class="cdx-content-section">
+                            <h3 class="cdx-section-heading" id="providers">
+                                Providers ({providers.length})
+                            </h3>
+                            {providers.length > 0 ? (
+                                <div class="cdx-providers-grid">
+                                    {providers.map(p => ProviderCard(p))}
+                                </div>
+                            ) : (
+                                EmptyState({
+                                    icon: EmptyIconBolt(),
+                                    title: 'No providers',
+                                    description: 'This configuration has no registered providers.',
+                                    variant: 'full'
+                                })
+                            )}
+                        </section>
+                    </>
+                );
+            })}
+        </>
+    ) as string;
 };

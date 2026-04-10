@@ -17,7 +17,9 @@ export const hasJsdocParams = (tags: any[]): boolean =>
 export const extractJsdocParams = (jsdocTags: any[]): JsdocTag[] => {
     const tags: JsdocTag[] = [];
     for (const jt of jsdocTags) {
-        if (jt.tagName?.text !== 'param') continue;
+        if (jt.tagName?.text !== 'param') {
+            continue;
+        }
 
         const tag: JsdocTag = {};
         if (jt.typeExpression?.type?.name) {
@@ -27,10 +29,16 @@ export const extractJsdocParams = (jsdocTags: any[]): JsdocTag[] => {
         } else {
             tag.type = jt.type;
         }
-        if (jt.comment) tag.comment = jt.comment;
-        if (jt.defaultValue) tag.defaultValue = jt.defaultValue;
+        if (jt.comment) {
+            tag.comment = jt.comment;
+        }
+        if (jt.defaultValue) {
+            tag.defaultValue = jt.defaultValue;
+        }
         tag.name = jt.name?.text ?? jt.name;
-        if (jt.optional) tag.optional = true;
+        if (jt.optional) {
+            tag.optional = true;
+        }
         tags.push(tag);
     }
     return tags;
@@ -55,16 +63,24 @@ function parseCodeFences(comment: string): CodeBlock[] {
     while ((match = regex.exec(comment)) !== null) {
         hasCodeFences = true;
         let lang = (match[1] || 'html').toLowerCase();
-        if (lang === 'js') lang = 'javascript';
-        if (lang === 'ts') lang = 'typescript';
+        if (lang === 'js') {
+            lang = 'javascript';
+        }
+        if (lang === 'ts') {
+            lang = 'typescript';
+        }
         let code = match[2].replaceAll('___COMPODOC_EMPTY_LINE___', '\n').trim();
         code = code.replaceAll(/```[\s\S]*?```/g, '');
-        if (code.length > 0) blocks.push({ language: lang, code });
+        if (code.length > 0) {
+            blocks.push({ language: lang, code });
+        }
     }
 
     if (!hasCodeFences) {
         const trimmed = comment.trim();
-        if (trimmed.length > 0) blocks.push({ language: 'html', code: trimmed });
+        if (trimmed.length > 0) {
+            blocks.push({ language: 'html', code: trimmed });
+        }
     }
     return blocks;
 }
@@ -73,7 +89,9 @@ function parseCodeFences(comment: string): CodeBlock[] {
 export const extractJsdocCodeExamples = (jsdocTags: any[]): JsdocTag[] => {
     const tags: JsdocTag[] = [];
     for (const jt of jsdocTags) {
-        if (jt.tagName?.text !== 'example' || !jt.comment) continue;
+        if (jt.tagName?.text !== 'example' || !jt.comment) {
+            continue;
+        }
 
         let comment = jt.comment;
         const captionMatch = comment.match(/<caption>([\s\S]*?)<\/caption>/);
@@ -95,7 +113,9 @@ export const extractJsdocCodeExamples = (jsdocTags: any[]): JsdocTag[] => {
 export const extractJsdocExamples = (jsdocTags: any[]): JsdocTag[] => {
     const tags: JsdocTag[] = [];
     for (const jt of jsdocTags) {
-        if (jt.tagName?.text !== 'example') continue;
+        if (jt.tagName?.text !== 'example') {
+            continue;
+        }
         const comment = (jt.comment ?? '')
             .replaceAll('<caption>', '<b><i>')
             .replaceAll('/caption>', '/b></i>');

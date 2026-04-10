@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { IconChevronRight } from '../components/Icons';
 import {
     functionSignature,
     hasJsdocParams,
@@ -8,7 +9,6 @@ import {
     parseDescription,
     t
 } from '../helpers';
-import { IconChevronRight } from '../components/Icons';
 import { DefinedInRow } from './DefinedInRow';
 import { MemberCard } from './MemberCard';
 import { ParamsTable } from './ParamsTable';
@@ -19,6 +19,7 @@ type BlockMethodProps = {
     readonly title?: string;
     readonly depth?: number;
     readonly navTabs?: any[];
+    readonly collapsible?: boolean;
 };
 
 export const BlockMethod = (props: BlockMethodProps): string => {
@@ -129,7 +130,9 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                             </div>
                         )}
                         {m.returnType && m.jsdoctags && (
-                            <div class="cdx-member-description">{jsdocReturnsComment(m.jsdoctags)}</div>
+                            <div class="cdx-member-description">
+                                {jsdocReturnsComment(m.jsdoctags)}
+                            </div>
                         )}
                     </>
                 ) as string;
@@ -137,7 +140,7 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                 return MemberCard({
                     id: m.name,
                     deprecated: m.deprecated,
-                    collapsible: true,
+                    collapsible: props.collapsible !== false,
                     header,
                     children: body
                 });

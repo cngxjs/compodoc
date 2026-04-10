@@ -1,5 +1,5 @@
-import { MainDataInterface } from './main-data.interface';
-import { PageInterface } from './page.interface';
+import type { MainDataInterface } from './main-data.interface';
+import type { PageInterface } from './page.interface';
 
 export interface ConfigurationInterface {
     mainData: MainDataInterface;

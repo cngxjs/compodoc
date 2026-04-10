@@ -1,4 +1,3 @@
-
 import { JsdocCodeExampleHelper } from '../../../../../src/app/engines/html-engine-helpers/jsdoc-code-example.helper';
 import { JsdocTagInterface } from '../../../../../src/app/interfaces/jsdoc-tag.interface';
 
@@ -109,37 +108,12 @@ describe('JsdocCodeExampleHelper', () => {
         });
     });
 
-    describe('cleanTag method', () => {
-        it('should remove leading asterisk', () => {
-            const result = helper['cleanTag']('*Example code');
-            expect(result).to.equal('Example code');
-        });
-
-        it('should remove leading space', () => {
-            const result = helper['cleanTag'](' Example code');
-            expect(result).to.equal('Example code');
-        });
-
-        it('should remove paragraph tags', () => {
-            const result = helper['cleanTag']('<p>Example code</p>');
-            expect(result).to.equal('Example code');
-        });
-
-        it('should remove trailing newline', () => {
-            const result = helper['cleanTag']('Example code\n');
-            expect(result).to.equal('Example code');
-        });
-
-        it('should handle combination of cleanups', () => {
-            const result = helper['cleanTag']('* <p>Example code</p>\n');
-            expect(result).to.equal('Example code');
-        });
-    });
-
     describe('getHtmlEntities method', () => {
         it('should escape HTML entities', () => {
             const result = helper['getHtmlEntities']('<div class="test">Hello & goodbye</div>');
-            expect(result).to.equal('&lt;div class=&quot;test&quot;&gt;Hello &amp; goodbye&lt;/div&gt;');
+            expect(result).to.equal(
+                '&lt;div class=&quot;test&quot;&gt;Hello &amp; goodbye&lt;/div&gt;'
+            );
         });
 
         it('should handle empty string', () => {
@@ -160,7 +134,7 @@ describe('JsdocCodeExampleHelper', () => {
         beforeEach(() => {
             mockContext = {};
             mockOptions = {
-                fn: (ctx) => ctx,
+                fn: ctx => ctx,
                 hash: {}
             };
         });
@@ -204,7 +178,10 @@ describe('JsdocCodeExampleHelper', () => {
 
         it('should process @example with multiple code blocks', () => {
             const jsdocTags: JsdocTagInterface[] = [
-                createMockJsdocTag('example', '```typescript\nconst ts = "typescript";\n```\n\n```javascript\nconst js = "javascript";\n```')
+                createMockJsdocTag(
+                    'example',
+                    '```typescript\nconst ts = "typescript";\n```\n\n```javascript\nconst js = "javascript";\n```'
+                )
             ];
 
             const result = helper.helperFunc(mockContext, jsdocTags, mockOptions);
@@ -216,7 +193,10 @@ describe('JsdocCodeExampleHelper', () => {
 
         it('should handle @example tags with captions', () => {
             const jsdocTags: JsdocTagInterface[] = [
-                createMockJsdocTag('example', '<caption>Test Caption</caption>\n```typescript\nconst test = "hello";\n```')
+                createMockJsdocTag(
+                    'example',
+                    '<caption>Test Caption</caption>\n```typescript\nconst test = "hello";\n```'
+                )
             ];
 
             const result = helper.helperFunc(mockContext, jsdocTags, mockOptions);

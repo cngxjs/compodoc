@@ -1,15 +1,14 @@
-
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI Uniq id for file', () => {
-    const distFolder = tmp.name + '-uniqid';
+    const distFolder = `${tmp.name}-uniqid`;
 
     let indexFile;
     beforeAll(() => {
         tmp.create(distFolder);
-        let ls = shell('node', [
+        const ls = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
@@ -22,7 +21,6 @@ describe('CLI Uniq id for file', () => {
             throw new Error('error');
         }
         indexFile = read(`${distFolder}/js/menu-wc.js`);
-
     });
     afterAll(() => tmp.clean(distFolder));
 

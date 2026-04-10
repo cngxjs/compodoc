@@ -1,56 +1,51 @@
-
-import { hasStderrError, temporaryDir, shell, exists, read } from '../helpers';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { exists, hasStderrError, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI Markdown files generation', () => {
-    const distFolder = tmp.name + '-markdown-files';
-    const fixtureFolder = tmp.name + '-markdown-fixture';
-    
+    const distFolder = `${tmp.name}-markdown-files`;
+    const fixtureFolder = `${tmp.name}-markdown-fixture`;
+
     describe('when CHANGELOG, CONTRIBUTING, and LICENSE markdown files exist', () => {
-        let stdoutString = undefined;
+        let stdoutString;
         let menuFile;
 
         beforeAll(() => {
             // Create fixture folder with markdown files
             tmp.create(fixtureFolder);
             tmp.create(distFolder);
-            
+
             // Copy sample files for basic Angular app
             const srcFolder = path.join(fixtureFolder, 'src');
             fs.mkdirSync(srcFolder, { recursive: true });
-            
+
             // Copy source file
             fs.copyFileSync(
                 './test/fixtures/sample-files/app.module.ts',
                 path.join(srcFolder, 'app.module.ts')
             );
-            
+
             // Create a proper tsconfig.json
             const tsconfigContent = {
-                "compilerOptions": {
-                    "target": "es5",
-                    "module": "commonjs",
-                    "moduleResolution": "node",
-                    "emitDecoratorMetadata": true,
-                    "experimentalDecorators": true,
-                    "sourceMap": true,
-                    "lib": ["es2015", "dom"]
+                compilerOptions: {
+                    target: 'es5',
+                    module: 'commonjs',
+                    moduleResolution: 'node',
+                    emitDecoratorMetadata: true,
+                    experimentalDecorators: true,
+                    sourceMap: true,
+                    lib: ['es2015', 'dom']
                 },
-                "include": [
-                    "src/**/*.ts"
-                ],
-                "exclude": [
-                    "node_modules"
-                ]
+                include: ['src/**/*.ts'],
+                exclude: ['node_modules']
             };
             fs.writeFileSync(
                 path.join(fixtureFolder, 'tsconfig.json'),
                 JSON.stringify(tsconfigContent, null, 2)
             );
-            
+
             const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
@@ -66,7 +61,7 @@ describe('CLI Markdown files generation', () => {
             stdoutString = ls.stdout.toString();
             menuFile = read(`${distFolder}/index.html`);
         });
-        
+
         afterAll(() => {
             tmp.clean(distFolder);
             tmp.clean(fixtureFolder);
@@ -130,15 +125,15 @@ describe('CLI Markdown files generation', () => {
         let menuFile;
 
         beforeAll(() => {
-            tmp.create(distFolder + '-regression');
-            
+            tmp.create(`${distFolder}-regression`);
+
             // Run compodoc - it will find project's markdown files from root
             const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '-d',
-                distFolder + '-regression'
+                `${distFolder}-regression`
             ]);
 
             if (hasStderrError(ls.stderr.toString())) {
@@ -147,8 +142,8 @@ describe('CLI Markdown files generation', () => {
             }
             menuFile = read(`${distFolder}-regression/index.html`);
         });
-        
-        afterAll(() => tmp.clean(distFolder + '-regression'));
+
+        afterAll(() => tmp.clean(`${distFolder}-regression`));
 
         it('should populate markdowns array when markdown files are found', () => {
             // REGRESSION TEST: This verifies that Configuration.mainData.markdowns.push()

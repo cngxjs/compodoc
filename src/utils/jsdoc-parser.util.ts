@@ -1,4 +1,4 @@
-import { ts, SyntaxKind } from 'ts-morph';
+import { SyntaxKind, ts } from 'ts-morph';
 
 import * as _ts from './ts-internal';
 
@@ -21,7 +21,10 @@ export class JsdocParserUtil {
     }
 
     isTopmostModuleDeclaration(node: ts.ModuleDeclaration): boolean {
-        if ((node as any).nextContainer && (node as any).nextContainer.kind === ts.SyntaxKind.ModuleDeclaration) {
+        if (
+            (node as any).nextContainer &&
+            (node as any).nextContainer.kind === ts.SyntaxKind.ModuleDeclaration
+        ) {
             const next = <ts.ModuleDeclaration>(node as any).nextContainer;
             if (node.name.end + 1 === next.name.pos) {
                 return false;
@@ -58,7 +61,7 @@ export class JsdocParserUtil {
         }
 
         const comments = _ts.getJSDocCommentRanges(node, sourceFile.text);
-        if (comments && comments.length) {
+        if (comments?.length) {
             let comment: ts.CommentRange;
             if (node.kind === ts.SyntaxKind.SourceFile) {
                 if (comments.length === 1) {
@@ -79,7 +82,7 @@ export class JsdocParserUtil {
         let shortText = 0;
 
         function readBareLine(line: string) {
-            comment += '\n' + line;
+            comment += `\n${line}`;
             if (line === '' && shortText === 0) {
                 // Ignore
             } else if (line === '' && shortText === 1) {
@@ -96,7 +99,7 @@ export class JsdocParserUtil {
         let inExample = false; // first line with @example, end line with empty string or string or */
         let exampleHasCodeFence = false; // track if the example already has code fences
         function readLine(line: string, index: number) {
-            const originalLine = line;
+            const _originalLine = line;
             line = line.replace(/^\s*\*? ?/, '');
             line = line.replace(/\s*$/, '');
 
@@ -114,7 +117,9 @@ export class JsdocParserUtil {
                 const lines = text.split(/\r\n?|\n/);
                 for (let i = index + 1; i < lines.length; i++) {
                     const nextLine = lines[i].replace(/^\s*\*? ?/, '').replace(/\s*$/, '');
-                    if (nextLine === '') continue; // Skip empty lines
+                    if (nextLine === '') {
+                        continue; // Skip empty lines
+                    }
                     if (CODE_FENCE.test(nextLine)) {
                         exampleHasCodeFence = true;
                     }
@@ -215,16 +220,15 @@ export class JsdocParserUtil {
         const variableStatementNode = isInitializerOfVariableDeclarationInStatement
             ? parent.parent.parent
             : isVariableOfVariableDeclarationStatement
-            ? parent.parent
-            : undefined;
+              ? parent.parent
+              : undefined;
         if (variableStatementNode) {
             cache = this.getJSDocsWorker(variableStatementNode, cache);
         }
 
         // Also recognize when the node is the RHS of an assignment expression
         const isSourceOfAssignmentExpressionStatement =
-            parent &&
-            parent.parent &&
+            parent?.parent &&
             ts.isBinaryExpression(parent) &&
             parent.operatorToken.kind === SyntaxKind.EqualsToken &&
             ts.isExpressionStatement(parent.parent);
@@ -279,7 +283,7 @@ export class JsdocParserUtil {
         } else if (ts.isIdentifier(param.name)) {
             const name = param.name.text;
             return tags.filter(tag => {
-                if (ts && ts.isJSDocParameterTag(tag)) {
+                if (ts?.isJSDocParameterTag(tag)) {
                     const t = tag as any;
                     if (typeof t.parameterName !== 'undefined') {
                         return t.parameterName.text === name;
@@ -328,7 +332,7 @@ export class JsdocParserUtil {
                                         '.' +
                                         JSDocNode.name.right.escapedText;
                                 }
-                                rawDescription += JSDocNode.text + '{@link ' + text + '}';
+                                rawDescription += `${JSDocNode.text}{@link ${text}}`;
                             }
                             break;
                         default:

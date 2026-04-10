@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Miscellaneous Index Pages', () => {
     test.describe('Index grid', () => {
@@ -78,14 +78,16 @@ test.describe('Miscellaneous Index Pages', () => {
 
         test('each kind has a unique indicator color', async ({ page }) => {
             await page.goto('/miscellaneous/variables.html');
-            const vColor = await page.locator('.cdx-index-indicator--variable').first().evaluate(
-                el => getComputedStyle(el).backgroundColor
-            );
+            const vColor = await page
+                .locator('.cdx-index-indicator--variable')
+                .first()
+                .evaluate(el => getComputedStyle(el).backgroundColor);
 
             await page.goto('/miscellaneous/functions.html');
-            const fColor = await page.locator('.cdx-index-indicator--function').first().evaluate(
-                el => getComputedStyle(el).backgroundColor
-            );
+            const fColor = await page
+                .locator('.cdx-index-indicator--function')
+                .first()
+                .evaluate(el => getComputedStyle(el).backgroundColor);
 
             expect(vColor).not.toBe(fColor);
         });
@@ -113,8 +115,9 @@ test.describe('Miscellaneous Index Pages', () => {
             await page.waitForTimeout(300);
 
             const visible = await page.evaluate(() => {
-                return Array.from(document.querySelectorAll('.cdx-index-entry[data-cdx-misc-name]'))
-                    .filter(el => (el as HTMLElement).style.display !== 'none').length;
+                return Array.from(
+                    document.querySelectorAll('.cdx-index-entry[data-cdx-misc-name]')
+                ).filter(el => (el as HTMLElement).style.display !== 'none').length;
             });
             expect(visible).toBeLessThan(totalBefore);
             expect(visible).toBeGreaterThan(0);
@@ -135,8 +138,9 @@ test.describe('Miscellaneous Index Pages', () => {
             await page.waitForTimeout(300);
 
             const allVisible = await page.evaluate(() => {
-                return Array.from(document.querySelectorAll('.cdx-index-entry[data-cdx-misc-name]'))
-                    .every(el => (el as HTMLElement).style.display !== 'none');
+                return Array.from(
+                    document.querySelectorAll('.cdx-index-entry[data-cdx-misc-name]')
+                ).every(el => (el as HTMLElement).style.display !== 'none');
             });
             expect(allVisible).toBe(true);
         });
@@ -182,9 +186,7 @@ test.describe('Miscellaneous Index Pages', () => {
             const entry = page.locator('.cdx-index-entry').first();
             await entry.focus();
 
-            const outline = await entry.evaluate(
-                el => getComputedStyle(el).outlineStyle
-            );
+            const outline = await entry.evaluate(el => getComputedStyle(el).outlineStyle);
             // Should have a visible outline when focused
             expect(outline).not.toBe('none');
         });
@@ -206,10 +208,10 @@ test.describe('Miscellaneous Index Pages', () => {
             await page.goto('/miscellaneous/variables.html');
 
             const deprecated = page.locator('.cdx-index-entry--deprecated .cdx-index-name');
-            if (await deprecated.count() > 0) {
-                const decoration = await deprecated.first().evaluate(
-                    el => getComputedStyle(el).textDecorationLine
-                );
+            if ((await deprecated.count()) > 0) {
+                const decoration = await deprecated
+                    .first()
+                    .evaluate(el => getComputedStyle(el).textDecorationLine);
                 expect(decoration).toBe('line-through');
             }
         });
@@ -238,9 +240,7 @@ test.describe('Miscellaneous Index Pages', () => {
             await page.goto('/miscellaneous/enumerations.html');
 
             const permalink = page.locator('.cdx-member-permalink').first();
-            const opacity = await permalink.evaluate(
-                el => getComputedStyle(el).opacity
-            );
+            const opacity = await permalink.evaluate(el => getComputedStyle(el).opacity);
             expect(opacity).toBe('0');
         });
     });

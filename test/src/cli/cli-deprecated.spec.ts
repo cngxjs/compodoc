@@ -1,10 +1,10 @@
+import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI Deprecated', () => {
-    const tmpFolder = tmp.name + '-deprecated';
-    const distFolder = tmpFolder + '/documentation';
+    const tmpFolder = `${tmp.name}-deprecated`;
+    const distFolder = `${tmpFolder}/documentation`;
 
     let menuFile;
 
@@ -12,7 +12,7 @@ describe('CLI Deprecated', () => {
         beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/todomvc-ng2-deprecated/', tmpFolder);
-            let ls = shell(
+            const ls = shell(
                 'node',
                 ['../bin/index-cli.js', '-p', './tsconfig.doc.json', '-d', 'documentation'],
                 { cwd: tmpFolder }
@@ -24,7 +24,6 @@ describe('CLI Deprecated', () => {
             }
 
             menuFile = read(`${distFolder}/js/menu-wc.js`);
-
         });
         afterAll(() => tmp.clean(tmpFolder));
 
@@ -124,5 +123,4 @@ describe('CLI Deprecated', () => {
             expect(file).to.contain('deprecated-name"><b>PIT');
         });
     });
-
 });

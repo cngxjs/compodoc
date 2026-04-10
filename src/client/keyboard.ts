@@ -11,19 +11,29 @@ let currentMemberIndex = -1;
 /** Check if shortcuts should be suppressed (input focus, open dialog) */
 const isSuppressed = (): boolean => {
     const el = document.activeElement;
-    if (!el) return false;
+    if (!el) {
+        return false;
+    }
     const tag = el.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
-    if ((el as HTMLElement).isContentEditable) return true;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+        return true;
+    }
+    if ((el as HTMLElement).isContentEditable) {
+        return true;
+    }
     // Suppress when any dialog is open (command palette, shortcut overlay)
-    if (document.querySelector('dialog[open]')) return true;
+    if (document.querySelector('dialog[open]')) {
+        return true;
+    }
     return false;
 };
 
 /** Create the shortcuts overlay dialog (once) */
 const createDialog = (): HTMLDialogElement => {
     const existing = document.getElementById(DIALOG_ID) as HTMLDialogElement;
-    if (existing) return existing;
+    if (existing) {
+        return existing;
+    }
 
     const dialog = document.createElement('dialog');
     dialog.id = DIALOG_ID;
@@ -37,19 +47,27 @@ const createDialog = (): HTMLDialogElement => {
     const section = (title: string, rows: string) =>
         `<section><h3>${title}</h3><dl>${rows}</dl></section>`;
 
-    dialog.innerHTML = '<div class="cdx-shortcuts-panel">' +
+    dialog.innerHTML =
+        '<div class="cdx-shortcuts-panel">' +
         '<h2>Keyboard Shortcuts</h2>' +
         '<div class="cdx-shortcuts-grid">' +
         section('Navigation', row(kbd('p'), 'Previous entity') + row(kbd('n'), 'Next entity')) +
         section('Page', row(kbd('j'), 'Next member') + row(kbd('k'), 'Previous member')) +
-        section('Search', row(kbd('/'), 'Open search') + row(kbd(mod, 'cdx-kbd-mod') + kbd('K'), 'Open search') + row(kbd('?'), 'This dialog')) +
+        section(
+            'Search',
+            row(kbd('/'), 'Open search') +
+                row(kbd(mod, 'cdx-kbd-mod') + kbd('K'), 'Open search') +
+                row(kbd('?'), 'This dialog')
+        ) +
         '</div></div>';
     document.body.appendChild(dialog);
 
     // Close on click outside panel
-    dialog.addEventListener('click', (e) => {
+    dialog.addEventListener('click', e => {
         const panel = dialog.querySelector('.cdx-shortcuts-panel');
-        if (panel && !panel.contains(e.target as Node)) dialog.close();
+        if (panel && !panel.contains(e.target as Node)) {
+            dialog.close();
+        }
     });
 
     return dialog;
@@ -57,24 +75,34 @@ const createDialog = (): HTMLDialogElement => {
 
 /** j/k member card navigation */
 const navigateMember = (direction: 1 | -1) => {
-    const cards = document.querySelectorAll<HTMLElement>('.cdx-tab-panel.active .cdx-member-card, .cdx-tab-panel:first-child .cdx-member-card');
-    if (!cards.length) return;
+    const cards = document.querySelectorAll<HTMLElement>(
+        '.cdx-tab-panel.active .cdx-member-card, .cdx-tab-panel:first-child .cdx-member-card'
+    );
+    if (!cards.length) {
+        return;
+    }
 
     // Remove previous focus
-    document.querySelectorAll('.cdx-member-card--focused').forEach(el =>
-        el.classList.remove('cdx-member-card--focused')
-    );
+    document
+        .querySelectorAll('.cdx-member-card--focused')
+        .forEach(el => el.classList.remove('cdx-member-card--focused'));
 
     currentMemberIndex += direction;
-    if (currentMemberIndex < 0) currentMemberIndex = 0;
-    if (currentMemberIndex >= cards.length) currentMemberIndex = cards.length - 1;
+    if (currentMemberIndex < 0) {
+        currentMemberIndex = 0;
+    }
+    if (currentMemberIndex >= cards.length) {
+        currentMemberIndex = cards.length - 1;
+    }
 
     const card = cards[currentMemberIndex];
     card.classList.add('cdx-member-card--focused');
 
     // Open collapsed details if present
     const details = card.querySelector('details:not([open])');
-    if (details) (details as HTMLDetailsElement).open = true;
+    if (details) {
+        (details as HTMLDetailsElement).open = true;
+    }
 
     // Scroll into view
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -91,9 +119,9 @@ const dismissPreview = () => {
         clearTimeout(previewDismissTimer);
         previewDismissTimer = null;
     }
-    document.querySelectorAll('.cdx-sidebar-focused').forEach(el =>
-        el.classList.remove('cdx-sidebar-focused')
-    );
+    document
+        .querySelectorAll('.cdx-sidebar-focused')
+        .forEach(el => el.classList.remove('cdx-sidebar-focused'));
     document.querySelectorAll('.cdx-entity-preview').forEach(el => el.remove());
     focusedEntityIdx = -1;
 };
@@ -127,31 +155,43 @@ const navigateEntity = (direction: 1 | -1) => {
     const links = Array.from(
         document.querySelectorAll<HTMLAnchorElement>('.menu a[data-type="entity-link"]')
     );
-    if (!links.length) return;
+    if (!links.length) {
+        return;
+    }
 
     // If no preview is active, start from the current active link
     if (focusedEntityIdx === -1) {
-        const activeLink = document.querySelector<HTMLAnchorElement>('.menu a.active[data-type="entity-link"]');
+        const activeLink = document.querySelector<HTMLAnchorElement>(
+            '.menu a.active[data-type="entity-link"]'
+        );
         focusedEntityIdx = activeLink ? links.indexOf(activeLink) : -1;
     }
 
     let nextIdx = focusedEntityIdx + direction;
-    if (nextIdx < 0) nextIdx = links.length - 1;
-    if (nextIdx >= links.length) nextIdx = 0;
+    if (nextIdx < 0) {
+        nextIdx = links.length - 1;
+    }
+    if (nextIdx >= links.length) {
+        nextIdx = 0;
+    }
     focusedEntityIdx = nextIdx;
 
     const target = links[nextIdx];
-    if (!target) return;
+    if (!target) {
+        return;
+    }
 
     // Clear previous focus/preview
-    document.querySelectorAll('.cdx-sidebar-focused').forEach(el =>
-        el.classList.remove('cdx-sidebar-focused')
-    );
+    document
+        .querySelectorAll('.cdx-sidebar-focused')
+        .forEach(el => el.classList.remove('cdx-sidebar-focused'));
     document.querySelectorAll('.cdx-entity-preview').forEach(el => el.remove());
 
     // Focus the target's parent li
     const li = target.closest('li');
-    if (li) li.classList.add('cdx-sidebar-focused');
+    if (li) {
+        li.classList.add('cdx-sidebar-focused');
+    }
 
     // Scroll focused item into view
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -165,11 +205,15 @@ const navigateEntity = (direction: 1 | -1) => {
         panel.setAttribute('role', 'tooltip');
         panel.setAttribute('aria-live', 'polite');
         panel.innerHTML = previewHtml;
-        if (li) li.appendChild(panel);
+        if (li) {
+            li.appendChild(panel);
+        }
     }
 
     // Auto-dismiss after 5 seconds
-    if (previewDismissTimer) clearTimeout(previewDismissTimer);
+    if (previewDismissTimer) {
+        clearTimeout(previewDismissTimer);
+    }
     previewDismissTimer = setTimeout(dismissPreview, 5000);
 };
 
@@ -200,9 +244,9 @@ const onKeydown = (e: KeyboardEvent) => {
             return;
         }
         // Clear member focus
-        document.querySelectorAll('.cdx-member-card--focused').forEach(el =>
-            el.classList.remove('cdx-member-card--focused')
-        );
+        document
+            .querySelectorAll('.cdx-member-card--focused')
+            .forEach(el => el.classList.remove('cdx-member-card--focused'));
         currentMemberIndex = -1;
         return;
     }
@@ -214,7 +258,9 @@ const onKeydown = (e: KeyboardEvent) => {
         return;
     }
 
-    if (isSuppressed()) return;
+    if (isSuppressed()) {
+        return;
+    }
 
     switch (e.key) {
         case '?':
@@ -247,9 +293,9 @@ const onKeydown = (e: KeyboardEvent) => {
 /** Reset member navigation index (call on SPA navigation) */
 export const resetKeyboardState = () => {
     currentMemberIndex = -1;
-    document.querySelectorAll('.cdx-member-card--focused').forEach(el =>
-        el.classList.remove('cdx-member-card--focused')
-    );
+    document
+        .querySelectorAll('.cdx-member-card--focused')
+        .forEach(el => el.classList.remove('cdx-member-card--focused'));
     dismissPreview();
 };
 

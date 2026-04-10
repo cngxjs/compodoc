@@ -1,5 +1,3 @@
-import { describe, it, expect } from 'vitest';
-
 // Import the functions under test — they're exported from the engine module
 // We need to use the dist build since the source is Rollup-bundled
 // Instead, we test the logic directly by reimplementing the pure functions
@@ -7,7 +5,9 @@ import { describe, it, expect } from 'vitest';
 // ─── deriveGroupKey ─────────────────────────────────────────
 
 function deriveGroupKey(filePath: string): string {
-    if (!filePath) return '';
+    if (!filePath) {
+        return '';
+    }
     let rel = filePath.replace(/\\/g, '/');
     for (const marker of ['src/app/', 'src/', 'app/', 'lib/']) {
         const idx = rel.indexOf(marker);
@@ -17,29 +17,33 @@ function deriveGroupKey(filePath: string): string {
         }
     }
     const segments = rel.split('/').slice(0, -1);
-    if (segments.length === 0) return '';
+    if (segments.length === 0) {
+        return '';
+    }
     return segments.join('/');
 }
 
 describe('deriveGroupKey', () => {
     it('should strip src/app/ prefix and return parent dirs', () => {
-        expect(deriveGroupKey('src/app/features/users/user-list.component.ts'))
-            .toBe('features/users');
+        expect(deriveGroupKey('src/app/features/users/user-list.component.ts')).toBe(
+            'features/users'
+        );
     });
 
     it('should handle full absolute paths with src/app/', () => {
-        expect(deriveGroupKey('/project/test/fixtures/standalone-app/src/app/dashboard/stats.component.ts'))
-            .toBe('dashboard');
+        expect(
+            deriveGroupKey(
+                '/project/test/fixtures/standalone-app/src/app/dashboard/stats.component.ts'
+            )
+        ).toBe('dashboard');
     });
 
     it('should strip src/ prefix when no src/app/', () => {
-        expect(deriveGroupKey('src/shared/utils/helper.ts'))
-            .toBe('shared/utils');
+        expect(deriveGroupKey('src/shared/utils/helper.ts')).toBe('shared/utils');
     });
 
     it('should strip lib/ prefix', () => {
-        expect(deriveGroupKey('lib/components/button.component.ts'))
-            .toBe('components');
+        expect(deriveGroupKey('lib/components/button.component.ts')).toBe('components');
     });
 
     it('should return empty for root-level files', () => {
@@ -51,13 +55,15 @@ describe('deriveGroupKey', () => {
     });
 
     it('should normalize backslashes', () => {
-        expect(deriveGroupKey('src\\app\\features\\admin\\panel.component.ts'))
-            .toBe('features/admin');
+        expect(deriveGroupKey('src\\app\\features\\admin\\panel.component.ts')).toBe(
+            'features/admin'
+        );
     });
 
     it('should return full depth — no truncation', () => {
-        expect(deriveGroupKey('src/app/features/admin/ui/settings/notifications.component.ts'))
-            .toBe('features/admin/ui/settings');
+        expect(
+            deriveGroupKey('src/app/features/admin/ui/settings/notifications.component.ts')
+        ).toBe('features/admin/ui/settings');
     });
 });
 
@@ -200,7 +206,9 @@ describe('buildGroupTree', () => {
         expect(tree[0].fullPath).toBe('features');
         expect(tree[0].children[0].fullPath).toBe('features/admin');
         expect(tree[0].children[0].children[0].fullPath).toBe('features/admin/ui');
-        expect(tree[0].children[0].children[0].children[0].fullPath).toBe('features/admin/ui/settings');
+        expect(tree[0].children[0].children[0].children[0].fullPath).toBe(
+            'features/admin/ui/settings'
+        );
     });
 
     it('should handle mix of depths correctly', () => {

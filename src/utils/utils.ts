@@ -1,14 +1,11 @@
+import * as path from 'node:path';
 import * as fs from 'fs-extra';
-import * as path from 'path';
 import { ts } from 'ts-morph';
-
-import { LinkParser } from './link-parser';
-
-import { logger } from './logger';
-
 import { AngularLifecycleHooks } from './angular-lifecycles-hooks';
-import { kindToType } from './kind-to-type';
 import { JsdocParserUtil } from './jsdoc-parser.util';
+import { kindToType } from './kind-to-type';
+import { LinkParser } from './link-parser';
+import { logger } from './logger';
 import { markedAcl } from './marked.acl';
 
 const getCurrentDirectory = ts.sys.getCurrentDirectory;
@@ -80,7 +77,7 @@ export function mergeTagsAndArgs(args: Array<any>, jsdoctags?: Array<any>): Arra
                     tagName: jsdoctag.tagName,
                     comment: jsdoctag.comment
                 };
-                if (jsdoctag.typeExpression && jsdoctag.typeExpression.type) {
+                if (jsdoctag.typeExpression?.type) {
                     ret.returnType = kindToType(jsdoctag.typeExpression.type.kind);
                 }
                 margs.push(ret);
@@ -209,7 +206,10 @@ if (!Array.prototype.includes) {
             function sameValueZero(x, y) {
                 return (
                     x === y ||
-                    (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y))
+                    (typeof x === 'number' &&
+                        typeof y === 'number' &&
+                        Number.isNaN(x) &&
+                        Number.isNaN(y))
                 );
             }
 
@@ -297,7 +297,7 @@ export function compilerHost(transpileOptions: any): ts.CompilerHost {
             }
             return undefined;
         },
-        writeFile: (name, text) => {},
+        writeFile: (_name, _text) => {},
         getDefaultLibFileName: () => 'lib.d.ts',
         useCaseSensitiveFileNames: () => false,
         getCanonicalFileName: fileName => fileName,
@@ -384,7 +384,13 @@ export function detectIndent(str, count): string {
     return indentString(stripIndent(str), count || 0);
 }
 
-export function getSubstringFromMultilineString(multilineString: string, startLine: number, startColumn: number, endLine: number, endColumn: number) {
+export function getSubstringFromMultilineString(
+    multilineString: string,
+    startLine: number,
+    startColumn: number,
+    endLine: number,
+    endColumn: number
+) {
     // Split the string into lines
     const lines = multilineString.split('\n');
 
@@ -399,7 +405,10 @@ export function getSubstringFromMultilineString(multilineString: string, startLi
         selectedLines[0] = selectedLines[0].slice(startColumn + 1);
 
         // And slice the end line from the start to endColumn
-        selectedLines[selectedLines.length - 1] = selectedLines[selectedLines.length - 1].slice(0, endColumn - 1);
+        selectedLines[selectedLines.length - 1] = selectedLines[selectedLines.length - 1].slice(
+            0,
+            endColumn - 1
+        );
     }
 
     // Join the lines back together into a single string

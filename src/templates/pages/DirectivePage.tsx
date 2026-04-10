@@ -1,37 +1,52 @@
-import Html from '@kitajs/html';
-import { isInfoSection, linkTypeHtml, t } from '../helpers';
-import { MetadataRow, MetadataCodeRow, MetadataSection } from '../blocks/MetadataRow';
+import {
+    MetadataChipsRow,
+    MetadataCodeRow,
+    MetadataHostDirectivesRow,
+    MetadataHostRow,
+    MetadataProvidersRow,
+    MetadataSection
+} from '../blocks/MetadataRow';
+import { isInfoSection } from '../helpers';
 import { renderEntityPage } from './EntityPage';
 
 const DirectiveMetadata = (directive: any): string => {
-    if (!isInfoSection('metadata')) return '';
-    const hasMetadata = directive.selector || directive.providers || directive.standalone || directive.hostDirectives || directive.exportAs;
+    if (!isInfoSection('metadata')) {
+        return '';
+    }
+    const hasMetadata =
+        directive.selector ||
+        directive.providers?.length > 0 ||
+        directive.hostDirectives?.length > 0 ||
+        directive.hostStructured?.length > 0 ||
+        directive.exportAs;
     const hasExtends = directive.extends?.length > 0;
     const hasImplements = directive.implements?.length > 0;
-    if (!hasMetadata && !hasExtends && !hasImplements) return '';
+    if (!hasMetadata && !hasExtends && !hasImplements) {
+        return '';
+    }
 
     const rows: string[] = [];
 
-    if (directive.selector) rows.push(MetadataCodeRow(t('selector'), directive.selector));
-    if (directive.standalone) rows.push(MetadataCodeRow(t('standalone'), String(directive.standalone)));
-    if (directive.exportAs) rows.push(MetadataCodeRow(t('exportAs'), directive.exportAs));
-    if (directive.providers) {
-        rows.push(MetadataCodeRow(t('providers'), directive.providers.map((p: any) => p.name).join(', ')));
+    if (directive.selector) {
+        rows.push(MetadataCodeRow('selector', directive.selector));
     }
+    if (directive.exportAs) {
+        rows.push(MetadataCodeRow('exportAs', directive.exportAs));
+    }
+
+    // Array values → providers get the structured object-literal renderer
+    rows.push(MetadataProvidersRow('providers', directive.providers ?? []));
+
     if (directive.hostDirectives?.length > 0) {
-        rows.push(MetadataRow(t('hostdirectives'), directive.hostDirectives.map((hd: any) => {
-            let html = linkTypeHtml(hd.name);
-            if (hd.inputs?.length > 0) html += ` <span class="cdx-metadata-label">${t('inputs')}:</span> ${hd.inputs.join(', ')}`;
-            if (hd.outputs?.length > 0) html += ` <span class="cdx-metadata-label">${t('outputs')}:</span> ${hd.outputs.join(', ')}`;
-            return html;
-        }).join(' ')));
+        rows.push(MetadataHostDirectivesRow(directive.hostDirectives));
     }
-    if (hasExtends) {
-        rows.push(MetadataRow('extends', (directive.extends as string[]).map(ext => linkTypeHtml(ext)).join(' ')));
+
+    if (directive.hostStructured?.length > 0) {
+        rows.push(MetadataHostRow(directive.hostStructured));
     }
-    if (hasImplements) {
-        rows.push(MetadataRow('implements', (directive.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')));
-    }
+
+    rows.push(MetadataChipsRow('extends', (directive.extends as string[]) ?? []));
+    rows.push(MetadataChipsRow('implements', (directive.implements as string[]) ?? []));
 
     return MetadataSection({ rows });
 };
@@ -59,5 +74,5 @@ export const DirectivePage = (data: any): string =>
         showStandaloneBadge: true,
         showJsdocBadges: true,
         relationships: data.relationships,
-        sourceCode: data.directive?.sourceCode,
+        sourceCode: data.directive?.sourceCode
     });

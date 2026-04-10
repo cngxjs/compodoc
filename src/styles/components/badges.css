@@ -10,6 +10,16 @@
     background: hsl(170 50% 94%);
 }
 
+/* Neutral trait badge — OnPush, Shadow DOM, Preserve whitespace, etc. */
+.cdx-badge--trait {
+    color: var(--color-cdx-text-secondary);
+    border: 1px solid var(--color-cdx-border);
+    background: var(--color-cdx-bg-elevated);
+}
+.dark .cdx-badge--trait {
+    background: var(--color-cdx-bg-alt);
+}
+
 .cdx-badge--token {
     color: hsl(260 50% 40%);
     border: 1px solid hsl(260 40% 60%);

@@ -1,5 +1,5 @@
+import { exists, hasStderrError, shell, stats, temporaryDir } from '../helpers';
 
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync, stats } from '../helpers';
 const tmp = temporaryDir();
 
 interface Image {
@@ -7,12 +7,12 @@ interface Image {
 }
 
 describe('CLI custom logo', () => {
-    const distFolder = tmp.name + '-logo';
+    const distFolder = `${tmp.name}-logo`;
 
     describe('when specifying a custom logo png image', () => {
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
@@ -26,14 +26,13 @@ describe('CLI custom logo', () => {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
-
         });
         afterAll(() => tmp.clean(distFolder));
 
         it('should have copied the customLogo', () => {
-            let isFileExists = exists(`${distFolder}/images/logo.png`);
+            const isFileExists = exists(`${distFolder}/images/logo.png`);
             expect(isFileExists).to.be.true;
-            let originalFileSize = (stats('test/fixtures/todomvc-ng2/logo.png') as Image).size,
+            const originalFileSize = (stats('test/fixtures/todomvc-ng2/logo.png') as Image).size,
                 copiedFileSize = (stats(`${distFolder}/images/logo.png`) as Image).size;
             expect(originalFileSize).to.equal(copiedFileSize);
         });
@@ -42,7 +41,7 @@ describe('CLI custom logo', () => {
     describe('when specifying a custom logo svg image', () => {
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
@@ -56,14 +55,13 @@ describe('CLI custom logo', () => {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
-
         });
         afterAll(() => tmp.clean(distFolder));
 
         it('should have copied the customLogo', () => {
-            let isFileExists = exists(`${distFolder}/images/logo.svg`);
+            const isFileExists = exists(`${distFolder}/images/logo.svg`);
             expect(isFileExists).to.be.true;
-            let originalFileSize = (stats('test/fixtures/todomvc-ng2/logo.svg') as Image).size,
+            const originalFileSize = (stats('test/fixtures/todomvc-ng2/logo.svg') as Image).size,
                 copiedFileSize = (stats(`${distFolder}/images/logo.svg`) as Image).size;
             expect(originalFileSize).to.equal(copiedFileSize);
         });
@@ -72,7 +70,7 @@ describe('CLI custom logo', () => {
     describe('when not specifying a custom logo svg image', () => {
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
@@ -84,12 +82,11 @@ describe('CLI custom logo', () => {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
-
         });
         afterAll(() => tmp.clean(distFolder));
 
         it('should not have copied the customLogo', () => {
-            let isFileExists = exists(`${distFolder}/images/logo.svg`);
+            const isFileExists = exists(`${distFolder}/images/logo.svg`);
             expect(isFileExists).to.not.be.true;
         });
     });

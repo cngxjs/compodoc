@@ -1,5 +1,5 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
-import { JsdocTagInterface } from '../../interfaces/jsdoc-tag.interface';
+import type { JsdocTagInterface } from '../../interfaces/jsdoc-tag.interface';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 interface CodeBlock {
     language: string;
@@ -7,25 +7,6 @@ interface CodeBlock {
 }
 
 export class JsdocCodeExampleHelper implements IHtmlEngineHelper {
-    private cleanTag(comment: string): string {
-        if (comment.charAt(0) === '*') {
-            comment = comment.substring(1, comment.length);
-        }
-        if (comment.charAt(0) === ' ') {
-            comment = comment.substring(1, comment.length);
-        }
-        if (comment.indexOf('<p>') === 0) {
-            comment = comment.substring(3, comment.length);
-        }
-        if (comment.substr(-1) === '\n') {
-            comment = comment.substring(0, comment.length - 1);
-        }
-        if (comment.substr(-4) === '</p>') {
-            comment = comment.substring(0, comment.length - 4);
-        }
-        return comment;
-    }
-
     private getHtmlEntities(str): string {
         return String(str)
             .replace(/&/g, '&amp;')
@@ -44,8 +25,12 @@ export class JsdocCodeExampleHelper implements IHtmlEngineHelper {
         while ((match = codeFenceRegex.exec(comment)) !== null) {
             hasCodeFences = true;
             let language = (match[1] || 'html').toLowerCase();
-            if (language === 'js') language = 'javascript';
-            if (language === 'ts') language = 'typescript';
+            if (language === 'js') {
+                language = 'javascript';
+            }
+            if (language === 'ts') {
+                language = 'typescript';
+            }
             let code = match[2];
             // Convert placeholder back to empty lines first
             code = code.replace(/___COMPODOC_EMPTY_LINE___/g, '\n');

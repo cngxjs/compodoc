@@ -1,5 +1,4 @@
 import Html from '@kitajs/html';
-
 export type EmptyStateVariant = 'compact' | 'full' | 'page';
 
 interface EmptyStateProps {
@@ -35,7 +34,11 @@ export function EmptyState({ icon, title, description, action, variant }: EmptyS
             {icon}
             <p class="cdx-empty-state-title">{title}</p>
             {description && <p class="cdx-empty-state-description">{description}</p>}
-            {action && <a class="cdx-empty-state-action" href={action.href}>{action.label}</a>}
+            {action && (
+                <a class="cdx-empty-state-action" href={action.href}>
+                    {action.label}
+                </a>
+            )}
         </div>
     ) as string;
 }

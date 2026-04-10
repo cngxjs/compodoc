@@ -11,21 +11,29 @@
  */
 
 function animateDonut(svg: SVGSVGElement): void {
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-        const segments = svg.querySelectorAll<SVGCircleElement>('.cdx-donut-segment');
-        segments.forEach(seg => {
-            const targetArray = seg.getAttribute('data-cdx-dasharray');
-            const targetOffset = seg.getAttribute('data-cdx-dashoffset');
-            if (targetArray) seg.style.strokeDasharray = targetArray;
-            if (targetOffset) seg.style.strokeDashoffset = targetOffset;
-        });
-    }));
+    requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+            const segments = svg.querySelectorAll<SVGCircleElement>('.cdx-donut-segment');
+            segments.forEach(seg => {
+                const targetArray = seg.getAttribute('data-cdx-dasharray');
+                const targetOffset = seg.getAttribute('data-cdx-dashoffset');
+                if (targetArray) {
+                    seg.style.strokeDasharray = targetArray;
+                }
+                if (targetOffset) {
+                    seg.style.strokeDashoffset = targetOffset;
+                }
+            });
+        })
+    );
 }
 
 function animateFill(el: HTMLElement): void {
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-        el.style.width = el.getAttribute('data-cdx-fill-width') || '0';
-    }));
+    requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+            el.style.width = el.getAttribute('data-cdx-fill-width') || '0';
+        })
+    );
 }
 
 export function initAnimations(): void {
@@ -35,20 +43,29 @@ export function initAnimations(): void {
         return;
     }
 
-    const observer = new IntersectionObserver((entries) => {
-        for (const entry of entries) {
-            if (!entry.isIntersecting) continue;
-            const el = entry.target;
-            if (el instanceof SVGSVGElement && el.hasAttribute('data-cdx-donut')) {
-                animateDonut(el);
+    const observer = new IntersectionObserver(
+        entries => {
+            for (const entry of entries) {
+                if (!entry.isIntersecting) {
+                    continue;
+                }
+                const el = entry.target;
+                if (el instanceof SVGSVGElement && el.hasAttribute('data-cdx-donut')) {
+                    animateDonut(el);
+                }
+                if (el instanceof HTMLElement && el.hasAttribute('data-cdx-fill-width')) {
+                    animateFill(el);
+                }
+                observer.unobserve(el);
             }
-            if (el instanceof HTMLElement && el.hasAttribute('data-cdx-fill-width')) {
-                animateFill(el);
-            }
-            observer.unobserve(el);
-        }
-    }, { threshold: 0.3 });
+        },
+        { threshold: 0.3 }
+    );
 
-    document.querySelectorAll<SVGSVGElement>('[data-cdx-donut]').forEach(svg => observer.observe(svg));
-    document.querySelectorAll<HTMLElement>('[data-cdx-fill-width]').forEach(el => observer.observe(el));
+    document
+        .querySelectorAll<SVGSVGElement>('[data-cdx-donut]')
+        .forEach(svg => observer.observe(svg));
+    document
+        .querySelectorAll<HTMLElement>('[data-cdx-fill-width]')
+        .forEach(el => observer.observe(el));
 }

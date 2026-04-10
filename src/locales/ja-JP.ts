@@ -11,7 +11,8 @@ export const TRANSLATION_JA_JP = {
     components: 'コンポーネント',
     constructor: 'コンストラクタ',
     coverage: 'カバレッジ',
-    'coverage-empty-description': 'カバレッジを確認するには、ドキュメント化されたエンティティで compodoc を実行してください。',
+    'coverage-empty-description':
+        'カバレッジを確認するには、ドキュメント化されたエンティティで compodoc を実行してください。',
     'coverage-overview': 'ドキュメントカバレッジ',
     'coverage-page-title': 'カバレッジ',
     declarations: '宣言',
@@ -40,7 +41,8 @@ export const TRANSLATION_JA_JP = {
     'empty-dom-tree-desc': 'DOM ツリーを生成するにはテンプレートが必要です。',
     'empty-dom-tree-title': 'DOM ツリーを利用できません',
     'empty-entity-action': 'JSDoc タグについて学ぶ',
-    'empty-entity-desc': 'この {{entityType}} にはドキュメント化されたメンバーがありません。JSDoc コメントをコードに追加してこのページを充実させてください。',
+    'empty-entity-desc':
+        'この {{entityType}} にはドキュメント化されたメンバーがありません。JSDoc コメントをコードに追加してこのページを充実させてください。',
     'empty-entity-title': 'まだドキュメントがありません',
     'empty-enum-values': '値なし',
     'empty-examples-desc': 'このコンポーネントにはライブサンプルが設定されていません。',
@@ -60,7 +62,8 @@ export const TRANSLATION_JA_JP = {
     'empty-methods': 'メソッドなし',
     'empty-outputs': '出力プロパティが定義されていません',
     'empty-overview-action': 'tsconfig を確認してください',
-    'empty-overview-desc': 'モジュール、コンポーネント、その他の Angular 成果物が検出されませんでした。',
+    'empty-overview-desc':
+        'モジュール、コンポーネント、その他の Angular 成果物が検出されませんでした。',
     'empty-overview-title': 'プロジェクトデータなし',
     'empty-pipes-desc': 'このプロジェクトにはカスタムパイプがありません。',
     'empty-pipes-title': 'パイプなし',

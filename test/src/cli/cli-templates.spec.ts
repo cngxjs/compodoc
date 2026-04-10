@@ -1,9 +1,9 @@
+import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
-import { hasStderrError, temporaryDir, shell, read } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI custom JS templates', () => {
-    const distFolder = tmp.name + '-templates';
+    const distFolder = `${tmp.name}-templates`;
 
     describe('with alternative JS template files', () => {
         let barComponentFile, fooComponentFile;

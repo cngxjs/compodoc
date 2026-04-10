@@ -1,15 +1,13 @@
-
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI Unit Test Report', () => {
-    const tmpFolder = tmp.name + '-unit-test';
-    const distFolder = tmpFolder + '/documentation';
+    const tmpFolder = `${tmp.name}-unit-test`;
+    const distFolder = `${tmpFolder}/documentation`;
 
     describe('full path in JSON', () => {
-        let stdoutString = undefined,
-            unitTestFile;
+        let stdoutString, unitTestFile;
         beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/todomvc-ng2/', tmpFolder);
@@ -60,8 +58,7 @@ describe('CLI Unit Test Report', () => {
     });
 
     describe('partial path in JSON', () => {
-        let stdoutString = undefined,
-            unitTestFile;
+        let stdoutString, unitTestFile;
         beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/todomvc-ng2/', tmpFolder);
@@ -111,12 +108,11 @@ describe('CLI Unit Test Report', () => {
     });
 
     describe('Windows style path in JSON', () => {
-        let stdoutString = undefined,
-            unitTestFile;
+        let stdoutString, unitTestFile;
         beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/todomvc-ng2/', tmpFolder);
-            let ls = shell(
+            const ls = shell(
                 'node',
                 [
                     '../bin/index-cli.js',

@@ -1,7 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Sidebar', () => {
-    test('desktop: sections default expanded without saved state (toggleMenuItems: all)', async ({ page }) => {
+    test('desktop: sections default expanded without saved state (toggleMenuItems: all)', async ({
+        page
+    }) => {
         await page.goto('/');
         await page.evaluate(() => localStorage.removeItem('compodoc-sidebar-state'));
         await page.reload();
@@ -142,9 +144,10 @@ test.describe('Dark mode', () => {
         await page.locator('#sidebar .cdx-dark-toggle').click();
         await page.waitForTimeout(100);
 
-        const noDark = await page.evaluate(() =>
-            !document.documentElement.classList.contains('dark') &&
-            !document.body.classList.contains('dark')
+        const noDark = await page.evaluate(
+            () =>
+                !document.documentElement.classList.contains('dark') &&
+                !document.body.classList.contains('dark')
         );
         expect(noDark).toBe(true);
 
@@ -152,9 +155,10 @@ test.describe('Dark mode', () => {
         await page.locator('#sidebar .cdx-dark-toggle').click();
         await page.waitForTimeout(100);
 
-        const hasDark = await page.evaluate(() =>
-            document.documentElement.classList.contains('dark') &&
-            document.body.classList.contains('dark')
+        const hasDark = await page.evaluate(
+            () =>
+                document.documentElement.classList.contains('dark') &&
+                document.body.classList.contains('dark')
         );
         expect(hasDark).toBe(true);
     });
@@ -171,7 +175,7 @@ test.describe('SPA navigation', () => {
         await page.waitForTimeout(300);
 
         const entityLink = page.locator('#sidebar a[data-type="entity-link"]').first();
-        if (await entityLink.count() > 0) {
+        if ((await entityLink.count()) > 0) {
             // Mark the sidebar DOM to verify it wasn't replaced
             await page.evaluate(() => {
                 document.querySelector('#sidebar')?.setAttribute('data-spa-marker', '1');
@@ -195,12 +199,12 @@ test.describe('SPA navigation', () => {
         await page.goto('/');
 
         const routesLink = page.locator('#sidebar a[href="routes.html"]');
-        if (await routesLink.count() > 0) {
+        if ((await routesLink.count()) > 0) {
             await routesLink.click();
             await page.waitForTimeout(2000);
 
-            const hasRoutesIndex = await page.evaluate(() =>
-                typeof (window as any).ROUTES_INDEX !== 'undefined'
+            const hasRoutesIndex = await page.evaluate(
+                () => typeof (window as any).ROUTES_INDEX !== 'undefined'
             );
             expect(hasRoutesIndex).toBe(true);
 
@@ -219,11 +223,11 @@ test.describe('Module graph', () => {
         await page.waitForTimeout(1000);
 
         const svg = page.locator('#module-graph-svg svg');
-        if (await svg.count() > 0) {
+        if ((await svg.count()) > 0) {
             await expect(svg).toBeVisible();
 
             const zoomIn = page.locator('#zoom-in');
-            if (await zoomIn.count() > 0) {
+            if ((await zoomIn.count()) > 0) {
                 await zoomIn.click();
                 await page.waitForTimeout(400);
                 await expect(svg).toBeVisible();

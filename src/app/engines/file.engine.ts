@@ -1,5 +1,5 @@
+import * as path from 'node:path';
 import * as fs from 'fs-extra';
-import * as path from 'path';
 
 export class FileEngine {
     private static instance: FileEngine;
@@ -15,7 +15,7 @@ export class FileEngine {
         return new Promise((resolve, reject) => {
             fs.readFile(path.resolve(filepath), 'utf8', (err, data) => {
                 if (err) {
-                    reject('Error during ' + filepath + ' read');
+                    reject(`Error during ${filepath} read`);
                 } else {
                     resolve(data);
                 }

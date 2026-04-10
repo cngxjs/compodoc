@@ -1,6 +1,6 @@
 import Html from '@kitajs/html';
-import { t } from '../helpers';
 import { IconProject } from '../components/Icons';
+import { t } from '../helpers';
 
 type OverviewHeroProps = {
     readonly projectName: string;
@@ -21,7 +21,9 @@ export const OverviewHero = (props: OverviewHeroProps): string => {
 
     return (
         <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-primary)">
-            <div class="cdx-entity-hero-watermark" aria-hidden="true">{IconProject()}</div>
+            <div class="cdx-entity-hero-watermark" aria-hidden="true">
+                {IconProject()}
+            </div>
             <nav aria-label="Breadcrumb">
                 <ol class="cdx-breadcrumb">
                     <li aria-current="page">{t('overview')}</li>
@@ -32,12 +34,12 @@ export const OverviewHero = (props: OverviewHeroProps): string => {
                 {props.angularVersion && (
                     <span class="cdx-badge cdx-badge--outline">Angular {props.angularVersion}</span>
                 )}
-                {props.hasZoneless && (
-                    <span class="cdx-badge cdx-badge--zoneless">Zoneless</span>
-                )}
+                {props.hasZoneless && <span class="cdx-badge cdx-badge--zoneless">Zoneless</span>}
             </div>
-            <p class="cdx-entity-hero-file" aria-label="Generation time">
-                <time datetime={props.generatedAt}>{t('generated-at')} {formatted}</time>
+            <p class="cdx-entity-hero-file" title="Generation time">
+                <time datetime={props.generatedAt}>
+                    {t('generated-at')} {formatted}
+                </time>
             </p>
         </div>
     ) as string;

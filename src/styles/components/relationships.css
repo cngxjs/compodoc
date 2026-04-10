@@ -1,0 +1,311 @@
+/* ─── Entity relationships — Used By / Depends On ─────────────
+ *
+ * Rendered by src/templates/blocks/BlockRelationshipGraph.tsx
+ *
+ * Layout strategy (Option B):
+ *   Two side-by-side COLUMNS with distinct backgrounds.
+ *   Items inside each column are flat rows — they inherit the
+ *   column background and only add their own chrome when hovered.
+ *
+ *   Used By  (incoming) → elevated background, rows have a
+ *                         left-side entity-color accent bar.
+ *   Depends On (outgoing) → alt background (like MetadataSection),
+ *                           rows have a colored icon box on the left.
+ *
+ *   Collapses to a single column under content container 720px.
+ */
+
+.cdx-relationships {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-cdx-xl);
+    align-items: start;
+}
+
+.cdx-relationships .cdx-icon {
+    margin-right: 0;
+}
+
+@container content (max-width: 720px) {
+    .cdx-relationships {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-cdx-lg);
+    }
+}
+
+/* ── Column containers ───────────────────────────────────── */
+
+.cdx-rel-column {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-lg);
+    padding: var(--spacing-cdx-md) var(--spacing-cdx-lg) var(--spacing-cdx-lg);
+}
+
+.cdx-rel-column--incoming {
+    background: var(--color-cdx-bg-elevated);
+}
+
+.cdx-rel-column--outgoing {
+    background: var(--color-cdx-bg-alt);
+}
+
+/* ── Column header ───────────────────────────────────────── */
+
+.cdx-rel-column-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-sm);
+    margin: 0 0 var(--spacing-cdx-md);
+    padding: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-cdx-text);
+    letter-spacing: -0.005em;
+}
+
+.cdx-rel-column-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-cdx-sm);
+    background: var(--color-cdx-bg-alt);
+    color: var(--color-cdx-text-secondary);
+    flex-shrink: 0;
+}
+
+.cdx-rel-column--outgoing .cdx-rel-column-icon {
+    background: var(--color-cdx-bg-elevated);
+}
+
+.cdx-rel-column-icon svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.cdx-rel-column-label {
+    flex: 1 1 auto;
+}
+
+.cdx-rel-column-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.375rem;
+    border-radius: 999px;
+    background: var(--color-cdx-bg-alt);
+    color: var(--color-cdx-text-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.cdx-rel-column--outgoing .cdx-rel-column-count {
+    background: var(--color-cdx-bg-elevated);
+}
+
+/* ── Lists ───────────────────────────────────────────────── */
+
+.cdx-rel-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-cdx-xs);
+}
+
+/* ── Base row (shared by incoming + outgoing) ────────────── */
+
+.cdx-rel-row {
+    --cdx-rel-color: var(--color-cdx-entity-component);
+
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-md);
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
+    border-radius: var(--radius-cdx-md);
+    color: var(--color-cdx-text);
+    text-decoration: none;
+    transition: var(--cdx-transition-base);
+}
+
+.cdx-rel-row:focus-visible {
+    outline: 2px solid var(--cdx-rel-color);
+    outline-offset: 2px;
+}
+
+.cdx-rel-row:hover {
+    color: var(--color-cdx-text);
+}
+
+/* ── Entity-type color tokens ──────────────────────────── */
+
+.cdx-rel-row--component {
+    --cdx-rel-color: var(--color-cdx-entity-component);
+}
+.cdx-rel-row--directive {
+    --cdx-rel-color: var(--color-cdx-entity-directive);
+}
+.cdx-rel-row--pipe {
+    --cdx-rel-color: var(--color-cdx-entity-pipe);
+}
+.cdx-rel-row--module {
+    --cdx-rel-color: var(--color-cdx-entity-module);
+}
+.cdx-rel-row--class {
+    --cdx-rel-color: var(--color-cdx-entity-class);
+}
+.cdx-rel-row--interface {
+    --cdx-rel-color: var(--color-cdx-entity-interface);
+}
+.cdx-rel-row--guard {
+    --cdx-rel-color: var(--color-cdx-entity-guard);
+}
+.cdx-rel-row--interceptor {
+    --cdx-rel-color: var(--color-cdx-entity-interceptor);
+}
+.cdx-rel-row--service {
+    --cdx-rel-color: var(--color-cdx-entity-service);
+}
+
+/* ── Incoming row (Used By) ──────────────────────────── */
+
+.cdx-rel-row--incoming {
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.cdx-rel-row--incoming:hover {
+    background: color-mix(in srgb, var(--cdx-rel-color) 6%, transparent);
+}
+
+.cdx-rel-row-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.cdx-rel-row--incoming .cdx-rel-row-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--cdx-rel-color);
+}
+
+.cdx-rel-row--incoming .cdx-rel-row-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-cdx-text);
+    letter-spacing: -0.01em;
+    word-break: break-word;
+}
+
+.cdx-rel-row-desc {
+    margin-top: 0.125rem;
+    font-size: 0.8125rem;
+    color: var(--color-cdx-text-muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cdx-rel-row-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-cdx-text-muted);
+    opacity: 0.55;
+    flex-shrink: 0;
+    transition: var(--cdx-transition-base);
+}
+
+.cdx-rel-row-indicator svg {
+    width: 100%;
+    height: 100%;
+}
+
+.cdx-rel-row--incoming:hover .cdx-rel-row-indicator {
+    opacity: 1;
+    color: var(--cdx-rel-color);
+    transform: translate(1px, -1px);
+}
+
+/* ── Outgoing row (Depends On) ─────────────────────────── */
+
+.cdx-rel-row--outgoing {
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
+}
+
+.cdx-rel-row--outgoing:hover {
+    background: var(--color-cdx-bg-elevated);
+}
+
+.cdx-rel-row-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-cdx-md);
+    background: color-mix(in srgb, var(--cdx-rel-color) 14%, transparent);
+    color: var(--cdx-rel-color);
+    flex-shrink: 0;
+    transition: var(--cdx-transition-base);
+}
+
+.cdx-rel-row-icon svg {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+.cdx-rel-row--outgoing .cdx-rel-row-body {
+    gap: 0;
+}
+
+.cdx-rel-row--outgoing .cdx-rel-row-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-cdx-text);
+    letter-spacing: -0.005em;
+    word-break: break-word;
+}
+
+.cdx-rel-row--outgoing .cdx-rel-row-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-cdx-text-muted);
+}
+
+.cdx-rel-row--outgoing:hover .cdx-rel-row-icon {
+    background: color-mix(in srgb, var(--cdx-rel-color) 20%, transparent);
+    transform: scale(1.05);
+}
+
+/* ── Reduced motion ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-rel-row,
+    .cdx-rel-row-icon,
+    .cdx-rel-row-indicator {
+        transition: none;
+    }
+    .cdx-rel-row--outgoing:hover .cdx-rel-row-icon {
+        transform: none;
+    }
+    .cdx-rel-row--incoming:hover .cdx-rel-row-indicator {
+        transform: none;
+    }
+}

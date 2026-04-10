@@ -1,7 +1,53 @@
 import { SyntaxKind, ts } from 'ts-morph';
 import { detectIndent } from '../../../../../utils';
-import { ClassHelper } from './class-helper';
-import { IParseDeepIdentifierResult, SymbolHelper } from './symbol-helper';
+import type { ClassHelper } from './class-helper';
+import { type IParseDeepIdentifierResult, type ProviderEntry, SymbolHelper } from './symbol-helper';
+
+export type { ProviderEntry };
+
+/**
+ * Structured representation of a single entry from a `@Component({ host: {...} })`
+ * literal, used by the Phase 2b metadata renderer in `MetadataRow.tsx`. The raw
+ * `host: Map<string, string>` stays on the dep object for the existing
+ * component-dep.factory host-binding / host-listener auto-synthesis pass; this
+ * parallel shape is consumed by the render layer only.
+ */
+export type HostEntry = {
+    /** Raw source form: `class`, `role`, `[attr.aria-label]`, `(click)`, etc. */
+    readonly key: string;
+    /** Classification by key pattern. `raw` is reserved for unexpected shapes. */
+    readonly kind:
+        | 'static'
+        | 'attr-binding'
+        | 'property-binding'
+        | 'class-binding'
+        | 'style-binding'
+        | 'event'
+        | 'raw';
+    /** The initializer source text. */
+    readonly value: string;
+    /** For bindings: the part inside `[...]` or `(...)`. */
+    readonly target?: string;
+};
+
+/**
+ * Structured representation of a single entry from a
+ * `@Component({ hostDirectives: [...] })` array. The render layer
+ * (`MetadataHostDirectivesRow` in `MetadataRow.tsx`) reads `name`, `inputs`
+ * and `outputs`. `unresolved` lets the renderer optionally mark entries
+ * whose identifier could not be traced back to an object literal or
+ * directive class; `refName` preserves the original identifier text of a
+ * dereferenced entry for attribution if we ever want to surface it.
+ */
+export type HostDirectiveEntry = {
+    readonly name: string;
+    readonly inputs?: string[];
+    readonly outputs?: string[];
+    /** True if `name` is an unresolved identifier — no matching directive class or local const. */
+    readonly unresolved?: boolean;
+    /** Original identifier text when the entry was dereferenced from a local const. */
+    readonly refName?: string;
+};
 
 export class ComponentHelper {
     constructor(
@@ -45,8 +91,9 @@ export class ComponentHelper {
     }
 
     public getComponentHostDirectives(
-        props: ReadonlyArray<ts.ObjectLiteralElementLike>
-    ): Array<any> {
+        props: ReadonlyArray<ts.ObjectLiteralElementLike>,
+        srcFile?: ts.SourceFile
+    ): HostDirectiveEntry[] {
         const hostDirectiveSymbolParsed = this.symbolHelper.getSymbolDepsRaw(
             props,
             'hostDirectives'
@@ -57,68 +104,222 @@ export class ComponentHelper {
             hostDirectiveSymbol = hostDirectiveSymbolParsed.pop();
         }
 
-        const result = [];
+        const result: HostDirectiveEntry[] = [];
 
         if (
-            hostDirectiveSymbol &&
-            hostDirectiveSymbol.initializer &&
-            hostDirectiveSymbol.initializer.elements &&
+            hostDirectiveSymbol?.initializer?.elements &&
             hostDirectiveSymbol.initializer.elements.length > 0
         ) {
-            hostDirectiveSymbol.initializer.elements.forEach(element => {
-                if (element.kind === SyntaxKind.Identifier) {
-                    result.push({
-                        name: element.escapedText
-                    });
-                } else if (
-                    element.kind === SyntaxKind.ObjectLiteralExpression &&
-                    element.properties &&
-                    element.properties.length > 0
-                ) {
-                    const parsedDirective: any = {
-                        name: '',
-                        inputs: [],
-                        outputs: []
-                    };
-
-                    element.properties.forEach(property => {
-                        if (property.name.escapedText === 'directive') {
-                            parsedDirective.name = property.initializer.escapedText;
-                        } else if (property.name.escapedText === 'inputs') {
-                            if (
-                                property.initializer &&
-                                property.initializer.elements &&
-                                property.initializer.elements.length > 0
-                            ) {
-                                property.initializer.elements.forEach(propertyElement => {
-                                    parsedDirective.inputs.push(propertyElement.text);
-                                });
-                            }
-                        } else if (property.name.escapedText === 'outputs') {
-                            if (
-                                property.initializer &&
-                                property.initializer.elements &&
-                                property.initializer.elements.length > 0
-                            ) {
-                                property.initializer.elements.forEach(propertyElement => {
-                                    parsedDirective.outputs.push(propertyElement.text);
-                                });
-                            }
-                        }
-                    });
-
-                    result.push(parsedDirective);
-                }
-            });
+            for (const element of hostDirectiveSymbol.initializer.elements) {
+                result.push(this.parseHostDirectiveEntry(element, srcFile));
+            }
         }
 
         return result;
+    }
+
+    /**
+     * Classify a single element of the `hostDirectives: [...]` array into a
+     * `HostDirectiveEntry`. Handles three shapes:
+     *
+     * 1. Inline `{ directive, inputs, outputs }` object literal — parsed directly.
+     * 2. `Identifier` that resolves to a local `const FOO = { directive: ... }`
+     *    variable declaration in the same source file — dereferenced and the
+     *    original identifier text is preserved as `refName`.
+     * 3. `Identifier` that does not resolve locally (bare directive class
+     *    reference OR const imported from another file) — emits `{ name }`.
+     *    For bare class references this is already the correct rendering;
+     *    for imported const refs this is a deliberate MVP fallback flagged
+     *    as `unresolved: true` so the renderer can treat it differently if
+     *    we ever want to.
+     *
+     * TODO(Phase 1.5): imported const dereferencing. Currently consts defined
+     * in a *different* source file cannot be followed, so the result is the
+     * same as a bare class reference. A follow-up should handle this by either
+     * walking imports without relying on the global `ast` Project singleton
+     * (to keep unit tests deterministic), or by wiring srcFile into a scoped
+     * ts-morph Project that can resolve the module specifier. See
+     * `.internal/compiler-metadata-extraction-fix-plan.md` Phase 1 risk table.
+     */
+    private parseHostDirectiveEntry(element: any, srcFile?: ts.SourceFile): HostDirectiveEntry {
+        if (
+            element.kind === SyntaxKind.ObjectLiteralExpression &&
+            element.properties &&
+            element.properties.length > 0
+        ) {
+            return this.parseHostDirectiveObjectLiteral(element.properties);
+        }
+
+        if (element.kind === SyntaxKind.Identifier) {
+            const identifierName = String(element.escapedText ?? element.text ?? '');
+
+            if (srcFile) {
+                const localConstProperties = this.resolveLocalObjectLiteralProperties(
+                    identifierName,
+                    srcFile
+                );
+                if (localConstProperties) {
+                    const parsed = this.parseHostDirectiveObjectLiteral(localConstProperties);
+                    return { ...parsed, refName: identifierName };
+                }
+            }
+
+            // Could not dereference — either a bare directive class reference
+            // (correct rendering) or an imported const (Phase 1.5 territory).
+            // Flag unresolved so the renderer can optionally distinguish.
+            return { name: identifierName, unresolved: true };
+        }
+
+        return { name: '', unresolved: true };
+    }
+
+    /**
+     * Extract `{ name, inputs, outputs }` from an array of `PropertyAssignment`
+     * nodes representing an inline `{ directive, inputs, outputs }` object
+     * literal. Used for both the inline host-directive case and the
+     * dereferenced local-const case (which produces the same property array).
+     */
+    private parseHostDirectiveObjectLiteral(properties: ReadonlyArray<any>): HostDirectiveEntry {
+        let name = '';
+        const inputs: string[] = [];
+        const outputs: string[] = [];
+
+        for (const property of properties) {
+            if (!property.name) {
+                continue;
+            }
+            const keyName = property.name.escapedText ?? property.name.text;
+            if (keyName === 'directive') {
+                name = String(
+                    property.initializer?.escapedText ?? property.initializer?.text ?? ''
+                );
+            } else if (keyName === 'inputs') {
+                if (property.initializer?.elements && property.initializer.elements.length > 0) {
+                    for (const el of property.initializer.elements) {
+                        if (typeof el.text === 'string') {
+                            inputs.push(el.text);
+                        }
+                    }
+                }
+            } else if (keyName === 'outputs') {
+                if (property.initializer?.elements && property.initializer.elements.length > 0) {
+                    for (const el of property.initializer.elements) {
+                        if (typeof el.text === 'string') {
+                            outputs.push(el.text);
+                        }
+                    }
+                }
+            }
+        }
+
+        return { name, inputs, outputs };
+    }
+
+    /**
+     * Walk the top-level statements of a source file looking for a
+     * `const NAME = { ... }` (or `let` / `var`) whose initializer is an
+     * ObjectLiteralExpression, and return its property list. Returns
+     * `undefined` when no matching local variable exists. This deliberately
+     * does NOT consult the global ts-morph `ast` Project from ImportsUtil —
+     * that dependency would break the in-memory unit test infrastructure and
+     * only adds cross-file resolution which is Phase 1.5 scope.
+     */
+    private resolveLocalObjectLiteralProperties(
+        name: string,
+        srcFile: ts.SourceFile
+    ): ReadonlyArray<ts.ObjectLiteralElementLike> | undefined {
+        for (const statement of srcFile.statements) {
+            if (!ts.isVariableStatement(statement)) {
+                continue;
+            }
+            for (const decl of statement.declarationList.declarations) {
+                if (!ts.isIdentifier(decl.name)) {
+                    continue;
+                }
+                if (decl.name.text !== name) {
+                    continue;
+                }
+                const init = decl.initializer;
+                if (init && ts.isObjectLiteralExpression(init)) {
+                    return init.properties;
+                }
+            }
+        }
+        return undefined;
     }
 
     public getComponentHost(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>
     ): Map<string, string> {
         return this.getSymbolDepsObject(props, 'host');
+    }
+
+    /**
+     * Parallel structured extractor for the `host: { ... }` literal. Reads the
+     * same AST node as `getComponentHost` but returns a typed `HostEntry[]`
+     * instead of a flat Map, so the Phase 2b render layer can emit a
+     * code-object-literal metadata row with per-kind styling without having to
+     * re-classify keys at render time.
+     *
+     * Returns an empty array when no `host` literal is present.
+     */
+    public getComponentHostStructured(
+        props: ReadonlyArray<ts.ObjectLiteralElementLike>
+    ): HostEntry[] {
+        let hostNode: ts.ObjectLiteralElementLike | undefined;
+        for (const prop of props) {
+            if (prop.name && (prop.name as any).text === 'host') {
+                hostNode = prop;
+                break;
+            }
+        }
+        if (!hostNode) {
+            return [];
+        }
+        const initializer = (hostNode as any).initializer;
+        if (!initializer || !ts.isObjectLiteralExpression(initializer)) {
+            return [];
+        }
+        const entries: HostEntry[] = [];
+        for (const prop of initializer.properties) {
+            const key = this.readNodeText((prop as any).name);
+            if (key === undefined) {
+                continue;
+            }
+            const value = this.readNodeText((prop as any).initializer) ?? '';
+            entries.push(this.classifyHostEntry(key, value));
+        }
+        return entries;
+    }
+
+    /**
+     * Classify a single host literal entry by key pattern.
+     *
+     * - `(foo)`          → event listener, target = 'foo'
+     * - `[attr.bar]`     → attr binding, target = 'bar'
+     * - `[class.bar]`    → class binding, target = 'bar'
+     * - `[style.bar]`    → style binding, target = 'bar'
+     * - `[bar]`          → property binding, target = 'bar'
+     * - anything else    → static attribute (no target)
+     */
+    private classifyHostEntry(key: string, value: string): HostEntry {
+        if (key.startsWith('(') && key.endsWith(')')) {
+            return { key, kind: 'event', value, target: key.slice(1, -1) };
+        }
+        if (key.startsWith('[') && key.endsWith(']')) {
+            const inner = key.slice(1, -1);
+            if (inner.startsWith('attr.')) {
+                return { key, kind: 'attr-binding', value, target: inner.slice(5) };
+            }
+            if (inner.startsWith('class.')) {
+                return { key, kind: 'class-binding', value, target: inner.slice(6) };
+            }
+            if (inner.startsWith('style.')) {
+                return { key, kind: 'style-binding', value, target: inner.slice(6) };
+            }
+            return { key, kind: 'property-binding', value, target: inner };
+        }
+        return { key, kind: 'static', value };
     }
 
     public getComponentTag(
@@ -143,20 +344,20 @@ export class ComponentHelper {
         props.forEach(prop => {
             const inputSignal = this.getInputSignal(prop);
             if (inputSignal) {
-                inputSignals.push(inputSignal)
+                inputSignals.push(inputSignal);
             }
 
             const outputSignal = this.getOutputSignal(prop);
             if (outputSignal) {
-                outputSignals.push(outputSignal)
+                outputSignals.push(outputSignal);
             }
 
             if (!inputSignal && !outputSignal) {
-                properties.push(prop)
+                properties.push(prop);
             }
         });
 
-        return {inputSignals, outputSignals, properties}
+        return { inputSignals, outputSignals, properties };
     }
 
     public getInputSignal(prop) {
@@ -165,7 +366,7 @@ export class ComponentHelper {
             this.getSignalConfig('model', prop.defaultValue);
 
         if (config) {
-            return  {
+            return {
                 ...prop,
                 ...config
             };
@@ -180,7 +381,7 @@ export class ComponentHelper {
             this.getSignalConfig('model', prop.defaultValue);
 
         if (config) {
-            return  {
+            return {
                 ...prop,
                 ...config
             };
@@ -243,9 +444,9 @@ export class ComponentHelper {
         // adjust union string expression like: 'foo' | 'bar' | 'test'
         // which should be outputed as: "foo" | "bar" | "test"
 
-        const unionTypeRegex = /^'([\w-]+)'\s?\|\s?('([\w-]+)'|.*)$/
+        const unionTypeRegex = /^'([\w-]+)'\s?\|\s?('([\w-]+)'|.*)$/;
         let typeRest = type;
-        let newType = "";
+        let newType = '';
         let typeMatch: RegExpMatchArray;
         while ((typeMatch = typeRest.match(unionTypeRegex))) {
             const [, first, rest, second] = typeMatch;
@@ -352,11 +553,9 @@ export class ComponentHelper {
 
     public getComponentProviders(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
-        srcFile: ts.SourceFile
-    ): Array<IParseDeepIdentifierResult> {
-        return this.symbolHelper
-            .getSymbolDeps(props, 'providers', srcFile)
-            .map(name => this.symbolHelper.parseDeepIndentifier(name));
+        _srcFile: ts.SourceFile
+    ): ProviderEntry[] {
+        return this.symbolHelper.getProviderEntries(props, 'providers');
     }
 
     public getComponentImports(
@@ -379,11 +578,9 @@ export class ComponentHelper {
 
     public getComponentViewProviders(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
-        srcFile: ts.SourceFile
-    ): Array<IParseDeepIdentifierResult> {
-        return this.symbolHelper
-            .getSymbolDeps(props, 'viewProviders', srcFile)
-            .map(name => this.symbolHelper.parseDeepIndentifier(name));
+        _srcFile: ts.SourceFile
+    ): ProviderEntry[] {
+        return this.symbolHelper.getProviderEntries(props, 'viewProviders');
     }
 
     public getComponentTemplateUrl(
@@ -395,11 +592,9 @@ export class ComponentHelper {
 
     public getComponentExampleUrls(text: string): Array<string> | undefined {
         const exampleUrlsMatches = text.match(/<example-url>(.*?)<\/example-url>/g);
-        let exampleUrls = undefined;
-        if (exampleUrlsMatches && exampleUrlsMatches.length) {
-            exampleUrls = exampleUrlsMatches.map(function (val) {
-                return val.replace(/<\/?example-url>/g, '');
-            });
+        let exampleUrls;
+        if (exampleUrlsMatches?.length) {
+            exampleUrls = exampleUrlsMatches.map(val => val.replace(/<\/?example-url>/g, ''));
         }
         return exampleUrls;
     }
@@ -423,15 +618,48 @@ export class ComponentHelper {
         const element = node as any;
         const properties = element.initializer?.properties || [];
         properties.forEach((prop: any) => {
-            obj.set(prop.name?.text, prop.initializer?.text);
+            const key = this.readNodeText(prop.name);
+            if (key === undefined) {
+                return;
+            }
+            obj.set(key, this.readNodeText(prop.initializer));
         });
         return obj;
+    }
+
+    /**
+     * Reads the source content of an AST node for the purpose of host /
+     * host-directive metadata extraction.
+     *
+     * Literal kinds (`StringLiteral`, `NoSubstitutionTemplateLiteral`,
+     * `NumericLiteral`) and `Identifier` expose a native `.text` field that
+     * already returns the inner content with surrounding quotes / backticks
+     * stripped. Everything else — `CallExpression`, `PropertyAccessExpression`,
+     * `TemplateExpression`, `ObjectLiteralExpression`, computed property
+     * names, etc. — falls back to `getText()` so complex initializers keep
+     * their full source instead of collapsing to `undefined` the way the
+     * previous `initializer?.text` access did. Phase 2a bug fix — see
+     * .internal/compiler-metadata-extraction-fix-plan.md.
+     */
+    private readNodeText(node: ts.Node | undefined): string | undefined {
+        if (!node) {
+            return undefined;
+        }
+        if (
+            ts.isStringLiteral(node) ||
+            ts.isNoSubstitutionTemplateLiteral(node) ||
+            ts.isNumericLiteral(node) ||
+            ts.isIdentifier(node)
+        ) {
+            return node.text;
+        }
+        return node.getText();
     }
 
     public getSymbolDepsObject(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
         type: string,
-        multiLine?: boolean
+        _multiLine?: boolean
     ): Map<string, string> {
         let i = 0,
             len = props.length,

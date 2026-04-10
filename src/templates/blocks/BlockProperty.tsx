@@ -23,7 +23,9 @@ type BlockPropertyProps = {
 export const BlockProperty = (props: BlockPropertyProps): string => {
     return (
         <section data-compodoc="block-properties">
-            <h3 id={props.title ? props.title.toLowerCase() : 'properties'}>{props.title ?? t('properties')}</h3>
+            <h3 id={props.title ? props.title.toLowerCase() : 'properties'}>
+                {props.title ?? t('properties')}
+            </h3>
             {props.properties.map(p => {
                 const header = (
                     <header class="cdx-member-header">
@@ -32,7 +34,9 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                                 <span class="cdx-member-modifier">{modifKind(k)}</span>
                             ))}
                             {p.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
-                            <span class={`cdx-member-name-text${p.deprecated ? ' cdx-member-name--deprecated' : ''}`}>
+                            <span
+                                class={`cdx-member-name-text${p.deprecated ? ' cdx-member-name--deprecated' : ''}`}
+                            >
                                 {p.name}
                             </span>
                             {p.signalKind && (
@@ -43,40 +47,73 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                             {p.required && (
                                 <span class="cdx-badge cdx-badge--factory">Required</span>
                             )}
-                            <a href={`#${p.name}`} class="cdx-member-permalink" aria-label={`Link to ${p.name}`}>#</a>
+                            <a
+                                href={`#${p.name}`}
+                                class="cdx-member-permalink"
+                                aria-label={`Link to ${p.name}`}
+                            >
+                                #
+                            </a>
                         </span>
                         {p.type && <span class="cdx-member-type">{linkTypeHtml(p.type)}</span>}
                     </header>
                 ) as string;
 
-                const body = (<>
-                    {p.deprecated && (
-                        <div class="cdx-member-deprecated">{p.deprecationMessage || t('deprecated')}</div>
-                    )}
-                    {p.defaultValue && (
-                        <div class="cdx-member-row">
-                            <i>{t('default-value')} : </i><code>{p.defaultValue}</code>
-                        </div>
-                    )}
-                    {p.decorators && (
-                        <div class="cdx-member-row">
-                            <b>{t('decorators')} : </b>
-                            <code>{p.decorators.map((d: any) =>
-                                d.stringifiedArguments ? `@${d.name}(${d.stringifiedArguments})` : `@${d.name}()`
-                            ).join(', ')}</code>
-                        </div>
-                    )}
-                    {DefinedInRow({ line: p.line, file: props.file, inheritance: p.inheritance, navTabs: props.navTabs })}
-                    {p.description && (
-                        <div class="cdx-member-description">{parseDescription(p.description, props.depth ?? 0)}</div>
-                    )}
-                    {p.jsdoctags && hasJsdocParams(p.jsdoctags) && (
-                        <div class="cdx-member-description">
-                            {ParamsTable({ jsdocTags: p.jsdoctags, depth: props.depth ?? 0, showOptional: false, showDefaultValue: false })}
-                            {JsdocExamplesBlock({ tags: p.jsdoctags, variant: 'text', cssClass: 'jsdoc-example-ul' })}
-                        </div>
-                    )}
-                </>) as string;
+                const body = (
+                    <>
+                        {p.deprecated && (
+                            <div class="cdx-member-deprecated">
+                                {p.deprecationMessage || t('deprecated')}
+                            </div>
+                        )}
+                        {p.defaultValue && (
+                            <div class="cdx-member-row">
+                                <i>{t('default-value')} : </i>
+                                <code>{p.defaultValue}</code>
+                            </div>
+                        )}
+                        {p.decorators && (
+                            <div class="cdx-member-row">
+                                <b>{t('decorators')} : </b>
+                                <code>
+                                    {p.decorators
+                                        .map((d: any) =>
+                                            d.stringifiedArguments
+                                                ? `@${d.name}(${d.stringifiedArguments})`
+                                                : `@${d.name}()`
+                                        )
+                                        .join(', ')}
+                                </code>
+                            </div>
+                        )}
+                        {DefinedInRow({
+                            line: p.line,
+                            file: props.file,
+                            inheritance: p.inheritance,
+                            navTabs: props.navTabs
+                        })}
+                        {p.description && (
+                            <div class="cdx-member-description">
+                                {parseDescription(p.description, props.depth ?? 0)}
+                            </div>
+                        )}
+                        {p.jsdoctags && hasJsdocParams(p.jsdoctags) && (
+                            <div class="cdx-member-description">
+                                {ParamsTable({
+                                    jsdocTags: p.jsdoctags,
+                                    depth: props.depth ?? 0,
+                                    showOptional: false,
+                                    showDefaultValue: false
+                                })}
+                                {JsdocExamplesBlock({
+                                    tags: p.jsdoctags,
+                                    variant: 'text',
+                                    cssClass: 'jsdoc-example-ul'
+                                })}
+                            </div>
+                        )}
+                    </>
+                ) as string;
 
                 return MemberCard({ id: p.name, deprecated: p.deprecated, header, children: body });
             })}

@@ -1,4 +1,4 @@
-import { IHtmlEngineHelper } from './html-engine-helper.interface';
+import type { IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class DebugHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, optionalValue: any): void {

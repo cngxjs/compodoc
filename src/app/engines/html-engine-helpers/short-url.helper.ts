@@ -1,7 +1,7 @@
-import { IHtmlEngineHelper } from './html-engine-helper.interface';
+import type { IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class ShortURLHelper implements IHtmlEngineHelper {
-    public helperFunc(context: any, url: string, options): string {
+    public helperFunc(_context: any, url: string, _options): string {
         let newUrl = url;
         const firstIndexOfSlash = newUrl.indexOf('/');
         const lastIndexOfSlash = newUrl.lastIndexOf('/');

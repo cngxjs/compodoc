@@ -1,16 +1,15 @@
-
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { exists, hasStderrError, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI exclude from tsconfig', () => {
-    const distFolder = tmp.name + '-exclude';
+    const distFolder = `${tmp.name}-exclude`;
 
     describe('when specific files are excluded in tsconfig', () => {
         beforeAll(() => {
             tmp.create(distFolder);
 
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.exclude.json',

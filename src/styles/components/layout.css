@@ -135,6 +135,7 @@ body {
     max-width: 860px;
     container-type: inline-size;
     container-name: content;
+    margin: 0 auto;
 }
 
 @media (max-width: 1023px) {

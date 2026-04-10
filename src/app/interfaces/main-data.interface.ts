@@ -1,4 +1,4 @@
-import { CoverageData } from './coverageData.interface';
+import type { CoverageData } from './coverageData.interface';
 
 export interface MainDataInterface {
     output: string;
@@ -65,7 +65,10 @@ export interface MainDataInterface {
     disableOverview: boolean;
     watch: boolean;
     mainGraph: string;
-    dependencyGraph: { nodes: Array<{ name: string; type: string; url?: string }>; edges: Array<{ source: string; target: string }> };
+    dependencyGraph: {
+        nodes: Array<{ name: string; type: string; url?: string }>;
+        edges: Array<{ source: string; target: string }>;
+    };
     entityIndex: Record<string, { href: string; kind: string }>;
     coverageTest: boolean;
     coverageTestThreshold: number;

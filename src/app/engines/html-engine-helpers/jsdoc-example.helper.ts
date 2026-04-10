@@ -1,5 +1,5 @@
-import { JsdocTagInterface } from '../../interfaces/jsdoc-tag.interface';
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
+import type { JsdocTagInterface } from '../../interfaces/jsdoc-tag.interface';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class JsdocExampleHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, jsdocTags: JsdocTagInterface[], options: IHandlebarsOptions) {

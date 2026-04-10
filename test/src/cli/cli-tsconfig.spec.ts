@@ -1,13 +1,13 @@
+import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
-import { hasStderrError, temporaryDir, shell, read } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI tsconfig', () => {
-    const tmpFolder = tmp.name + '-tsconfig';
-    const distFolder = tmpFolder + '/documentation';
+    const tmpFolder = `${tmp.name}-tsconfig`;
+    const distFolder = `${tmpFolder}/documentation`;
 
     describe('when specific files are included in tsconfig', () => {
-        let moduleFile = undefined;
+        let moduleFile;
         beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/sample-files/', tmpFolder);
@@ -36,7 +36,7 @@ describe('CLI tsconfig', () => {
     });
 
     describe('when specific files are included in tsconfig + others', () => {
-        let moduleFile = undefined;
+        let moduleFile;
         beforeAll(() => {
             tmp.create(tmpFolder);
             tmp.copy('./test/fixtures/sample-files/', tmpFolder);

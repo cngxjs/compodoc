@@ -1,66 +1,65 @@
-import * as path from 'path';
-
-import { logger } from '../../utils/logger';
-import FileEngine from './file.engine';
-import { Layout } from '../../templates/Layout';
+import * as path from 'node:path';
 import { CoverageBadge } from '../../templates/components/CoverageBadge';
 import { Menu } from '../../templates/components/Menu';
-import { Markdown } from '../../templates/pages/Markdown';
+import { Layout } from '../../templates/Layout';
 import { AdditionalPage } from '../../templates/pages/AdditionalPage';
-import { PackageDependencies } from '../../templates/pages/PackageDependencies';
-import { PackageProperties } from '../../templates/pages/PackageProperties';
-import { Overview } from '../../templates/pages/Overview';
-import { Modules } from '../../templates/pages/Modules';
-import { Routes } from '../../templates/pages/Routes';
-import { CoverageReport } from '../../templates/pages/CoverageReport';
-import { UnitTestReport } from '../../templates/pages/UnitTestReport';
+import { AppConfigPage } from '../../templates/pages/AppConfigPage';
 import { ClassPage } from '../../templates/pages/ClassPage';
+import { ComponentPage } from '../../templates/pages/ComponentPage';
+import { CoverageReport } from '../../templates/pages/CoverageReport';
 import { DirectivePage } from '../../templates/pages/DirectivePage';
 import { EntityDetailPage } from '../../templates/pages/EntityDetailPage';
 import { GuardPage } from '../../templates/pages/GuardPage';
 import { InjectablePage } from '../../templates/pages/InjectablePage';
 import { InterceptorPage } from '../../templates/pages/InterceptorPage';
 import { InterfacePage } from '../../templates/pages/InterfacePage';
+import { Markdown } from '../../templates/pages/Markdown';
 import { MiscellaneousEnumerations } from '../../templates/pages/MiscellaneousEnumerations';
 import { MiscellaneousFunctions } from '../../templates/pages/MiscellaneousFunctions';
 import { MiscellaneousTypealiases } from '../../templates/pages/MiscellaneousTypealiases';
 import { MiscellaneousVariables } from '../../templates/pages/MiscellaneousVariables';
 import { ModulePage } from '../../templates/pages/ModulePage';
+import { Modules } from '../../templates/pages/Modules';
+import { Overview } from '../../templates/pages/Overview';
+import { PackageDependencies } from '../../templates/pages/PackageDependencies';
+import { PackageProperties } from '../../templates/pages/PackageProperties';
 import { PipePage } from '../../templates/pages/PipePage';
-import { ComponentPage } from '../../templates/pages/ComponentPage';
-import { AppConfigPage } from '../../templates/pages/AppConfigPage';
+import { Routes } from '../../templates/pages/Routes';
+import { UnitTestReport } from '../../templates/pages/UnitTestReport';
+import { logger } from '../../utils/logger';
 import { loadCustomTemplates, renderCustomTemplate } from './custom-template.engine';
 import DependenciesEngine from './dependencies.engine';
+import FileEngine from './file.engine';
 
 /** Map page context to its custom template file name */
 const CONTEXT_TEMPLATE_MAP: Record<string, string> = {
     'getting-started': 'markdown',
-    'readme': 'markdown',
-    'changelog': 'markdown',
-    'contributing': 'markdown',
-    'license': 'markdown',
-    'overview': 'overview',
-    'modules': 'modules',
-    'module': 'module',
-    'component': 'component',
-    'entity': 'entity',
-    'directive': 'directive',
-    'injectable': 'injectable',
-    'interceptor': 'interceptor',
-    'guard': 'guard',
-    'pipe': 'pipe',
-    'class': 'class',
-    'interface': 'interface',
-    'routes': 'routes',
+    readme: 'markdown',
+    changelog: 'markdown',
+    contributing: 'markdown',
+    license: 'markdown',
+    overview: 'overview',
+    modules: 'modules',
+    module: 'module',
+    component: 'component',
+    entity: 'entity',
+    directive: 'directive',
+    injectable: 'injectable',
+    interceptor: 'interceptor',
+    guard: 'guard',
+    pipe: 'pipe',
+    class: 'class',
+    interface: 'interface',
+    routes: 'routes',
     'package-dependencies': 'package-dependencies',
     'package-properties': 'package-properties',
     'miscellaneous-functions': 'miscellaneous-functions',
     'miscellaneous-variables': 'miscellaneous-variables',
     'miscellaneous-typealiases': 'miscellaneous-typealiases',
     'miscellaneous-enumerations': 'miscellaneous-enumerations',
-    'coverage': 'coverage-report',
+    coverage: 'coverage-report',
     'unit-test': 'unit-test-report',
-    'additional-page': 'additional-page',
+    'additional-page': 'additional-page'
 };
 
 export class HtmlEngine {
@@ -84,7 +83,9 @@ export class HtmlEngine {
         const templateName = CONTEXT_TEMPLATE_MAP[data.context];
         if (templateName) {
             const custom = renderCustomTemplate(templateName, data);
-            if (custom !== null) return custom;
+            if (custom !== null) {
+                return custom;
+            }
         }
 
         switch (data.context) {
@@ -160,7 +161,7 @@ export class HtmlEngine {
         return Layout({
             data,
             content,
-            menuHtml,
+            menuHtml
         });
     }
 
@@ -174,10 +175,10 @@ export class HtmlEngine {
         }
 
         return FileEngine.write(
-            outputFolder + path.sep + '/images/coverage-badge-' + label + '.svg',
+            `${outputFolder + path.sep}/images/coverage-badge-${label}.svg`,
             result
         ).catch(err => {
-            logger.error('Error during coverage badge ' + label + ' file generation ', err);
+            logger.error(`Error during coverage badge ${label} file generation `, err);
             return Promise.reject(err);
         });
     }

@@ -1,11 +1,7 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
-
-import DependenciesEngine from '../dependencies.engine';
-
-import ExtendsMerger from '../../../utils/extends-merger.util';
 import BasicTypeUtil from '../../../utils/basic-type.util';
-
-import Configuration from '../../configuration';
+import ExtendsMerger from '../../../utils/extends-merger.util';
+import DependenciesEngine from '../dependencies.engine';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class LinkTypeHelper implements IHtmlEngineHelper {
     constructor() {}
@@ -29,9 +25,9 @@ export class LinkTypeHelper implements IHtmlEngineHelper {
                 if (_result.data.type === 'class') {
                     _result.data.type = 'classe';
                 }
-                context.type.href = '../' + _result.data.type + 's/' + _result.data.name + '.html';
+                context.type.href = `../${_result.data.type}s/${_result.data.name}.html`;
                 if (context.indexKey !== '' && context.indexKey !== undefined) {
-                    context.type.href += '#' + context.indexKey;
+                    context.type.href += `#${context.indexKey}`;
                     context.type.indexKey = context.indexKey;
                 }
                 if (
@@ -52,9 +48,9 @@ export class LinkTypeHelper implements IHtmlEngineHelper {
                         case 'variable':
                             mainpage = 'variables';
                     }
-                    context.type.href = '../' + _result.data.ctype + '/' + mainpage + '.html';
-                    if (_result.data && _result.data.name) {
-                        context.type.href += '#' + _result.data.name;
+                    context.type.href = `../${_result.data.ctype}/${mainpage}.html`;
+                    if (_result.data?.name) {
+                        context.type.href += `#${_result.data.name}`;
                     }
                 }
                 if (!context.type.indexKey) {

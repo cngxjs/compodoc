@@ -1,12 +1,11 @@
-
-import { temporaryDir, shell, exists } from '../helpers';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { exists, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('Template Playground', () => {
-    let stdoutString = undefined;
+    let stdoutString;
     const distFolder = tmp.name;
 
     beforeAll(() => {
@@ -14,13 +13,13 @@ describe('Template Playground', () => {
 
         // Create a simple test project with template playground enabled
         const compodocConfig = {
-            "templatePlayground": true
+            templatePlayground: true
         };
 
         const configPath = path.join(tmp.name, '.compodocrc');
         fs.writeFileSync(configPath, JSON.stringify(compodocConfig));
 
-        let ls = shell('node', [
+        const ls = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
@@ -51,8 +50,12 @@ describe('Template Playground', () => {
     });
 
     it('should have generated template playground resources', () => {
-        const templatePlaygroundJsExists = exists(path.join(distFolder, 'js', 'template-playground.js'));
-        const templatePlaygroundCssExists = exists(path.join(distFolder, 'styles', 'template-playground.css'));
+        const templatePlaygroundJsExists = exists(
+            path.join(distFolder, 'js', 'template-playground.js')
+        );
+        const templatePlaygroundCssExists = exists(
+            path.join(distFolder, 'styles', 'template-playground.css')
+        );
 
         expect(templatePlaygroundJsExists).to.be.true;
         expect(templatePlaygroundCssExists).to.be.true;
@@ -62,14 +65,20 @@ describe('Template Playground', () => {
         // Template playground should exist as a separate page, not in navigation
         const templatePlaygroundExists = exists(path.join(distFolder, 'template-playground.html'));
         expect(templatePlaygroundExists).to.be.true;
-        
+
         // Verify it's a functional standalone page
-        const templatePlaygroundContent = fs.readFileSync(path.join(distFolder, 'template-playground.html'), 'utf8');
+        const templatePlaygroundContent = fs.readFileSync(
+            path.join(distFolder, 'template-playground.html'),
+            'utf8'
+        );
         expect(templatePlaygroundContent).to.contain('Template Playground');
     });
 
     it('should include template playground dependencies when enabled', () => {
-        const templatePlaygroundContent = fs.readFileSync(path.join(distFolder, 'template-playground.html'), 'utf8');
+        const templatePlaygroundContent = fs.readFileSync(
+            path.join(distFolder, 'template-playground.html'),
+            'utf8'
+        );
 
         // Check for required dependencies
         expect(templatePlaygroundContent).to.contain('monaco-editor');
@@ -80,7 +89,10 @@ describe('Template Playground', () => {
     });
 
     it('should contain template playground Angular component', () => {
-        const templatePlaygroundContent = fs.readFileSync(path.join(distFolder, 'template-playground.html'), 'utf8');
+        const templatePlaygroundContent = fs.readFileSync(
+            path.join(distFolder, 'template-playground.html'),
+            'utf8'
+        );
         expect(templatePlaygroundContent).to.contain('template-playground-root');
         expect(templatePlaygroundContent).to.contain('template-playground-container');
     });
@@ -92,13 +104,13 @@ describe('Template Playground Configuration', () => {
         tmpDisabled.create();
 
         const compodocConfig = {
-            "templatePlayground": false
+            templatePlayground: false
         };
 
         const configPathDisabled = path.join(tmpDisabled.name, '.compodocrc');
         fs.writeFileSync(configPathDisabled, JSON.stringify(compodocConfig));
 
-        let ls = shell('node', [
+        const ls = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
@@ -108,7 +120,9 @@ describe('Template Playground Configuration', () => {
             tmpDisabled.name
         ]);
 
-        const templatePlaygroundExists = exists(path.join(tmpDisabled.name, 'template-playground.html'));
+        const templatePlaygroundExists = exists(
+            path.join(tmpDisabled.name, 'template-playground.html')
+        );
         expect(templatePlaygroundExists).to.be.false;
 
         tmpDisabled.clean();
@@ -118,7 +132,7 @@ describe('Template Playground Configuration', () => {
         const tmpCli = temporaryDir();
         tmpCli.create();
 
-        let ls = shell('node', [
+        const ls = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
@@ -140,13 +154,13 @@ describe('Template Playground Integration', () => {
         tmpIntegration.create();
 
         const compodocConfig = {
-            "templatePlayground": true
+            templatePlayground: true
         };
 
         const configPathIntegration = path.join(tmpIntegration.name, '.compodocrc');
         fs.writeFileSync(configPathIntegration, JSON.stringify(compodocConfig));
 
-        let ls = shell('node', [
+        const ls = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
@@ -159,10 +173,14 @@ describe('Template Playground Integration', () => {
         // Check that existing functionality still works
         const isIndexExists = exists(path.join(tmpIntegration.name, 'index.html'));
         const isModulesExists = exists(path.join(tmpIntegration.name, 'modules.html'));
-        
+
         // Check that individual component pages exist (not a components.html index)
-        const barComponentExists = exists(path.join(tmpIntegration.name, 'components', 'BarComponent.html'));
-        const fooComponentExists = exists(path.join(tmpIntegration.name, 'components', 'FooComponent.html'));
+        const barComponentExists = exists(
+            path.join(tmpIntegration.name, 'components', 'BarComponent.html')
+        );
+        const fooComponentExists = exists(
+            path.join(tmpIntegration.name, 'components', 'FooComponent.html')
+        );
 
         expect(isIndexExists).to.be.true;
         expect(isModulesExists).to.be.true;

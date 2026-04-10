@@ -7,11 +7,11 @@ export function StringifyObjectLiteralExpression(ole) {
     if (ole.properties && ole.properties.length > 0) {
         ole.properties.forEach((property, index) => {
             if (property.name) {
-                returnedString += property.name.text + ': ';
+                returnedString += `${property.name.text}: `;
             }
             if (property.initializer) {
                 if (property.initializer.kind === SyntaxKind.StringLiteral) {
-                    returnedString += `'` + property.initializer.text + `'`;
+                    returnedString += `'${property.initializer.text}'`;
                 } else if (property.initializer.kind === SyntaxKind.TrueKeyword) {
                     returnedString += `true`;
                 } else if (property.initializer.kind === SyntaxKind.FalseKeyword) {

@@ -1,6 +1,7 @@
 export const TRANSLATION_EN_US = {
     accessors: 'Accessors',
     'angular-adoption': 'Angular Adoption',
+    'application-configuration': 'Application Configuration',
     arguments: 'Arguments',
     bootstrap: 'Bootstrap',
     branches: 'Branches',
@@ -26,7 +27,7 @@ export const TRANSLATION_EN_US = {
     directives: 'Directives',
     'dom tree': 'DOM tree',
     'empty-accessors': 'No accessors',
-    'empty-category-desc': 'This project doesn\'t contain any {{category}}.',
+    'empty-category-desc': "This project doesn't contain any {{category}}.",
     'empty-category-title': 'No {{category}} found',
     'empty-classes-desc': 'This project has no documented classes.',
     'empty-classes-title': 'No classes',
@@ -40,7 +41,8 @@ export const TRANSLATION_EN_US = {
     'empty-dom-tree-desc': 'A template is needed to generate the DOM tree.',
     'empty-dom-tree-title': 'No DOM tree available',
     'empty-entity-action': 'Learn about JSDoc tags',
-    'empty-entity-desc': 'This {{entityType}} has no documented members. Add JSDoc comments to your code to populate this page.',
+    'empty-entity-desc':
+        'This {{entityType}} has no documented members. Add JSDoc comments to your code to populate this page.',
     'empty-entity-title': 'Nothing documented yet',
     'empty-enum-values': 'No values',
     'empty-examples-desc': 'No live examples configured for this component.',

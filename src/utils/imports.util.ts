@@ -1,6 +1,12 @@
-import * as path from 'path';
+import * as path from 'node:path';
 
-import { Project, ts, PropertyDeclaration, SyntaxKind, VariableDeclaration } from 'ts-morph';
+import {
+    Project,
+    type PropertyDeclaration,
+    SyntaxKind,
+    type ts,
+    VariableDeclaration
+} from 'ts-morph';
 import FileEngine from '../app/engines/file.engine';
 
 const ast = new Project();
@@ -40,7 +46,7 @@ export class ImportsUtil {
      * @param variableName
      * @param variableValue
      */
-    private findInClasses(srcFile, variableName: string, variableValue: string) {
+    private findInClasses(srcFile, _variableName: string, variableValue: string) {
         let res = '';
         srcFile.getClass(c => {
             const staticProperty: PropertyDeclaration = c.getStaticProperty(variableValue);
@@ -110,7 +116,7 @@ export class ImportsUtil {
             searchedImport,
             aliasOriginalName = '',
             foundWithNamedImport = false,
-            foundWithDefaultImport = false,
+            _foundWithDefaultImport = false,
             foundWithAlias = false;
 
         const file =
@@ -162,7 +168,7 @@ export class ImportsUtil {
                 if (defaultImport) {
                     const defaultImportText = defaultImport.getText();
                     if (defaultImportText === metadataVariableName) {
-                        foundWithDefaultImport = true;
+                        _foundWithDefaultImport = true;
                         searchedImport = i;
                     }
                 }
@@ -197,7 +203,8 @@ export class ImportsUtil {
 
                 if (sourceFileImport) {
                     const variableName = foundWithAlias ? aliasOriginalName : metadataVariableName;
-                    const variableDeclaration = sourceFileImport.getVariableDeclaration(variableName);
+                    const variableDeclaration =
+                        sourceFileImport.getVariableDeclaration(variableName);
 
                     if (variableDeclaration) {
                         return hasFoundValues(variableDeclaration);
@@ -207,7 +214,7 @@ export class ImportsUtil {
 
                         if (exportDeclarations && exportDeclarations.size > 0) {
                             for (const [
-                                exportDeclarationKey,
+                                _exportDeclarationKey,
                                 exportDeclarationValues
                             ] of exportDeclarations) {
                                 exportDeclarationValues.forEach(exportDeclarationValue => {
@@ -228,14 +235,13 @@ export class ImportsUtil {
                 decoratorType === 'template' &&
                 searchedImport.getModuleSpecifierValue().indexOf('.html') !== -1
             ) {
-                // @ts-ignore
+                // @ts-expect-error
                 const originalSourceFilePath = sourceFile.path;
                 const originalSourceFilePathFolder = originalSourceFilePath.substring(
                     0,
                     originalSourceFilePath.lastIndexOf('/')
                 );
-                const finalImportedPath =
-                    originalSourceFilePathFolder + '/' + searchedImport.getModuleSpecifierValue();
+                const finalImportedPath = `${originalSourceFilePathFolder}/${searchedImport.getModuleSpecifierValue()}`;
                 const finalImportedPathData = FileEngine.getSync(finalImportedPath);
                 return finalImportedPathData;
             }
@@ -284,9 +290,9 @@ export class ImportsUtil {
                 : ast.addSourceFileAtPath(sourceFile.fileName); // tslint:disable-line
         const imports = file.getImportDeclarations();
         let searchedImport,
-            aliasOriginalName = '',
+            _aliasOriginalName = '',
             finalPath = '',
-            foundWithAlias = false;
+            _foundWithAlias = false;
         imports.forEach(i => {
             let namedImports = i.getNamedImports(),
                 namedImportsLength = namedImports.length,
@@ -305,8 +311,8 @@ export class ImportsUtil {
                         break;
                     }
                     if (importAlias === variableName) {
-                        foundWithAlias = true;
-                        aliasOriginalName = importName;
+                        _foundWithAlias = true;
+                        _aliasOriginalName = importName;
                         searchedImport = i;
                         break;
                     }
@@ -334,8 +340,8 @@ export class ImportsUtil {
     public findFilePathOfImportedVariable(inputVariableName, sourceFilePath: string) {
         let searchedImport,
             finalPath = '',
-            aliasOriginalName = '',
-            foundWithAlias = false;
+            _aliasOriginalName = '',
+            _foundWithAlias = false;
         const file =
             typeof ast.getSourceFile(sourceFilePath) !== 'undefined'
                 ? ast.getSourceFile(sourceFilePath)
@@ -363,8 +369,8 @@ export class ImportsUtil {
                         break;
                     }
                     if (importAlias === inputVariableName) {
-                        foundWithAlias = true;
-                        aliasOriginalName = importName;
+                        _foundWithAlias = true;
+                        _aliasOriginalName = importName;
                         searchedImport = i;
                         break;
                     }

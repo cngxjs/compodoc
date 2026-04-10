@@ -1,12 +1,12 @@
 import Handlebars from 'handlebars';
-import { IHtmlEngineHelper } from './html-engine-helper.interface';
+import type { IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class BreakCommaHelper implements IHtmlEngineHelper {
-    constructor(private bars) {}
+    constructor(private readonly bars) {}
 
-    public helperFunc(context: any, text: string) {
+    public helperFunc(_context: any, text: string) {
         text = this.bars.Utils.escapeExpression(text);
-        text = text.replace(/,/g, ',<br>');
+        text = text.replaceAll(',', ',<br>');
         return new Handlebars.SafeString(text);
     }
 }

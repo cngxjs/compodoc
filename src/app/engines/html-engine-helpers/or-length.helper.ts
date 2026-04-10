@@ -1,4 +1,4 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class OrLengthHelper implements IHtmlEngineHelper {
     public helperFunc(context: any /* any, any, ..., options */) {

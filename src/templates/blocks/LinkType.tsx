@@ -12,5 +12,5 @@ export const LinkType = (props: LinkTypeProps): string =>
     linkTypeHtml(props.type, {
         withLine: props.withLine,
         line: props.line,
-        indexKey: props.indexKey,
+        indexKey: props.indexKey
     });

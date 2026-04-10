@@ -1,45 +1,38 @@
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
+import * as path from 'node:path';
 import * as fs from 'fs-extra';
+import traverse from 'neotraverse/legacy';
 import polka from 'polka';
 import sirv from 'sirv';
-import traverse from 'neotraverse/legacy';
-import * as path from 'path';
 
 import { SyntaxKind } from 'ts-morph';
-
-import { logger } from '../utils/logger';
-
-import Configuration from './configuration';
-
-import DependenciesEngine from './engines/dependencies.engine';
-import ExportEngine from './engines/export.engine';
-import FileEngine from './engines/file.engine';
-import HtmlEngine from './engines/html.engine';
-import I18nEngine from './engines/i18n.engine';
-import MarkdownEngine, { markdownReadedDatas } from './engines/markdown.engine';
-import NgdEngine from './engines/ngd.engine';
-import { runPagefindIndex } from './engines/search-indexer.engine';
-import { initHighlighter } from './engines/syntax-highlight.engine';
-
-import { AngularDependencies } from './compiler/angular-dependencies';
-
 import AngularVersionUtil from '../utils/angular-version.util';
 import { COMPODOC_CONSTANTS } from '../utils/constants';
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
+import { buildEntityIndex } from '../utils/entity-index.util';
+import { logger } from '../utils/logger';
+import { markedAcl } from '../utils/marked.acl';
 import { promiseSequential } from '../utils/promise-sequential';
 import RouterParserUtil from '../utils/router-parser.util';
-import { buildEntityIndex } from '../utils/entity-index.util';
-
 import {
     cleanNameWithoutSpaceAndToLowerCase,
     cleanSourcesForWatch,
     findMainSourceFolder
 } from '../utils/utils';
-
-import { AdditionalNode } from './interfaces/additional-node.interface';
-import { CoverageData } from './interfaces/coverageData.interface';
-import { markedAcl } from '../utils/marked.acl';
-import { IComponentDep } from './compiler/angular/deps/component-dep.factory';
+import type { IComponentDep } from './compiler/angular/deps/component-dep.factory';
+import { AngularDependencies } from './compiler/angular-dependencies';
+import Configuration from './configuration';
+import DependenciesEngine from './engines/dependencies.engine';
+import ExportEngine from './engines/export.engine';
+import FileEngine from './engines/file.engine';
+import HtmlEngine from './engines/html.engine';
+import I18nEngine from './engines/i18n.engine';
+import MarkdownEngine, { type markdownReadedDatas } from './engines/markdown.engine';
+import NgdEngine from './engines/ngd.engine';
+import { runPagefindIndex } from './engines/search-indexer.engine';
+import { initHighlighter } from './engines/syntax-highlight.engine';
+import type { AdditionalNode } from './interfaces/additional-node.interface';
+import type { CoverageData } from './interfaces/coverageData.interface';
 
 const cwd = process.cwd();
 let startTime = new Date();
@@ -68,11 +61,6 @@ export class Application {
      * @type {boolean}
      */
     public isWatching: boolean = false;
-
-    /**
-     * Store package.json data
-     */
-    private packageJsonData: Record<string, any> = {};
 
     /**
      * Create a new compodoc application instance.
@@ -206,7 +194,7 @@ export class Application {
 
     private processPackageJson(): void {
         logger.info('Searching package.json file');
-        FileEngine.get(cwd + path.sep + 'package.json').then(
+        FileEngine.get(`${cwd + path.sep}package.json`).then(
             packageData => {
                 const parsedData = JSON.parse(packageData);
                 this.packageJsonData = parsedData;
@@ -214,14 +202,20 @@ export class Application {
                     typeof parsedData.name !== 'undefined' &&
                     Configuration.mainData.documentationMainName === COMPODOC_DEFAULTS.title
                 ) {
-                    Configuration.mainData.documentationMainName =
-                        parsedData.name + ' documentation';
+                    Configuration.mainData.documentationMainName = `${parsedData.name} documentation`;
                 }
                 if (typeof parsedData.description !== 'undefined') {
                     Configuration.mainData.documentationMainDescription = parsedData.description;
                 }
                 Configuration.mainData.angularVersion =
                     AngularVersionUtil.getAngularVersionOfProject(parsedData);
+
+                // Detect zone.js in dependencies (if absent, app is zoneless)
+                const allDeps = {
+                    ...parsedData.dependencies,
+                    ...parsedData.devDependencies
+                };
+                Configuration.mainData.hasZoneJs = 'zone.js' in allDeps;
                 logger.info('package.json file found');
 
                 if (!Configuration.mainData.disableDependencies) {
@@ -319,14 +313,14 @@ export class Application {
             'Searching README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE.md, TODO.md files'
         );
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             let i = 0;
             const markdowns = ['readme', 'changelog', 'contributing', 'license', 'todo'];
             const numberOfMarkdowns = 5;
             const loop = () => {
                 if (i < numberOfMarkdowns) {
-                    MarkdownEngine.getTraditionalMarkdown(markdowns[i].toUpperCase()).then(
-                        (readmeData: markdownReadedDatas) => {
+                    MarkdownEngine.getTraditionalMarkdown(markdowns[i].toUpperCase())
+                        .then((readmeData: markdownReadedDatas) => {
                             logger.info(`${markdowns[i].toUpperCase()}.md file found`);
                             if (markdowns[i] === 'readme') {
                                 Configuration.mainData.readme = true;
@@ -340,7 +334,7 @@ export class Application {
                                     depth: 0,
                                     pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
                                 });
-                                
+
                                 // If overview is not disabled, also create separate overview page
                                 if (!Configuration.mainData.disableOverview) {
                                     Configuration.addPage({
@@ -371,8 +365,8 @@ export class Application {
                             }
                             i++;
                             loop();
-                        }
-                    ).catch(errorMessage => {
+                        })
+                        .catch(errorMessage => {
                             logger.warn(errorMessage);
                             logger.warn(`Continuing without ${markdowns[i].toUpperCase()}.md file`);
                             if (markdowns[i] === 'readme') {
@@ -387,8 +381,12 @@ export class Application {
                                 } else {
                                     // When README doesn't exist and overview is disabled,
                                     // generate overview page anyway but show warning
-                                    logger.warn('No README.md found and --disableOverview is enabled.');
-                                    logger.warn('Generating overview page as landing page. Consider adding a README.md file.');
+                                    logger.warn(
+                                        'No README.md found and --disableOverview is enabled.'
+                                    );
+                                    logger.warn(
+                                        'Generating overview page as landing page. Consider adding a README.md file.'
+                                    );
                                     Configuration.addPage({
                                         name: 'index',
                                         id: 'index',
@@ -400,8 +398,7 @@ export class Application {
                             }
                             i++;
                             loop();
-                        }
-                    );
+                        });
                 } else {
                     resolve(true);
                 }
@@ -424,7 +421,7 @@ export class Application {
         });
 
         promiseSequential(actions)
-            .then(res => {
+            .then(_res => {
                 this.processPages();
                 this.clearUpdatedFiles();
             })
@@ -441,12 +438,9 @@ export class Application {
 
         Configuration.mainData.angularProject = true;
 
-        const crawler = new AngularDependencies(
-            this.updatedFiles,
-            {
-                tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
-            }
-        );
+        const crawler = new AngularDependencies(this.updatedFiles, {
+            tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
+        });
 
         const dependenciesData = crawler.getDependencies();
 
@@ -472,7 +466,7 @@ export class Application {
         }
 
         promiseSequential(actions)
-            .then(res => {
+            .then(_res => {
                 this.processPages();
                 this.clearUpdatedFiles();
             })
@@ -486,12 +480,9 @@ export class Application {
 
         Configuration.mainData.angularProject = true;
 
-        const crawler = new AngularDependencies(
-            this.files,
-            {
-                tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
-            }
-        );
+        const crawler = new AngularDependencies(this.files, {
+            tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
+        });
 
         const dependenciesData = crawler.getDependencies();
 
@@ -582,7 +573,7 @@ export class Application {
         }
 
         promiseSequential(actions)
-            .then(res => {
+            .then(_res => {
                 if (Configuration.mainData.exportFormat !== COMPODOC_DEFAULTS.exportFormat) {
                     if (
                         COMPODOC_DEFAULTS.exportFormatsSupported.indexOf(
@@ -710,10 +701,7 @@ export class Application {
             });
         }
 
-        if (
-            DependenciesEngine.routes &&
-            !Configuration.mainData.disableRoutesGraph
-        ) {
+        if (DependenciesEngine.routes && !Configuration.mainData.disableRoutesGraph) {
             actions.push(() => {
                 return this.prepareRoutes();
             });
@@ -767,7 +755,7 @@ export class Application {
         }
 
         promiseSequential(actions)
-            .then(res => {
+            .then(_res => {
                 if (Configuration.mainData.exportFormat !== COMPODOC_DEFAULTS.exportFormat) {
                     if (
                         COMPODOC_DEFAULTS.exportFormatsSupported.indexOf(
@@ -827,7 +815,7 @@ export class Application {
                     const parsedSummaryData = JSON.parse(summaryData);
 
                     const that = this;
-                    let lastLevelOnePage = undefined;
+                    let lastLevelOnePage;
 
                     traverse(parsedSummaryData).forEach(function () {
                         // tslint:disable-next-line:no-invalid-this
@@ -841,7 +829,7 @@ export class Application {
                             let finalPath = Configuration.mainData.includesFolder;
 
                             const finalDepth = rawPath.filter(el => {
-                                return !isNaN(parseInt(String(el), 10));
+                                return !Number.isNaN(parseInt(String(el), 10));
                             });
 
                             if (typeof file !== 'undefined' && typeof title !== 'undefined') {
@@ -858,7 +846,7 @@ export class Application {
                                 // tslint:disable-next-line:no-invalid-this
                                 this.node.id = id;
 
-                                let lastElementRootTree = undefined;
+                                let lastElementRootTree;
                                 finalDepth.forEach(el => {
                                     let elementTree =
                                         typeof lastElementRootTree === 'undefined'
@@ -875,7 +863,7 @@ export class Application {
                                     lastElementRootTree = elementTree;
                                 });
 
-                                finalPath = finalPath.replace('/' + url, '');
+                                finalPath = finalPath.replace(`/${url}`, '');
                                 const markdownFile = MarkdownEngine.getTraditionalMarkdownSync(
                                     that.getIncludedPathForFile(file)
                                 );
@@ -927,7 +915,7 @@ export class Application {
         let i = 0;
         const _modules = someModules ? someModules : DependenciesEngine.getModules();
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             Configuration.mainData.modules = _modules.map(ngModule => {
                 ngModule.compodocLinks = {
                     components: [],
@@ -935,84 +923,78 @@ export class Application {
                     injectables: [],
                     pipes: []
                 };
-                ['declarations', 'bootstrap', 'imports', 'exports'].forEach(
-                    metadataType => {
-                        ngModule[metadataType] = ngModule[metadataType].filter(metaDataItem => {
-                            switch (metaDataItem.type) {
-                                case 'directive':
-                                    return DependenciesEngine.getDirectives().some(directive => {
-                                        let selectedDirective;
+                ['declarations', 'bootstrap', 'imports', 'exports'].forEach(metadataType => {
+                    ngModule[metadataType] = ngModule[metadataType].filter(metaDataItem => {
+                        switch (metaDataItem.type) {
+                            case 'directive':
+                                return DependenciesEngine.getDirectives().some(directive => {
+                                    let selectedDirective;
+                                    if (typeof metaDataItem.id !== 'undefined') {
+                                        selectedDirective =
+                                            (directive as any).id === metaDataItem.id;
+                                    } else {
+                                        selectedDirective =
+                                            (directive as any).name === metaDataItem.name;
+                                    }
+                                    if (
+                                        selectedDirective &&
+                                        !ngModule.compodocLinks.directives.includes(directive)
+                                    ) {
+                                        ngModule.compodocLinks.directives.push(directive);
+                                    }
+                                    return selectedDirective;
+                                });
+
+                            case 'component':
+                                return DependenciesEngine.getComponents().some(
+                                    (component: IComponentDep) => {
+                                        let selectedComponent;
                                         if (typeof metaDataItem.id !== 'undefined') {
-                                            selectedDirective =
-                                                (directive as any).id === metaDataItem.id;
+                                            selectedComponent =
+                                                (component as any).id === metaDataItem.id;
                                         } else {
-                                            selectedDirective =
-                                                (directive as any).name === metaDataItem.name;
+                                            selectedComponent =
+                                                (component as any).name === metaDataItem.name;
                                         }
                                         if (
-                                            selectedDirective &&
-                                            !ngModule.compodocLinks.directives.includes(directive)
+                                            selectedComponent &&
+                                            !ngModule.compodocLinks.components.includes(component)
                                         ) {
-                                            ngModule.compodocLinks.directives.push(directive);
-                                        }
-                                        return selectedDirective;
-                                    });
-
-                                case 'component':
-                                    return DependenciesEngine.getComponents().some(
-                                        (component: IComponentDep) => {
-                                            let selectedComponent;
-                                            if (typeof metaDataItem.id !== 'undefined') {
-                                                selectedComponent =
-                                                    (component as any).id === metaDataItem.id;
-                                            } else {
-                                                selectedComponent =
-                                                    (component as any).name === metaDataItem.name;
+                                            if (!component.standalone) {
+                                                ngModule.compodocLinks.components.push(component);
                                             }
-                                            if (
-                                                selectedComponent &&
-                                                !ngModule.compodocLinks.components.includes(
-                                                    component
-                                                )
-                                            ) {
-                                                if (!component.standalone) {
-                                                    ngModule.compodocLinks.components.push(
-                                                        component
-                                                    );
-                                                }
-                                            }
-                                            return selectedComponent;
                                         }
-                                    );
+                                        return selectedComponent;
+                                    }
+                                );
 
-                                case 'module':
-                                    return DependenciesEngine.getModules().some(
-                                        module => (module as any).name === metaDataItem.name
-                                    );
+                            case 'module':
+                                return DependenciesEngine.getModules().some(
+                                    module => (module as any).name === metaDataItem.name
+                                );
 
-                                case 'pipe':
-                                    return DependenciesEngine.getPipes().some(pipe => {
-                                        let selectedPipe;
-                                        if (typeof metaDataItem.id !== 'undefined') {
-                                            selectedPipe = (pipe as any).id === metaDataItem.id;
-                                        } else {
-                                            selectedPipe = (pipe as any).name === metaDataItem.name;
-                                        }
-                                        if (
-                                            selectedPipe &&
-                                            !ngModule.compodocLinks.pipes.includes(pipe)
-                                        ) {
-                                            ngModule.compodocLinks.pipes.push(pipe);
-                                        }
-                                        return selectedPipe;
-                                    });
+                            case 'pipe':
+                                return DependenciesEngine.getPipes().some(pipe => {
+                                    let selectedPipe;
+                                    if (typeof metaDataItem.id !== 'undefined') {
+                                        selectedPipe = (pipe as any).id === metaDataItem.id;
+                                    } else {
+                                        selectedPipe = (pipe as any).name === metaDataItem.name;
+                                    }
+                                    if (
+                                        selectedPipe &&
+                                        !ngModule.compodocLinks.pipes.includes(pipe)
+                                    ) {
+                                        ngModule.compodocLinks.pipes.push(pipe);
+                                    }
+                                    return selectedPipe;
+                                });
 
-                                default:
-                                    return true;
-                            }
-                        });
-                    }
-                );
+                            default:
+                                return true;
+                        }
+                    });
+                });
                 ngModule.providers = ngModule.providers.filter(provider => {
                     return (
                         DependenciesEngine.getInjectables().some(injectable => {
@@ -1048,16 +1030,34 @@ export class Application {
                     }
                 });
                 // Order things
-                ngModule.compodocLinks.components = [...ngModule.compodocLinks.components].sort((a, b) => a.name.localeCompare(b.name));
-                ngModule.compodocLinks.directives = [...ngModule.compodocLinks.directives].sort((a, b) => a.name.localeCompare(b.name));
-                ngModule.compodocLinks.injectables = [...ngModule.compodocLinks.injectables].sort((a, b) => a.name.localeCompare(b.name));
-                ngModule.compodocLinks.pipes = [...ngModule.compodocLinks.pipes].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.compodocLinks.components = [...ngModule.compodocLinks.components].sort(
+                    (a, b) => a.name.localeCompare(b.name)
+                );
+                ngModule.compodocLinks.directives = [...ngModule.compodocLinks.directives].sort(
+                    (a, b) => a.name.localeCompare(b.name)
+                );
+                ngModule.compodocLinks.injectables = [...ngModule.compodocLinks.injectables].sort(
+                    (a, b) => a.name.localeCompare(b.name)
+                );
+                ngModule.compodocLinks.pipes = [...ngModule.compodocLinks.pipes].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
 
-                ngModule.declarations = [...ngModule.declarations].sort((a, b) => a.name.localeCompare(b.name));
-                ngModule.entryComponents = [...ngModule.entryComponents].sort((a, b) => a.name.localeCompare(b.name));
-                ngModule.providers = [...ngModule.providers].sort((a, b) => a.name.localeCompare(b.name));
-                ngModule.imports = [...ngModule.imports].sort((a, b) => a.name.localeCompare(b.name));
-                ngModule.exports = [...ngModule.exports].sort((a, b) => a.name.localeCompare(b.name));
+                ngModule.declarations = [...ngModule.declarations].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
+                ngModule.entryComponents = [...ngModule.entryComponents].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
+                ngModule.providers = [...ngModule.providers].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
+                ngModule.imports = [...ngModule.imports].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
+                ngModule.exports = [...ngModule.exports].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
 
                 return ngModule;
             });
@@ -1110,7 +1110,7 @@ export class Application {
         logger.info('Prepare pipes');
         Configuration.mainData.pipes = somePipes ? somePipes : DependenciesEngine.getPipes();
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             let i = 0;
             const len = Configuration.mainData.pipes.length;
             const loop = () => {
@@ -1132,7 +1132,7 @@ export class Application {
                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
                     };
                     if (pipe.isDuplicate) {
-                        page.name += '-' + pipe.duplicateId;
+                        page.name += `-${pipe.duplicateId}`;
                     }
                     Configuration.addPage(page);
                     i++;
@@ -1151,7 +1151,7 @@ export class Application {
             ? someClasses
             : DependenciesEngine.getClasses();
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             let i = 0;
             const len = Configuration.mainData.classes.length;
             const loop = () => {
@@ -1173,7 +1173,7 @@ export class Application {
                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
                     };
                     if (classe.isDuplicate) {
-                        page.name += '-' + classe.duplicateId;
+                        page.name += `-${classe.duplicateId}`;
                     }
                     Configuration.addPage(page);
                     i++;
@@ -1192,7 +1192,7 @@ export class Application {
             ? someInterfaces
             : DependenciesEngine.getInterfaces();
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             let i = 0;
             const len = Configuration.mainData.interfaces.length;
             const loop = () => {
@@ -1214,7 +1214,7 @@ export class Application {
                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
                     };
                     if (interf.isDuplicate) {
-                        page.name += '-' + interf.duplicateId;
+                        page.name += `-${interf.duplicateId}`;
                     }
                     Configuration.addPage(page);
                     i++;
@@ -1245,7 +1245,7 @@ export class Application {
             ? someMisc
             : DependenciesEngine.getMiscellaneous();
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             if (Configuration.mainData.miscellaneous.functions.length > 0) {
                 Configuration.addPage({
                     path: 'miscellaneous',
@@ -1298,7 +1298,7 @@ export class Application {
         if (!FileEngine.existsSync(templatePath)) {
             const err = `Cannot read template for ${component.name}`;
             logger.error(err);
-            return new Promise((resolve, reject) => {});
+            return new Promise((_resolve, _reject) => {});
         }
 
         return FileEngine.get(templatePath).then(
@@ -1313,9 +1313,9 @@ export class Application {
     private handleStyles(component): Promise<any> {
         const styles = component.styles;
         component.stylesData = '';
-        return new Promise((resolveStyles, rejectStyles) => {
+        return new Promise((resolveStyles, _rejectStyles) => {
             styles.forEach(style => {
-                component.stylesData = component.stylesData + style + '\n';
+                component.stylesData = `${component.stylesData + style}\n`;
             });
             resolveStyles(true);
         });
@@ -1333,7 +1333,7 @@ export class Application {
                 return Promise.resolve(null);
             }
 
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve, _reject) => {
                 FileEngine.get(stylePath).then(data => {
                     resolve({
                         data,
@@ -1433,7 +1433,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             ? someEntities
             : DependenciesEngine.getEntities();
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             let i = 0;
             const len = Configuration.mainData.entities.length;
             const loop = () => {
@@ -1450,7 +1450,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
                     };
                     if (entity.isDuplicate) {
-                        page.name += '-' + entity.duplicateId;
+                        page.name += `-${entity.duplicateId}`;
                     }
                     Configuration.addPage(page);
                     i++;
@@ -1469,7 +1469,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             ? someComponents
             : DependenciesEngine.getComponents();
 
-        return new Promise((mainPrepareComponentResolve, mainPrepareComponentReject) => {
+        return new Promise((mainPrepareComponentResolve, _mainPrepareComponentReject) => {
             let i = 0;
             const len = Configuration.mainData.components.length;
             const loop = () => {
@@ -1492,7 +1492,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     };
 
                     if (component.isDuplicate) {
-                        page.name += '-' + component.duplicateId;
+                        page.name += `-${component.duplicateId}`;
                     }
                     Configuration.addPage(page);
 
@@ -1574,7 +1574,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             ? someDirectives
             : DependenciesEngine.getDirectives();
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             let i = 0;
             const len = Configuration.mainData.directives.length;
             const loop = () => {
@@ -1596,7 +1596,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
                     };
                     if (directive.isDuplicate) {
-                        page.name += '-' + directive.duplicateId;
+                        page.name += `-${directive.duplicateId}`;
                     }
                     Configuration.addPage(page);
                     i++;
@@ -1616,7 +1616,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             ? someInjectables
             : DependenciesEngine.getInjectables();
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             let i = 0;
             const len = Configuration.mainData.injectables.length;
             const loop = () => {
@@ -1638,7 +1638,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
                     };
                     if (injec.isDuplicate) {
-                        page.name += '-' + injec.duplicateId;
+                        page.name += `-${injec.duplicateId}`;
                     }
                     Configuration.addPage(page);
                     i++;
@@ -1658,7 +1658,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             ? someInterceptors
             : DependenciesEngine.getInterceptors();
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             let i = 0;
             const len = Configuration.mainData.interceptors.length;
             const loop = () => {
@@ -1680,7 +1680,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
                     };
                     if (interceptor.isDuplicate) {
-                        page.name += '-' + interceptor.duplicateId;
+                        page.name += `-${interceptor.duplicateId}`;
                     }
                     Configuration.addPage(page);
                     i++;
@@ -1698,7 +1698,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
         Configuration.mainData.guards = someGuards ? someGuards : DependenciesEngine.getGuards();
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             let i = 0;
             const len = Configuration.mainData.guards.length;
             const loop = () => {
@@ -1720,7 +1720,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
                     };
                     if (guard.isDuplicate) {
-                        page.name += '-' + guard.duplicateId;
+                        page.name += `-${guard.duplicateId}`;
                     }
                     Configuration.addPage(page);
                     i++;
@@ -1769,13 +1769,13 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
     public prepareCoverage() {
         logger.info('Process documentation coverage report');
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             /*
              * loop with components, directives, entities, classes, injectables, interfaces, pipes, guards, misc functions variables
              */
             let files = [];
             let totalProjectStatementDocumented = 0;
-            const getStatus = function (percent) {
+            const getStatus = percent => {
                 let status;
                 if (percent <= 25) {
                     status = 'low';
@@ -1828,8 +1828,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     if (element.constructorObj) {
                         totalStatements += 1;
                         if (
-                            element.constructorObj &&
-                            element.constructorObj.description &&
+                            element.constructorObj?.description &&
                             element.constructorObj.description !== ''
                         ) {
                             totalStatementDocumented += 1;
@@ -1924,7 +1923,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     if (totalStatements === 0) {
                         cl.coveragePercent = 0;
                     }
-                    cl.coverageCount = totalStatementDocumented + '/' + totalStatements;
+                    cl.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
                     cl.status = getStatus(cl.coveragePercent);
                     totalProjectStatementDocumented += cl.coveragePercent;
                     files.push(cl);
@@ -1991,7 +1990,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     cl.coveragePercent = Math.floor(
                         (totalStatementDocumented / totalStatements) * 100
                     );
-                    cl.coverageCount = totalStatementDocumented + '/' + totalStatements;
+                    cl.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
                     cl.status = getStatus(cl.coveragePercent);
                     totalProjectStatementDocumented += cl.coveragePercent;
                     files.push(cl);
@@ -2019,8 +2018,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     if (element.constructorObj) {
                         totalStatements += 1;
                         if (
-                            element.constructorObj &&
-                            element.constructorObj.description &&
+                            element.constructorObj?.description &&
                             element.constructorObj.description !== ''
                         ) {
                             totalStatementDocumented += 1;
@@ -2063,7 +2061,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     if (totalStatements === 0) {
                         cla.coveragePercent = 0;
                     }
-                    cla.coverageCount = totalStatementDocumented + '/' + totalStatements;
+                    cla.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
                     cla.status = getStatus(cla.coveragePercent);
                     totalProjectStatementDocumented += cla.coveragePercent;
                     files.push(cla);
@@ -2100,7 +2098,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 }
 
                 cl.coveragePercent = Math.floor((totalStatementDocumented / totalStatements) * 100);
-                cl.coverageCount = totalStatementDocumented + '/' + totalStatements;
+                cl.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
                 cl.status = getStatus(cl.coveragePercent);
                 totalProjectStatementDocumented += cl.coveragePercent;
                 files.push(cl);
@@ -2268,7 +2266,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
     public prepareUnitTestCoverage() {
         logger.info('Process unit test coverage report');
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             let covDat, covFileNames;
 
             const coverageData: CoverageData = Configuration.mainData.coverageData;
@@ -2296,7 +2294,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             } else {
                 return Promise.reject('Error reading unit test coverage file');
             }
-            const getCovStatus = function (percent, totalLines) {
+            const getCovStatus = (percent, totalLines) => {
                 let status;
                 if (totalLines === 0) {
                     status = 'uncovered';
@@ -2311,7 +2309,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 }
                 return status;
             };
-            const getCoverageData = function (data, fileName) {
+            const getCoverageData = (data, fileName) => {
                 let out = {};
                 if (fileName !== 'total') {
                     if (covDat === undefined) {
@@ -2334,7 +2332,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         const t = data[key];
                         out[key] = {
                             coveragePercent: Math.round(t.pct),
-                            coverageCount: '' + t.covered + '/' + t.total,
+                            coverageCount: `${t.covered}/${t.total}`,
                             status: getCovStatus(t.pct, t.total),
                             total: t.total,
                             covered: t.covered
@@ -2392,13 +2390,13 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             finalPath += '/';
         }
         if (page.path) {
-            finalPath += page.path + '/';
+            finalPath += `${page.path}/`;
         }
 
         if (page.filename) {
-            finalPath += page.filename + '.html';
+            finalPath += `${page.filename}.html`;
         } else {
-            finalPath += page.name + '.html';
+            finalPath += `${page.name}.html`;
         }
 
         FileEngine.writeSync(finalPath, htmlData);
@@ -2407,9 +2405,9 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 
     private processTemplatePlayground(): void {
         logger.info('Process template playground');
-        
+
         // Create template playground page
-        const templatePlaygroundPage = {
+        const _templatePlaygroundPage = {
             name: 'template-playground',
             filename: 'template-playground',
             context: 'template-playground',
@@ -2500,7 +2498,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         }
     });
 })();`;
-        
+
         // Ensure js directory exists
         const jsDir = path.join(Configuration.mainData.output, 'js');
         if (!fs.existsSync(jsDir)) {
@@ -2510,7 +2508,11 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         logger.info('Template playground JavaScript generated');
 
         // Generate required CSS file
-        const cssPath = path.join(Configuration.mainData.output, 'styles', 'template-playground.css');
+        const cssPath = path.join(
+            Configuration.mainData.output,
+            'styles',
+            'template-playground.css'
+        );
         const cssContent = `/* Template Playground Styles */
 .template-playground-container {
     max-width: 1200px;
@@ -2550,7 +2552,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
 .features li, .usage li {
     margin: 8px 0;
 }`;
-        
+
         // Ensure styles directory exists
         const stylesDir = path.join(Configuration.mainData.output, 'styles');
         if (!fs.existsSync(stylesDir)) {
@@ -2565,29 +2567,43 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
      * that have standalone: true and imports.
      */
     private buildDependencyGraph() {
-        const components = Configuration.mainData.components as any[] ?? [];
-        const directives = Configuration.mainData.directives as any[] ?? [];
-        const pipes = Configuration.mainData.pipes as any[] ?? [];
-        const modules = Configuration.mainData.modules as any[] ?? [];
-        const injectables = Configuration.mainData.injectables as any[] ?? [];
+        const components = (Configuration.mainData.components as any[]) ?? [];
+        const directives = (Configuration.mainData.directives as any[]) ?? [];
+        const pipes = (Configuration.mainData.pipes as any[]) ?? [];
+        const modules = (Configuration.mainData.modules as any[]) ?? [];
+        const injectables = (Configuration.mainData.injectables as any[]) ?? [];
 
         // Build a name→type+url lookup for all known entities
         const entityMap = new Map<string, { type: string; url?: string }>();
-        for (const c of components) entityMap.set(c.name, { type: 'component', url: `./components/${c.name}.html` });
-        for (const d of directives) entityMap.set(d.name, { type: 'directive', url: `./directives/${d.name}.html` });
-        for (const p of pipes) entityMap.set(p.name, { type: 'pipe', url: `./pipes/${p.name}.html` });
-        for (const m of modules) entityMap.set(m.name, { type: 'module', url: `./modules/${m.name}.html` });
-        for (const s of injectables) entityMap.set(s.name, { type: 'injectable', url: `./injectables/${s.name}.html` });
+        for (const c of components) {
+            entityMap.set(c.name, { type: 'component', url: `./components/${c.name}.html` });
+        }
+        for (const d of directives) {
+            entityMap.set(d.name, { type: 'directive', url: `./directives/${d.name}.html` });
+        }
+        for (const p of pipes) {
+            entityMap.set(p.name, { type: 'pipe', url: `./pipes/${p.name}.html` });
+        }
+        for (const m of modules) {
+            entityMap.set(m.name, { type: 'module', url: `./modules/${m.name}.html` });
+        }
+        for (const s of injectables) {
+            entityMap.set(s.name, { type: 'injectable', url: `./injectables/${s.name}.html` });
+        }
 
         const nodeSet = new Set<string>();
         const edges: Array<{ source: string; target: string }> = [];
 
         for (const comp of components) {
-            if (!comp.standalone || !comp.imports?.length) continue;
+            if (!comp.standalone || !comp.imports?.length) {
+                continue;
+            }
             nodeSet.add(comp.name);
             for (const imp of comp.imports) {
                 const impName = typeof imp === 'string' ? imp : imp.name;
-                if (!impName) continue;
+                if (!impName) {
+                    continue;
+                }
                 nodeSet.add(impName);
                 edges.push({ source: comp.name, target: impName });
             }
@@ -2606,7 +2622,9 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
     }
 
     private buildEntityIndex() {
-        const index = buildEntityIndex(Configuration.mainData as unknown as Record<string, unknown>);
+        const index = buildEntityIndex(
+            Configuration.mainData as unknown as Record<string, unknown>
+        );
         Configuration.mainData.entityIndex = index;
     }
 
@@ -2624,7 +2642,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     if (Configuration.mainData.templatePlayground) {
                         this.processTemplatePlayground();
                     }
-                    
+
                     if (Configuration.mainData.additionalPages.length > 0) {
                         this.processAdditionalPages();
                     } else {
@@ -2738,7 +2756,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         }
 
         fs.copy(
-            path.resolve(__dirname + '/../src/resources/'),
+            path.resolve(`${__dirname}/../src/resources/`),
             path.resolve(finalOutput),
             errorCopy => {
                 if (errorCopy) {
@@ -2748,8 +2766,8 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         if (Configuration.mainData.customThemePath) {
                             fs.copy(
                                 Configuration.mainData.customThemePath,
-                                path.resolve(finalOutput + '/styles/custom.css'),
-                                function (errorCopyTheme) {
+                                path.resolve(`${finalOutput}/styles/custom.css`),
+                                errorCopyTheme => {
                                     if (errorCopyTheme) {
                                         logger.error(
                                             'Error during custom theme copy ',
@@ -2765,8 +2783,8 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         } else if (Configuration.mainData.extTheme) {
                             fs.copy(
                                 path.resolve(cwd + path.sep + Configuration.mainData.extTheme),
-                                path.resolve(finalOutput + '/styles/'),
-                                function (errorCopyTheme) {
+                                path.resolve(`${finalOutput}/styles/`),
+                                errorCopyTheme => {
                                     if (errorCopyTheme) {
                                         logger.error(
                                             'Error during external styling theme copy ',
@@ -2792,7 +2810,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                                     path.resolve(
                                         cwd + path.sep + Configuration.mainData.customFavicon
                                     ),
-                                    path.resolve(finalOutput + '/images/favicon.ico'),
+                                    path.resolve(`${finalOutput}/images/favicon.ico`),
                                     errorCopyFavicon => {
                                         // tslint:disable-line
                                         if (errorCopyFavicon) {
@@ -2858,7 +2876,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
      * @returns {number}
      */
     private getElapsedTime() {
-        return (new Date().valueOf() - startTime.valueOf()) / 1000;
+        return (Date.now() - startTime.valueOf()) / 1000;
     }
 
     public processGraphs() {
@@ -2877,7 +2895,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     if (Configuration.mainData.output.lastIndexOf('/') === -1) {
                         finalPath += '/';
                     }
-                    finalPath += 'modules/' + modules[i].name;
+                    finalPath += `modules/${modules[i].name}`;
                     const _rawModule = DependenciesEngine.getRawModule(modules[i].name);
                     if (
                         _rawModule.declarations.length > 0 ||
@@ -2894,7 +2912,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         ).then(
                             () => {
                                 NgdEngine.readGraph(
-                                    path.resolve(finalPath + path.sep + 'dependencies.svg'),
+                                    path.resolve(`${finalPath + path.sep}dependencies.svg`),
                                     modules[i].name
                                 ).then(
                                     data => {
@@ -2933,7 +2951,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             ).then(
                 () => {
                     NgdEngine.readGraph(
-                        path.resolve(finalMainGraphPath + path.sep + 'dependencies.svg'),
+                        path.resolve(`${finalMainGraphPath + path.sep}dependencies.svg`),
                         'Main graph'
                     ).then(
                         data => {
@@ -2970,12 +2988,18 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 .listen(port, host, () => {
                     logger.info(`Serving on http://${host}:${port}`);
                     if (Configuration.mainData.open) {
-                        const open = require('child_process').exec;
+                        const open = require('node:child_process').exec;
                         const url = `http://${host}:${port}`;
                         switch (process.platform) {
-                            case 'darwin': open(`open "${url}"`); break;
-                            case 'win32': open(`start "" "${url}"`); break;
-                            default: open(`xdg-open "${url}"`); break;
+                            case 'darwin':
+                                open(`open "${url}"`);
+                                break;
+                            case 'win32':
+                                open(`start "" "${url}"`);
+                                break;
+                            default:
+                                open(`xdg-open "${url}"`);
+                                break;
                         }
                     }
                 });

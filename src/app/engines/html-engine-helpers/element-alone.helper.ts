@@ -1,5 +1,5 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
 import DependenciesEngine from '../dependencies.engine';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class ElementAloneHelper implements IHtmlEngineHelper {
     constructor() {}

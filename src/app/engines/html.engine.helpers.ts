@@ -12,34 +12,34 @@ import { FilterAngular2ModulesHelper } from './html-engine-helpers/filter-angula
 import { FunctionSignatureHelper } from './html-engine-helpers/function-signature.helper';
 import { HasOwnHelper } from './html-engine-helpers/has-own.helper';
 import { HighlightCodeHelper } from './html-engine-helpers/highlight-code.helper';
-import { IHtmlEngineHelper } from './html-engine-helpers/html-engine-helper.interface';
+import type { IHtmlEngineHelper } from './html-engine-helpers/html-engine-helper.interface';
 import { I18nHelper } from './html-engine-helpers/i18n.helper';
+import { IfEqualStringHelper } from './html-engine-helpers/if-equal-string.helper';
 import { IfStringHelper } from './html-engine-helpers/if-string.helper';
 import { IndexableSignatureHelper } from './html-engine-helpers/indexable-signature.helper';
+import { IsInfoSectionHelper } from './html-engine-helpers/is-info-section.helper';
 import { IsInitialTabHelper } from './html-engine-helpers/is-initial-tab.helper';
 import { IsNotToggleHelper } from './html-engine-helpers/is-not-toggle.helper';
 import { IsTabEnabledHelper } from './html-engine-helpers/is-tab-enabled.helper';
 import { JsdocCodeExampleHelper } from './html-engine-helpers/jsdoc-code-example.helper';
 import { JsdocDefaultHelper } from './html-engine-helpers/jsdoc-default.helper';
 import { JsdocExampleHelper } from './html-engine-helpers/jsdoc-example.helper';
-import { JsdocParamsValidHelper } from './html-engine-helpers/jsdoc-params-valid.helper';
 import { JsdocParamsHelper } from './html-engine-helpers/jsdoc-params.helper';
+import { JsdocParamsValidHelper } from './html-engine-helpers/jsdoc-params-valid.helper';
 import { JsdocReturnsCommentHelper } from './html-engine-helpers/jsdoc-returns-comment.helper';
 import { LinkTypeHelper } from './html-engine-helpers/link-type.helper';
 import { ModifIconHelper } from './html-engine-helpers/modif-icon.helper';
 import { ModifKindHelper } from './html-engine-helpers/modif-kind-helper';
-import { ObjectLengthHelper } from './html-engine-helpers/object-length.helper';
 import { ObjectHelper } from './html-engine-helpers/object.helper';
+import { ObjectLengthHelper } from './html-engine-helpers/object-length.helper';
 import { OneParameterHasHelper } from './html-engine-helpers/one-parameter-has.helper';
-import { OrLengthHelper } from './html-engine-helpers/or-length.helper';
 import { OrHelper } from './html-engine-helpers/or.helper';
+import { OrLengthHelper } from './html-engine-helpers/or-length.helper';
 import { ParseDescriptionHelper } from './html-engine-helpers/parse-description.helper';
 import { ParsePropertyHelper } from './html-engine-helpers/parse-property.helper';
 import { RelativeURLHelper } from './html-engine-helpers/relative-url.helper';
 import { ShortURLHelper } from './html-engine-helpers/short-url.helper';
 import { StripURLHelper } from './html-engine-helpers/strip-url.helper';
-import { IfEqualStringHelper } from './html-engine-helpers/if-equal-string.helper';
-import { IsInfoSectionHelper } from './html-engine-helpers/is-info-section.helper';
 
 export class HtmlEngineHelpers {
     public registerHelpers(bars): void {
@@ -84,7 +84,7 @@ export class HtmlEngineHelpers {
         this.registerHelper(bars, 'highlightCode', new HighlightCodeHelper());
     }
 
-    private registerHelper(bars, key: string, helper: IHtmlEngineHelper) {
+    private registerHelper(_bars, key: string, helper: IHtmlEngineHelper) {
         Handlebars.registerHelper(key, function (this: any, ...args: any[]) {
             return helper.helperFunc.apply(helper, [this, ...args]);
         });

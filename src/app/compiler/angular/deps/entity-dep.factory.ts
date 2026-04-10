@@ -1,6 +1,6 @@
-import * as crypto from 'crypto';
-import { IDep } from '../dependencies.interfaces';
-import { ts } from 'ts-morph';
+import * as crypto from 'node:crypto';
+import type { ts } from 'ts-morph';
+import type { IDep } from '../dependencies.interfaces';
 
 export class EntityDepFactory {
     constructor() {}
@@ -9,14 +9,14 @@ export class EntityDepFactory {
         file: any,
         srcFile: ts.SourceFile,
         name: string,
-        properties: ReadonlyArray<ts.ObjectLiteralElementLike>,
+        _properties: ReadonlyArray<ts.ObjectLiteralElementLike>,
         IO: any
     ): IEntityDep {
         const sourceCode = srcFile.getText();
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
         const infos: IEntityDep = {
             name,
-            id: 'entity-' + name + '-' + hash,
+            id: `entity-${name}-${hash}`,
             file: file,
             type: 'entity',
             description: IO.description,
@@ -24,7 +24,12 @@ export class EntityDepFactory {
             sourceCode: srcFile.text,
             deprecated: IO.deprecated,
             deprecationMessage: IO.deprecationMessage,
-            properties: IO.properties
+            properties: IO.properties,
+            storybookUrl: IO.storybookUrl || '',
+            figmaUrl: IO.figmaUrl || '',
+            stackblitzUrl: IO.stackblitzUrl || '',
+            githubUrl: IO.githubUrl || '',
+            docsUrl: IO.docsUrl || ''
         };
         return infos;
     }
@@ -38,4 +43,9 @@ export interface IEntityDep extends IDep {
     deprecated: boolean;
     deprecationMessage: string;
     properties: Array<any>;
+    storybookUrl?: string;
+    figmaUrl?: string;
+    stackblitzUrl?: string;
+    githubUrl?: string;
+    docsUrl?: string;
 }

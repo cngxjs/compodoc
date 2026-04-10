@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Content Sections', () => {
     test.describe('File path in hero', () => {
@@ -90,9 +90,7 @@ test.describe('Content Sections', () => {
 
             const firstSection = page.locator('.cdx-content-section').first();
             const heading = firstSection.locator('.cdx-section-heading');
-            const borderTop = await heading.evaluate(
-                el => getComputedStyle(el).borderTopWidth
-            );
+            const borderTop = await heading.evaluate(el => getComputedStyle(el).borderTopWidth);
             expect(borderTop).toBe('0px');
         });
     });
@@ -110,7 +108,10 @@ test.describe('Content Sections', () => {
         });
 
         test('directive metadata renders as cdx-metadata-card', async ({ page }) => {
-            await page.goto('/directives/BaseDirective.html');
+            // BorderDirective has a selector, so the metadata card is non-empty
+            // and renders. BaseDirective (abstract base, no metadata) would
+            // correctly render nothing and was unsuitable for this assertion.
+            await page.goto('/directives/BorderDirective.html');
 
             const card = page.locator('.cdx-metadata-card');
             await expect(card).toBeVisible();
@@ -185,9 +186,7 @@ test.describe('Content Sections', () => {
             await page.goto('/injectables/TodoStore.html');
 
             const entries = page.locator('.cdx-index-entries').first();
-            const display = await entries.evaluate(
-                el => getComputedStyle(el).display
-            );
+            const display = await entries.evaluate(el => getComputedStyle(el).display);
             expect(display).toBe('grid');
         });
 
@@ -195,7 +194,7 @@ test.describe('Content Sections', () => {
             await page.goto('/classes/Todo.html');
 
             const deprecated = page.locator('.cdx-index-entry--deprecated');
-            if (await deprecated.count() > 0) {
+            if ((await deprecated.count()) > 0) {
                 const name = deprecated.first().locator('.cdx-index-name');
                 const decoration = await name.evaluate(
                     el => getComputedStyle(el).textDecorationLine
@@ -218,7 +217,9 @@ test.describe('Content Sections', () => {
             const count = await entries.count();
             for (let i = 0; i < count; i++) {
                 const entryRect = await entries.nth(i).boundingBox();
-                if (!entryRect || !indexRect) continue;
+                if (!entryRect || !indexRect) {
+                    continue;
+                }
                 // Entry right edge must not exceed index box right edge
                 expect(entryRect.x + entryRect.width).toBeLessThanOrEqual(
                     indexRect!.x + indexRect!.width + 1 // 1px tolerance for rounding
@@ -234,14 +235,12 @@ test.describe('Content Sections', () => {
             const count = await names.count();
             let foundTruncated = false;
             for (let i = 0; i < count; i++) {
-                const overflow = await names.nth(i).evaluate(
-                    el => getComputedStyle(el).overflow
-                );
+                const overflow = await names.nth(i).evaluate(el => getComputedStyle(el).overflow);
                 if (overflow === 'hidden') {
                     foundTruncated = true;
-                    const textOverflow = await names.nth(i).evaluate(
-                        el => getComputedStyle(el).textOverflow
-                    );
+                    const textOverflow = await names
+                        .nth(i)
+                        .evaluate(el => getComputedStyle(el).textOverflow);
                     expect(textOverflow).toBe('ellipsis');
                     break;
                 }
@@ -254,9 +253,7 @@ test.describe('Content Sections', () => {
             await page.goto('/injectables/TodoStore.html');
 
             const entries = page.locator('.cdx-index-entries').first();
-            const columns = await entries.evaluate(
-                el => getComputedStyle(el).gridTemplateColumns
-            );
+            const columns = await entries.evaluate(el => getComputedStyle(el).gridTemplateColumns);
             // At 400px viewport (minus sidebar), content area is very narrow
             // Grid should collapse to fewer columns
             const colCount = columns.split(' ').length;
@@ -267,9 +264,7 @@ test.describe('Content Sections', () => {
             await page.goto('/components/CompodocComponent.html');
 
             const indicator = page.locator('.cdx-index-indicator').first();
-            const width = await indicator.evaluate(
-                el => el.getBoundingClientRect().width
-            );
+            const width = await indicator.evaluate(el => el.getBoundingClientRect().width);
             // Indicator should be exactly 18px (flex-shrink: 0)
             expect(width).toBeCloseTo(18, 0);
         });
@@ -280,13 +275,12 @@ test.describe('Content Sections', () => {
             await page.goto('/classes/Todo.html');
 
             const card = page.locator('.cdx-metadata-card');
-            if (await card.count() > 0) {
+            if ((await card.count()) > 0) {
                 const extendsLabel = card.locator('.cdx-metadata-label', { hasText: 'extends' });
-                if (await extendsLabel.count() > 0) {
+                if ((await extendsLabel.count()) > 0) {
                     await expect(extendsLabel).toBeVisible();
                 }
             }
         });
     });
-
 });

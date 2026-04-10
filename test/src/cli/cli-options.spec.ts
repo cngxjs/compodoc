@@ -1,16 +1,14 @@
-
-
-import { shell, pkg } from '../helpers';
+import { pkg, shell } from '../helpers';
 
 describe('CLI Options', () => {
-    let runHelp = undefined;
+    let runHelp;
 
     beforeAll(() => {
         runHelp = shell('node', ['./bin/index-cli.js', '-h']);
     });
 
     it(`should display correct version ${pkg.version}`, () => {
-        let runVersion = shell('node', ['./bin/index-cli.js', '-V']);
+        const runVersion = shell('node', ['./bin/index-cli.js', '-V']);
         expect(runVersion.stdout.toString()).to.contain(pkg.version);
     });
 
@@ -39,7 +37,7 @@ describe('CLI Options', () => {
         it(`--theme`, () => {
             expect(runHelp.stdout.toString()).to.contain('--theme [theme]');
             expect(runHelp.stdout.toString()).to.contain(
-"Choose a built-in theme or path to a custom CSS file"
+                'Choose a built-in theme or path to a custom CSS file'
             );
         });
 

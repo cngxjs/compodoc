@@ -1,16 +1,20 @@
-import { extractLeadingText, splitLinkText } from '../../utils/link-parser';
 import DependenciesEngine from '../../app/engines/dependencies.engine';
+import { extractLeadingText, splitLinkText } from '../../utils/link-parser';
 
 const miscSubtypeToPage: Record<string, string> = {
     enum: 'enumerations',
     function: 'functions',
     typealias: 'typealiases',
-    variable: 'variables',
+    variable: 'variables'
 };
 
 function rootPathForDepth(depth: number): string {
-    if (depth === 0) return './';
-    if (depth >= 1 && depth <= 5) return '../'.repeat(depth);
+    if (depth === 0) {
+        return './';
+    }
+    if (depth >= 1 && depth <= 5) {
+        return '../'.repeat(depth);
+    }
     return '';
 }
 
@@ -19,7 +23,9 @@ function rootPathForDepth(depth: number): string {
  * via DependenciesEngine and building relative hrefs based on depth.
  */
 export const parseDescription = (description: string, depth: number): string => {
-    if (!description) return '';
+    if (!description) {
+        return '';
+    }
 
     const tagRegExp = /\{@link\s+((?:.|\n)+?)\}/i;
     let result = description;
@@ -46,7 +52,9 @@ export const parseDescription = (description: string, depth: number): string => 
     do {
         previousResult = result;
         matches = tagRegExp.exec(result);
-        if (!matches) break;
+        if (!matches) {
+            break;
+        }
 
         const completeTag = matches[0];
         const text = matches[1];
@@ -68,7 +76,7 @@ export const parseDescription = (description: string, depth: number): string => 
         // Determine what string to replace
         let stringToReplace: string;
         if (leading.leadingText !== undefined) {
-            stringToReplace = '[' + leading.leadingText + ']' + completeTag;
+            stringToReplace = `[${leading.leadingText}]${completeTag}`;
         } else if (typeof split.linkText !== 'undefined') {
             stringToReplace = completeTag;
         } else {
@@ -80,23 +88,25 @@ export const parseDescription = (description: string, depth: number): string => 
             let pageName = found.name;
             let typeSegment: string;
 
-            if (
-                found.type === 'class'
-            ) {
+            if (found.type === 'class') {
                 typeSegment = 'classes';
             } else if (
                 found.type === 'miscellaneous' ||
                 (found.ctype && found.ctype === 'miscellaneous')
             ) {
                 typeSegment = 'miscellaneous';
-                anchor = '#' + found.name;
+                anchor = `#${found.name}`;
                 pageName = miscSubtypeToPage[found.subtype] ?? found.name;
             } else {
-                typeSegment = found.type + 's';
+                typeSegment = `${found.type}s`;
             }
 
-            if (leading.leadingText !== undefined) label = leading.leadingText;
-            if (typeof split.linkText !== 'undefined') label = split.linkText;
+            if (leading.leadingText !== undefined) {
+                label = leading.leadingText;
+            }
+            if (typeof split.linkText !== 'undefined') {
+                label = split.linkText;
+            }
 
             const rootPath = rootPathForDepth(depth);
             const newLink = `<a href="${rootPath}${typeSegment}/${pageName}.html${anchor}">${label}</a>`;

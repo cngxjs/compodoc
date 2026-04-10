@@ -7,10 +7,14 @@ export function deepClone<T>(obj: T): T {
     return JSON.parse(
         JSON.stringify(obj, (_key, value) => {
             if (typeof value === 'object' && value !== null) {
-                if (seen.has(value)) return undefined;
+                if (seen.has(value)) {
+                    return undefined;
+                }
                 seen.add(value);
             }
-            if (typeof value === 'function') return undefined;
+            if (typeof value === 'function') {
+                return undefined;
+            }
             return value;
         })
     );

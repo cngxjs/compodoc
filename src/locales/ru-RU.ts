@@ -11,7 +11,8 @@ export const TRANSLATION_RU_RU = {
     components: 'Компоненты',
     constructor: 'Конструктор',
     coverage: 'Покрытие',
-    'coverage-empty-description': 'Запустите compodoc с задокументированными сущностями, чтобы увидеть покрытие.',
+    'coverage-empty-description':
+        'Запустите compodoc с задокументированными сущностями, чтобы увидеть покрытие.',
     'coverage-overview': 'Покрытие документации',
     'coverage-page-title': 'Покрытие документацией',
     declarations: 'Декларации',
@@ -40,7 +41,8 @@ export const TRANSLATION_RU_RU = {
     'empty-dom-tree-desc': 'Для построения DOM-дерева необходим шаблон.',
     'empty-dom-tree-title': 'DOM-дерево недоступно',
     'empty-entity-action': 'Узнать о тегах JSDoc',
-    'empty-entity-desc': 'У этого {{entityType}} нет задокументированных членов. Добавьте JSDoc-комментарии в код, чтобы заполнить эту страницу.',
+    'empty-entity-desc':
+        'У этого {{entityType}} нет задокументированных членов. Добавьте JSDoc-комментарии в код, чтобы заполнить эту страницу.',
     'empty-entity-title': 'Документация ещё не добавлена',
     'empty-enum-values': 'Нет значений',
     'empty-examples-desc': 'Для этого компонента не настроено ни одного живого примера.',
@@ -60,12 +62,14 @@ export const TRANSLATION_RU_RU = {
     'empty-methods': 'Нет методов',
     'empty-outputs': 'Выходные свойства не определены',
     'empty-overview-action': 'Проверьте tsconfig',
-    'empty-overview-desc': 'Не обнаружено ни модулей, ни компонентов, ни других Angular-артефактов.',
+    'empty-overview-desc':
+        'Не обнаружено ни модулей, ни компонентов, ни других Angular-артефактов.',
     'empty-overview-title': 'Данные проекта отсутствуют',
     'empty-pipes-desc': 'В этом проекте нет пользовательских пайпов.',
     'empty-pipes-title': 'Нет пайпов',
     'empty-properties': 'Нет свойств',
-    'empty-readme-desc': 'Добавьте файл README.md рядом с исходным файлом, чтобы он отображался здесь.',
+    'empty-readme-desc':
+        'Добавьте файл README.md рядом с исходным файлом, чтобы он отображался здесь.',
     'empty-readme-title': 'Нет README',
     'empty-search-desc': 'Попробуйте другой поисковый запрос.',
     'empty-search-title': 'Ничего не найдено',

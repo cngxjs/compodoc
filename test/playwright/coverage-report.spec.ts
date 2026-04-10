@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Coverage Report', () => {
     test.describe('Summary dashboard', () => {
@@ -124,7 +124,7 @@ test.describe('Coverage Report', () => {
             const scripts = await page.evaluate(() => {
                 return Array.from(document.querySelectorAll('script[src]'))
                     .map(s => s.getAttribute('src'))
-                    .filter(s => s && s.includes('tablesort'));
+                    .filter(s => s?.includes('tablesort'));
             });
             expect(scripts).toHaveLength(0);
         });
@@ -208,20 +208,26 @@ test.describe('Coverage Report', () => {
         test('typing filters rows across all groups', async ({ page }) => {
             await page.goto('/coverage.html');
 
-            const totalBefore = await page.locator('.cdx-coverage-table tbody tr:not(.cdx-coverage-row--hidden)').count();
+            const totalBefore = await page
+                .locator('.cdx-coverage-table tbody tr:not(.cdx-coverage-row--hidden)')
+                .count();
 
             const filter = page.locator('[data-cdx-coverage-filter]');
             await expect(filter).toBeVisible();
 
             // Use evaluate to set value and trigger input event directly
             await page.evaluate(() => {
-                const input = document.querySelector<HTMLInputElement>('[data-cdx-coverage-filter]')!;
+                const input = document.querySelector<HTMLInputElement>(
+                    '[data-cdx-coverage-filter]'
+                )!;
                 input.value = 'aboutcomponent';
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             });
             await page.waitForTimeout(300);
 
-            const totalAfter = await page.locator('.cdx-coverage-table tbody tr:not(.cdx-coverage-row--hidden)').count();
+            const totalAfter = await page
+                .locator('.cdx-coverage-table tbody tr:not(.cdx-coverage-row--hidden)')
+                .count();
             expect(totalAfter).toBeLessThan(totalBefore);
             expect(totalAfter).toBeGreaterThan(0);
         });
@@ -231,7 +237,9 @@ test.describe('Coverage Report', () => {
 
             const filter = page.locator('[data-cdx-coverage-filter]');
             await page.evaluate(() => {
-                const input = document.querySelector<HTMLInputElement>('[data-cdx-coverage-filter]')!;
+                const input = document.querySelector<HTMLInputElement>(
+                    '[data-cdx-coverage-filter]'
+                )!;
                 input.value = 'aboutcomponent';
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             });
@@ -246,22 +254,30 @@ test.describe('Coverage Report', () => {
 
             const filter = page.locator('[data-cdx-coverage-filter]');
             await page.evaluate(() => {
-                const input = document.querySelector<HTMLInputElement>('[data-cdx-coverage-filter]')!;
+                const input = document.querySelector<HTMLInputElement>(
+                    '[data-cdx-coverage-filter]'
+                )!;
                 input.value = 'aboutcomponent';
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             });
             await page.waitForTimeout(300);
 
-            const afterFilter = await page.locator('.cdx-coverage-table tbody tr:not(.cdx-coverage-row--hidden)').count();
+            const afterFilter = await page
+                .locator('.cdx-coverage-table tbody tr:not(.cdx-coverage-row--hidden)')
+                .count();
 
             await page.evaluate(() => {
-                const input = document.querySelector<HTMLInputElement>('[data-cdx-coverage-filter]')!;
+                const input = document.querySelector<HTMLInputElement>(
+                    '[data-cdx-coverage-filter]'
+                )!;
                 input.value = '';
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             });
             await page.waitForTimeout(300);
 
-            const afterClear = await page.locator('.cdx-coverage-table tbody tr:not(.cdx-coverage-row--hidden)').count();
+            const afterClear = await page
+                .locator('.cdx-coverage-table tbody tr:not(.cdx-coverage-row--hidden)')
+                .count();
             expect(afterClear).toBeGreaterThan(afterFilter);
         });
 
@@ -270,7 +286,9 @@ test.describe('Coverage Report', () => {
 
             const filter = page.locator('[data-cdx-coverage-filter]');
             await page.evaluate(() => {
-                const input = document.querySelector<HTMLInputElement>('[data-cdx-coverage-filter]')!;
+                const input = document.querySelector<HTMLInputElement>(
+                    '[data-cdx-coverage-filter]'
+                )!;
                 input.value = 'xyznonexistent';
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             });
@@ -285,7 +303,9 @@ test.describe('Coverage Report', () => {
 
             const filter = page.locator('[data-cdx-coverage-filter]');
             await page.evaluate(() => {
-                const input = document.querySelector<HTMLInputElement>('[data-cdx-coverage-filter]')!;
+                const input = document.querySelector<HTMLInputElement>(
+                    '[data-cdx-coverage-filter]'
+                )!;
                 input.value = 'aboutcomponent';
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             });
@@ -310,9 +330,7 @@ test.describe('Coverage Report', () => {
 
             const fileCol = page.locator('.cdx-coverage-file-col').first();
             // Container query hides file column below 500px content width
-            const display = await fileCol.evaluate(
-                el => getComputedStyle(el).display
-            );
+            const display = await fileCol.evaluate(el => getComputedStyle(el).display);
             expect(display).toBe('none');
         });
     });

@@ -1,4 +1,4 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class IfStringHelper implements IHtmlEngineHelper {
     public helperFunc(context: any, a: any, options: IHandlebarsOptions): string {

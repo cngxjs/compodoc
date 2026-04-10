@@ -1,8 +1,8 @@
-import { ts } from 'ts-morph';
+import type { ts } from 'ts-morph';
 
 export class JsDocHelper {
     public hasJSDocInternalTag(
-        filename: string,
+        _filename: string,
         sourceFile: ts.SourceFile,
         node: ts.Node
     ): boolean {

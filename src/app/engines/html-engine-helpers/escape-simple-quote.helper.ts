@@ -1,7 +1,7 @@
-import { IHtmlEngineHelper } from './html-engine-helper.interface';
+import type { IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class EscapeSimpleQuoteHelper implements IHtmlEngineHelper {
-    public helperFunc(context: any, text: string) {
+    public helperFunc(_context: any, text: string) {
         if (!text) {
             return;
         }

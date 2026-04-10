@@ -1,7 +1,6 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-
-import { execSync } from 'child_process';
+import { execSync } from 'node:child_process';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 
 // Helper function to check if path exists
 async function pathExists(path: string): Promise<boolean> {
@@ -29,28 +28,54 @@ describe('Build Template Playground', () => {
         // Create playground-demo structure
         const playgroundDemoDir = path.join(srcDir, 'playground-demo');
         await fs.mkdir(path.join(playgroundDemoDir, 'src', 'app'), { recursive: true });
-        await fs.writeFile(path.join(playgroundDemoDir, 'package.json'), JSON.stringify({
-            name: "compodoc-playground-demo",
-            version: "1.0.0"
-        }, null, 2));
-        await fs.writeFile(path.join(playgroundDemoDir, 'angular.json'), JSON.stringify({
-            projects: {
-                "compodoc-playground-demo": {
-                    outputPath: "dist/compodoc-playground-demo"
-                }
-            }
-        }, null, 2));
-        await fs.writeFile(path.join(playgroundDemoDir, 'tsconfig.json'), JSON.stringify({
-            compilerOptions: { target: "es2015" }
-        }, null, 2));
-        await fs.writeFile(path.join(playgroundDemoDir, 'src', 'app', 'app.component.ts'),
-            'export class AppComponent { title = "test"; }');
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'package.json'),
+            JSON.stringify(
+                {
+                    name: 'compodoc-playground-demo',
+                    version: '1.0.0'
+                },
+                null,
+                2
+            )
+        );
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'angular.json'),
+            JSON.stringify(
+                {
+                    projects: {
+                        'compodoc-playground-demo': {
+                            outputPath: 'dist/compodoc-playground-demo'
+                        }
+                    }
+                },
+                null,
+                2
+            )
+        );
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'tsconfig.json'),
+            JSON.stringify(
+                {
+                    compilerOptions: { target: 'es2015' }
+                },
+                null,
+                2
+            )
+        );
+        await fs.writeFile(
+            path.join(playgroundDemoDir, 'src', 'app', 'app.component.ts'),
+            'export class AppComponent { title = "test"; }'
+        );
 
         // Create templates structure
         const templatesDir = path.join(srcDir, 'templates');
         await fs.mkdir(path.join(templatesDir, 'partials'), { recursive: true });
         await fs.writeFile(path.join(templatesDir, 'page.hbs'), '<html>{{content}}</html>');
-        await fs.writeFile(path.join(templatesDir, 'partials', 'component.hbs'), '<div>{{component.name}}</div>');
+        await fs.writeFile(
+            path.join(templatesDir, 'partials', 'component.hbs'),
+            '<div>{{component.name}}</div>'
+        );
 
         // Create resources structure
         const resourcesDir = path.join(srcDir, 'resources');
@@ -173,7 +198,8 @@ buildTemplatePlayground();
             expect(await pathExists(distResourcesDir)).to.be.true;
             expect(await pathExists(path.join(distResourcesDir, 'playground-demo'))).to.be.true;
             expect(await pathExists(path.join(distResourcesDir, 'template-playground'))).to.be.true;
-            expect(await pathExists(path.join(distResourcesDir, 'template-playground-app'))).to.be.true;
+            expect(await pathExists(path.join(distResourcesDir, 'template-playground-app'))).to.be
+                .true;
             expect(await pathExists(path.join(distDir, 'templates'))).to.be.true;
         });
 
@@ -188,10 +214,15 @@ buildTemplatePlayground();
             expect(await pathExists(path.join(distPlaygroundDemo, 'tsconfig.json'))).to.be.true;
 
             // Check source files
-            expect(await pathExists(path.join(distPlaygroundDemo, 'src', 'app', 'app.component.ts'))).to.be.true;
+            expect(
+                await pathExists(path.join(distPlaygroundDemo, 'src', 'app', 'app.component.ts'))
+            ).to.be.true;
 
             // Verify content is copied correctly
-            const packageJsonContent = await fs.readFile(path.join(distPlaygroundDemo, 'package.json'), 'utf8');
+            const packageJsonContent = await fs.readFile(
+                path.join(distPlaygroundDemo, 'package.json'),
+                'utf8'
+            );
             const packageJson = JSON.parse(packageJsonContent);
             expect(packageJson.name).to.equal('compodoc-playground-demo');
         });
@@ -202,7 +233,8 @@ buildTemplatePlayground();
             const distTemplates = path.join(testDir, 'dist', 'templates');
 
             expect(await pathExists(path.join(distTemplates, 'page.hbs'))).to.be.true;
-            expect(await pathExists(path.join(distTemplates, 'partials', 'component.hbs'))).to.be.true;
+            expect(await pathExists(path.join(distTemplates, 'partials', 'component.hbs'))).to.be
+                .true;
 
             // Verify content
             const pageTemplate = await fs.readFile(path.join(distTemplates, 'page.hbs'), 'utf8');
@@ -237,7 +269,10 @@ buildTemplatePlayground();
     describe('Error Handling', () => {
         it('should handle missing source directories gracefully', async () => {
             // Remove playground-demo directory
-            await fs.rm(path.join(testDir, 'src', 'playground-demo'), { recursive: true, force: true });
+            await fs.rm(path.join(testDir, 'src', 'playground-demo'), {
+                recursive: true,
+                force: true
+            });
 
             try {
                 execSync('node tools/build-template-playground.js', {
@@ -292,7 +327,13 @@ buildTemplatePlayground();
 
             execSync('node tools/build-template-playground.js', { cwd: testDir });
 
-            const distFile = path.join(testDir, 'dist', 'resources', 'playground-demo', 'package.json');
+            const distFile = path.join(
+                testDir,
+                'dist',
+                'resources',
+                'playground-demo',
+                'package.json'
+            );
             const distStats = await fs.stat(distFile);
 
             // File should exist and have content

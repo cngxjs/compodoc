@@ -13,7 +13,9 @@ const MAX_LINES = 20;
  * Returns null if extraction fails (unusual syntax).
  */
 export const extractDeclaration = (sourceCode: string): string | null => {
-    if (!sourceCode?.trim()) return null;
+    if (!sourceCode?.trim()) {
+        return null;
+    }
 
     const lines = sourceCode.split('\n');
 
@@ -30,7 +32,9 @@ export const extractDeclaration = (sourceCode: string): string | null => {
         startIdx = classLine;
     }
 
-    if (startIdx === -1) return null;
+    if (startIdx === -1) {
+        return null;
+    }
 
     // Find the class/interface line (skip decorator braces)
     let classLineIdx = -1;
@@ -41,7 +45,9 @@ export const extractDeclaration = (sourceCode: string): string | null => {
         }
     }
     // If no explicit class line found (e.g. interface without export), use startIdx
-    if (classLineIdx === -1) classLineIdx = startIdx;
+    if (classLineIdx === -1) {
+        classLineIdx = startIdx;
+    }
 
     // Track brace depth from the class line to find the closing brace
     let depth = 0;
@@ -53,7 +59,9 @@ export const extractDeclaration = (sourceCode: string): string | null => {
         for (const ch of line) {
             if (ch === '{') {
                 depth++;
-                if (depth === 1) classBodyStart = i;
+                if (depth === 1) {
+                    classBodyStart = i;
+                }
             }
             if (ch === '}') {
                 depth--;
@@ -63,10 +71,14 @@ export const extractDeclaration = (sourceCode: string): string | null => {
                 }
             }
         }
-        if (endIdx !== -1) break;
+        if (endIdx !== -1) {
+            break;
+        }
     }
 
-    if (endIdx === -1 || classBodyStart === -1) return null;
+    if (endIdx === -1 || classBodyStart === -1) {
+        return null;
+    }
 
     // Extract from startIdx to endIdx
     const extracted = lines.slice(startIdx, endIdx + 1);
@@ -79,10 +91,14 @@ export const extractDeclaration = (sourceCode: string): string | null => {
     let propertyCount = 0;
 
     for (const line of extracted) {
-        let lineDepth = bodyDepth;
+        const lineDepth = bodyDepth;
         for (const ch of line) {
-            if (ch === '{') bodyDepth++;
-            if (ch === '}') bodyDepth--;
+            if (ch === '{') {
+                bodyDepth++;
+            }
+            if (ch === '}') {
+                bodyDepth--;
+            }
         }
 
         if (lineDepth <= 1) {
@@ -96,8 +112,15 @@ export const extractDeclaration = (sourceCode: string): string | null => {
             // Count members at class level (depth 1)
             if (lineDepth === 1) {
                 const trimmed = line.trim();
-                if (trimmed.match(/^\w.*\(/) && !trimmed.startsWith('//')) methodCount++;
-                else if (trimmed.match(/^\w/) && (trimmed.includes('=') || trimmed.includes(':')) && !trimmed.startsWith('//')) propertyCount++;
+                if (trimmed.match(/^\w.*\(/) && !trimmed.startsWith('//')) {
+                    methodCount++;
+                } else if (
+                    trimmed.match(/^\w/) &&
+                    (trimmed.includes('=') || trimmed.includes(':')) &&
+                    !trimmed.startsWith('//')
+                ) {
+                    propertyCount++;
+                }
             }
         } else if (lineDepth === 2 && !inMethodBody) {
             // First line inside a method body -- replace with ...
@@ -113,9 +136,10 @@ export const extractDeclaration = (sourceCode: string): string | null => {
         const headerEnd = result.findIndex(l => l.includes('{') && !l.trim().startsWith('@'));
         if (headerEnd >= 0) {
             const header = result.slice(0, headerEnd + 1);
-            const summary = methodCount > 0 || propertyCount > 0
-                ? `  // ${methodCount} methods, ${propertyCount} properties`
-                : '  // ...';
+            const summary =
+                methodCount > 0 || propertyCount > 0
+                    ? `  // ${methodCount} methods, ${propertyCount} properties`
+                    : '  // ...';
             return [...header, summary, '}'].join('\n');
         }
     }

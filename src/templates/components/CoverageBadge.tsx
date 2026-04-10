@@ -1,10 +1,10 @@
 import Html from '@kitajs/html';
 
 const STATUS_COLORS: Record<string, string> = {
-    'low': '#d8604b',
-    'medium': '#dab226',
-    'good': '#8fbd08',
-    'very-good': '#4dc71f',
+    low: '#d8604b',
+    medium: '#dab226',
+    good: '#8fbd08',
+    'very-good': '#4dc71f'
 };
 
 type CoverageBadgeProps = {

@@ -1,15 +1,15 @@
+import { exists, hasStderrError, read, shell, temporaryDir } from '../helpers';
 
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
 const tmp = temporaryDir();
 
 describe('CLI disable flags', () => {
-    const distFolder = tmp.name + '-disable-options';
+    const distFolder = `${tmp.name}-disable-options`;
 
     describe('disabling excluding methods with --disablePrivate', () => {
         let componentFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -43,7 +43,7 @@ describe('CLI disable flags', () => {
         });
 
         it('should exclude miscellaneous function marked as @private', () => {
-            let file = read(distFolder + '/miscellaneous/functions.html');
+            const file = read(`${distFolder}/miscellaneous/functions.html`);
             expect(file).not.to.contain('private function');
         });
     });
@@ -52,7 +52,7 @@ describe('CLI disable flags', () => {
         let componentFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -90,7 +90,7 @@ describe('CLI disable flags', () => {
         let componentFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -132,7 +132,7 @@ describe('CLI disable flags', () => {
         });
 
         it('correct supports @internal + link', () => {
-            let file = read(distFolder + '/directives/QueryParamNameDirective.html');
+            const file = read(`${distFolder}/directives/QueryParamNameDirective.html`);
             expect(file).to.contain('code>constructor(groupService: QueryParamGroupService');
         });
     });
@@ -141,7 +141,7 @@ describe('CLI disable flags', () => {
         let componentFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -185,7 +185,7 @@ describe('CLI disable flags', () => {
         let componentFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files-extends/src/tsconfig.json',
@@ -211,7 +211,7 @@ describe('CLI disable flags', () => {
         let componentFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -252,7 +252,7 @@ describe('CLI disable flags', () => {
         let componentFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -284,7 +284,7 @@ describe('CLI disable flags', () => {
         let componentFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files-extends/src/tsconfig.json',
@@ -309,7 +309,7 @@ describe('CLI disable flags', () => {
     describe('disabling search with --disableSearch', () => {
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -326,14 +326,14 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should not generate search JS files', () => {
-            let file = read(`${distFolder}/index.html`);
+            const file = read(`${distFolder}/index.html`);
             expect(file).not.to.contain('lunr.min.js');
-            const index = exists(distFolder + '/pagefind/pagefind.js');
+            const index = exists(`${distFolder}/pagefind/pagefind.js`);
             expect(index).to.be.false;
         });
 
         it('should not generate search input', () => {
-            let file = read(`${distFolder}/index.html`);
+            const file = read(`${distFolder}/index.html`);
             expect(file).not.to.contain('book-search-input');
         });
     });
@@ -393,7 +393,7 @@ describe('CLI disable flags', () => {
 
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -410,14 +410,14 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should not generate search JS files', () => {
-            let file = read(`${distFolder}/index.html`);
+            const file = read(`${distFolder}/index.html`);
             expect(file).not.to.contain('lunr.min.js');
-            const index = exists(distFolder + '/pagefind/pagefind.js');
+            const index = exists(`${distFolder}/pagefind/pagefind.js`);
             expect(index).to.be.false;
         });
 
         it('should not generate search input', () => {
-            let file = read(`${distFolder}/index.html`);
+            const file = read(`${distFolder}/index.html`);
             expect(file).not.to.contain('book-search-input');
         });
 
@@ -458,7 +458,7 @@ describe('CLI disable flags', () => {
 
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -530,7 +530,7 @@ describe('CLI disable flags', () => {
         let menuFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -573,7 +573,9 @@ describe('CLI disable flags', () => {
         it('should properly handle menu structure without overview', () => {
             menuFile = read(`${distFolder}/index.html`);
             // Should not contain the overview section in the getting-started chapter
-            expect(menuFile).not.to.contain('<span class="icon ion-ios-keypad"></span>{{t "overview"}}');
+            expect(menuFile).not.to.contain(
+                '<span class="icon ion-ios-keypad"></span>{{t "overview"}}'
+            );
         });
     });
 
@@ -581,7 +583,7 @@ describe('CLI disable flags', () => {
         let menuFile;
         beforeAll(() => {
             tmp.create(distFolder);
-            let ls = shell('node', [
+            const ls = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/todomvc-ng2-ignore/src/tsconfig.json',
@@ -609,14 +611,16 @@ describe('CLI disable flags', () => {
 
         it('should not display overview link in menu without README', () => {
             menuFile = read(`${distFolder}/index.html`);
-            expect(menuFile).not.to.contain('<span class="icon ion-ios-keypad"></span>{{t "overview"}}');
+            expect(menuFile).not.to.contain(
+                '<span class="icon ion-ios-keypad"></span>{{t "overview"}}'
+            );
         });
     });
 
     describe('disabling overview with --disableOverview and additional documentation', () => {
         let menuFile;
-        const additionalTestFolder = tmp.name + '-disable-overview-additional';
-        
+        const additionalTestFolder = `${tmp.name}-disable-overview-additional`;
+
         beforeAll(() => {
             tmp.create(additionalTestFolder);
             const ls = shell('node', [
@@ -645,13 +649,19 @@ describe('CLI disable flags', () => {
         });
 
         it('should still generate additional documentation pages', () => {
-            const bigIntroExists = exists(`${additionalTestFolder}/additional-documentation/big-introduction.html`);
+            const bigIntroExists = exists(
+                `${additionalTestFolder}/additional-documentation/big-introduction.html`
+            );
             expect(bigIntroExists).to.be.true;
-            
-            const editionExists = exists(`${additionalTestFolder}/additional-documentation/edition.html`);
+
+            const editionExists = exists(
+                `${additionalTestFolder}/additional-documentation/edition.html`
+            );
             expect(editionExists).to.be.true;
-            
-            const nestedEditionExists = exists(`${additionalTestFolder}/additional-documentation/edition/edition-of-a-todo.html`);
+
+            const nestedEditionExists = exists(
+                `${additionalTestFolder}/additional-documentation/edition/edition-of-a-todo.html`
+            );
             expect(nestedEditionExists).to.be.true;
         });
 
@@ -663,17 +673,23 @@ describe('CLI disable flags', () => {
         });
 
         it('should render additional documentation content correctly', () => {
-            const bigIntroFile = read(`${additionalTestFolder}/additional-documentation/big-introduction.html`);
+            const bigIntroFile = read(
+                `${additionalTestFolder}/additional-documentation/big-introduction.html`
+            );
             expect(bigIntroFile).to.contain('<h1>Introduction</h1>');
-            expect(bigIntroFile).to.contain('COMPODOC_CURRENT_PAGE_CONTEXT = \'additional-page\'');
+            expect(bigIntroFile).to.contain("COMPODOC_CURRENT_PAGE_CONTEXT = 'additional-page'");
         });
 
         it('should maintain nested additional documentation structure', () => {
             menuFile = read(`${additionalTestFolder}/index.html`);
-            expect(menuFile).to.contain('href="additional-documentation/edition/edition-of-a-todo.html"');
+            expect(menuFile).to.contain(
+                'href="additional-documentation/edition/edition-of-a-todo.html"'
+            );
             expect(menuFile).to.contain('Edition of a todo');
-            
-            const nestedFile = read(`${additionalTestFolder}/additional-documentation/edition/edition-of-a-todo.html`);
+
+            const nestedFile = read(
+                `${additionalTestFolder}/additional-documentation/edition/edition-of-a-todo.html`
+            );
             expect(nestedFile).to.contain('screenshots/actions/edition.png');
         });
 
@@ -701,10 +717,10 @@ describe('CLI disable flags', () => {
         it('should still generate other standard pages alongside additional documentation', () => {
             const modulesExists = exists(`${additionalTestFolder}/modules.html`);
             expect(modulesExists).to.be.true;
-            
+
             const indexExists = exists(`${additionalTestFolder}/index.html`);
             expect(indexExists).to.be.true;
-            
+
             // Verify the standard pages don't contain overview links
             const indexFile = read(`${additionalTestFolder}/index.html`);
             expect(indexFile).to.not.contain('href="overview.html"');
@@ -714,13 +730,13 @@ describe('CLI disable flags', () => {
     describe('comparing overview vs no-overview with additional documentation', () => {
         let withOverviewMenuFile;
         let withoutOverviewMenuFile;
-        const withOverviewFolder = tmp.name + '-with-overview-additional';
-        const withoutOverviewFolder = tmp.name + '-without-overview-additional';
-        
+        const withOverviewFolder = `${tmp.name}-with-overview-additional`;
+        const withoutOverviewFolder = `${tmp.name}-without-overview-additional`;
+
         beforeAll(() => {
             // Generate with overview
             tmp.create(withOverviewFolder);
-            let ls1 = shell('node', [
+            const ls1 = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
@@ -739,7 +755,7 @@ describe('CLI disable flags', () => {
 
             // Generate without overview
             tmp.create(withoutOverviewFolder);
-            let ls2 = shell('node', [
+            const ls2 = shell('node', [
                 './bin/index-cli.js',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
@@ -760,7 +776,7 @@ describe('CLI disable flags', () => {
             withOverviewMenuFile = read(`${withOverviewFolder}/index.html`);
             withoutOverviewMenuFile = read(`${withoutOverviewFolder}/index.html`);
         });
-        
+
         afterAll(() => {
             tmp.clean(withOverviewFolder);
             tmp.clean(withoutOverviewFolder);
@@ -770,36 +786,48 @@ describe('CLI disable flags', () => {
             // Both should have the same additional documentation structure
             expect(withOverviewMenuFile).to.contain('Additional Documentation');
             expect(withoutOverviewMenuFile).to.contain('Additional Documentation');
-            
-            expect(withOverviewMenuFile).to.contain('href="additional-documentation/big-introduction.html"');
-            expect(withoutOverviewMenuFile).to.contain('href="additional-documentation/big-introduction.html"');
+
+            expect(withOverviewMenuFile).to.contain(
+                'href="additional-documentation/big-introduction.html"'
+            );
+            expect(withoutOverviewMenuFile).to.contain(
+                'href="additional-documentation/big-introduction.html"'
+            );
         });
 
         it('should only differ in overview link presence', () => {
             // With overview should have overview link
             expect(withOverviewMenuFile).to.contain('href="overview.html"');
-            
+
             // Without overview should not have overview link
             expect(withoutOverviewMenuFile).to.not.contain('href="overview.html"');
         });
 
         it('should generate identical additional documentation files', () => {
-            const withOverviewIntroFile = read(`${withOverviewFolder}/additional-documentation/big-introduction.html`);
-            const withoutOverviewIntroFile = read(`${withoutOverviewFolder}/additional-documentation/big-introduction.html`);
-            
+            const withOverviewIntroFile = read(
+                `${withOverviewFolder}/additional-documentation/big-introduction.html`
+            );
+            const withoutOverviewIntroFile = read(
+                `${withoutOverviewFolder}/additional-documentation/big-introduction.html`
+            );
+
             // Content should be identical (excluding any timestamps or generation metadata)
             expect(withOverviewIntroFile).to.contain('<h1>Introduction</h1>');
             expect(withoutOverviewIntroFile).to.contain('<h1>Introduction</h1>');
-            
+
             // Both should have correct context
-            expect(withOverviewIntroFile).to.contain('COMPODOC_CURRENT_PAGE_CONTEXT = \'additional-page\'');
-            expect(withoutOverviewIntroFile).to.contain('COMPODOC_CURRENT_PAGE_CONTEXT = \'additional-page\'');
+            expect(withOverviewIntroFile).to.contain(
+                "COMPODOC_CURRENT_PAGE_CONTEXT = 'additional-page'"
+            );
+            expect(withoutOverviewIntroFile).to.contain(
+                "COMPODOC_CURRENT_PAGE_CONTEXT = 'additional-page'"
+            );
         });
 
         it('should have overview.html only in with-overview mode', () => {
             const withOverviewExists = exists(`${withOverviewFolder}/overview.html`);
             const withoutOverviewExists = exists(`${withoutOverviewFolder}/overview.html`);
-            
+
             expect(withOverviewExists).to.be.true;
             expect(withoutOverviewExists).to.be.false;
         });

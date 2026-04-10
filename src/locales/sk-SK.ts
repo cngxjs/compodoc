@@ -11,7 +11,8 @@ export const TRANSLATION_SK_SK = {
     components: 'Komponenty',
     constructor: 'Konštruktor',
     coverage: 'Pokrytie',
-    'coverage-empty-description': 'Spustite compodoc so zdokumentovanými entitami, aby ste videli pokrytie.',
+    'coverage-empty-description':
+        'Spustite compodoc so zdokumentovanými entitami, aby ste videli pokrytie.',
     'coverage-overview': 'Pokrytie dokumentácie',
     'coverage-page-title': 'Pokrytie dokumentáciou',
     declarations: 'Deklarácie',
@@ -40,7 +41,8 @@ export const TRANSLATION_SK_SK = {
     'empty-dom-tree-desc': 'Na vygenerovanie stromu DOM je potrebná šablóna.',
     'empty-dom-tree-title': 'Strom DOM nie je dostupný',
     'empty-entity-action': 'Zistite viac o JSDoc tagoch',
-    'empty-entity-desc': 'Tento {{entityType}} nemá žiadnych zdokumentovaných členov. Pridajte komentáre JSDoc do kódu, aby sa táto stránka naplnila.',
+    'empty-entity-desc':
+        'Tento {{entityType}} nemá žiadnych zdokumentovaných členov. Pridajte komentáre JSDoc do kódu, aby sa táto stránka naplnila.',
     'empty-entity-title': 'Zatiaľ nič zdokumentované',
     'empty-enum-values': 'Žiadne hodnoty',
     'empty-examples-desc': 'Pre tento komponent nie sú nakonfigurované žiadne živé ukážky.',

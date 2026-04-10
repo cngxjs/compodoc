@@ -1,28 +1,28 @@
 import Html from '@kitajs/html';
+import { buildGroupTree, type GroupNode } from '../../app/engines/dependencies.engine';
 import { t } from '../helpers';
-import { isToggled, getAloneElements } from '../helpers/menu-helpers';
-import { buildGroupTree, GroupNode } from '../../app/engines/dependencies.engine';
+import { getAloneElements, isToggled } from '../helpers/menu-helpers';
 import {
-    IconHome,
-    IconGrid,
-    IconClass,
-    IconList,
-    IconEntity,
-    IconSettings,
-    IconBook,
-    IconModule,
-    IconCube,
-    IconGitBranch,
     IconBarChart,
-    IconPodium,
+    IconBook,
+    IconChevronRight,
+    IconClass,
     IconComponent,
+    IconCube,
     IconDirective,
-    IconInjectable,
-    IconPipe,
-    IconInterceptor,
+    IconEntity,
+    IconGitBranch,
+    IconGrid,
     IconGuard,
+    IconHome,
+    IconInjectable,
+    IconInterceptor,
     IconInterface,
-    IconChevronRight
+    IconList,
+    IconModule,
+    IconPipe,
+    IconPodium,
+    IconSettings
 } from './Icons';
 
 type MenuProps = {
@@ -43,11 +43,16 @@ const Badge = (props: { label: string; cssClass: string }): string =>
 /** Render a single entity link */
 /** Truncate description to first sentence, max 120 chars */
 const previewDesc = (desc?: string): string | undefined => {
-    if (!desc) return undefined;
+    if (!desc) {
+        return undefined;
+    }
     const stripped = desc.replace(/<[^>]+>/g, '').trim();
-    if (!stripped) return undefined;
+    if (!stripped) {
+        return undefined;
+    }
     const firstSentence = stripped.split(/[.!?]\s/)[0];
-    const truncated = firstSentence.length > 120 ? firstSentence.substring(0, 117) + '...' : firstSentence;
+    const truncated =
+        firstSentence.length > 120 ? `${firstSentence.substring(0, 117)}...` : firstSentence;
     return truncated;
 };
 
@@ -77,14 +82,23 @@ const EntityLink = (props: {
                 class={props.deprecated ? 'cdx-member-name--deprecated' : ''}
                 data-cdx-entity-type={props.entityType}
                 data-cdx-selector={props.selector || undefined}
-                data-cdx-io={props.inputCount || props.outputCount ? `${props.inputCount || 0}/${props.outputCount || 0}` : undefined}
+                data-cdx-io={
+                    props.inputCount || props.outputCount
+                        ? `${props.inputCount || 0}/${props.outputCount || 0}`
+                        : undefined
+                }
                 data-cdx-desc={previewDesc(props.description)}
             >
                 {props.name}
                 {props.standalone ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' }) : ''}
                 {props.isToken ? Badge({ label: 'T', cssClass: 'cdx-badge--token' }) : ''}
                 {props.beta ? Badge({ label: 'B', cssClass: 'cdx-badge--beta' }) : ''}
-                {props.factoryKind ? Badge({ label: props.factoryKind.charAt(0).toUpperCase(), cssClass: 'cdx-badge--factory' }) : ''}
+                {props.factoryKind
+                    ? Badge({
+                          label: props.factoryKind.charAt(0).toUpperCase(),
+                          cssClass: 'cdx-badge--factory'
+                      })
+                    : ''}
             </a>
         </li>
     ) as string;
@@ -98,7 +112,9 @@ const GroupTree = (props: {
     groupDepth: number;
 }): string => {
     const hasContent = props.node.items.length > 0 || props.node.children.length > 0;
-    if (!hasContent) return '';
+    if (!hasContent) {
+        return '';
+    }
 
     const id = `${props.type}-group-${props.node.fullPath}`;
     // Groups shallower than groupDepth start expanded, deeper start collapsed
@@ -114,7 +130,9 @@ const GroupTree = (props: {
                 aria-expanded={startExpanded ? 'true' : 'false'}
                 aria-controls={id}
             >
-                <span class="link-name">{props.node.name.charAt(0).toUpperCase() + props.node.name.slice(1)}</span>
+                <span class="link-name">
+                    {props.node.name.charAt(0).toUpperCase() + props.node.name.slice(1)}
+                </span>
                 {props.node.items.length > 0 && (
                     <span class="cdx-badge cdx-badge--count">{props.node.items.length}</span>
                 )}
@@ -143,7 +161,7 @@ const GroupTree = (props: {
                         selector: item.selector,
                         inputCount: item.inputsClass?.length,
                         outputCount: item.outputsClass?.length,
-                        description: item.description,
+                        description: item.description
                     })
                 )}
             </ul>
@@ -163,7 +181,9 @@ const EntitySection = (props: {
     hrefPrefix: string;
     groupDepth?: number;
 }): string => {
-    if (!props.items?.length) return '';
+    if (!props.items?.length) {
+        return '';
+    }
     const id = `${props.type}-links`;
     const hasCats = props.categorized && Object.keys(props.categorized).length > 0;
     const groupDepth = props.groupDepth ?? 2;
@@ -187,7 +207,9 @@ const EntitySection = (props: {
                     ? (() => {
                           const tree = buildGroupTree(props.categorized!);
                           const groupedNames = new Set(
-                              Object.values(props.categorized!).flat().map((i: any) => i.name)
+                              Object.values(props.categorized!)
+                                  .flat()
+                                  .map((i: any) => i.name)
                           );
                           const ungrouped = props.items.filter(i => !groupedNames.has(i.name));
                           return (
@@ -214,7 +236,7 @@ const EntitySection = (props: {
                                           selector: item.selector,
                                           inputCount: item.inputsClass?.length,
                                           outputCount: item.outputsClass?.length,
-                                          description: item.description,
+                                          description: item.description
                                       })
                                   )}
                               </>
@@ -233,7 +255,7 @@ const EntitySection = (props: {
                               selector: item.selector,
                               inputCount: item.inputsClass?.length,
                               outputCount: item.outputsClass?.length,
-                              description: item.description,
+                              description: item.description
                           })
                       )}
             </ul>
@@ -250,7 +272,9 @@ const ModuleSubSection = (props: {
     hrefPrefix: string;
     moduleId: string;
 }): string => {
-    if (!props.items?.length) return '';
+    if (!props.items?.length) {
+        return '';
+    }
     const id = `${props.type}-links-${props.moduleId}`;
 
     return (
@@ -279,7 +303,7 @@ const ModuleSubSection = (props: {
                         selector: item.selector,
                         inputCount: item.inputsClass?.length,
                         outputCount: item.outputsClass?.length,
-                        description: item.description,
+                        description: item.description
                     })
                 )}
             </ul>
@@ -393,6 +417,8 @@ export const Menu = (props: MenuProps): string => {
                                             href={`${page.path}/${page.filename}.html`}
                                             data-context-id="additional"
                                         >
+                                            {/* biome-ignore lint/a11y/useFocusableInteractive: Bootstrap collapse toggle wired to data-cdx-toggle */}
+                                            {/* biome-ignore lint/a11y/useSemanticElements: Bootstrap collapse toggle wired to data-cdx-toggle */}
                                             <div
                                                 class="menu-toggler linked"
                                                 role="button"
@@ -447,6 +473,8 @@ export const Menu = (props: MenuProps): string => {
                 {d.modules?.length > 0 && (
                     <li class="chapter modules">
                         <a data-type="chapter-link" href="modules.html">
+                            {/* biome-ignore lint/a11y/useFocusableInteractive: Bootstrap collapse toggle wired to data-cdx-toggle */}
+                            {/* biome-ignore lint/a11y/useSemanticElements: Bootstrap collapse toggle wired to data-cdx-toggle */}
                             <div
                                 class="menu-toggler linked"
                                 role="button"

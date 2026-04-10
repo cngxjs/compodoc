@@ -1,10 +1,10 @@
 .cdx-graph-container {
-    margin-top: var(--spacing-cdx-xl);
+    /* margin-top: var(--spacing-cdx-xl); */
 }
 
 .cdx-graph-viewport {
-    @apply relative border border-[var(--color-cdx-border)] bg-[var(--color-cdx-bg-alt)] overflow-hidden;
-    border-radius: var(--radius-cdx-lg);
+    /* @apply relative border border-[var(--color-cdx-border)] bg-[var(--color-cdx-bg-alt)] overflow-hidden;
+    border-radius: var(--radius-cdx-lg); */
 }
 
 .cdx-graph-container--compact .cdx-graph-viewport {
@@ -34,9 +34,13 @@
 }
 
 .cdx-graph-zoom-controls {
-    @apply inline-flex;
+    @apply flex;
     gap: var(--spacing-cdx-xs);
     margin-top: var(--spacing-cdx-sm);
+    align-content: space-around;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
 }
 
 .cdx-graph-legend {
@@ -45,6 +49,7 @@
     border-radius: var(--radius-cdx-md);
     padding: 0.75rem 1rem;
     font-size: 0.8125rem;
+    margin-top: 1rem;
 }
 
 .cdx-graph-legend-item {

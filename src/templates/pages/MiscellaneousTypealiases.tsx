@@ -1,8 +1,8 @@
 import Html from '@kitajs/html';
-import { shortPath } from '../helpers';
 import { BlockTypealias } from '../blocks/BlockTypealias';
 import { IndexMisc } from '../blocks/IndexMisc';
 import { MiscHero } from '../blocks/MiscHero';
+import { shortPath } from '../helpers';
 
 type MiscTypealiasesProps = {
     readonly miscellaneous: {
@@ -12,15 +12,18 @@ type MiscTypealiasesProps = {
     readonly depth?: number;
 };
 
-export const MiscellaneousTypealiases = (props: MiscTypealiasesProps): string => (
-    <>
-        {MiscHero({ kind: 'typealias', count: props.miscellaneous.typealiases.length })}
-        {IndexMisc({ list: props.miscellaneous.typealiases, kind: 'typealias' })}
-        {Object.entries(props.miscellaneous.groupedTypeAliases).map(([key, typealias]) => (
-            <div class="cdx-content-section">
-                <h3 class="cdx-section-heading" title={key}>{shortPath(key)}</h3>
-                {BlockTypealias({ typealias, depth: props.depth })}
-            </div>
-        ))}
-    </>
-) as string;
+export const MiscellaneousTypealiases = (props: MiscTypealiasesProps): string =>
+    (
+        <>
+            {MiscHero({ kind: 'typealias', count: props.miscellaneous.typealiases.length })}
+            {IndexMisc({ list: props.miscellaneous.typealiases, kind: 'typealias' })}
+            {Object.entries(props.miscellaneous.groupedTypeAliases).map(([key, typealias]) => (
+                <div class="cdx-content-section">
+                    <h3 class="cdx-section-heading" title={key}>
+                        {shortPath(key)}
+                    </h3>
+                    {BlockTypealias({ typealias, depth: props.depth })}
+                </div>
+            ))}
+        </>
+    ) as string;

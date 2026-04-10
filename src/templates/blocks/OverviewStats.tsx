@@ -1,11 +1,20 @@
 import Html from '@kitajs/html';
-import { t, computeCoverageStats } from '../helpers';
-import { DonutChart } from './DonutChart';
 import {
-    IconComponent, IconDirective, IconPipe, IconModule, IconClass,
-    IconInterface, IconGuard, IconInterceptor, IconInjectable, IconEntity,
-    IconSettings, IconGitBranch
+    IconClass,
+    IconComponent,
+    IconDirective,
+    IconEntity,
+    IconGitBranch,
+    IconGuard,
+    IconInjectable,
+    IconInterceptor,
+    IconInterface,
+    IconModule,
+    IconPipe,
+    IconSettings
 } from '../components/Icons';
+import { computeCoverageStats, t } from '../helpers';
+import { DonutChart } from './DonutChart';
 
 /* ---- Types ---- */
 
@@ -48,13 +57,20 @@ const KpiTile = (props: {
         <div class="cdx-overview-kpi">
             <div class="cdx-overview-kpi-value">{pct}%</div>
             <div class="cdx-overview-kpi-label">{props.label}</div>
-            <div class="cdx-overview-adoption-bar" role="progressbar"
-                aria-valuenow={String(pct)} aria-valuemin="0" aria-valuemax="100">
-                <div class="cdx-overview-adoption-fill" style="width:0" data-cdx-fill-width={`${pct}%`} />
+            <div
+                class="cdx-overview-adoption-bar"
+                role="progressbar"
+                aria-valuenow={String(pct)}
+                aria-valuemin="0"
+                aria-valuemax="100"
+            >
+                <div
+                    class="cdx-overview-adoption-fill"
+                    style="width:0"
+                    data-cdx-fill-width={`${pct}%`}
+                />
             </div>
-            {props.fraction && (
-                <div class="cdx-overview-kpi-fraction">{props.fraction}</div>
-            )}
+            {props.fraction && <div class="cdx-overview-kpi-fraction">{props.fraction}</div>}
         </div>
     ) as string;
 };
@@ -73,10 +89,15 @@ function computeAdoption(props: OverviewStatsProps) {
         allPipes.filter((p: any) => p.standalone).length;
 
     const allEntities: any[] = [
-        ...allComponents, ...allDirectives, ...allPipes,
-        ...(props.injectables ?? []), ...(props.classes ?? []),
-        ...(props.guards ?? []), ...(props.interceptors ?? []),
-        ...(props.interfaces ?? []), ...(props.entities ?? [])
+        ...allComponents,
+        ...allDirectives,
+        ...allPipes,
+        ...(props.injectables ?? []),
+        ...(props.classes ?? []),
+        ...(props.guards ?? []),
+        ...(props.interceptors ?? []),
+        ...(props.interfaces ?? []),
+        ...(props.entities ?? [])
     ];
 
     let totalProps = 0;
@@ -114,7 +135,9 @@ function computeAdoption(props: OverviewStatsProps) {
 const EntityChipEl = (chip: EntityChip): string => {
     const inner = (
         <>
-            <span class="cdx-overview-chip-icon" style={`color: ${chip.colorVar}`}>{chip.icon()}</span>
+            <span class="cdx-overview-chip-icon" style={`color: ${chip.colorVar}`}>
+                {chip.icon()}
+            </span>
             <span class="cdx-overview-chip-count">{chip.count}</span>
             <span class="cdx-overview-chip-label">{chip.label}</span>
             {chip.subtitle && <span class="cdx-overview-chip-sub">{chip.subtitle}</span>}
@@ -122,7 +145,11 @@ const EntityChipEl = (chip: EntityChip): string => {
     ) as string;
 
     if (chip.href) {
-        return (<a href={chip.href} class="cdx-overview-chip">{inner}</a>) as string;
+        return (
+            <a href={chip.href} class="cdx-overview-chip">
+                {inner}
+            </a>
+        ) as string;
     }
     return (<span class="cdx-overview-chip">{inner}</span>) as string;
 };
@@ -136,49 +163,132 @@ function buildChipGroups(props: OverviewStatsProps): ChipGroup[] {
 
     // Structure: Modules, Routes, AppConfig
     const structure: EntityChip[] = [];
-    if (props.modules?.length)
-        structure.push({ icon: IconModule, count: props.modules.length, label: t('modules'), href: './modules.html', colorVar: 'var(--color-cdx-entity-module)' });
-    if (props.routes?.length)
-        structure.push({ icon: IconGitBranch, count: props.routesLength ?? 0, label: t('routes'), href: './routes.html', colorVar: 'var(--color-cdx-primary)' });
-    if (props.appConfig?.length)
-        structure.push({ icon: IconSettings, count: props.appConfig.length, label: t('configurations'), href: './app-config.html', colorVar: 'var(--color-cdx-primary)' });
-    if (structure.length) groups.push({ label: 'Structure', chips: structure });
+    if (props.modules?.length) {
+        structure.push({
+            icon: IconModule,
+            count: props.modules.length,
+            label: t('modules'),
+            href: './modules.html',
+            colorVar: 'var(--color-cdx-entity-module)'
+        });
+    }
+    if (props.routes?.length) {
+        structure.push({
+            icon: IconGitBranch,
+            count: props.routesLength ?? 0,
+            label: t('routes'),
+            href: './routes.html',
+            colorVar: 'var(--color-cdx-primary)'
+        });
+    }
+    if (props.appConfig?.length) {
+        structure.push({
+            icon: IconSettings,
+            count: props.appConfig.length,
+            label: t('configurations'),
+            href: './app-config.html',
+            colorVar: 'var(--color-cdx-primary)'
+        });
+    }
+    if (structure.length) {
+        groups.push({ label: 'Structure', chips: structure });
+    }
 
     // Declarables: Components, Directives, Pipes
     const declarables: EntityChip[] = [];
     if (props.components?.length) {
         const sa = (props.components as any[]).filter(c => c.standalone).length;
-        declarables.push({ icon: IconComponent, count: props.components.length, label: t('components'), subtitle: sa > 0 ? `${sa} standalone` : undefined, colorVar: 'var(--color-cdx-entity-component)' });
+        declarables.push({
+            icon: IconComponent,
+            count: props.components.length,
+            label: t('components'),
+            subtitle: sa > 0 ? `${sa} standalone` : undefined,
+            colorVar: 'var(--color-cdx-entity-component)'
+        });
     }
     if (props.directives?.length) {
         const sa = (props.directives as any[]).filter(d => d.standalone).length;
-        declarables.push({ icon: IconDirective, count: props.directives.length, label: t('directives'), subtitle: sa > 0 ? `${sa} standalone` : undefined, colorVar: 'var(--color-cdx-entity-directive)' });
+        declarables.push({
+            icon: IconDirective,
+            count: props.directives.length,
+            label: t('directives'),
+            subtitle: sa > 0 ? `${sa} standalone` : undefined,
+            colorVar: 'var(--color-cdx-entity-directive)'
+        });
     }
-    if (props.pipes?.length)
-        declarables.push({ icon: IconPipe, count: props.pipes.length, label: t('pipes'), colorVar: 'var(--color-cdx-entity-pipe)' });
-    if (declarables.length) groups.push({ label: 'Declarables', chips: declarables });
+    if (props.pipes?.length) {
+        declarables.push({
+            icon: IconPipe,
+            count: props.pipes.length,
+            label: t('pipes'),
+            colorVar: 'var(--color-cdx-entity-pipe)'
+        });
+    }
+    if (declarables.length) {
+        groups.push({ label: 'Declarables', chips: declarables });
+    }
 
     // Services: Injectables, Interceptors, Guards
     const services: EntityChip[] = [];
     if (props.injectables?.length) {
         const tokens = (props.injectables as any[]).filter(i => i.isToken).length;
-        services.push({ icon: IconInjectable, count: props.injectables.length, label: t('injectables'), subtitle: tokens > 0 ? `${tokens} tokens` : undefined, colorVar: 'var(--color-cdx-entity-service)' });
+        services.push({
+            icon: IconInjectable,
+            count: props.injectables.length,
+            label: t('injectables'),
+            subtitle: tokens > 0 ? `${tokens} tokens` : undefined,
+            colorVar: 'var(--color-cdx-entity-service)'
+        });
     }
-    if (props.interceptors?.length)
-        services.push({ icon: IconInterceptor, count: props.interceptors.length, label: t('interceptors'), colorVar: 'var(--color-cdx-entity-interceptor)' });
-    if (props.guards?.length)
-        services.push({ icon: IconGuard, count: props.guards.length, label: t('guards'), colorVar: 'var(--color-cdx-entity-guard)' });
-    if (services.length) groups.push({ label: 'Services', chips: services });
+    if (props.interceptors?.length) {
+        services.push({
+            icon: IconInterceptor,
+            count: props.interceptors.length,
+            label: t('interceptors'),
+            colorVar: 'var(--color-cdx-entity-interceptor)'
+        });
+    }
+    if (props.guards?.length) {
+        services.push({
+            icon: IconGuard,
+            count: props.guards.length,
+            label: t('guards'),
+            colorVar: 'var(--color-cdx-entity-guard)'
+        });
+    }
+    if (services.length) {
+        groups.push({ label: 'Services', chips: services });
+    }
 
     // Types: Classes, Interfaces, Entities
     const types: EntityChip[] = [];
-    if (props.classes?.length)
-        types.push({ icon: IconClass, count: props.classes.length, label: t('classes'), colorVar: 'var(--color-cdx-entity-class)' });
-    if (props.interfaces?.length)
-        types.push({ icon: IconInterface, count: props.interfaces.length, label: t('interfaces'), colorVar: 'var(--color-cdx-entity-interface)' });
-    if (props.entities?.length)
-        types.push({ icon: IconEntity, count: props.entities.length, label: t('entities'), colorVar: 'var(--color-cdx-entity-class)' });
-    if (types.length) groups.push({ label: 'Types', chips: types });
+    if (props.classes?.length) {
+        types.push({
+            icon: IconClass,
+            count: props.classes.length,
+            label: t('classes'),
+            colorVar: 'var(--color-cdx-entity-class)'
+        });
+    }
+    if (props.interfaces?.length) {
+        types.push({
+            icon: IconInterface,
+            count: props.interfaces.length,
+            label: t('interfaces'),
+            colorVar: 'var(--color-cdx-entity-interface)'
+        });
+    }
+    if (props.entities?.length) {
+        types.push({
+            icon: IconEntity,
+            count: props.entities.length,
+            label: t('entities'),
+            colorVar: 'var(--color-cdx-entity-class)'
+        });
+    }
+    if (types.length) {
+        groups.push({ label: 'Types', chips: types });
+    }
 
     return groups;
 }
@@ -201,35 +311,53 @@ export const OverviewStats = (props: OverviewStatsProps): string => {
                 <div class="cdx-overview-kpi-row">
                     {/* Coverage tile */}
                     {coverage.total > 0 && (
-                        <a href="./coverage.html" class="cdx-overview-kpi cdx-overview-kpi--coverage">
-                            {DonutChart({ percent: coverage.percent, documented: coverage.documented, partial: coverage.partial, undocumented: coverage.undocumented, total: coverage.total, size: 'sm' })}
+                        <a
+                            href="./coverage.html"
+                            class="cdx-overview-kpi cdx-overview-kpi--coverage"
+                        >
+                            {DonutChart({
+                                percent: coverage.percent,
+                                documented: coverage.documented,
+                                partial: coverage.partial,
+                                undocumented: coverage.undocumented,
+                                total: coverage.total,
+                                size: 'sm'
+                            })}
                             <div class="cdx-overview-kpi-label">{t('coverage-overview')}</div>
-                            <div class="cdx-overview-kpi-fraction">{coverage.documented}/{coverage.total} {t('documented').toLowerCase()}</div>
+                            <div class="cdx-overview-kpi-fraction">
+                                {coverage.documented}/{coverage.total}{' '}
+                                {t('documented').toLowerCase()}
+                            </div>
                         </a>
                     )}
 
                     {/* Standalone tile */}
-                    {adoption.standaloneTotal > 0 && KpiTile({
-                        label: t('standalone-adoption'),
-                        count: adoption.standaloneCount,
-                        total: adoption.standaloneTotal,
-                        fraction: `${adoption.standaloneCount}/${adoption.standaloneTotal}`
-                    })}
+                    {adoption.standaloneTotal > 0 &&
+                        KpiTile({
+                            label: t('standalone-adoption'),
+                            count: adoption.standaloneCount,
+                            total: adoption.standaloneTotal,
+                            fraction: `${adoption.standaloneCount}/${adoption.standaloneTotal}`
+                        })}
 
                     {/* Signals tile */}
-                    {adoption.totalProps > 0 && KpiTile({
-                        label: t('signal-adoption'),
-                        count: adoption.signalProps,
-                        total: adoption.totalProps,
-                        fraction: `${adoption.signalProps}/${adoption.totalProps}`
-                    })}
+                    {adoption.totalProps > 0 &&
+                        KpiTile({
+                            label: t('signal-adoption'),
+                            count: adoption.signalProps,
+                            total: adoption.totalProps,
+                            fraction: `${adoption.signalProps}/${adoption.totalProps}`
+                        })}
 
                     {/* inject() tile -- always shown for 4-column alignment */}
                     {KpiTile({
                         label: t('inject-adoption'),
                         count: adoption.injectProps,
                         total: adoption.injectTotal > 0 ? adoption.injectTotal : 1,
-                        fraction: adoption.injectTotal > 0 ? `${adoption.injectProps}/${adoption.injectTotal}` : '--'
+                        fraction:
+                            adoption.injectTotal > 0
+                                ? `${adoption.injectProps}/${adoption.injectTotal}`
+                                : '--'
                     })}
                 </div>
             )}

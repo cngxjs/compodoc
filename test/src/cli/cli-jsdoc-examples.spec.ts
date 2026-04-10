@@ -1,15 +1,14 @@
-
-import { hasStderrError, temporaryDir, shell, pkg, exists, exec, read, shellAsync } from '../helpers';
+import { exists, hasStderrError, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI generation - JSDoc @example language specifications', () => {
-    let stdoutString = undefined;
-    const distFolder = tmp.name + '-jsdoc-examples';
+    let stdoutString;
+    const distFolder = `${tmp.name}-jsdoc-examples`;
 
     beforeAll(() => {
         tmp.create(distFolder);
-        let ls = shell('node', [
+        const ls = shell('node', [
             './bin/index-cli.js',
             '-p',
             './test/fixtures/sample-files/tsconfig.examples.json',
@@ -80,9 +79,9 @@ describe('CLI generation - JSDoc @example language specifications', () => {
 
         it('should render each example in separate code blocks', () => {
             const codeBlocks = directiveFile.match(
-                /<pre class=\"line-numbers\"><code class=\"language-/g
+                /<pre class="line-numbers"><code class="language-/g
             );
-            expect(codeBlocks && codeBlocks.length).to.be.greaterThan(2); // At least 3 code blocks (not counting captions)
+            expect(codeBlocks?.length).to.be.greaterThan(2); // At least 3 code blocks (not counting captions)
         });
 
         it('should properly escape HTML entities in code examples', () => {
@@ -160,9 +159,9 @@ describe('CLI generation - JSDoc @example language specifications', () => {
 
         it('should separate each example into distinct code blocks', () => {
             const codeBlocks = directiveFile.match(
-                /<pre class=\"line-numbers\"><code class=\"language-[^\"]*\">/g
+                /<pre class="line-numbers"><code class="language-[^"]*">/g
             );
-            expect(codeBlocks && codeBlocks.length).to.be.greaterThan(2); // At least 3 code blocks (not counting captions)
+            expect(codeBlocks?.length).to.be.greaterThan(2); // At least 3 code blocks (not counting captions)
         });
     });
 });

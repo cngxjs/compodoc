@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Empty States', () => {
     test.describe('Page variant — bare entity with no members', () => {
@@ -9,8 +9,12 @@ test.describe('Empty States', () => {
             const emptyState = info.locator('.cdx-empty-state--page');
             await expect(emptyState).toBeVisible();
 
-            await expect(emptyState.locator('.cdx-empty-state-title')).toHaveText('Nothing documented yet');
-            await expect(emptyState.locator('.cdx-empty-state-description')).toContainText('no documented members');
+            await expect(emptyState.locator('.cdx-empty-state-title')).toHaveText(
+                'Nothing documented yet'
+            );
+            await expect(emptyState.locator('.cdx-empty-state-description')).toContainText(
+                'no documented members'
+            );
             await expect(emptyState.locator('.cdx-empty-state-icon')).toBeVisible();
         });
 
@@ -61,7 +65,9 @@ test.describe('Empty States', () => {
             await expect(inputsHeading).toHaveCount(0);
         });
 
-        test('component without outputs does not render empty Outputs heading', async ({ page }) => {
+        test('component without outputs does not render empty Outputs heading', async ({
+            page
+        }) => {
             await page.goto('/components/AppComponent.html');
 
             const info = page.locator('#info');
@@ -69,7 +75,9 @@ test.describe('Empty States', () => {
             await expect(outputsHeading).toHaveCount(0);
         });
 
-        test('component without host bindings does not render empty HostBindings heading', async ({ page }) => {
+        test('component without host bindings does not render empty HostBindings heading', async ({
+            page
+        }) => {
             await page.goto('/components/AppComponent.html');
 
             const info = page.locator('#info');

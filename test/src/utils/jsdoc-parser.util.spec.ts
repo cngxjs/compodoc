@@ -1,4 +1,3 @@
-
 import { Project, SyntaxKind } from 'ts-morph';
 import { JsdocParserUtil } from '../../../src/utils/jsdoc-parser.util';
 
@@ -22,7 +21,10 @@ describe('Utils - JsdocParserUtil', () => {
         });
 
         it('should return true for Parameter', () => {
-            const sourceFile = project.createSourceFile('test.ts', 'function test(param: string) {}');
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                'function test(param: string) {}'
+            );
             const parameter = sourceFile.getFunction('test')!.getParameters()[0];
 
             const result = jsdocParserUtil.isVariableLike(parameter.compilerNode);
@@ -49,8 +51,12 @@ describe('Utils - JsdocParserUtil', () => {
         });
 
         it('should return true for PropertyAssignment', () => {
-            const sourceFile = project.createSourceFile('test.ts', 'const obj = { prop: "value" };');
-            const propertyAssignment = sourceFile.getVariableDeclaration('obj')!
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                'const obj = { prop: "value" };'
+            );
+            const propertyAssignment = sourceFile
+                .getVariableDeclaration('obj')!
                 .getInitializerIfKind(SyntaxKind.ObjectLiteralExpression)!
                 .getProperties()[0];
 
@@ -60,7 +66,10 @@ describe('Utils - JsdocParserUtil', () => {
         });
 
         it('should return true for PropertySignature', () => {
-            const sourceFile = project.createSourceFile('test.ts', 'interface Test { prop: string; }');
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                'interface Test { prop: string; }'
+            );
             const propertySignature = sourceFile.getInterface('Test')!.getProperties()[0];
 
             const result = jsdocParserUtil.isVariableLike(propertySignature.compilerNode);
@@ -70,7 +79,8 @@ describe('Utils - JsdocParserUtil', () => {
 
         it('should return true for ShorthandPropertyAssignment', () => {
             const sourceFile = project.createSourceFile('test.ts', 'const obj = { x };');
-            const shorthandProperty = sourceFile.getVariableDeclaration('obj')!
+            const shorthandProperty = sourceFile
+                .getVariableDeclaration('obj')!
                 .getInitializerIfKind(SyntaxKind.ObjectLiteralExpression)!
                 .getProperties()[0];
 
@@ -82,7 +92,10 @@ describe('Utils - JsdocParserUtil', () => {
         it('should return true for BindingElement', () => {
             const sourceFile = project.createSourceFile('test.ts', 'const [x] = [1];');
             const variableDeclaration = sourceFile.getVariableDeclarations()[0];
-            const bindingElement = variableDeclaration.getNameNode().asKind(SyntaxKind.ArrayBindingPattern)!.getElements()[0];
+            const bindingElement = variableDeclaration
+                .getNameNode()
+                .asKind(SyntaxKind.ArrayBindingPattern)!
+                .getElements()[0];
 
             const result = jsdocParserUtil.isVariableLike(bindingElement.compilerNode);
 
@@ -109,11 +122,12 @@ describe('Utils - JsdocParserUtil', () => {
             const sourceFile = project.createSourceFile('test.ts', 'module A {}');
             const moduleDeclaration = sourceFile.getModule('A');
 
-            const result = jsdocParserUtil.isTopmostModuleDeclaration(moduleDeclaration!.compilerNode);
+            const result = jsdocParserUtil.isTopmostModuleDeclaration(
+                moduleDeclaration!.compilerNode
+            );
 
             expect(result).to.be.true;
         });
-
     });
 
     describe('getRootModuleDeclaration()', () => {
@@ -121,7 +135,9 @@ describe('Utils - JsdocParserUtil', () => {
             const sourceFile = project.createSourceFile('test.ts', 'module A {}');
             const moduleDeclaration = sourceFile.getModule('A');
 
-            const result = jsdocParserUtil.getRootModuleDeclaration(moduleDeclaration!.compilerNode);
+            const result = jsdocParserUtil.getRootModuleDeclaration(
+                moduleDeclaration!.compilerNode
+            );
 
             expect(result).to.equal(moduleDeclaration!.compilerNode);
         });
@@ -131,15 +147,24 @@ describe('Utils - JsdocParserUtil', () => {
         it('should return null for source file with single comment', () => {
             const sourceFile = project.createSourceFile('test.ts', '/** comment */ const x = 1;');
 
-            const result = jsdocParserUtil.getMainCommentOfNode(sourceFile.compilerNode, sourceFile.compilerNode);
+            const result = jsdocParserUtil.getMainCommentOfNode(
+                sourceFile.compilerNode,
+                sourceFile.compilerNode
+            );
 
             expect(result).to.be.null;
         });
 
         it('should return comment for source file with multiple comments', () => {
-            const sourceFile = project.createSourceFile('test.ts', '/** first */ /** second */ const x = 1;');
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                '/** first */ /** second */ const x = 1;'
+            );
 
-            const result = jsdocParserUtil.getMainCommentOfNode(sourceFile.compilerNode, sourceFile.compilerNode);
+            const result = jsdocParserUtil.getMainCommentOfNode(
+                sourceFile.compilerNode,
+                sourceFile.compilerNode
+            );
 
             expect(result).to.equal('/** first */');
         });
@@ -148,25 +173,40 @@ describe('Utils - JsdocParserUtil', () => {
             const sourceFile = project.createSourceFile('test.ts', '/** comment */ const x = 1;');
             const variableDeclaration = sourceFile.getVariableDeclaration('x');
 
-            const result = jsdocParserUtil.getMainCommentOfNode(variableDeclaration!.compilerNode, sourceFile.compilerNode);
+            const result = jsdocParserUtil.getMainCommentOfNode(
+                variableDeclaration!.compilerNode,
+                sourceFile.compilerNode
+            );
 
             expect(result).to.equal('/** comment */');
         });
 
         it('should return comment for function declaration', () => {
-            const sourceFile = project.createSourceFile('test.ts', '/** comment */ function test() {}');
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                '/** comment */ function test() {}'
+            );
             const functionDeclaration = sourceFile.getFunction('test');
 
-            const result = jsdocParserUtil.getMainCommentOfNode(functionDeclaration!.compilerNode, sourceFile.compilerNode);
+            const result = jsdocParserUtil.getMainCommentOfNode(
+                functionDeclaration!.compilerNode,
+                sourceFile.compilerNode
+            );
 
             expect(result).to.equal('/** comment */');
         });
 
         it('should return comment for module declaration', () => {
-            const sourceFile = project.createSourceFile('test.ts', '/** module comment */ module A {}');
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                '/** module comment */ module A {}'
+            );
             const moduleDeclaration = sourceFile.getModule('A');
 
-            const result = jsdocParserUtil.getMainCommentOfNode(moduleDeclaration!.compilerNode, sourceFile.compilerNode);
+            const result = jsdocParserUtil.getMainCommentOfNode(
+                moduleDeclaration!.compilerNode,
+                sourceFile.compilerNode
+            );
 
             expect(result).to.equal('/** module comment */');
         });
@@ -204,7 +244,9 @@ describe('Utils - JsdocParserUtil', () => {
 
             const result = jsdocParserUtil.parseComment(comment);
 
-            expect(result).to.equal('\n\nFunction description\n```html\nconst result = test();\n```');
+            expect(result).to.equal(
+                '\n\nFunction description\n```html\nconst result = test();\n```'
+            );
         });
 
         it('should parse JSDoc comment with @example and existing code fence', () => {
@@ -218,7 +260,9 @@ describe('Utils - JsdocParserUtil', () => {
 
             const result = jsdocParserUtil.parseComment(comment);
 
-            expect(result).to.equal('\n\nFunction description\n```typescript\nconst result = test();\n```');
+            expect(result).to.equal(
+                '\n\nFunction description\n```typescript\nconst result = test();\n```'
+            );
         });
 
         it('should parse JSDoc comment with @see tag', () => {
@@ -266,7 +310,10 @@ describe('Utils - JsdocParserUtil', () => {
 
     describe('getJSDocs()', () => {
         it('should return JSDoc comments for a node with JSDoc', () => {
-            const sourceFile = project.createSourceFile('test.ts', '/** comment */ function test() {}');
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                '/** comment */ function test() {}'
+            );
             const functionDeclaration = sourceFile.getFunction('test');
 
             const result = jsdocParserUtil.getJSDocs(functionDeclaration!.compilerNode);
@@ -286,7 +333,10 @@ describe('Utils - JsdocParserUtil', () => {
         });
 
         it('should return JSDoc for variable with initializer', () => {
-            const sourceFile = project.createSourceFile('test.ts', 'const x = /** comment */ function() {};');
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                'const x = /** comment */ function() {};'
+            );
             const variableDeclaration = sourceFile.getVariableDeclaration('x');
 
             const result = jsdocParserUtil.getJSDocs(variableDeclaration!.compilerNode);
@@ -298,7 +348,10 @@ describe('Utils - JsdocParserUtil', () => {
 
     describe('parseJSDocNode()', () => {
         it('should parse JSDoc node with string comment', () => {
-            const sourceFile = project.createSourceFile('test.ts', '/** Simple comment */ function test() {}');
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                '/** Simple comment */ function test() {}'
+            );
             const functionDeclaration = sourceFile.getFunction('test');
             const jsDocs = jsdocParserUtil.getJSDocs(functionDeclaration!.compilerNode);
 
@@ -308,7 +361,10 @@ describe('Utils - JsdocParserUtil', () => {
         });
 
         it('should parse JSDoc node with JSDocComment', () => {
-            const sourceFile = project.createSourceFile('test.ts', '/** Simple comment */ function test() {}');
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                '/** Simple comment */ function test() {}'
+            );
             const functionDeclaration = sourceFile.getFunction('test');
             const jsDocs = jsdocParserUtil.getJSDocs(functionDeclaration!.compilerNode);
 
@@ -318,7 +374,10 @@ describe('Utils - JsdocParserUtil', () => {
         });
 
         it('should parse JSDoc node with JSDocLink', () => {
-            const sourceFile = project.createSourceFile('test.ts', '/** {@link TestClass} */ function test() {}');
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                '/** {@link TestClass} */ function test() {}'
+            );
             const functionDeclaration = sourceFile.getFunction('test');
             const jsDocs = jsdocParserUtil.getJSDocs(functionDeclaration!.compilerNode);
 
@@ -328,7 +387,10 @@ describe('Utils - JsdocParserUtil', () => {
         });
 
         it('should handle JSDoc node with multiple comment parts', () => {
-            const sourceFile = project.createSourceFile('test.ts', '/** Comment part 1 Comment part 2 */ function test() {}');
+            const sourceFile = project.createSourceFile(
+                'test.ts',
+                '/** Comment part 1 Comment part 2 */ function test() {}'
+            );
             const functionDeclaration = sourceFile.getFunction('test');
             const jsDocs = jsdocParserUtil.getJSDocs(functionDeclaration!.compilerNode);
 

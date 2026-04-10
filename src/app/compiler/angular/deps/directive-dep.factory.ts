@@ -1,8 +1,9 @@
-import * as crypto from 'crypto';
-import { IDep } from '../dependencies.interfaces';
-import { ComponentHelper } from './helpers/component-helper';
-import Configuration from '../../../configuration';
+import * as crypto from 'node:crypto';
 import { cleanLifecycleHooksFromMethods } from '../../../../utils';
+import Configuration from '../../../configuration';
+import type { IDep } from '../dependencies.interfaces';
+import type { ComponentHelper, HostDirectiveEntry, HostEntry } from './helpers/component-helper';
+import type { ProviderEntry } from './helpers/symbol-helper';
 
 export class DirectiveDepFactory {
     constructor(private helper: ComponentHelper) {}
@@ -12,7 +13,7 @@ export class DirectiveDepFactory {
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
         const directiveDeps: IDirectiveDep = {
             name,
-            id: 'directive-' + name + '-' + hash,
+            id: `directive-${name}-${hash}`,
             file: file,
             type: 'directive',
             description: IO.description,
@@ -21,9 +22,10 @@ export class DirectiveDepFactory {
             selector: this.helper.getComponentSelector(props, srcFile),
             providers: this.helper.getComponentProviders(props, srcFile),
             exportAs: this.helper.getComponentExportAs(props, srcFile),
-            hostDirectives: [...this.helper.getComponentHostDirectives(props)],
+            hostDirectives: [...this.helper.getComponentHostDirectives(props, srcFile)],
+            hostStructured: this.helper.getComponentHostStructured(props),
 
-            standalone: this.helper.getComponentStandalone(props, srcFile) ? true : false,
+            standalone: !!this.helper.getComponentStandalone(props, srcFile),
 
             inputsClass: IO.inputs,
             outputsClass: IO.outputs,
@@ -32,13 +34,18 @@ export class DirectiveDepFactory {
             deprecationMessage: IO.deprecationMessage,
             category: IO.category || '',
 
-            // Custom JSDoc tags (Phase 4.6)
+            // Custom JSDoc tags
             signal: IO.signal || false,
             zoneless: IO.zoneless || false,
             beta: IO.beta || false,
             since: IO.since || '',
             breaking: IO.breaking || '',
             group: IO.group || '',
+            storybookUrl: IO.storybookUrl || '',
+            figmaUrl: IO.figmaUrl || '',
+            stackblitzUrl: IO.stackblitzUrl || '',
+            githubUrl: IO.githubUrl || '',
+            docsUrl: IO.docsUrl || '',
 
             hostBindings: IO.hostBindings,
             hostListeners: IO.hostListeners,
@@ -67,19 +74,20 @@ export class DirectiveDepFactory {
             directiveDeps.accessors = IO.accessors;
         }
         if (IO.properties) {
-            const {inputSignals, outputSignals, properties} = this.helper.getInputOutputSignals(IO.properties);
+            const { inputSignals, outputSignals, properties } = this.helper.getInputOutputSignals(
+                IO.properties
+            );
 
-            directiveDeps.inputsClass = directiveDeps.inputsClass.concat(inputSignals)
-            directiveDeps.outputsClass = directiveDeps.outputsClass.concat(outputSignals)
+            directiveDeps.inputsClass = directiveDeps.inputsClass.concat(inputSignals);
+            directiveDeps.outputsClass = directiveDeps.outputsClass.concat(outputSignals);
             directiveDeps.propertiesClass = properties;
         }
 
         // Parse host: {} metadata into structured hostBindings/hostListeners
         const host = this.helper.getComponentHost(props);
         if (host && typeof host === 'object') {
-            const hostEntries = host instanceof Map
-                ? Array.from(host.entries())
-                : Object.entries(host);
+            const hostEntries =
+                host instanceof Map ? Array.from(host.entries()) : Object.entries(host);
 
             for (const [key, value] of hostEntries) {
                 const k = String(key).trim();
@@ -91,7 +99,7 @@ export class DirectiveDepFactory {
                         args: [],
                         description: `host: { '(${eventName})': '${v}' }`,
                         line: 0,
-                        signalKind: 'host-listener',
+                        signalKind: 'host-listener'
                     });
                 } else if (k.startsWith('[') && k.endsWith(']')) {
                     const bindingName = k.slice(1, -1);
@@ -101,7 +109,7 @@ export class DirectiveDepFactory {
                         type: '',
                         description: `host: { '${k}': '${v}' }`,
                         line: 0,
-                        signalKind: 'host-binding',
+                        signalKind: 'host-binding'
                     });
                 }
             }
@@ -118,7 +126,7 @@ export interface IDirectiveDep extends IDep {
     sourceCode: string;
 
     selector: string;
-    providers: Array<any>;
+    providers: ProviderEntry[];
     exportAs: string;
 
     inputsClass: any;
@@ -137,10 +145,16 @@ export interface IDirectiveDep extends IDep {
     since?: string;
     breaking?: string;
     group?: string;
+    storybookUrl?: string;
+    figmaUrl?: string;
+    stackblitzUrl?: string;
+    githubUrl?: string;
+    docsUrl?: string;
 
     hostBindings: any;
-    hostDirectives: any;
+    hostDirectives: HostDirectiveEntry[];
     hostListeners: any;
+    hostStructured?: HostEntry[];
 
     propertiesClass: any;
     methodsClass: any;

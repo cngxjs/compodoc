@@ -1,7 +1,7 @@
-import { IHtmlEngineHelper, IHandlebarsOptions } from './html-engine-helper.interface';
+import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 export class JsdocReturnsCommentHelper implements IHtmlEngineHelper {
-    public helperFunc(context: any, jsdocTags: Array<any>, options: IHandlebarsOptions) {
+    public helperFunc(_context: any, jsdocTags: Array<any>, _options: IHandlebarsOptions) {
         let i = 0;
         const len = jsdocTags.length;
         let result;

@@ -1,4 +1,3 @@
-import Html from '@kitajs/html';
 import { renderEntityPage } from './EntityPage';
 
 export const GuardPage = (data: any): string =>
