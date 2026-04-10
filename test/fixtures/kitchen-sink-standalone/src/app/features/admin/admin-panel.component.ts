@@ -45,6 +45,16 @@ export const ADMIN_AUDIT_CHANNEL = new InjectionToken<string>('ADMIN_AUDIT_CHANN
 });
 
 /**
+ * Extracted host-directive configuration. Demonstrates the case where the
+ * object literal lives in a separate const and is referenced by identifier
+ * in the `hostDirectives` array.
+ */
+export const TOOLTIP_HOST_DIRECTIVE = {
+    directive: TooltipDirective,
+    inputs: ['appTooltip: tooltip', 'position']
+};
+
+/**
  * Admin panel with settings management.
  *
  * Fully maxed-out component showing every metadata field compodocx can
@@ -126,7 +136,10 @@ export const ADMIN_AUDIT_CHANNEL = new InjectionToken<string>('ADMIN_AUDIT_CHANN
             inputs: ['color', 'hoverColor', 'enabled'],
             outputs: []
         },
-        TooltipDirective
+        // Bare directive class
+        TooltipDirective,
+        // Reference to an extracted const (see TOOLTIP_HOST_DIRECTIVE above)
+        TOOLTIP_HOST_DIRECTIVE
     ],
     animations: [
         trigger('settingsToggle', [

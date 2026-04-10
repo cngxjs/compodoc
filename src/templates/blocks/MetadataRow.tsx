@@ -206,8 +206,7 @@ export function MetadataHostDirectivesRow(hostDirectives: HostDirective[]): stri
 
     return MetadataRow(
         'hostDirectives',
-        `<div class="cdx-host-dir-list">${items.join('')}</div>`,
-        true
+        `<div class="cdx-host-dir-list">${items.join('')}</div>`
     );
 }
 
