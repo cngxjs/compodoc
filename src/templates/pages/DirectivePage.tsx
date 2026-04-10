@@ -2,6 +2,7 @@ import {
     MetadataChipsRow,
     MetadataCodeRow,
     MetadataHostDirectivesRow,
+    MetadataProvidersRow,
     MetadataSection
 } from '../blocks/MetadataRow';
 import { isInfoSection } from '../helpers';
@@ -31,8 +32,8 @@ const DirectiveMetadata = (directive: any): string => {
         rows.push(MetadataCodeRow('exportAs', directive.exportAs));
     }
 
-    // Array values → chip rows (same treatment as ComponentPage)
-    rows.push(MetadataChipsRow('providers', directive.providers ?? []));
+    // Array values → providers get the structured object-literal renderer
+    rows.push(MetadataProvidersRow('providers', directive.providers ?? []));
 
     if (directive.hostDirectives?.length > 0) {
         rows.push(MetadataHostDirectivesRow(directive.hostDirectives));

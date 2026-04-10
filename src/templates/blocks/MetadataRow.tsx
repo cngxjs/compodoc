@@ -258,6 +258,109 @@ export function MetadataHostRow(entries: HostEntry[]): string {
     return MetadataRow('host', `<div class="cdx-host-dir-list">${block}</div>`);
 }
 
+/**
+ * Structured provider entry. Matches the `ProviderEntry` type emitted by
+ * `SymbolHelper.getProviderEntries`; kept local here to avoid a cross-layer
+ * import from the compiler package.
+ */
+type ProviderEntry = {
+    readonly name: string;
+    readonly kind: 'class' | 'useClass' | 'useValue' | 'useFactory' | 'useExisting';
+    readonly provide?: string;
+    readonly useClass?: string;
+    readonly useValue?: string;
+    readonly valueKind?: 'literal' | 'identifier' | 'expression';
+    readonly factory?: string;
+    readonly deps?: string[];
+    readonly useExisting?: string;
+    readonly multi?: boolean;
+};
+
+/**
+ * Render a metadata row for a providers / viewProviders array. Each entry
+ * becomes a source-like code-object literal or (for bare class providers)
+ * a single linkable chip on its own line. Reuses the `cdx-host-dir-*` token
+ * classes from `MetadataHostDirectivesRow` and `MetadataHostRow` so the
+ * visual grammar stays consistent across all three renderers.
+ *
+ * Linkable tokens — the provide target for kind: class, the useClass or
+ * useExisting target, the factory function, and each entry in deps[] — are
+ * resolved through `resolveType` and rendered as anchors when the dep
+ * engine knows about them. Unresolved tokens fall back to plain spans.
+ *
+ * String-literal provide targets like `'AuditToken'` are rendered verbatim
+ * (quotes included) as a muted token rather than a linkable name, so they
+ * visually read as strings in the rendered block.
+ */
+export function MetadataProvidersRow(label: string, entries: ProviderEntry[]): string {
+    if (!entries?.length) {
+        return '';
+    }
+
+    const punct = (s: string) => `<span class="cdx-host-dir-punct">${s}</span>`;
+    const key = (k: string) => `<span class="cdx-host-dir-key">${k}</span>`;
+    const token = (t: string) => `<span class="cdx-host-dir-token">${escapeHtml(t)}</span>`;
+
+    const isStringLiteralName = (name: string): boolean =>
+        name.length >= 2 &&
+        ((name.startsWith("'") && name.endsWith("'")) ||
+            (name.startsWith('"') && name.endsWith('"')));
+
+    const nameToken = (name: string): string => {
+        if (isStringLiteralName(name)) {
+            return token(name);
+        }
+        const resolved = resolveType(name);
+        if (resolved) {
+            return `<a class="cdx-host-dir-name" href="${resolved.href}" target="${resolved.target}">${name}</a>`;
+        }
+        return `<span class="cdx-host-dir-name">${escapeHtml(name)}</span>`;
+    };
+
+    const renderDeps = (deps: string[]): string =>
+        `${punct('[')}${deps.map(d => nameToken(d)).join(punct(', '))}${punct(']')}`;
+
+    const items = entries.map(entry => {
+        // Bare class / InjectionToken — render as a single clickable token
+        // on its own line, wrapped in a card-like block so the visual weight
+        // matches the object-literal entries below it.
+        if (entry.kind === 'class') {
+            return `<div class="cdx-host-dir-object">${nameToken(entry.name)}</div>`;
+        }
+
+        const lines: string[] = [];
+        lines.push(`  ${key('provide:')} ${nameToken(entry.name)}`);
+
+        if (entry.kind === 'useClass' && entry.useClass) {
+            lines.push(`  ${key('useClass:')} ${nameToken(entry.useClass)}`);
+        } else if (entry.kind === 'useValue' && entry.useValue !== undefined) {
+            const valueHtml =
+                entry.valueKind === 'identifier'
+                    ? nameToken(entry.useValue)
+                    : token(entry.useValue);
+            lines.push(`  ${key('useValue:')} ${valueHtml}`);
+        } else if (entry.kind === 'useFactory') {
+            if (entry.factory) {
+                lines.push(`  ${key('useFactory:')} ${nameToken(entry.factory)}`);
+            }
+            if (entry.deps?.length) {
+                lines.push(`  ${key('deps:')} ${renderDeps(entry.deps)}`);
+            }
+        } else if (entry.kind === 'useExisting' && entry.useExisting) {
+            lines.push(`  ${key('useExisting:')} ${nameToken(entry.useExisting)}`);
+        }
+
+        if (entry.multi) {
+            lines.push(`  ${key('multi:')} ${token('true')}`);
+        }
+
+        const body = lines.join(`${punct(',')}\n`);
+        return `<div class="cdx-host-dir-object">${punct('{')}\n${body}\n${punct('}')}</div>`;
+    });
+
+    return MetadataRow(label, `<div class="cdx-host-dir-list">${items.join('')}</div>`);
+}
+
 export function MetadataChipsRow(label: string, names: Array<string | { name: string }>): string {
     const items = names
         .map(n => (typeof n === 'string' ? n : n.name))

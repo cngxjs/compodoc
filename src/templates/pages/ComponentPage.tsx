@@ -16,6 +16,7 @@ import {
     MetadataCodeRow,
     MetadataHostDirectivesRow,
     MetadataHostRow,
+    MetadataProvidersRow,
     MetadataSection
 } from '../blocks/MetadataRow';
 import { EmptyState } from '../components/EmptyState';
@@ -90,8 +91,8 @@ const ComponentMetadata = (c: any): string => {
 
     // Array values → chip rows
     rows.push(MetadataChipsRow('imports', c.imports ?? []));
-    rows.push(MetadataChipsRow('providers', c.providers ?? []));
-    rows.push(MetadataChipsRow('viewProviders', c.viewProviders ?? []));
+    rows.push(MetadataProvidersRow('providers', c.providers ?? []));
+    rows.push(MetadataProvidersRow('viewProviders', c.viewProviders ?? []));
     rows.push(MetadataChipsRow('entryComponents', c.entryComponents ?? []));
     rows.push(MetadataChipsRow('extends', (c.extends as string[]) ?? []));
     rows.push(MetadataChipsRow('implements', (c.implements as string[]) ?? []));
