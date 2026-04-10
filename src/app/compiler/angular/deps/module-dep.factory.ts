@@ -3,6 +3,7 @@ import type { ts } from 'ts-morph';
 
 import type { IDep } from '../dependencies.interfaces';
 import type { ModuleHelper } from './helpers/module-helper';
+import type { ProviderEntry } from './helpers/symbol-helper';
 
 export class ModuleDepFactory {
     constructor(private moduleHelper: ModuleHelper) {}
@@ -41,7 +42,7 @@ export class ModuleDepFactory {
 
 export interface IModuleDep extends IDep {
     file: any;
-    providers: Array<any>;
+    providers: ProviderEntry[];
     declarations: Array<any>;
     entryComponents: Array<any>;
     imports: Array<any>;

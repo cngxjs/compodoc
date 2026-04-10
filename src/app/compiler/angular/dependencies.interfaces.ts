@@ -149,6 +149,9 @@ export interface ITypeAliasDecDep extends IDep {
     kind?;
 }
 
+import type { HostDirectiveEntry } from './deps/helpers/component-helper';
+import type { ProviderEntry } from './deps/helpers/symbol-helper';
+
 export interface Deps {
     id: string;
     name: string;
@@ -171,7 +174,8 @@ export interface Deps {
     encapsulation?: string;
     entryComponents?: string; // TODO
     exportAs?: string;
-    host?: string;
+    host?: any;
+    hostDirectives?: HostDirectiveEntry[];
     inputs?: string[];
     interpolation?: string; // TODO
     moduleId?: string;
@@ -182,7 +186,7 @@ export interface Deps {
     styles?: string[];
     template?: string;
     templateUrl?: string[];
-    viewProviders?: Deps[];
+    viewProviders?: ProviderEntry[];
     exampleUrls?: string[];
 
     implements?;
@@ -197,7 +201,7 @@ export interface Deps {
     hostListeners?: Object[];
 
     // common
-    providers?: Deps[];
+    providers?: ProviderEntry[];
 
     // module
     declarations?: Deps[];
