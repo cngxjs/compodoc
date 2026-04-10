@@ -1,5 +1,7 @@
 import Html from '@kitajs/html';
 import {
+    IconArrowLeft,
+    IconArrowRight,
     IconClass,
     IconComponent,
     IconDirective,
@@ -77,8 +79,8 @@ const linkFor = (name: string): { href: string; target: string } => {
     return { href: '#', target: '_self' };
 };
 
-/** Card rendered under the "Used By" column — tall, description-friendly. */
-const IncomingCard = (node: RelationshipNode): string => {
+/** Row rendered inside the "Used By" container — tall, description-friendly. */
+const IncomingRow = (node: RelationshipNode): string => {
     const kind = normaliseType(node.type);
     const link = linkFor(node.name);
     const label = node.subtype ?? kind;
@@ -86,23 +88,23 @@ const IncomingCard = (node: RelationshipNode): string => {
         <a
             href={link.href}
             target={link.target}
-            class={`cdx-rel-card cdx-rel-card--incoming cdx-rel-card--${kind}`}
+            class={`cdx-rel-row cdx-rel-row--incoming cdx-rel-row--${kind}`}
             title={node.description || node.name}
         >
-            <div class="cdx-rel-card-body">
-                <span class="cdx-rel-card-label">{label}</span>
-                <span class="cdx-rel-card-name">{node.name}</span>
-                {node.description && <span class="cdx-rel-card-desc">{node.description}</span>}
+            <div class="cdx-rel-row-body">
+                <span class="cdx-rel-row-label">{label}</span>
+                <span class="cdx-rel-row-name">{node.name}</span>
+                {node.description && <span class="cdx-rel-row-desc">{node.description}</span>}
             </div>
-            <span class="cdx-rel-card-indicator" aria-hidden="true">
+            <span class="cdx-rel-row-indicator" aria-hidden="true">
                 {IconExternalLink()}
             </span>
         </a>
     ) as string;
 };
 
-/** Card rendered under the "Depends On" column — compact row with icon box. */
-const OutgoingCard = (node: RelationshipNode): string => {
+/** Row rendered inside the "Depends On" container — icon box + name + subtype. */
+const OutgoingRow = (node: RelationshipNode): string => {
     const kind = normaliseType(node.type);
     const link = linkFor(node.name);
     const label = node.subtype ?? kind;
@@ -110,15 +112,15 @@ const OutgoingCard = (node: RelationshipNode): string => {
         <a
             href={link.href}
             target={link.target}
-            class={`cdx-rel-card cdx-rel-card--outgoing cdx-rel-card--${kind}`}
+            class={`cdx-rel-row cdx-rel-row--outgoing cdx-rel-row--${kind}`}
             title={node.description || node.name}
         >
-            <span class={`cdx-rel-card-icon cdx-rel-card-icon--${kind}`} aria-hidden="true">
+            <span class="cdx-rel-row-icon" aria-hidden="true">
                 {iconFor(node.type)}
             </span>
-            <div class="cdx-rel-card-body">
-                <span class="cdx-rel-card-name">{node.name}</span>
-                <span class="cdx-rel-card-label">{label}</span>
+            <div class="cdx-rel-row-body">
+                <span class="cdx-rel-row-name">{node.name}</span>
+                <span class="cdx-rel-row-label">{label}</span>
             </div>
         </a>
     ) as string;
@@ -128,6 +130,7 @@ const RelationshipColumn = (props: {
     kind: 'incoming' | 'outgoing';
     title: string;
     items: RelationshipNode[];
+    icon: string;
 }): string => {
     if (!props.items?.length) {
         return '';
@@ -135,12 +138,15 @@ const RelationshipColumn = (props: {
     return (
         <div class={`cdx-rel-column cdx-rel-column--${props.kind}`}>
             <h4 class="cdx-rel-column-title">
-                {props.title}
+                <span class="cdx-rel-column-icon" aria-hidden="true">
+                    {props.icon}
+                </span>
+                <span class="cdx-rel-column-label">{props.title}</span>
                 <span class="cdx-rel-column-count">{props.items.length}</span>
             </h4>
-            <div class={`cdx-rel-grid cdx-rel-grid--${props.kind}`}>
+            <div class={`cdx-rel-list cdx-rel-list--${props.kind}`}>
                 {props.items.map(n =>
-                    props.kind === 'incoming' ? IncomingCard(n) : OutgoingCard(n)
+                    props.kind === 'incoming' ? IncomingRow(n) : OutgoingRow(n)
                 )}
             </div>
         </div>
@@ -159,11 +165,13 @@ export const BlockRelationshipGraph = (props: BlockRelationshipGraphProps): stri
                 {RelationshipColumn({
                     kind: 'incoming',
                     title: t('relationships-used-by') || 'Used by',
+                    icon: IconArrowLeft(),
                     items: props.incoming
                 })}
                 {RelationshipColumn({
                     kind: 'outgoing',
                     title: t('relationships-depends-on') || 'Depends on',
+                    icon: IconArrowRight(),
                     items: props.outgoing
                 })}
             </div>

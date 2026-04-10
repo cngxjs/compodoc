@@ -2,41 +2,92 @@
  *
  * Rendered by src/templates/blocks/BlockRelationshipGraph.tsx
  *
- * Layout:
- *   Desktop: two columns side by side (incoming | outgoing)
- *   Mobile : stacked, columns wrap
+ * Layout strategy (Option B):
+ *   Two side-by-side COLUMNS with distinct backgrounds.
+ *   Items inside each column are flat rows — they inherit the
+ *   column background and only add their own chrome when hovered.
  *
- * Two card variants:
- *   .cdx-rel-card--incoming → tall "Used by" card with left accent bar,
- *                             uppercase label, big name, optional description
- *   .cdx-rel-card--outgoing → compact row with colored icon box on the left
+ *   Used By  (incoming) → elevated background, rows have a
+ *                         left-side entity-color accent bar.
+ *   Depends On (outgoing) → alt background (like MetadataSection),
+ *                           rows have a colored icon box on the left.
+ *
+ *   Collapses to a single column under content container 720px.
  */
 
 .cdx-relationships {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-cdx-2xl);
+    gap: var(--spacing-cdx-xl);
     align-items: start;
+}
+
+.cdx-relationships .cdx-icon {
+    margin-right: 0;
 }
 
 @container content (max-width: 720px) {
     .cdx-relationships {
         grid-template-columns: 1fr;
-        gap: var(--spacing-cdx-xl);
+        gap: var(--spacing-cdx-lg);
     }
 }
 
-/* ── Column header ───────────────────────────────────────────── */
+/* ── Column containers ───────────────────────────────────── */
+
+.cdx-rel-column {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-lg);
+    padding: var(--spacing-cdx-md) var(--spacing-cdx-lg) var(--spacing-cdx-lg);
+}
+
+.cdx-rel-column--incoming {
+    background: var(--color-cdx-bg-elevated);
+}
+
+.cdx-rel-column--outgoing {
+    background: var(--color-cdx-bg-alt);
+}
+
+/* ── Column header ───────────────────────────────────────── */
 
 .cdx-rel-column-title {
     display: flex;
     align-items: center;
     gap: var(--spacing-cdx-sm);
     margin: 0 0 var(--spacing-cdx-md);
-    font-size: 0.95rem;
+    padding: 0;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: var(--color-cdx-text);
     letter-spacing: -0.005em;
+}
+
+.cdx-rel-column-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-cdx-sm);
+    background: var(--color-cdx-bg-alt);
+    color: var(--color-cdx-text-secondary);
+    flex-shrink: 0;
+}
+
+.cdx-rel-column--outgoing .cdx-rel-column-icon {
+    background: var(--color-cdx-bg-elevated);
+}
+
+.cdx-rel-column-icon svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.cdx-rel-column-label {
+    flex: 1 1 auto;
 }
 
 .cdx-rel-column-count {
@@ -54,114 +105,93 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* ── Grids inside each column ───────────────────────────────── */
-
-.cdx-rel-grid {
-    display: grid;
-    gap: var(--spacing-cdx-sm);
+.cdx-rel-column--outgoing .cdx-rel-column-count {
+    background: var(--color-cdx-bg-elevated);
 }
 
-/* Incoming (Used by): single column of tall cards */
-.cdx-rel-grid--incoming {
-    grid-template-columns: 1fr;
+/* ── Lists ───────────────────────────────────────────────── */
+
+.cdx-rel-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-cdx-xs);
 }
 
-/* Outgoing (Depends on): flow grid with 2 columns when space permits */
-.cdx-rel-grid--outgoing {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-}
+/* ── Base row (shared by incoming + outgoing) ────────────── */
 
-/* ── Base card ──────────────────────────────────────────────── */
-
-.cdx-rel-card {
+.cdx-rel-row {
     --cdx-rel-color: var(--color-cdx-entity-component);
 
     position: relative;
     display: flex;
-    gap: var(--spacing-cdx-sm);
-    padding: var(--spacing-cdx-md) var(--spacing-cdx-lg);
-    background: var(--color-cdx-bg-elevated);
-    border: 1px solid var(--color-cdx-border);
+    align-items: center;
+    gap: var(--spacing-cdx-md);
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
     border-radius: var(--radius-cdx-md);
     color: var(--color-cdx-text);
     text-decoration: none;
     transition: var(--cdx-transition-base);
-    isolation: isolate;
 }
 
-.cdx-rel-card:hover {
-    border-color: var(--cdx-rel-color);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px color-mix(in srgb, var(--cdx-rel-color) 18%, transparent);
-    color: var(--color-cdx-text);
-}
-
-.cdx-rel-card:focus-visible {
+.cdx-rel-row:focus-visible {
     outline: 2px solid var(--cdx-rel-color);
     outline-offset: 2px;
 }
 
-/* ── Entity-type color tokens ──────────────────────────────── */
+.cdx-rel-row:hover {
+    color: var(--color-cdx-text);
+}
 
-.cdx-rel-card--component {
+/* ── Entity-type color tokens ──────────────────────────── */
+
+.cdx-rel-row--component {
     --cdx-rel-color: var(--color-cdx-entity-component);
 }
-.cdx-rel-card--directive {
+.cdx-rel-row--directive {
     --cdx-rel-color: var(--color-cdx-entity-directive);
 }
-.cdx-rel-card--pipe {
+.cdx-rel-row--pipe {
     --cdx-rel-color: var(--color-cdx-entity-pipe);
 }
-.cdx-rel-card--module {
+.cdx-rel-row--module {
     --cdx-rel-color: var(--color-cdx-entity-module);
 }
-.cdx-rel-card--class {
+.cdx-rel-row--class {
     --cdx-rel-color: var(--color-cdx-entity-class);
 }
-.cdx-rel-card--interface {
+.cdx-rel-row--interface {
     --cdx-rel-color: var(--color-cdx-entity-interface);
 }
-.cdx-rel-card--guard {
+.cdx-rel-row--guard {
     --cdx-rel-color: var(--color-cdx-entity-guard);
 }
-.cdx-rel-card--interceptor {
+.cdx-rel-row--interceptor {
     --cdx-rel-color: var(--color-cdx-entity-interceptor);
 }
-.cdx-rel-card--service {
+.cdx-rel-row--service {
     --cdx-rel-color: var(--color-cdx-entity-service);
 }
-.cdx-rel-card--entity {
-    --cdx-rel-color: var(--color-cdx-entity-entity);
-}
 
-/* ── Incoming card (Used By) ──────────────────────────────── */
+/* ── Incoming row (Used By) ──────────────────────────── */
 
-.cdx-rel-card--incoming {
+.cdx-rel-row--incoming {
     flex-direction: row;
     align-items: flex-start;
-    padding-left: calc(var(--spacing-cdx-lg) + 4px);
 }
 
-.cdx-rel-card--incoming::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: var(--spacing-cdx-sm);
-    bottom: var(--spacing-cdx-sm);
-    width: 3px;
-    border-radius: 0 3px 3px 0;
-    background: var(--cdx-rel-color);
+.cdx-rel-row--incoming:hover {
+    background: color-mix(in srgb, var(--cdx-rel-color) 6%, transparent);
 }
 
-.cdx-rel-card-body {
+.cdx-rel-row-body {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.125rem;
     flex: 1 1 auto;
     min-width: 0;
 }
 
-.cdx-rel-card--incoming .cdx-rel-card-label {
+.cdx-rel-row--incoming .cdx-rel-row-label {
     font-size: 0.625rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -169,15 +199,15 @@
     color: var(--cdx-rel-color);
 }
 
-.cdx-rel-card--incoming .cdx-rel-card-name {
-    font-size: 0.95rem;
+.cdx-rel-row--incoming .cdx-rel-row-name {
+    font-size: 0.9375rem;
     font-weight: 600;
     color: var(--color-cdx-text);
     letter-spacing: -0.01em;
     word-break: break-word;
 }
 
-.cdx-rel-card-desc {
+.cdx-rel-row-desc {
     margin-top: 0.125rem;
     font-size: 0.8125rem;
     color: var(--color-cdx-text-muted);
@@ -188,61 +218,62 @@
     overflow: hidden;
 }
 
-.cdx-rel-card-indicator {
+.cdx-rel-row-indicator {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 1rem;
     height: 1rem;
     color: var(--color-cdx-text-muted);
-    opacity: 0.6;
+    opacity: 0.55;
     flex-shrink: 0;
     transition: var(--cdx-transition-base);
 }
 
-.cdx-rel-card-indicator svg {
+.cdx-rel-row-indicator svg {
     width: 100%;
     height: 100%;
 }
 
-.cdx-rel-card--incoming:hover .cdx-rel-card-indicator {
+.cdx-rel-row--incoming:hover .cdx-rel-row-indicator {
     opacity: 1;
     color: var(--cdx-rel-color);
     transform: translate(1px, -1px);
 }
 
-/* ── Outgoing card (Depends On) ──────────────────────────── */
+/* ── Outgoing row (Depends On) ─────────────────────────── */
 
-.cdx-rel-card--outgoing {
-    flex-direction: row;
-    align-items: center;
+.cdx-rel-row--outgoing {
     padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
-    gap: var(--spacing-cdx-md);
 }
 
-.cdx-rel-card-icon {
+.cdx-rel-row--outgoing:hover {
+    background: var(--color-cdx-bg-elevated);
+}
+
+.cdx-rel-row-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.25rem;
+    height: 2.25rem;
     border-radius: var(--radius-cdx-md);
-    background: color-mix(in srgb, var(--cdx-rel-color) 12%, transparent);
+    background: color-mix(in srgb, var(--cdx-rel-color) 14%, transparent);
     color: var(--cdx-rel-color);
     flex-shrink: 0;
     transition: var(--cdx-transition-base);
 }
 
-.cdx-rel-card-icon svg {
-    width: 1.25rem;
-    height: 1.25rem;
+.cdx-rel-row-icon svg {
+    width: 1.125rem;
+    height: 1.125rem;
 }
 
-.cdx-rel-card--outgoing .cdx-rel-card-body {
-    gap: 0.125rem;
+.cdx-rel-row--outgoing .cdx-rel-row-body {
+    gap: 0;
 }
 
-.cdx-rel-card--outgoing .cdx-rel-card-name {
+.cdx-rel-row--outgoing .cdx-rel-row-name {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-cdx-text);
@@ -250,7 +281,7 @@
     word-break: break-word;
 }
 
-.cdx-rel-card--outgoing .cdx-rel-card-label {
+.cdx-rel-row--outgoing .cdx-rel-row-label {
     font-size: 0.625rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -258,23 +289,23 @@
     color: var(--color-cdx-text-muted);
 }
 
-.cdx-rel-card--outgoing:hover .cdx-rel-card-icon {
-    background: color-mix(in srgb, var(--cdx-rel-color) 18%, transparent);
+.cdx-rel-row--outgoing:hover .cdx-rel-row-icon {
+    background: color-mix(in srgb, var(--cdx-rel-color) 20%, transparent);
     transform: scale(1.05);
 }
 
-/* ── Reduced motion ──────────────────────────────────────── */
+/* ── Reduced motion ─────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-    .cdx-rel-card,
-    .cdx-rel-card-icon,
-    .cdx-rel-card-indicator {
+    .cdx-rel-row,
+    .cdx-rel-row-icon,
+    .cdx-rel-row-indicator {
         transition: none;
     }
-    .cdx-rel-card:hover {
+    .cdx-rel-row--outgoing:hover .cdx-rel-row-icon {
         transform: none;
     }
-    .cdx-rel-card--outgoing:hover .cdx-rel-card-icon {
+    .cdx-rel-row--incoming:hover .cdx-rel-row-indicator {
         transform: none;
     }
 }
