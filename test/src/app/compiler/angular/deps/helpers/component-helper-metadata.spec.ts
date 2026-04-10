@@ -342,8 +342,8 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
                 })
                 export class X {}
             `;
-            const { props } = parseComponentProps(source);
-            const hostDirs = componentHelper.getComponentHostDirectives(props);
+            const { props, srcFile } = parseComponentProps(source);
+            const hostDirs = componentHelper.getComponentHostDirectives(props, srcFile);
 
             expect(hostDirs).to.deep.equal([
                 {
@@ -354,7 +354,12 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             ]);
         });
 
-        it('extracts bare directive class reference as { name } only (no inputs/outputs)', () => {
+        it('flags a bare directive class reference as unresolved (no local const found)', () => {
+            // Bare class references never resolve to a local VariableStatement,
+            // so parseHostDirectiveEntry surfaces them as { name, unresolved: true }.
+            // Rendering-wise this is correct: the renderer already shows the
+            // class name; the `unresolved` flag is available if we ever want to
+            // distinguish a bare class from an unresolved imported const.
             const source = `
                 @Component({
                     selector: 'app-x',
@@ -362,20 +367,18 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
                 })
                 export class X {}
             `;
-            const { props } = parseComponentProps(source);
-            const hostDirs = componentHelper.getComponentHostDirectives(props);
+            const { props, srcFile } = parseComponentProps(source);
+            const hostDirs = componentHelper.getComponentHostDirectives(props, srcFile);
 
-            expect(hostDirs).to.deep.equal([{ name: 'TooltipDirective' }]);
+            expect(hostDirs).to.deep.equal([{ name: 'TooltipDirective', unresolved: true }]);
         });
 
-        it('current-state: identifier ref to extracted const emits const name, not the directive class', () => {
-            // Phase 1 bug: the parser does not dereference identifier references
-            // to local const declarations. When a component writes
-            // `hostDirectives: [TOOLTIP_HOST_DIRECTIVE]`, the extracted entry
-            // should be the directive class baked into the const plus its
-            // inputs/outputs. Today it's just `{ name: 'TOOLTIP_HOST_DIRECTIVE' }`.
-            // Phase 1 (PR 2) adds the dereference — update this expected value
-            // in the same commit that lands the fix.
+        it('dereferences a local const ref to its directive class and inputs', () => {
+            // Phase 1: identifier refs to a `const FOO = { directive: ... }`
+            // declared in the same source file are now followed. The resulting
+            // entry carries the directive class name and its baked-in
+            // inputs/outputs, plus `refName` preserving the original identifier
+            // text for optional attribution in the renderer.
             const source = `
                 const TOOLTIP_HOST_DIRECTIVE = {
                     directive: TooltipDirective,
@@ -387,13 +390,42 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
                 })
                 export class X {}
             `;
-            const { props } = parseComponentProps(source);
-            const hostDirs = componentHelper.getComponentHostDirectives(props);
+            const { props, srcFile } = parseComponentProps(source);
+            const hostDirs = componentHelper.getComponentHostDirectives(props, srcFile);
 
-            expect(hostDirs).to.deep.equal([{ name: 'TOOLTIP_HOST_DIRECTIVE' }]);
+            expect(hostDirs).to.deep.equal([
+                {
+                    name: 'TooltipDirective',
+                    inputs: ['appTooltip: tooltip'],
+                    outputs: [],
+                    refName: 'TOOLTIP_HOST_DIRECTIVE'
+                }
+            ]);
         });
 
-        it('current-state: mixed list preserves order but loses the const-ref inputs', () => {
+        it('dereferences a local const ref even without outputs declared', () => {
+            const source = `
+                const MINIMAL = { directive: MyDirective };
+                @Component({
+                    selector: 'app-x',
+                    hostDirectives: [MINIMAL]
+                })
+                export class X {}
+            `;
+            const { props, srcFile } = parseComponentProps(source);
+            const hostDirs = componentHelper.getComponentHostDirectives(props, srcFile);
+
+            expect(hostDirs).to.deep.equal([
+                {
+                    name: 'MyDirective',
+                    inputs: [],
+                    outputs: [],
+                    refName: 'MINIMAL'
+                }
+            ]);
+        });
+
+        it('preserves order across mixed inline, bare class, and dereferenced const', () => {
             const source = `
                 const TOOLTIP_HOST_DIRECTIVE = {
                     directive: TooltipDirective,
@@ -407,20 +439,45 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
                             inputs: ['color'],
                             outputs: []
                         },
-                        TooltipDirective,
+                        BareDirective,
                         TOOLTIP_HOST_DIRECTIVE
                     ]
                 })
                 export class X {}
             `;
-            const { props } = parseComponentProps(source);
-            const hostDirs = componentHelper.getComponentHostDirectives(props);
+            const { props, srcFile } = parseComponentProps(source);
+            const hostDirs = componentHelper.getComponentHostDirectives(props, srcFile);
 
             expect(hostDirs).to.deep.equal([
                 { name: 'HighlightDirective', inputs: ['color'], outputs: [] },
-                { name: 'TooltipDirective' },
-                { name: 'TOOLTIP_HOST_DIRECTIVE' }
+                { name: 'BareDirective', unresolved: true },
+                {
+                    name: 'TooltipDirective',
+                    inputs: ['appTooltip: tooltip'],
+                    outputs: [],
+                    refName: 'TOOLTIP_HOST_DIRECTIVE'
+                }
             ]);
+        });
+
+        it('flags an imported const ref as unresolved (Phase 1.5 follow-up)', () => {
+            // Imported-const dereferencing is explicitly out of scope for Phase 1.
+            // TOOLTIP_HOST_DIRECTIVE is declared in another file and only
+            // imported here; the local-walk resolver cannot find it in
+            // `srcFile.statements`, so the entry is flagged as unresolved.
+            // A follow-up (Phase 1.5) may add cross-file resolution.
+            const source = `
+                import { TOOLTIP_HOST_DIRECTIVE } from './shared';
+                @Component({
+                    selector: 'app-x',
+                    hostDirectives: [TOOLTIP_HOST_DIRECTIVE]
+                })
+                export class X {}
+            `;
+            const { props, srcFile } = parseComponentProps(source);
+            const hostDirs = componentHelper.getComponentHostDirectives(props, srcFile);
+
+            expect(hostDirs).to.deep.equal([{ name: 'TOOLTIP_HOST_DIRECTIVE', unresolved: true }]);
         });
     });
 

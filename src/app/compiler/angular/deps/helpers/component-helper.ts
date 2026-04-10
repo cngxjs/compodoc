@@ -28,6 +28,25 @@ export type HostEntry = {
     readonly target?: string;
 };
 
+/**
+ * Structured representation of a single entry from a
+ * `@Component({ hostDirectives: [...] })` array. The render layer
+ * (`MetadataHostDirectivesRow` in `MetadataRow.tsx`) reads `name`, `inputs`
+ * and `outputs`. `unresolved` lets the renderer optionally mark entries
+ * whose identifier could not be traced back to an object literal or
+ * directive class; `refName` preserves the original identifier text of a
+ * dereferenced entry for attribution if we ever want to surface it.
+ */
+export type HostDirectiveEntry = {
+    readonly name: string;
+    readonly inputs?: string[];
+    readonly outputs?: string[];
+    /** True if `name` is an unresolved identifier — no matching directive class or local const. */
+    readonly unresolved?: boolean;
+    /** Original identifier text when the entry was dereferenced from a local const. */
+    readonly refName?: string;
+};
+
 export class ComponentHelper {
     constructor(
         private classHelper: ClassHelper,
@@ -70,8 +89,9 @@ export class ComponentHelper {
     }
 
     public getComponentHostDirectives(
-        props: ReadonlyArray<ts.ObjectLiteralElementLike>
-    ): Array<any> {
+        props: ReadonlyArray<ts.ObjectLiteralElementLike>,
+        srcFile?: ts.SourceFile
+    ): HostDirectiveEntry[] {
         const hostDirectiveSymbolParsed = this.symbolHelper.getSymbolDepsRaw(
             props,
             'hostDirectives'
@@ -82,58 +102,148 @@ export class ComponentHelper {
             hostDirectiveSymbol = hostDirectiveSymbolParsed.pop();
         }
 
-        const result = [];
+        const result: HostDirectiveEntry[] = [];
 
         if (
             hostDirectiveSymbol?.initializer?.elements &&
             hostDirectiveSymbol.initializer.elements.length > 0
         ) {
-            hostDirectiveSymbol.initializer.elements.forEach(element => {
-                if (element.kind === SyntaxKind.Identifier) {
-                    result.push({
-                        name: element.escapedText
-                    });
-                } else if (
-                    element.kind === SyntaxKind.ObjectLiteralExpression &&
-                    element.properties &&
-                    element.properties.length > 0
-                ) {
-                    const parsedDirective: any = {
-                        name: '',
-                        inputs: [],
-                        outputs: []
-                    };
-
-                    element.properties.forEach(property => {
-                        if (property.name.escapedText === 'directive') {
-                            parsedDirective.name = property.initializer.escapedText;
-                        } else if (property.name.escapedText === 'inputs') {
-                            if (
-                                property.initializer?.elements &&
-                                property.initializer.elements.length > 0
-                            ) {
-                                property.initializer.elements.forEach(propertyElement => {
-                                    parsedDirective.inputs.push(propertyElement.text);
-                                });
-                            }
-                        } else if (property.name.escapedText === 'outputs') {
-                            if (
-                                property.initializer?.elements &&
-                                property.initializer.elements.length > 0
-                            ) {
-                                property.initializer.elements.forEach(propertyElement => {
-                                    parsedDirective.outputs.push(propertyElement.text);
-                                });
-                            }
-                        }
-                    });
-
-                    result.push(parsedDirective);
-                }
-            });
+            for (const element of hostDirectiveSymbol.initializer.elements) {
+                result.push(this.parseHostDirectiveEntry(element, srcFile));
+            }
         }
 
         return result;
+    }
+
+    /**
+     * Classify a single element of the `hostDirectives: [...]` array into a
+     * `HostDirectiveEntry`. Handles three shapes:
+     *
+     * 1. Inline `{ directive, inputs, outputs }` object literal — parsed directly.
+     * 2. `Identifier` that resolves to a local `const FOO = { directive: ... }`
+     *    variable declaration in the same source file — dereferenced and the
+     *    original identifier text is preserved as `refName`.
+     * 3. `Identifier` that does not resolve locally (bare directive class
+     *    reference OR const imported from another file) — emits `{ name }`.
+     *    For bare class references this is already the correct rendering;
+     *    for imported const refs this is a deliberate MVP fallback flagged
+     *    as `unresolved: true` so the renderer can treat it differently if
+     *    we ever want to.
+     *
+     * TODO(Phase 1.5): imported const dereferencing. Currently consts defined
+     * in a *different* source file cannot be followed, so the result is the
+     * same as a bare class reference. A follow-up should handle this by either
+     * walking imports without relying on the global `ast` Project singleton
+     * (to keep unit tests deterministic), or by wiring srcFile into a scoped
+     * ts-morph Project that can resolve the module specifier. See
+     * `.internal/compiler-metadata-extraction-fix-plan.md` Phase 1 risk table.
+     */
+    private parseHostDirectiveEntry(element: any, srcFile?: ts.SourceFile): HostDirectiveEntry {
+        if (
+            element.kind === SyntaxKind.ObjectLiteralExpression &&
+            element.properties &&
+            element.properties.length > 0
+        ) {
+            return this.parseHostDirectiveObjectLiteral(element.properties);
+        }
+
+        if (element.kind === SyntaxKind.Identifier) {
+            const identifierName = String(element.escapedText ?? element.text ?? '');
+
+            if (srcFile) {
+                const localConstProperties = this.resolveLocalObjectLiteralProperties(
+                    identifierName,
+                    srcFile
+                );
+                if (localConstProperties) {
+                    const parsed = this.parseHostDirectiveObjectLiteral(localConstProperties);
+                    return { ...parsed, refName: identifierName };
+                }
+            }
+
+            // Could not dereference — either a bare directive class reference
+            // (correct rendering) or an imported const (Phase 1.5 territory).
+            // Flag unresolved so the renderer can optionally distinguish.
+            return { name: identifierName, unresolved: true };
+        }
+
+        return { name: '', unresolved: true };
+    }
+
+    /**
+     * Extract `{ name, inputs, outputs }` from an array of `PropertyAssignment`
+     * nodes representing an inline `{ directive, inputs, outputs }` object
+     * literal. Used for both the inline host-directive case and the
+     * dereferenced local-const case (which produces the same property array).
+     */
+    private parseHostDirectiveObjectLiteral(properties: ReadonlyArray<any>): HostDirectiveEntry {
+        let name = '';
+        const inputs: string[] = [];
+        const outputs: string[] = [];
+
+        for (const property of properties) {
+            if (!property.name) {
+                continue;
+            }
+            const keyName = property.name.escapedText ?? property.name.text;
+            if (keyName === 'directive') {
+                name = String(
+                    property.initializer?.escapedText ?? property.initializer?.text ?? ''
+                );
+            } else if (keyName === 'inputs') {
+                if (property.initializer?.elements && property.initializer.elements.length > 0) {
+                    for (const el of property.initializer.elements) {
+                        if (typeof el.text === 'string') {
+                            inputs.push(el.text);
+                        }
+                    }
+                }
+            } else if (keyName === 'outputs') {
+                if (property.initializer?.elements && property.initializer.elements.length > 0) {
+                    for (const el of property.initializer.elements) {
+                        if (typeof el.text === 'string') {
+                            outputs.push(el.text);
+                        }
+                    }
+                }
+            }
+        }
+
+        return { name, inputs, outputs };
+    }
+
+    /**
+     * Walk the top-level statements of a source file looking for a
+     * `const NAME = { ... }` (or `let` / `var`) whose initializer is an
+     * ObjectLiteralExpression, and return its property list. Returns
+     * `undefined` when no matching local variable exists. This deliberately
+     * does NOT consult the global ts-morph `ast` Project from ImportsUtil —
+     * that dependency would break the in-memory unit test infrastructure and
+     * only adds cross-file resolution which is Phase 1.5 scope.
+     */
+    private resolveLocalObjectLiteralProperties(
+        name: string,
+        srcFile: ts.SourceFile
+    ): ReadonlyArray<ts.ObjectLiteralElementLike> | undefined {
+        for (const statement of srcFile.statements) {
+            if (!ts.isVariableStatement(statement)) {
+                continue;
+            }
+            for (const decl of statement.declarationList.declarations) {
+                if (!ts.isIdentifier(decl.name)) {
+                    continue;
+                }
+                if (decl.name.text !== name) {
+                    continue;
+                }
+                const init = decl.initializer;
+                if (init && ts.isObjectLiteralExpression(init)) {
+                    return init.properties;
+                }
+            }
+        }
+        return undefined;
     }
 
     public getComponentHost(

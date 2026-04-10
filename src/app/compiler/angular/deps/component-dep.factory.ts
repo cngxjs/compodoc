@@ -2,7 +2,7 @@ import * as crypto from 'node:crypto';
 import { cleanLifecycleHooksFromMethods } from '../../../../utils';
 import Configuration from '../../../configuration';
 import type { IDep } from '../dependencies.interfaces';
-import type { ComponentHelper, HostEntry } from './helpers/component-helper';
+import type { ComponentHelper, HostDirectiveEntry, HostEntry } from './helpers/component-helper';
 
 export class ComponentDepFactory {
     constructor(private helper: ComponentHelper) {}
@@ -34,7 +34,7 @@ export class ComponentDepFactory {
             template: this.helper.getComponentTemplate(props, srcFile),
             templateUrl: this.helper.getComponentTemplateUrl(props, srcFile),
             viewProviders: this.helper.getComponentViewProviders(props, srcFile),
-            hostDirectives: [...this.helper.getComponentHostDirectives(props)],
+            hostDirectives: [...this.helper.getComponentHostDirectives(props, srcFile)],
             inputsClass: IO.inputs,
             outputsClass: IO.outputs,
             propertiesClass: IO.properties,
@@ -161,6 +161,7 @@ export interface IComponentDep extends IDep {
     exportAs: any;
     host: any;
     hostStructured?: HostEntry[];
+    hostDirectives: HostDirectiveEntry[];
     inputs: Array<any>;
     outputs: Array<any>;
     providers: Array<any>;
@@ -204,7 +205,6 @@ export interface IComponentDep extends IDep {
     entryComponents: Array<any>;
 
     hostBindings: Array<any>;
-    hostDirectives: Array<any>;
     hostListeners: Array<any>;
 
     description: string;

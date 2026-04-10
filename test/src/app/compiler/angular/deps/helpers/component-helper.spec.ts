@@ -523,7 +523,8 @@ describe('ComponentHelper', () => {
 
             expect(result).to.deep.equal([
                 {
-                    name: 'MyDirective'
+                    name: 'MyDirective',
+                    unresolved: true
                 }
             ]);
         });
@@ -597,7 +598,10 @@ describe('ComponentHelper', () => {
 
             const result = componentHelper.getComponentHostDirectives([]);
 
-            expect(result).to.deep.equal([{ name: 'Directive1' }, { name: 'Directive2' }]);
+            expect(result).to.deep.equal([
+                { name: 'Directive1', unresolved: true },
+                { name: 'Directive2', unresolved: true }
+            ]);
         });
     });
 
