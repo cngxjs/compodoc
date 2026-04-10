@@ -145,6 +145,106 @@
     font-size: 0.8125rem;
 }
 
+/* ── Entity chips inside metadata values ──────────────────
+ * Rendered by MetadataChipsRow — each chip is a clickable entity
+ * reference (Module, Component, Directive, ...) with a type-coloured
+ * icon on the left. Colour-coded by --color-cdx-entity-*.
+ */
+
+.cdx-metadata-value .cdx-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+.cdx-chip {
+    --cdx-chip-color: var(--color-cdx-text-secondary);
+
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.1875rem 0.625rem 0.1875rem 0.4375rem;
+    border-radius: 999px;
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid var(--color-cdx-border);
+    color: var(--color-cdx-text);
+    font-size: 0.75rem;
+    font-family: var(--font-code);
+    font-weight: 500;
+    text-decoration: none;
+    line-height: 1.25;
+    transition:
+        background 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease,
+        transform 150ms ease;
+}
+
+a.cdx-chip:hover {
+    border-color: var(--cdx-chip-color);
+    background: color-mix(in srgb, var(--cdx-chip-color) 8%, var(--color-cdx-bg-elevated));
+    color: var(--cdx-chip-color);
+    transform: translateY(-1px);
+}
+
+.cdx-chip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--cdx-chip-color);
+    flex-shrink: 0;
+}
+
+.cdx-chip-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.cdx-chip-label {
+    letter-spacing: -0.005em;
+}
+
+/* Per-entity colour tokens */
+.cdx-chip--component {
+    --cdx-chip-color: var(--color-cdx-entity-component);
+}
+.cdx-chip--directive {
+    --cdx-chip-color: var(--color-cdx-entity-directive);
+}
+.cdx-chip--pipe {
+    --cdx-chip-color: var(--color-cdx-entity-pipe);
+}
+.cdx-chip--module {
+    --cdx-chip-color: var(--color-cdx-entity-module);
+}
+.cdx-chip--class {
+    --cdx-chip-color: var(--color-cdx-entity-class);
+}
+.cdx-chip--interface {
+    --cdx-chip-color: var(--color-cdx-entity-interface);
+}
+.cdx-chip--guard {
+    --cdx-chip-color: var(--color-cdx-entity-guard);
+}
+.cdx-chip--interceptor {
+    --cdx-chip-color: var(--color-cdx-entity-interceptor);
+}
+.cdx-chip--injectable,
+.cdx-chip--service {
+    --cdx-chip-color: var(--color-cdx-entity-service);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-chip {
+        transition: none;
+    }
+    a.cdx-chip:hover {
+        transform: none;
+    }
+}
+
 /* When value has multi-line code (template/styles), stack label above */
 .cdx-metadata-row--block {
     grid-template-columns: 1fr;

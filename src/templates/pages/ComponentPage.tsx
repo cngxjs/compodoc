@@ -10,7 +10,12 @@ import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
-import { MetadataCodeRow, MetadataRow, MetadataSection } from '../blocks/MetadataRow';
+import {
+    MetadataChipsRow,
+    MetadataCodeRow,
+    MetadataRow,
+    MetadataSection
+} from '../blocks/MetadataRow';
 import { EmptyState } from '../components/EmptyState';
 import {
     EmptyIconBook,
@@ -69,50 +74,40 @@ const ComponentMetadata = (c: any): string => {
         }
     };
 
+    // Scalar source-of-truth values — kept in the table. Boolean/enum traits
+    // (standalone, changeDetection, encapsulation, preserveWhitespaces) now live
+    // in the hero badge row so the metadata table stays focused on substantive
+    // values that actually need a value cell.
     codeField('selector', c.selector);
-    if (c.standalone) {
-        codeField('standalone', String(c.standalone));
-    }
-
-    if (c.imports?.length > 0) {
-        rows.push(
-            MetadataRow('imports', c.imports.map((imp: any) => linkTypeHtml(imp.name)).join(' '))
-        );
-    }
-
-    if (c.providers?.length > 0) {
-        rows.push(
-            MetadataRow('providers', c.providers.map((p: any) => linkTypeHtml(p.name)).join(' '))
-        );
-    }
-
-    if (c.viewProviders?.length > 0) {
-        rows.push(
-            MetadataRow(
-                'viewProviders',
-                c.viewProviders.map((vp: any) => linkTypeHtml(vp.name)).join(' ')
-            )
-        );
-    }
-
-    codeField('changeDetection', c.changeDetection);
-    codeField('encapsulation', c.encapsulation);
-    codeField('animations', c.animations);
     codeField('exportAs', c.exportAs);
-    if (c.host) {
-        rows.push(MetadataRow('host', `<code>${formatObject(c.host)}</code>`));
-    }
+    codeField('animations', c.animations);
     codeField('interpolation', c.interpolation);
     codeField('moduleId', c.moduleId);
-    if (Object.hasOwn(c, 'preserveWhitespaces')) {
-        codeField('preserveWhitespaces', c.preserveWhitespaces);
-    }
     codeField('queries', c.queries);
+    codeField('templateUrl', c.templateUrl);
+    if (c.styleUrls?.length > 0) {
+        codeField('styleUrls', breakComma(c.styleUrls));
+    }
+    codeField('tag', c.tag);
+    codeField('styleUrl', c.styleUrl);
+    codeField('shadow', c.shadow);
+    codeField('scoped', c.scoped);
+    codeField('assetsDir', c.assetsDir);
+    codeField('assetsDirs', c.assetsDirs);
 
+    // Array values → chip rows
+    rows.push(MetadataChipsRow('imports', c.imports ?? []));
+    rows.push(MetadataChipsRow('providers', c.providers ?? []));
+    rows.push(MetadataChipsRow('viewProviders', c.viewProviders ?? []));
+    rows.push(MetadataChipsRow('entryComponents', c.entryComponents ?? []));
+    rows.push(MetadataChipsRow('extends', (c.extends as string[]) ?? []));
+    rows.push(MetadataChipsRow('implements', (c.implements as string[]) ?? []));
+
+    // Host directives keep their special rendering (entity chip + I/O note)
     if (c.hostDirectives?.length > 0) {
         rows.push(
             MetadataRow(
-                t('hostdirectives'),
+                'hostDirectives',
                 c.hostDirectives
                     .map((hd: any) => {
                         let html = linkTypeHtml(hd.name);
@@ -129,40 +124,10 @@ const ComponentMetadata = (c: any): string => {
         );
     }
 
-    if (c.entryComponents?.length > 0) {
-        rows.push(
-            MetadataRow(
-                'entryComponents',
-                c.entryComponents.map((ec: any) => linkTypeHtml(ec.name)).join(' ')
-            )
-        );
+    // Host literal is rendered as a block because it's a multi-key object
+    if (c.host) {
+        rows.push(MetadataRow('host', `<code>${formatObject(c.host)}</code>`, true));
     }
-
-    codeField('templateUrl', c.templateUrl);
-    if (c.styleUrls?.length > 0) {
-        codeField('styleUrls', breakComma(c.styleUrls));
-    }
-
-    if (c.extends?.length > 0) {
-        rows.push(
-            MetadataRow('extends', (c.extends as string[]).map(ext => linkTypeHtml(ext)).join(' '))
-        );
-    }
-    if (c.implements?.length > 0) {
-        rows.push(
-            MetadataRow(
-                'implements',
-                (c.implements as string[]).map(impl => linkTypeHtml(impl)).join(' ')
-            )
-        );
-    }
-
-    codeField('tag', c.tag);
-    codeField('styleUrl', c.styleUrl);
-    codeField('shadow', c.shadow);
-    codeField('scoped', c.scoped);
-    codeField('assetsDir', c.assetsDir);
-    codeField('assetsDirs', c.assetsDirs);
 
     return MetadataSection({ rows });
 };
@@ -378,6 +343,25 @@ export const ComponentPage = (data: any): string => {
                         ''
                     )}
                     {c.zoneless ? <span class="cdx-badge cdx-badge--zoneless">Zoneless</span> : ''}
+                    {typeof c.changeDetection === 'string' &&
+                    c.changeDetection.includes('OnPush') ? (
+                        <span class="cdx-badge cdx-badge--trait">OnPush</span>
+                    ) : (
+                        ''
+                    )}
+                    {typeof c.encapsulation === 'string' &&
+                    c.encapsulation.includes('ShadowDom') ? (
+                        <span class="cdx-badge cdx-badge--trait">Shadow DOM</span>
+                    ) : typeof c.encapsulation === 'string' && c.encapsulation.includes('None') ? (
+                        <span class="cdx-badge cdx-badge--trait">No encapsulation</span>
+                    ) : (
+                        ''
+                    )}
+                    {c.preserveWhitespaces ? (
+                        <span class="cdx-badge cdx-badge--trait">Preserve whitespace</span>
+                    ) : (
+                        ''
+                    )}
                     {c.beta ? <span class="cdx-badge cdx-badge--beta">Beta</span> : ''}
                     {c.since ? <span class="cdx-badge cdx-badge--since">v{c.since}</span> : ''}
                     {c.breaking ? (
