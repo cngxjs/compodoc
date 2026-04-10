@@ -243,14 +243,39 @@ export function MetadataHostRow(entries: HostEntry[]): string {
     }
 
     const punct = (s: string) => `<span class="cdx-host-dir-punct">${s}</span>`;
-    const keyToken = (k: string, kind: HostEntry['kind']) => {
-        const cls = kind === 'event' ? 'cdx-host-dir-name' : 'cdx-host-dir-key';
-        return `<span class="${cls}">${escapeHtml(k)}</span>`;
+    const keyToken = (k: string) => `<span class="cdx-host-dir-key">${escapeHtml(k)}</span>`;
+    const plainValue = (v: string) =>
+        `<span class="cdx-host-dir-token">${escapeHtml(v)}</span>`;
+
+    // Match `[this.]identifier[(args)]` so binding / listener values like
+    // `onEscape($event)` or `this.save($event)` get their leading identifier
+    // wrapped as an anchor pointing at the member card on the current page.
+    // Static attribute values are passed through untouched because their
+    // content is data, not a code symbol.
+    const METHOD_CALL_RE = /^(this\.)?([a-zA-Z_$][a-zA-Z0-9_$]*)(\(.*\))?$/;
+
+    const linkedValue = (v: string): string => {
+        const match = METHOD_CALL_RE.exec(v);
+        if (!match) {
+            return plainValue(v);
+        }
+        const thisPrefix = match[1] ?? '';
+        const identifier = match[2];
+        const rest = match[3] ?? '';
+        return (
+            `${escapeHtml(thisPrefix)}` +
+            `<a class="cdx-host-dir-name" href="#${identifier}">${escapeHtml(identifier)}</a>` +
+            `${escapeHtml(rest)}`
+        );
     };
-    const valueToken = (v: string) => `<span class="cdx-host-dir-token">${escapeHtml(v)}</span>`;
+
+    const renderValue = (entry: HostEntry): string =>
+        entry.kind === 'static' || entry.kind === 'raw'
+            ? plainValue(entry.value)
+            : linkedValue(entry.value);
 
     const lines = entries.map(
-        e => `  ${keyToken(e.key, e.kind)}${punct(':')} ${valueToken(e.value)}`
+        e => `  ${keyToken(e.key)}${punct(':')} ${renderValue(e)}`
     );
     const body = lines.join(`${punct(',')}\n`);
     const block = `<div class="cdx-host-dir-object">${punct('{')}\n${body}\n${punct('}')}</div>`;
