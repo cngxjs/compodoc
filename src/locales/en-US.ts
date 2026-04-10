@@ -1,6 +1,7 @@
 export const TRANSLATION_EN_US = {
     accessors: 'Accessors',
     'angular-adoption': 'Angular Adoption',
+    'application-configuration': 'Application Configuration',
     arguments: 'Arguments',
     bootstrap: 'Bootstrap',
     branches: 'Branches',

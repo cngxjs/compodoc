@@ -7,9 +7,7 @@ describe('Zoneless detection', () => {
         };
 
         it('should detect zoneless when zone.js is absent from all dependencies', () => {
-            expect(
-                detectZoneless({ '@angular/core': '^21.0.0' })
-            ).toBe(true);
+            expect(detectZoneless({ '@angular/core': '^21.0.0' })).toBe(true);
         });
 
         it('should not be zoneless when zone.js is in dependencies', () => {
@@ -22,12 +20,9 @@ describe('Zoneless detection', () => {
         });
 
         it('should not be zoneless when zone.js is in devDependencies', () => {
-            expect(
-                detectZoneless(
-                    { '@angular/core': '^21.0.0' },
-                    { 'zone.js': '~0.15.0' }
-                )
-            ).toBe(false);
+            expect(detectZoneless({ '@angular/core': '^21.0.0' }, { 'zone.js': '~0.15.0' })).toBe(
+                false
+            );
         });
 
         it('should detect zoneless for Angular 21+ with no zone.js', () => {
@@ -41,9 +36,7 @@ describe('Zoneless detection', () => {
 
         it('should detect zoneless for Angular 20 with explicit zoneless provider and no zone.js', () => {
             // The provider detection is separate; this tests only the zone.js check
-            expect(
-                detectZoneless({ '@angular/core': '^20.0.0' })
-            ).toBe(true);
+            expect(detectZoneless({ '@angular/core': '^20.0.0' })).toBe(true);
         });
 
         it('should handle empty dependencies', () => {
@@ -53,8 +46,7 @@ describe('Zoneless detection', () => {
 
     describe('AngularVersionUtil.cleanVersion', () => {
         // Import inline to avoid module resolution issues in test
-        const cleanVersion = (version: string): string =>
-            version.replace(/[~^=<>]/g, '');
+        const cleanVersion = (version: string): string => version.replace(/[~^=<>]/g, '');
 
         it('should strip caret', () => {
             expect(cleanVersion('^21.0.0')).toBe('21.0.0');

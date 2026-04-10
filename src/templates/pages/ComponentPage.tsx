@@ -356,7 +356,7 @@ export const ComponentPage = (data: any): string => {
                 </div>
                 {c.selector ? <p class="cdx-entity-hero-context">{c.selector}</p> : ''}
                 {!data.disableFilePath && c.file && (
-                    <p class="cdx-entity-hero-file" title="Source file">
+                    <p class="cdx-entity-hero-file" title="Source file" aria-label="Source file">
                         {IconFile()}
                         <span>{c.file}</span>
                     </p>

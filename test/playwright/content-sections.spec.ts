@@ -108,7 +108,10 @@ test.describe('Content Sections', () => {
         });
 
         test('directive metadata renders as cdx-metadata-card', async ({ page }) => {
-            await page.goto('/directives/BaseDirective.html');
+            // BorderDirective has a selector, so the metadata card is non-empty
+            // and renders. BaseDirective (abstract base, no metadata) would
+            // correctly render nothing and was unsuitable for this assertion.
+            await page.goto('/directives/BorderDirective.html');
 
             const card = page.locator('.cdx-metadata-card');
             await expect(card).toBeVisible();

@@ -14,8 +14,8 @@ import {
     IconModule,
     IconPipe
 } from '../components/Icons';
-import { resolveType } from '../helpers/link-type';
 import { t } from '../helpers';
+import { resolveType } from '../helpers/link-type';
 
 type RelationshipNode = {
     readonly name: string;

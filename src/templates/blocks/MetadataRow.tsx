@@ -244,8 +244,7 @@ export function MetadataHostRow(entries: HostEntry[]): string {
 
     const punct = (s: string) => `<span class="cdx-host-dir-punct">${s}</span>`;
     const keyToken = (k: string) => `<span class="cdx-host-dir-key">${escapeHtml(k)}</span>`;
-    const plainValue = (v: string) =>
-        `<span class="cdx-host-dir-token">${escapeHtml(v)}</span>`;
+    const plainValue = (v: string) => `<span class="cdx-host-dir-token">${escapeHtml(v)}</span>`;
 
     // Match `[this.]identifier[(args)]` so binding / listener values like
     // `onEscape($event)` or `this.save($event)` get their leading identifier
@@ -274,9 +273,7 @@ export function MetadataHostRow(entries: HostEntry[]): string {
             ? plainValue(entry.value)
             : linkedValue(entry.value);
 
-    const lines = entries.map(
-        e => `  ${keyToken(e.key)}${punct(':')} ${renderValue(e)}`
-    );
+    const lines = entries.map(e => `  ${keyToken(e.key)}${punct(':')} ${renderValue(e)}`);
     const body = lines.join(`${punct(',')}\n`);
     const block = `<div class="cdx-host-dir-object">${punct('{')}\n${body}\n${punct('}')}</div>`;
 

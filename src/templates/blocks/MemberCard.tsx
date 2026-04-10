@@ -34,10 +34,7 @@ export function MemberCard({
         // interactive elements in a toggle control), but keep permalinks
         // in place with tabindex="-1" so they stay visually correct.
         const summaryHeader = header
-            .replace(
-                /(<a\b[^>]*class="cdx-member-permalink"[^>]*)(>)/g,
-                '$1 tabindex="-1"$2'
-            )
+            .replace(/(<a\b[^>]*class="cdx-member-permalink"[^>]*)(>)/g, '$1 tabindex="-1"$2')
             .replace(
                 /<a\b(?![^>]*class="cdx-member-permalink")[^>]*>(.*?)<\/a>/g,
                 '<span>$1</span>'
