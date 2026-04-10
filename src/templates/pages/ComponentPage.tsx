@@ -18,7 +18,8 @@ import {
     EmptyIconPalette,
     EmptyIconTree
 } from '../components/EmptyStateIcons';
-import { IconComponent, IconExternalLink, IconFile, IconGitBranch } from '../components/Icons';
+import { IconComponent, IconFile } from '../components/Icons';
+import { ExternalLinks } from '../blocks/ExternalLinks';
 import {
     extractReadmeHeadings,
     isInfoSection,
@@ -190,35 +191,14 @@ const InfoContent = (data: any): string => {
                 c.jsdoctags &&
                 JsdocExamplesBlock({ tags: c.jsdoctags, variant: 'code', level: 'section' })}
 
-            {(c.storybookUrl || c.figmaUrl || c.route) && (
-                <div class="cdx-external-links">
-                    {c.storybookUrl && (
-                        <a
-                            href={c.storybookUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="cdx-ext-link"
-                        >
-                            {IconExternalLink()} Storybook
-                        </a>
-                    )}
-                    {c.figmaUrl && (
-                        <a
-                            href={c.figmaUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="cdx-ext-link"
-                        >
-                            {IconExternalLink()} Figma
-                        </a>
-                    )}
-                    {c.route && (
-                        <span class="cdx-route-info">
-                            {IconGitBranch()} {c.route}
-                        </span>
-                    )}
-                </div>
-            )}
+            {ExternalLinks({
+                storybookUrl: c.storybookUrl,
+                figmaUrl: c.figmaUrl,
+                stackblitzUrl: c.stackblitzUrl,
+                githubUrl: c.githubUrl,
+                docsUrl: c.docsUrl,
+                route: c.route
+            })}
 
             {ComponentMetadata(c)}
 

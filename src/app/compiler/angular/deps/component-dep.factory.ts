@@ -54,6 +54,9 @@ export class ComponentDepFactory {
             order: IO.order || 0,
             storybookUrl: IO.storybookUrl || '',
             figmaUrl: IO.figmaUrl || '',
+            stackblitzUrl: IO.stackblitzUrl || '',
+            githubUrl: IO.githubUrl || '',
+            docsUrl: IO.docsUrl || '',
             slots: IO.slots || [],
 
             hostBindings: IO.hostBindings,
@@ -188,6 +191,9 @@ export interface IComponentDep extends IDep {
     order?: number;
     storybookUrl?: string;
     figmaUrl?: string;
+    stackblitzUrl?: string;
+    githubUrl?: string;
+    docsUrl?: string;
     slots?: Array<{ name: string; description: string }>;
 
     standalone: boolean;

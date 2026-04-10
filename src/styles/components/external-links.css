@@ -1,0 +1,145 @@
+/* ─── External links cluster ─────────────────────────────────
+ *
+ * Rendered by src/templates/blocks/ExternalLinks.tsx.
+ * Used on ComponentPage under the hero, shows Storybook, Figma,
+ * StackBlitz, GitHub, Docs buttons + route badge.
+ */
+
+.cdx-external-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-cdx-sm);
+    margin-top: var(--spacing-cdx-md);
+    margin-bottom: var(--spacing-cdx-lg);
+}
+
+.cdx-ext-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-cdx-xs);
+    padding: 0.4rem 0.75rem;
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-cdx-text);
+    text-decoration: none;
+    transition: var(--cdx-transition-base);
+    line-height: 1;
+}
+
+.cdx-ext-link:hover {
+    background: var(--color-cdx-bg-alt);
+    border-color: var(--color-cdx-primary);
+    color: var(--color-cdx-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-cdx-primary) 15%, transparent);
+}
+
+.cdx-ext-link:focus-visible {
+    outline: 2px solid var(--color-cdx-primary);
+    outline-offset: 2px;
+}
+
+.cdx-ext-link-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.cdx-ext-link-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.cdx-ext-link-label {
+    white-space: nowrap;
+}
+
+.cdx-ext-link-label code {
+    background: transparent;
+    padding: 0;
+    font-size: 0.75rem;
+    color: inherit;
+}
+
+.cdx-ext-link-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.75rem;
+    height: 0.75rem;
+    opacity: 0.5;
+    margin-left: 0.125rem;
+    transition: opacity var(--cdx-transition-base);
+}
+
+.cdx-ext-link-indicator svg {
+    width: 100%;
+    height: 100%;
+}
+
+.cdx-ext-link:hover .cdx-ext-link-indicator {
+    opacity: 1;
+}
+
+/* Brand accent colors on hover */
+.cdx-ext-link--storybook:hover {
+    border-color: #ff4785;
+    color: #ff4785;
+    box-shadow: 0 4px 12px color-mix(in srgb, #ff4785 20%, transparent);
+}
+
+.cdx-ext-link--figma:hover {
+    border-color: #a259ff;
+    color: #a259ff;
+    box-shadow: 0 4px 12px color-mix(in srgb, #a259ff 20%, transparent);
+}
+
+.cdx-ext-link--stackblitz:hover {
+    border-color: #1389fd;
+    color: #1389fd;
+    box-shadow: 0 4px 12px color-mix(in srgb, #1389fd 20%, transparent);
+}
+
+.cdx-ext-link--github:hover {
+    border-color: var(--color-cdx-text);
+    color: var(--color-cdx-text);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-cdx-text) 20%, transparent);
+}
+
+.cdx-ext-link--docs:hover {
+    border-color: var(--color-cdx-entity-interface);
+    color: var(--color-cdx-entity-interface);
+    box-shadow: 0 4px 12px
+        color-mix(in srgb, var(--color-cdx-entity-interface) 20%, transparent);
+}
+
+/* Route badge — not a link, just an info chip */
+.cdx-ext-link--route {
+    background: color-mix(in srgb, var(--color-cdx-primary) 8%, transparent);
+    border-color: color-mix(in srgb, var(--color-cdx-primary) 30%, transparent);
+    color: var(--color-cdx-primary);
+    cursor: default;
+}
+
+.cdx-ext-link--route:hover {
+    background: color-mix(in srgb, var(--color-cdx-primary) 8%, transparent);
+    border-color: color-mix(in srgb, var(--color-cdx-primary) 30%, transparent);
+    color: var(--color-cdx-primary);
+    transform: none;
+    box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-ext-link {
+        transition: none;
+    }
+    .cdx-ext-link:hover {
+        transform: none;
+    }
+}

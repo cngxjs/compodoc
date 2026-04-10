@@ -23,6 +23,7 @@
 @import "./components/tables.css";
 @import "./components/unit-test.css";
 @import "./components/examples.css";
+@import "./components/external-links.css";
 @import "./components/legacy.css";
 
 @source "../templates/**/*.hbs";

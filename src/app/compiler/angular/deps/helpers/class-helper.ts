@@ -1,17 +1,24 @@
-import * as crypto from 'node:crypto';
-import { SyntaxKind, ts } from 'ts-morph';
-import { isIgnore } from '../../../../../utils';
-import AngularVersionUtil from '../../../../..//utils/angular-version.util';
-import { StringifyArrowFunction } from '../../../../../utils/arrow-function.util';
-import BasicTypeUtil from '../../../../../utils/basic-type.util';
-import { JsdocParserUtil } from '../../../../../utils/jsdoc-parser.util';
-import { kindToType } from '../../../../../utils/kind-to-type';
-import { markedAcl } from '../../../../../utils/marked.acl';
-import { getNodeDecorators, nodeHasDecorator } from '../../../../../utils/node.util';
-import { StringifyObjectLiteralExpression } from '../../../../../utils/object-literal-expression.util';
-import { getNamesCompareFn, markedtags, mergeTagsAndArgs } from '../../../../../utils/utils';
-import Configuration from '../../../../configuration';
-import DependenciesEngine from '../../../../engines/dependencies.engine';
+import * as crypto from "node:crypto";
+import { SyntaxKind, ts } from "ts-morph";
+import { isIgnore } from "../../../../../utils";
+import AngularVersionUtil from "../../../../..//utils/angular-version.util";
+import { StringifyArrowFunction } from "../../../../../utils/arrow-function.util";
+import BasicTypeUtil from "../../../../../utils/basic-type.util";
+import { JsdocParserUtil } from "../../../../../utils/jsdoc-parser.util";
+import { kindToType } from "../../../../../utils/kind-to-type";
+import { markedAcl } from "../../../../../utils/marked.acl";
+import {
+    getNodeDecorators,
+    nodeHasDecorator,
+} from "../../../../../utils/node.util";
+import { StringifyObjectLiteralExpression } from "../../../../../utils/object-literal-expression.util";
+import {
+    getNamesCompareFn,
+    markedtags,
+    mergeTagsAndArgs,
+} from "../../../../../utils/utils";
+import Configuration from "../../../../configuration";
+import DependenciesEngine from "../../../../engines/dependencies.engine";
 
 export class ClassHelper {
     private jsdocParserUtil = new JsdocParserUtil();
@@ -29,31 +36,37 @@ export class ClassHelper {
         if (node && (node as any).getText && node.getText()) {
             return node.getText();
         } else if (node && node.kind === SyntaxKind.FalseKeyword) {
-            return 'false';
+            return "false";
         } else if (node && node.kind === SyntaxKind.TrueKeyword) {
-            return 'true';
+            return "true";
         }
-        return '';
+        return "";
     }
 
-    private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
-        tags.forEach(tag => {
+    private checkForDeprecation(
+        tags: any[],
+        result: { [key in string | number]: any },
+    ) {
+        tags.forEach((tag) => {
             if (tag.tagName?.text) {
-                if (tag.tagName.text.indexOf('deprecated') > -1) {
+                if (tag.tagName.text.indexOf("deprecated") > -1) {
                     result.deprecated = true;
-                    result.deprecationMessage = tag.comment || '';
+                    result.deprecationMessage = tag.comment || "";
                 }
-                if (tag.tagName.text === 'category') {
+                if (tag.tagName.text === "category") {
                     // Take only the first line of the comment (category name)
-                    const raw = (tag.comment || '').trim();
-                    result.category = raw.split('\n')[0].trim();
+                    const raw = (tag.comment || "").trim();
+                    result.category = raw.split("\n")[0].trim();
                 }
             }
         });
         this.extractCustomTags(tags, result);
     }
 
-    private extractCustomTags(tags: any[], result: { [key in string | number]: any }) {
+    private extractCustomTags(
+        tags: any[],
+        result: { [key in string | number]: any },
+    ) {
         for (const tag of tags) {
             if (!tag.tagName?.text) {
                 continue;
@@ -61,53 +74,68 @@ export class ClassHelper {
             const name = tag.tagName.text;
             const rawComment = tag.comment;
             const comment = (
-                typeof rawComment === 'string'
+                typeof rawComment === "string"
                     ? rawComment
                     : Array.isArray(rawComment)
-                      ? rawComment.map((c: any) => c.text || '').join('')
-                      : ''
+                      ? rawComment.map((c: any) => c.text || "").join("")
+                      : ""
             ).trim();
 
             switch (name) {
-                case 'signal':
+                case "signal":
                     result.signal = true;
                     break;
-                case 'zoneless':
+                case "zoneless":
                     result.zoneless = true;
                     break;
-                case 'beta':
+                case "beta":
                     result.beta = true;
                     break;
-                case 'group':
-                    result.group = comment.split('\n')[0].trim();
+                case "group":
+                    result.group = comment.split("\n")[0].trim();
                     break;
-                case 'order':
+                case "order":
                     result.order = parseInt(comment, 10) || 0;
                     break;
-                case 'since':
-                    result.since = comment.split('\n')[0].trim();
+                case "since":
+                    result.since = comment.split("\n")[0].trim();
                     break;
-                case 'breaking':
-                    result.breaking = comment.split('\n')[0].trim();
+                case "breaking":
+                    result.breaking = comment.split("\n")[0].trim();
                     break;
-                case 'route':
-                    result.route = comment.split('\n')[0].trim();
+                case "route":
+                    result.route = comment.split("\n")[0].trim();
                     break;
-                case 'storybook':
-                    result.storybookUrl = comment.split('\n')[0].trim();
+                case "storybook":
+                    result.storybookUrl = comment.split("\n")[0].trim();
                     break;
-                case 'figma':
-                    result.figmaUrl = comment.split('\n')[0].trim();
+                case "figma":
+                    result.figmaUrl = comment.split("\n")[0].trim();
                     break;
-                case 'slot': {
+                case "stackblitz":
+                    result.stackblitzUrl = comment.split("\n")[0].trim();
+                    break;
+                case "github":
+                    result.githubUrl = comment.split("\n")[0].trim();
+                    break;
+                case "docs":
+                    result.docsUrl = comment.split("\n")[0].trim();
+                    break;
+                case "slot": {
                     if (!result.slots) {
                         result.slots = [];
                     }
                     const parts = comment.match(/^(\S+)\s*-?\s*(.*)$/);
                     const slotName = parts ? parts[1] : comment;
-                    const slotDesc = parts ? parts[2] || '' : '';
-                    if (slotName && !result.slots.some((s: any) => s.name === slotName)) {
-                        result.slots.push({ name: slotName, description: slotDesc });
+                    const slotDesc = parts ? parts[2] || "" : "";
+                    if (
+                        slotName &&
+                        !result.slots.some((s: any) => s.name === slotName)
+                    ) {
+                        result.slots.push({
+                            name: slotName,
+                            description: slotDesc,
+                        });
                     }
                     break;
                 }
@@ -118,13 +146,22 @@ export class ClassHelper {
     /**
      * Process JSDoc tags and apply them to a result object
      */
-    private processJSDocTags(jsdoctags: any, result: any, includeTagsArray: boolean = true): void {
+    private processJSDocTags(
+        jsdoctags: any,
+        result: any,
+        includeTagsArray: boolean = true,
+    ): void {
         if (jsdoctags && jsdoctags.length >= 1) {
             const jsdoc = jsdoctags[0];
             if (jsdoc?.tags) {
-                this.checkForDeprecation(jsdoc.tags as unknown as any[], result);
+                this.checkForDeprecation(
+                    jsdoc.tags as unknown as any[],
+                    result,
+                );
                 if (includeTagsArray) {
-                    result.jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
+                    result.jsdoctags = markedtags(
+                        jsdoc.tags as unknown as any[],
+                    );
                 }
             }
         }
@@ -133,11 +170,19 @@ export class ClassHelper {
     /**
      * Extract and process JSDoc comment for a node
      */
-    private extractAndProcessJSDocComment(node: any, sourceFile: ts.SourceFile, result: any): void {
+    private extractAndProcessJSDocComment(
+        node: any,
+        sourceFile: ts.SourceFile,
+        result: any,
+    ): void {
         if (node.jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(node, sourceFile);
-            if (typeof comment !== 'undefined') {
-                const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
+            const comment = this.jsdocParserUtil.getMainCommentOfNode(
+                node,
+                sourceFile,
+            );
+            if (typeof comment !== "undefined") {
+                const cleanedDescription =
+                    this.jsdocParserUtil.parseComment(comment);
                 result.rawdescription = cleanedDescription;
                 result.description = markedAcl(cleanedDescription);
             }
@@ -152,45 +197,67 @@ export class ClassHelper {
      * Returns the signal kind and optional extracted type.
      */
     private detectSignalKind(
-        defaultValue: string
+        defaultValue: string,
     ): { kind: string; signalType?: string; required?: boolean } | undefined {
         if (!defaultValue) {
             return undefined;
         }
-        const cleaned = defaultValue.replace(/\n/g, '');
+        const cleaned = defaultValue.replaceAll("\n", "");
 
         // Order matters: check specific patterns before generic ones
         const patterns: Array<{ pattern: RegExp; kind: string }> = [
-            { pattern: /^input\.required\s*<([^>]+)>\s*\(/, kind: 'input-signal' },
-            { pattern: /^input\s*(?:<([^>]+)>)?\s*\(/, kind: 'input-signal' },
-            { pattern: /^output\s*(?:<([^>]+)>)?\s*\(/, kind: 'output-signal' },
-            { pattern: /^model\s*(?:<([^>]+)>)?\s*\(/, kind: 'model' },
-            { pattern: /^model\.required\s*<([^>]+)>\s*\(/, kind: 'model' },
-            { pattern: /^linkedSignal\s*(?:<([^>]+)>)?\s*\(/, kind: 'linked-signal' },
-            { pattern: /^computed\s*(?:<([^>]+)>)?\s*\(/, kind: 'computed' },
-            { pattern: /^signal\s*(?:<([^>]+)>)?\s*\(/, kind: 'signal' },
-            { pattern: /^effect\s*\(/, kind: 'effect' },
-            { pattern: /^resource\s*(?:<([^>]+)>)?\s*\(/, kind: 'resource' },
-            { pattern: /^rxResource\s*(?:<([^>]+)>)?\s*\(/, kind: 'rx-resource' },
-            { pattern: /^viewChild\s*(?:<([^>]+)>)?\s*\(/, kind: 'view-child' },
-            { pattern: /^viewChildren\s*(?:<([^>]+)>)?\s*\(/, kind: 'view-children' },
-            { pattern: /^contentChild\s*(?:<([^>]+)>)?\s*\(/, kind: 'content-child' },
-            { pattern: /^contentChildren\s*(?:<([^>]+)>)?\s*\(/, kind: 'content-children' },
-            { pattern: /^afterRenderEffect\s*\(/, kind: 'after-render-effect' },
-            { pattern: /^afterEveryRender\s*\(/, kind: 'after-every-render' },
-            { pattern: /^afterNextRender\s*\(/, kind: 'after-next-render' },
-            { pattern: /^afterRender\s*\(/, kind: 'after-render' },
-            { pattern: /^inject\s*\(\s*([A-Z_]\w*)/, kind: 'inject' }
+            {
+                pattern: /^input\.required\s*<([^>]+)>\s*\(/,
+                kind: "input-signal",
+            },
+            { pattern: /^input\s*(?:<([^>]+)>)?\s*\(/, kind: "input-signal" },
+            { pattern: /^output\s*(?:<([^>]+)>)?\s*\(/, kind: "output-signal" },
+            { pattern: /^model\s*(?:<([^>]+)>)?\s*\(/, kind: "model" },
+            { pattern: /^model\.required\s*<([^>]+)>\s*\(/, kind: "model" },
+            {
+                pattern: /^linkedSignal\s*(?:<([^>]+)>)?\s*\(/,
+                kind: "linked-signal",
+            },
+            { pattern: /^computed\s*(?:<([^>]+)>)?\s*\(/, kind: "computed" },
+            { pattern: /^signal\s*(?:<([^>]+)>)?\s*\(/, kind: "signal" },
+            { pattern: /^effect\s*\(/, kind: "effect" },
+            { pattern: /^resource\s*(?:<([^>]+)>)?\s*\(/, kind: "resource" },
+            {
+                pattern: /^rxResource\s*(?:<([^>]+)>)?\s*\(/,
+                kind: "rx-resource",
+            },
+            { pattern: /^viewChild\s*(?:<([^>]+)>)?\s*\(/, kind: "view-child" },
+            {
+                pattern: /^viewChildren\s*(?:<([^>]+)>)?\s*\(/,
+                kind: "view-children",
+            },
+            {
+                pattern: /^contentChild\s*(?:<([^>]+)>)?\s*\(/,
+                kind: "content-child",
+            },
+            {
+                pattern: /^contentChildren\s*(?:<([^>]+)>)?\s*\(/,
+                kind: "content-children",
+            },
+            { pattern: /^afterRenderEffect\s*\(/, kind: "after-render-effect" },
+            { pattern: /^afterEveryRender\s*\(/, kind: "after-every-render" },
+            { pattern: /^afterNextRender\s*\(/, kind: "after-next-render" },
+            { pattern: /^afterRender\s*\(/, kind: "after-render" },
+            { pattern: /^inject\s*\(\s*([A-Z_]\w*)/, kind: "inject" },
         ];
 
         for (const { pattern, kind } of patterns) {
             const match = pattern.exec(cleaned);
             if (match) {
-                const result: { kind: string; signalType?: string; required?: boolean } = { kind };
+                const result: {
+                    kind: string;
+                    signalType?: string;
+                    required?: boolean;
+                } = { kind };
                 if (match[1]) {
                     result.signalType = match[1].trim();
                 }
-                if (cleaned.includes('.required')) {
+                if (cleaned.includes(".required")) {
                     result.required = true;
                 }
                 return result;
@@ -206,8 +273,8 @@ export class ClassHelper {
     } {
         return {
             deprecated: false,
-            deprecationMessage: '',
-            category: ''
+            deprecationMessage: "",
+            category: "",
         };
     }
 
@@ -218,12 +285,12 @@ export class ClassHelper {
         if (!node.modifiers || node.modifiers.length === 0) {
             return undefined;
         }
-        let kinds = node.modifiers.map(modifier => modifier.kind);
+        let kinds = node.modifiers.map((modifier) => modifier.kind);
         if (
             kinds.indexOf(SyntaxKind.PublicKeyword) !== -1 &&
             kinds.indexOf(SyntaxKind.StaticKeyword) !== -1
         ) {
-            kinds = kinds.filter(kind => kind !== SyntaxKind.PublicKeyword);
+            kinds = kinds.filter((kind) => kind !== SyntaxKind.PublicKeyword);
         }
         return kinds;
     }
@@ -237,7 +304,7 @@ export class ClassHelper {
                 result.modifierKind = [];
             }
             const hasAlreadyPrivateKeyword = result.modifierKind.includes(
-                SyntaxKind.PrivateKeyword
+                SyntaxKind.PrivateKeyword,
             );
             if (!hasAlreadyPrivateKeyword) {
                 result.modifierKind.push(SyntaxKind.PrivateKeyword);
@@ -250,7 +317,7 @@ export class ClassHelper {
      */
     private setFallbackDescription(result: any, node: any): void {
         if (!result.description && node.jsDoc && node.jsDoc.length > 0) {
-            if (typeof node.jsDoc[0].comment !== 'undefined') {
+            if (typeof node.jsDoc[0].comment !== "undefined") {
                 const rawDescription = node.jsDoc[0].comment;
                 result.rawdescription = rawDescription;
                 result.description = markedAcl(rawDescription);
@@ -299,10 +366,12 @@ export class ClassHelper {
                     _decorators.push({ name: decorator.expression.text });
                 }
                 if (decorator.expression.expression) {
-                    const info: any = { name: decorator.expression.expression.text };
+                    const info: any = {
+                        name: decorator.expression.expression.text,
+                    };
                     if (decorator.expression.arguments) {
                         info.stringifiedArguments = this.stringifyArguments(
-                            decorator.expression.arguments
+                            decorator.expression.arguments,
                         );
                     }
                     _decorators.push(info);
@@ -318,13 +387,13 @@ export class ClassHelper {
             return `${arg.name}${this.getOptionalString(arg)}: () => void`;
         }
 
-        const argums = arg.function.map(argu => {
+        const argums = arg.function.map((argu) => {
             const _result = DependenciesEngine.find(argu.type);
             if (_result) {
-                if (_result.source === 'internal') {
+                if (_result.source === "internal") {
                     let path = _result.data.type;
-                    if (_result.data.type === 'class') {
-                        path = 'classe';
+                    if (_result.data.type === "class") {
+                        path = "classe";
                     }
                     return `${argu.name}${this.getOptionalString(arg)}: <a href="../${path}s/${
                         _result.data.name
@@ -332,16 +401,16 @@ export class ClassHelper {
                 } else {
                     const path = AngularVersionUtil.getApiLink(
                         _result.data,
-                        Configuration.mainData.angularVersion
+                        Configuration.mainData.angularVersion,
                     );
                     return `${argu.name}${this.getOptionalString(
-                        arg
+                        arg,
                     )}: <a href="${path}" target="_blank">${argu.type}</a>`;
                 }
             } else if (BasicTypeUtil.isKnownType(argu.type)) {
                 const path = BasicTypeUtil.getTypeUrl(argu.type);
                 return `${argu.name}${this.getOptionalString(
-                    arg
+                    arg,
                 )}: <a href="${path}" target="_blank">${argu.type}</a>`;
             } else {
                 if (argu.name && argu.type) {
@@ -350,7 +419,7 @@ export class ClassHelper {
                     if (argu.name) {
                         return `${argu.name.text}`;
                     } else {
-                        return '';
+                        return "";
                     }
                 }
             }
@@ -359,20 +428,20 @@ export class ClassHelper {
     }
 
     private getOptionalString(arg): string {
-        return arg.optional ? '?' : '';
+        return arg.optional ? "?" : "";
     }
 
     private stringifyArguments(args) {
         let stringifyArgs = [];
 
         stringifyArgs = args
-            .map(arg => {
+            .map((arg) => {
                 const _result = DependenciesEngine.find(arg.type);
                 if (_result) {
-                    if (_result.source === 'internal') {
+                    if (_result.source === "internal") {
                         let path = _result.data.type;
-                        if (_result.data.type === 'class') {
-                            path = 'classe';
+                        if (_result.data.type === "class") {
+                            path = "classe";
                         }
                         return `${arg.name}${this.getOptionalString(arg)}: <a href="../${path}s/${
                             _result.data.name
@@ -380,10 +449,10 @@ export class ClassHelper {
                     } else {
                         const path = AngularVersionUtil.getApiLink(
                             _result.data,
-                            Configuration.mainData.angularVersion
+                            Configuration.mainData.angularVersion,
                         );
                         return `${arg.name}${this.getOptionalString(
-                            arg
+                            arg,
                         )}: <a href="${path}" target="_blank">${arg.type}</a>`;
                     }
                 } else if (arg.dotDotDotToken) {
@@ -392,7 +461,10 @@ export class ClassHelper {
                     return this.handleFunction(arg);
                 } else if (arg.expression && arg.name) {
                     return `${arg.expression.text}.${arg.name.text}`;
-                } else if (arg.expression && arg.kind === SyntaxKind.NewExpression) {
+                } else if (
+                    arg.expression &&
+                    arg.kind === SyntaxKind.NewExpression
+                ) {
                     return `new ${arg.expression.text}()`;
                 } else if (arg.kind && arg.kind === SyntaxKind.StringLiteral) {
                     return `'${arg.text}'`;
@@ -404,14 +476,14 @@ export class ClassHelper {
                 ) {
                     let i = 0,
                         len = arg.elements.length,
-                        result = '[';
+                        result = "[";
                     for (i; i < len; i++) {
                         result += `'${arg.elements[i].text}'`;
                         if (i < len - 1) {
-                            result += ', ';
+                            result += ", ";
                         }
                     }
-                    result += ']';
+                    result += "]";
                     return result;
                 } else if (
                     arg.kind &&
@@ -420,17 +492,20 @@ export class ClassHelper {
                     arg.parameters.length > 0
                 ) {
                     return StringifyArrowFunction(arg);
-                } else if (arg.kind && arg.kind === SyntaxKind.ObjectLiteralExpression) {
+                } else if (
+                    arg.kind &&
+                    arg.kind === SyntaxKind.ObjectLiteralExpression
+                ) {
                     return StringifyObjectLiteralExpression(arg);
                 } else if (BasicTypeUtil.isKnownType(arg.type)) {
                     const path = BasicTypeUtil.getTypeUrl(arg.type);
                     return `${arg.name}${this.getOptionalString(
-                        arg
+                        arg,
                     )}: <a href="${path}" target="_blank">${arg.type}</a>`;
                 } else {
                     if (arg.type) {
-                        let finalStringifiedArgument = '';
-                        let separator = ':';
+                        let finalStringifiedArgument = "";
+                        let separator = ":";
                         if (arg.name) {
                             finalStringifiedArgument += arg.name;
                         }
@@ -440,10 +515,11 @@ export class ClassHelper {
                             arg.expression.text
                         ) {
                             finalStringifiedArgument += arg.expression.text;
-                            separator = ' as';
+                            separator = " as";
                         }
                         if (arg.optional) {
-                            finalStringifiedArgument += this.getOptionalString(arg);
+                            finalStringifiedArgument +=
+                                this.getOptionalString(arg);
                         }
                         if (arg.type) {
                             finalStringifiedArgument += `${separator} ${this.visitType(arg.type)}`;
@@ -456,15 +532,21 @@ export class ClassHelper {
                     }
                 }
             })
-            .join(', ');
+            .join(", ");
 
         return stringifyArgs;
     }
 
-    private getPosition(node: ts.Node, sourceFile: ts.SourceFile): ts.LineAndCharacter {
+    private getPosition(
+        node: ts.Node,
+        sourceFile: ts.SourceFile,
+    ): ts.LineAndCharacter {
         let position: ts.LineAndCharacter;
         if ((node as any).name?.end) {
-            position = ts.getLineAndCharacterOfPosition(sourceFile, (node as any).name.end);
+            position = ts.getLineAndCharacterOfPosition(
+                sourceFile,
+                (node as any).name.end,
+            );
         } else {
             position = ts.getLineAndCharacterOfPosition(sourceFile, node.pos);
         }
@@ -472,7 +554,7 @@ export class ClassHelper {
     }
 
     private addAccessor(accessors, nodeAccessor, sourceFile) {
-        let nodeName = '';
+        let nodeName = "";
         if (nodeAccessor.name) {
             nodeName = nodeAccessor.name.text;
             const jsdoctags = this.jsdocParserUtil.getJSDocs(nodeAccessor);
@@ -481,30 +563,43 @@ export class ClassHelper {
                 accessors[nodeName] = {
                     name: nodeName,
                     setSignature: undefined,
-                    getSignature: undefined
+                    getSignature: undefined,
                 };
             }
 
             if (nodeAccessor.kind === SyntaxKind.SetAccessor) {
                 const setSignature: any = {
                     name: nodeName,
-                    type: 'void',
+                    type: "void",
                     ...this.initializeDocumentationFields(),
-                    args: nodeAccessor.parameters.map(param => this.visitArgument(param)),
-                    returnType: nodeAccessor.type ? this.visitType(nodeAccessor.type) : 'void',
-                    line: this.getPosition(nodeAccessor, sourceFile).line + 1
+                    args: nodeAccessor.parameters.map((param) =>
+                        this.visitArgument(param),
+                    ),
+                    returnType: nodeAccessor.type
+                        ? this.visitType(nodeAccessor.type)
+                        : "void",
+                    line: this.getPosition(nodeAccessor, sourceFile).line + 1,
                 };
 
-                this.extractAndProcessJSDocComment(nodeAccessor, sourceFile, setSignature);
+                this.extractAndProcessJSDocComment(
+                    nodeAccessor,
+                    sourceFile,
+                    setSignature,
+                );
                 this.processJSDocTags(jsdoctags, setSignature);
 
-                if (setSignature.jsdoctags && setSignature.jsdoctags.length > 0) {
+                if (
+                    setSignature.jsdoctags &&
+                    setSignature.jsdoctags.length > 0
+                ) {
                     setSignature.jsdoctags = mergeTagsAndArgs(
                         setSignature.args,
-                        setSignature.jsdoctags
+                        setSignature.jsdoctags,
                     );
                 } else if (setSignature.args && setSignature.args.length > 0) {
-                    setSignature.jsdoctags = mergeTagsAndArgs(setSignature.args);
+                    setSignature.jsdoctags = mergeTagsAndArgs(
+                        setSignature.args,
+                    );
                 }
 
                 accessors[nodeName].setSignature = setSignature;
@@ -512,12 +607,20 @@ export class ClassHelper {
             if (nodeAccessor.kind === SyntaxKind.GetAccessor) {
                 const getSignature: any = {
                     name: nodeName,
-                    type: nodeAccessor.type ? kindToType(nodeAccessor.type.kind) : '',
-                    returnType: nodeAccessor.type ? this.visitType(nodeAccessor.type) : '',
-                    line: this.getPosition(nodeAccessor, sourceFile).line + 1
+                    type: nodeAccessor.type
+                        ? kindToType(nodeAccessor.type.kind)
+                        : "",
+                    returnType: nodeAccessor.type
+                        ? this.visitType(nodeAccessor.type)
+                        : "",
+                    line: this.getPosition(nodeAccessor, sourceFile).line + 1,
                 };
 
-                this.extractAndProcessJSDocComment(nodeAccessor, sourceFile, getSignature);
+                this.extractAndProcessJSDocComment(
+                    nodeAccessor,
+                    sourceFile,
+                    getSignature,
+                );
                 this.processJSDocTags(jsdoctags, getSignature);
 
                 accessors[nodeName].getSignature = getSignature;
@@ -525,7 +628,10 @@ export class ClassHelper {
         }
     }
 
-    private hasDecoratorType(decorator: ts.Decorator, ...types: string[]): boolean {
+    private hasDecoratorType(
+        decorator: ts.Decorator,
+        ...types: string[]
+    ): boolean {
         if ((decorator.expression as any).expression) {
             const decoratorText = (decorator.expression as any).expression.text;
             return types.includes(decoratorText);
@@ -534,11 +640,11 @@ export class ClassHelper {
     }
 
     private isDirectiveDecorator(decorator: ts.Decorator): boolean {
-        return this.hasDecoratorType(decorator, 'Directive', 'Component');
+        return this.hasDecoratorType(decorator, "Directive", "Component");
     }
 
     private isServiceDecorator(decorator) {
-        return this.hasDecoratorType(decorator, 'Injectable');
+        return this.hasDecoratorType(decorator, "Injectable");
     }
 
     private isPrivate(member): boolean {
@@ -547,7 +653,7 @@ export class ClassHelper {
          */
         if (member.modifiers) {
             const isPrivate: boolean = member.modifiers.some(
-                modifier => modifier.kind === SyntaxKind.PrivateKeyword
+                (modifier) => modifier.kind === SyntaxKind.PrivateKeyword,
             );
             if (isPrivate) {
                 return true;
@@ -555,7 +661,8 @@ export class ClassHelper {
         }
         // Check for ECMAScript Private Fields
         if (member.name?.escapedText) {
-            const isPrivate: boolean = member.name.escapedText.indexOf('#') === 0;
+            const isPrivate: boolean =
+                member.name.escapedText.indexOf("#") === 0;
             if (isPrivate) {
                 return true;
             }
@@ -566,7 +673,7 @@ export class ClassHelper {
     private isProtected(member): boolean {
         if (member.modifiers) {
             const isProtected: boolean = member.modifiers.some(
-                modifier => modifier.kind === SyntaxKind.ProtectedKeyword
+                (modifier) => modifier.kind === SyntaxKind.ProtectedKeyword,
             );
             if (isProtected) {
                 return true;
@@ -579,7 +686,7 @@ export class ClassHelper {
         /**
          * Copyright https://github.com/ng-bootstrap/ng-bootstrap
          */
-        const internalTags: string[] = ['internal'];
+        const internalTags: string[] = ["internal"];
         if (member.jsDoc) {
             for (const doc of member.jsDoc) {
                 if (doc.tags) {
@@ -597,7 +704,7 @@ export class ClassHelper {
     private isPublic(member): boolean {
         if (member.modifiers) {
             const isPublic: boolean = member.modifiers.some(
-                modifier => modifier.kind === SyntaxKind.PublicKeyword
+                (modifier) => modifier.kind === SyntaxKind.PublicKeyword,
             );
             if (isPublic) {
                 return true;
@@ -610,7 +717,7 @@ export class ClassHelper {
         /**
          * Copyright https://github.com/ng-bootstrap/ng-bootstrap
          */
-        const internalTags: string[] = ['hidden'];
+        const internalTags: string[] = ["hidden"];
         if (member.jsDoc) {
             for (const doc of member.jsDoc) {
                 if (doc.tags) {
@@ -626,11 +733,11 @@ export class ClassHelper {
     }
 
     private isPipeDecorator(decorator) {
-        return this.hasDecoratorType(decorator, 'Pipe');
+        return this.hasDecoratorType(decorator, "Pipe");
     }
 
     private isModuleDecorator(decorator) {
-        return this.hasDecoratorType(decorator, 'NgModule');
+        return this.hasDecoratorType(decorator, "NgModule");
     }
 
     /**
@@ -641,16 +748,21 @@ export class ClassHelper {
         fileName: string,
         classDeclaration: ts.ClassDeclaration | ts.InterfaceDeclaration,
         sourceFile?: ts.SourceFile,
-        astFile?: ts.SourceFile
+        astFile?: ts.SourceFile,
     ): any {
-        const symbol = this.typeChecker.getSymbolAtLocation(classDeclaration.name);
-        let rawdescription = '';
+        const symbol = this.typeChecker.getSymbolAtLocation(
+            classDeclaration.name,
+        );
+        let rawdescription = "";
         const deprecation = this.initializeDocumentationFields();
-        let description = '';
+        let description = "";
         let jsdoctags: any[] = [];
 
         if (symbol) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(classDeclaration, sourceFile);
+            const comment = this.jsdocParserUtil.getMainCommentOfNode(
+                classDeclaration,
+                sourceFile,
+            );
             rawdescription = this.jsdocParserUtil.parseComment(comment);
             description = markedAcl(rawdescription);
             if (symbol.valueDeclaration && isIgnore(symbol.valueDeclaration)) {
@@ -658,16 +770,20 @@ export class ClassHelper {
             }
             if (symbol.declarations && symbol.declarations.length > 0) {
                 const declarationsjsdoctags = this.jsdocParserUtil.getJSDocs(
-                    symbol.declarations[0]
+                    symbol.declarations[0],
                 );
-                this.processJSDocTags(declarationsjsdoctags, deprecation, false);
+                this.processJSDocTags(
+                    declarationsjsdoctags,
+                    deprecation,
+                    false,
+                );
                 if (isIgnore(symbol.declarations[0])) {
                     return [{ ignore: true }];
                 }
             }
             if (symbol.valueDeclaration) {
                 jsdoctags = this.jsdocParserUtil.getJSDocs(
-                    symbol.valueDeclaration
+                    symbol.valueDeclaration,
                 ) as unknown as any[];
                 if (jsdoctags && jsdoctags.length >= 1) {
                     const jsdoc = jsdoctags[0] as any;
@@ -684,22 +800,30 @@ export class ClassHelper {
         const implementsElements = [];
         let extendsElements = [];
 
-        if (typeof (ts as any).getEffectiveImplementsTypeNodes !== 'undefined') {
-            const implementedTypes = (ts as any).getEffectiveImplementsTypeNodes(classDeclaration);
+        if (
+            typeof (ts as any).getEffectiveImplementsTypeNodes !== "undefined"
+        ) {
+            const implementedTypes = (
+                ts as any
+            ).getEffectiveImplementsTypeNodes(classDeclaration);
             if (implementedTypes) {
                 let i = 0;
                 const len = implementedTypes.length;
                 for (i; i < len; i++) {
                     if (implementedTypes[i].expression) {
-                        implementsElements.push(implementedTypes[i].expression.text);
+                        implementsElements.push(
+                            implementedTypes[i].expression.text,
+                        );
                     }
                 }
             }
         }
 
-        if (typeof (ts as any).getClassExtendsHeritageElement !== 'undefined') {
+        if (typeof (ts as any).getClassExtendsHeritageElement !== "undefined") {
             if (astFile) {
-                let interfaceOrClassNode = (astFile as any).getInterface(className);
+                let interfaceOrClassNode = (astFile as any).getInterface(
+                    className,
+                );
                 if (!interfaceOrClassNode) {
                     interfaceOrClassNode = (astFile as any).getClass(className);
                 }
@@ -709,10 +833,12 @@ export class ClassHelper {
                     if (extendsListRaw) {
                         if (Array.isArray(extendsListRaw)) {
                             if (extendsListRaw.length > 0) {
-                                extendsListRaw.forEach(extendElement => {
-                                    const extendElementExpression = extendElement.getExpression();
+                                extendsListRaw.forEach((extendElement) => {
+                                    const extendElementExpression =
+                                        extendElement.getExpression();
                                     if (extendElementExpression) {
-                                        const text = extendElementExpression.getText();
+                                        const text =
+                                            extendElementExpression.getText();
                                         if (text) {
                                             extendsList.push(text);
                                         }
@@ -720,7 +846,8 @@ export class ClassHelper {
                                 });
                             }
                         } else {
-                            const extendElementExpression = extendsListRaw.getExpression();
+                            const extendElementExpression =
+                                extendsListRaw.getExpression();
                             if (extendElementExpression) {
                                 const text = extendElementExpression.getText();
                                 if (text) {
@@ -748,10 +875,14 @@ export class ClassHelper {
 
                 // RETURN TOO EARLY FOR MANY DECORATORS !!!!
                 // iterating through the decorators array we have to keep the flags `true` values from the previous loop iteration
-                isDirective = isDirective || this.isDirectiveDecorator(classDecorators[a]);
-                isService = isService || this.isServiceDecorator(classDecorators[a]);
+                isDirective =
+                    isDirective ||
+                    this.isDirectiveDecorator(classDecorators[a]);
+                isService =
+                    isService || this.isServiceDecorator(classDecorators[a]);
                 isPipe = isPipe || this.isPipeDecorator(classDecorators[a]);
-                isModule = isModule || this.isModuleDecorator(classDecorators[a]);
+                isModule =
+                    isModule || this.isModuleDecorator(classDecorators[a]);
             }
             if (isDirective) {
                 return {
@@ -770,7 +901,7 @@ export class ClassHelper {
                     jsdoctags: jsdoctags,
                     extends: extendsElements,
                     implements: implementsElements,
-                    accessors: members.accessors
+                    accessors: members.accessors,
                 };
             } else if (isService) {
                 return [
@@ -788,8 +919,8 @@ export class ClassHelper {
                         jsdoctags: jsdoctags,
                         extends: extendsElements,
                         implements: implementsElements,
-                        accessors: members.accessors
-                    }
+                        accessors: members.accessors,
+                    },
                 ];
             } else if (isPipe) {
                 return [
@@ -801,8 +932,8 @@ export class ClassHelper {
                         rawdescription: rawdescription,
                         jsdoctags: jsdoctags,
                         properties: members.properties,
-                        methods: members.methods
-                    }
+                        methods: members.methods,
+                    },
                 ];
             } else if (isModule) {
                 return [
@@ -813,8 +944,8 @@ export class ClassHelper {
                         description,
                         rawdescription: rawdescription,
                         jsdoctags: jsdoctags,
-                        methods: members.methods
-                    }
+                        methods: members.methods,
+                    },
                 ];
             } else {
                 return [
@@ -830,8 +961,8 @@ export class ClassHelper {
                         jsdoctags: jsdoctags,
                         extends: extendsElements,
                         implements: implementsElements,
-                        accessors: members.accessors
-                    }
+                        accessors: members.accessors,
+                    },
                 ];
             }
         }
@@ -853,8 +984,8 @@ export class ClassHelper {
                     jsdoctags: jsdoctags,
                     extends: extendsElements,
                     implements: implementsElements,
-                    accessors: members.accessors
-                }
+                    accessors: members.accessors,
+                },
             ];
         } else {
             return [
@@ -872,8 +1003,8 @@ export class ClassHelper {
                     jsdoctags: jsdoctags,
                     extends: extendsElements,
                     implements: implementsElements,
-                    accessors: members.accessors
-                }
+                    accessors: members.accessors,
+                },
             ];
         }
     }
@@ -900,10 +1031,16 @@ export class ClassHelper {
             // Allows typescript guess type when using ts.is*
             const member = members[i];
 
-            inputDecorator = this.getDecoratorOfType(member, 'Input');
-            outputDecorator = this.getDecoratorOfType(member, 'Output');
-            const parsedHostBindings = this.getDecoratorOfType(member, 'HostBinding');
-            const parsedHostListeners = this.getDecoratorOfType(member, 'HostListener');
+            inputDecorator = this.getDecoratorOfType(member, "Input");
+            outputDecorator = this.getDecoratorOfType(member, "Output");
+            const parsedHostBindings = this.getDecoratorOfType(
+                member,
+                "HostBinding",
+            );
+            const parsedHostListeners = this.getDecoratorOfType(
+                member,
+                "HostListener",
+            );
 
             kind = member.kind;
 
@@ -911,23 +1048,38 @@ export class ClassHelper {
                 continue;
             }
 
-            if (this.isInternal(member) && Configuration.mainData.disableInternal) {
+            if (
+                this.isInternal(member) &&
+                Configuration.mainData.disableInternal
+            ) {
                 continue;
             }
 
             if (inputDecorator && inputDecorator.length > 0) {
-                inputs.push(this.visitInputAndHostBinding(member, inputDecorator[0], sourceFile));
+                inputs.push(
+                    this.visitInputAndHostBinding(
+                        member,
+                        inputDecorator[0],
+                        sourceFile,
+                    ),
+                );
                 if (ts.isSetAccessorDeclaration(member)) {
                     this.addAccessor(accessors, members[i], sourceFile);
                 }
             } else if (outputDecorator && outputDecorator.length > 0) {
-                outputs.push(this.visitOutput(member, outputDecorator[0], sourceFile));
+                outputs.push(
+                    this.visitOutput(member, outputDecorator[0], sourceFile),
+                );
             } else if (parsedHostBindings && parsedHostBindings.length > 0) {
                 let k = 0;
                 const lenHB = parsedHostBindings.length;
                 for (k; k < lenHB; k++) {
                     hostBindings.push(
-                        this.visitInputAndHostBinding(member, parsedHostBindings[k], sourceFile)
+                        this.visitInputAndHostBinding(
+                            member,
+                            parsedHostBindings[k],
+                            sourceFile,
+                        ),
                     );
                 }
             } else if (parsedHostListeners && parsedHostListeners.length > 0) {
@@ -935,48 +1087,91 @@ export class ClassHelper {
                 const lenHL = parsedHostListeners.length;
                 for (l; l < lenHL; l++) {
                     hostListeners.push(
-                        this.visitHostListener(member, parsedHostListeners[l], sourceFile)
+                        this.visitHostListener(
+                            member,
+                            parsedHostListeners[l],
+                            sourceFile,
+                        ),
                     );
                 }
             }
 
             if (!this.isHiddenMember(member)) {
-                if (!(this.isPrivate(member) && Configuration.mainData.disablePrivate)) {
-                    if (!(this.isInternal(member) && Configuration.mainData.disableInternal)) {
+                if (
+                    !(
+                        this.isPrivate(member) &&
+                        Configuration.mainData.disablePrivate
+                    )
+                ) {
+                    if (
+                        !(
+                            this.isInternal(member) &&
+                            Configuration.mainData.disableInternal
+                        )
+                    ) {
                         if (
-                            !(this.isProtected(member) && Configuration.mainData.disableProtected)
+                            !(
+                                this.isProtected(member) &&
+                                Configuration.mainData.disableProtected
+                            )
                         ) {
-                            if (ts.isMethodDeclaration(member) || ts.isMethodSignature(member)) {
-                                methods.push(this.visitMethodDeclaration(member, sourceFile));
+                            if (
+                                ts.isMethodDeclaration(member) ||
+                                ts.isMethodSignature(member)
+                            ) {
+                                methods.push(
+                                    this.visitMethodDeclaration(
+                                        member,
+                                        sourceFile,
+                                    ),
+                                );
                             } else if (
                                 ts.isPropertyDeclaration(member) ||
                                 ts.isPropertySignature(member)
                             ) {
                                 if (!inputDecorator && !outputDecorator) {
-                                    properties.push(this.visitProperty(member, sourceFile));
+                                    properties.push(
+                                        this.visitProperty(member, sourceFile),
+                                    );
                                 }
                             } else if (ts.isCallSignatureDeclaration(member)) {
-                                properties.push(this.visitCallDeclaration(member, sourceFile));
+                                properties.push(
+                                    this.visitCallDeclaration(
+                                        member,
+                                        sourceFile,
+                                    ),
+                                );
                             } else if (
                                 ts.isGetAccessorDeclaration(member) ||
                                 ts.isSetAccessorDeclaration(member)
                             ) {
-                                this.addAccessor(accessors, members[i], sourceFile);
+                                this.addAccessor(
+                                    accessors,
+                                    members[i],
+                                    sourceFile,
+                                );
                             } else if (ts.isIndexSignatureDeclaration(member)) {
                                 indexSignatures.push(
-                                    this.visitIndexDeclaration(member, sourceFile)
+                                    this.visitIndexDeclaration(
+                                        member,
+                                        sourceFile,
+                                    ),
                                 );
                             } else if (ts.isConstructorDeclaration(member)) {
-                                const _constructorProperties = this.visitConstructorProperties(
-                                    member,
-                                    sourceFile
-                                );
+                                const _constructorProperties =
+                                    this.visitConstructorProperties(
+                                        member,
+                                        sourceFile,
+                                    );
                                 let j = 0;
                                 const len = _constructorProperties.length;
                                 for (j; j < len; j++) {
                                     properties.push(_constructorProperties[j]);
                                 }
-                                constructor = this.visitConstructorDeclaration(member, sourceFile);
+                                constructor = this.visitConstructorDeclaration(
+                                    member,
+                                    sourceFile,
+                                );
                             }
                         }
                     }
@@ -1001,11 +1196,11 @@ export class ClassHelper {
             properties,
             indexSignatures,
             kind,
-            constructor
+            constructor,
         };
 
         if (Object.keys(accessors).length) {
-            result['accessors'] = accessors;
+            result["accessors"] = accessors;
         }
 
         return result;
@@ -1021,15 +1216,15 @@ export class ClassHelper {
         if ((typeName as any).left && (typeName as any).right) {
             return (
                 this.visitTypeName((typeName as any).left) +
-                '.' +
+                "." +
                 this.visitTypeName((typeName as any).right)
             );
         }
-        return '';
+        return "";
     }
 
     public visitTypeIndex(node): string {
-        const _return = '';
+        const _return = "";
 
         if (!node) {
             return _return;
@@ -1047,7 +1242,7 @@ export class ClassHelper {
     }
 
     public visitType(node): string {
-        let _return = 'void';
+        let _return = "void";
 
         if (!node) {
             return _return;
@@ -1067,18 +1262,20 @@ export class ClassHelper {
                 _return = this.visitTypeName(node.type.typeName);
             }
             if (node.type.typeArguments) {
-                _return += '<';
+                _return += "<";
                 const typeArguments = [];
                 for (const argument of node.type.typeArguments) {
                     typeArguments.push(this.visitType(argument));
                 }
-                _return += typeArguments.join(' | ');
-                _return += '>';
+                _return += typeArguments.join(" | ");
+                _return += ">";
             }
             if (node.type.elementType) {
                 const _firstPart = this.visitType(node.type.elementType);
                 _return = _firstPart + kindToType(node.type.kind);
-                if (node.type.elementType.kind === SyntaxKind.ParenthesizedType) {
+                if (
+                    node.type.elementType.kind === SyntaxKind.ParenthesizedType
+                ) {
                     _return = `(${_firstPart})${kindToType(node.type.kind)}`;
                 }
             }
@@ -1091,7 +1288,10 @@ export class ClassHelper {
 
                     if (type.elementType) {
                         const _firstPart = this.visitType(type.elementType);
-                        if (type.elementType.kind === SyntaxKind.ParenthesizedType) {
+                        if (
+                            type.elementType.kind ===
+                            SyntaxKind.ParenthesizedType
+                        ) {
                             _return += `(${_firstPart})${kindToType(type.kind)}`;
                         } else {
                             _return += _firstPart + kindToType(type.kind);
@@ -1104,20 +1304,25 @@ export class ClassHelper {
                                 _return += kindToType(type.literal.kind);
                             }
                         } else if ((type as any).typeName) {
-                            _return += this.visitTypeName((type as any).typeName);
-                        } else if (type.kind === SyntaxKind.RestType && type.type) {
+                            _return += this.visitTypeName(
+                                (type as any).typeName,
+                            );
+                        } else if (
+                            type.kind === SyntaxKind.RestType &&
+                            type.type
+                        ) {
                             _return += `...${this.visitType(type.type)}`;
                         } else {
                             _return += kindToType(type.kind);
                         }
                         if (type.typeArguments) {
-                            _return += '<';
+                            _return += "<";
                             const typeArguments = [];
                             for (const argument of type.typeArguments) {
                                 typeArguments.push(this.visitType(argument));
                             }
                             _return += typeArguments.join(separator);
-                            _return += '>';
+                            _return += ">";
                         }
                     }
                     if (i < len - 1) {
@@ -1127,29 +1332,34 @@ export class ClassHelper {
             };
 
             if (node.type.elements && ts.isTupleTypeNode(node.type)) {
-                _return = '[';
-                parseTypesOrElements(node.type.elements, ', ');
-                _return += ']';
+                _return = "[";
+                parseTypesOrElements(node.type.elements, ", ");
+                _return += "]";
             }
             if (node.type.types && ts.isUnionTypeNode(node.type)) {
-                _return = '';
-                parseTypesOrElements(node.type.types, ' | ');
+                _return = "";
+                parseTypesOrElements(node.type.types, " | ");
             }
             if (node.type.elementTypes) {
                 const elementTypes = node.type.elementTypes;
                 let i = 0;
                 const len = elementTypes.length;
                 if (len > 0) {
-                    _return = '[';
+                    _return = "[";
 
                     for (i; i < len; i++) {
                         const type = elementTypes[i];
-                        if (type.kind === SyntaxKind.ArrayType && type.elementType) {
+                        if (
+                            type.kind === SyntaxKind.ArrayType &&
+                            type.elementType
+                        ) {
                             _return += kindToType(type.elementType.kind);
                             _return += kindToType(type.kind);
                         } else if ((type as any).typeName) {
                             // For type references, use the type name directly instead of kindToType + typeName
-                            _return += this.visitTypeName((type as any).typeName);
+                            _return += this.visitTypeName(
+                                (type as any).typeName,
+                            );
                         } else {
                             _return += kindToType(type.kind);
                         }
@@ -1167,16 +1377,16 @@ export class ClassHelper {
                         if (
                             type.kind === SyntaxKind.TypeReference &&
                             type.typeName &&
-                            typeof type.typeName.escapedText !== 'undefined' &&
-                            type.typeName.escapedText === ''
+                            typeof type.typeName.escapedText !== "undefined" &&
+                            type.typeName.escapedText === ""
                         ) {
                             continue;
                         }
                         if (i < len - 1) {
-                            _return += ', ';
+                            _return += ", ";
                         }
                     }
-                    _return += ']';
+                    _return += "]";
                 }
             }
             if (
@@ -1189,10 +1399,12 @@ export class ClassHelper {
         } else if (node.elementType) {
             _return = kindToType(node.elementType.kind) + kindToType(node.kind);
             if (node.elementType.typeName) {
-                _return = this.visitTypeName(node.elementType.typeName) + kindToType(node.kind);
+                _return =
+                    this.visitTypeName(node.elementType.typeName) +
+                    kindToType(node.kind);
             }
         } else if (node.types && ts.isUnionTypeNode(node)) {
-            _return = '';
+            _return = "";
             let i = 0;
             const len = node.types.length;
             for (i; i < len; i++) {
@@ -1209,18 +1421,19 @@ export class ClassHelper {
                     _return += kindToType(type.kind);
                 }
                 if (i < len - 1) {
-                    _return += ' | ';
+                    _return += " | ";
                 }
             }
         } else if (node.dotDotDotToken) {
-            _return = 'any[]';
+            _return = "any[]";
         } else {
             _return = kindToType(node.kind);
             if (
-                (_return === '' || _return === 'unknown') &&
+                (_return === "" || _return === "unknown") &&
                 node.initializer &&
                 node.initializer.kind &&
-                (node.kind === SyntaxKind.PropertyDeclaration || node.kind === SyntaxKind.Parameter)
+                (node.kind === SyntaxKind.PropertyDeclaration ||
+                    node.kind === SyntaxKind.Parameter)
             ) {
                 _return = kindToType(node.initializer.kind);
             }
@@ -1232,30 +1445,38 @@ export class ClassHelper {
             }
         }
         if (node.typeArguments && node.typeArguments.length > 0) {
-            _return += '<';
+            _return += "<";
             let i = 0,
                 len = node.typeArguments.length;
             for (i; i < len; i++) {
                 const argument = node.typeArguments[i];
                 _return += this.visitType(argument);
                 if (i >= 0 && i < len - 1) {
-                    _return += ', ';
+                    _return += ", ";
                 }
             }
-            _return += '>';
+            _return += ">";
         }
         return _return;
     }
 
-    private visitCallDeclaration(method: ts.CallSignatureDeclaration, sourceFile: ts.SourceFile) {
+    private visitCallDeclaration(
+        method: ts.CallSignatureDeclaration,
+        sourceFile: ts.SourceFile,
+    ) {
         const sourceCode = sourceFile.getText();
-        const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
+        const hash = crypto
+            .createHash("sha512")
+            .update(sourceCode)
+            .digest("hex");
         const result: any = {
             id: `call-declaration-${hash}`,
-            args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
+            args: method.parameters
+                ? method.parameters.map((prop) => this.visitArgument(prop))
+                : [],
             returnType: this.visitType(method.type),
             line: this.getPosition(method, sourceFile).line + 1,
-            ...this.initializeDocumentationFields()
+            ...this.initializeDocumentationFields(),
         };
         this.extractAndProcessJSDocComment(method, sourceFile, result);
         const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
@@ -1265,16 +1486,21 @@ export class ClassHelper {
 
     private visitIndexDeclaration(
         method: ts.IndexSignatureDeclaration,
-        sourceFile?: ts.SourceFile
+        sourceFile?: ts.SourceFile,
     ) {
         const sourceCode = sourceFile.getText();
-        const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
+        const hash = crypto
+            .createHash("sha512")
+            .update(sourceCode)
+            .digest("hex");
         const result = {
             id: `index-declaration-${hash}`,
-            args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
+            args: method.parameters
+                ? method.parameters.map((prop) => this.visitArgument(prop))
+                : [],
             returnType: this.visitType(method.type),
             line: this.getPosition(method, sourceFile).line + 1,
-            ...this.initializeDocumentationFields()
+            ...this.initializeDocumentationFields(),
         };
         this.extractAndProcessJSDocComment(method, sourceFile, result);
         const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
@@ -1284,17 +1510,19 @@ export class ClassHelper {
 
     private visitConstructorDeclaration(
         method: ts.ConstructorDeclaration,
-        sourceFile?: ts.SourceFile
+        sourceFile?: ts.SourceFile,
     ) {
         /**
          * Copyright https://github.com/ng-bootstrap/ng-bootstrap
          */
         const result: any = {
-            name: 'constructor',
-            description: '',
+            name: "constructor",
+            description: "",
             ...this.initializeDocumentationFields(),
-            args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
-            line: this.getPosition(method, sourceFile).line + 1
+            args: method.parameters
+                ? method.parameters.map((prop) => this.visitArgument(prop))
+                : [],
+            line: this.getPosition(method, sourceFile).line + 1,
         };
         this.extractAndProcessJSDocComment(method, sourceFile, result);
 
@@ -1314,15 +1542,20 @@ export class ClassHelper {
         return result;
     }
 
-    private visitProperty(property: ts.PropertyDeclaration | ts.PropertySignature, sourceFile) {
+    private visitProperty(
+        property: ts.PropertyDeclaration | ts.PropertySignature,
+        sourceFile,
+    ) {
         // PropertySignature (interfaces) don't have initializer, PropertyDeclaration (classes) do
-        const initializer = ts.isPropertyDeclaration(property) ? property.initializer : undefined;
+        const initializer = ts.isPropertyDeclaration(property)
+            ? property.initializer
+            : undefined;
 
         // Extract property name, handling different node types:
         // - Identifier: regular property names
         // - PrivateIdentifier: ECMAScript private fields like #privateField
         // - ComputedPropertyName: computed names like ['__allAnd']
-        let propertyName = '';
+        let propertyName = "";
         // Check for mock objects first (for testing)
         if ((property.name as any).text) {
             propertyName = (property.name as any).text;
@@ -1341,17 +1574,19 @@ export class ClassHelper {
 
         const result: any = {
             name: propertyName,
-            defaultValue: initializer ? this.stringifyDefaultValue(initializer) : undefined,
+            defaultValue: initializer
+                ? this.stringifyDefaultValue(initializer)
+                : undefined,
             ...this.initializeDocumentationFields(),
             type: this.visitType(property),
             indexKey: this.visitTypeIndex(property),
-            optional: typeof property.questionToken !== 'undefined',
-            description: '',
-            line: this.getPosition(property, sourceFile).line + 1
+            optional: typeof property.questionToken !== "undefined",
+            description: "",
+            line: this.getPosition(property, sourceFile).line + 1,
         };
 
         if (initializer && initializer.kind === SyntaxKind.ArrowFunction) {
-            result.defaultValue = '() => {...}';
+            result.defaultValue = "() => {...}";
         }
 
         // Detect signal primitives from initializer
@@ -1368,7 +1603,10 @@ export class ClassHelper {
             }
         }
 
-        if (typeof result.name === 'undefined' && (property.name as any).expression) {
+        if (
+            typeof result.name === "undefined" &&
+            (property.name as any).expression
+        ) {
             result.name = (property.name as any).expression.text;
         }
 
@@ -1417,7 +1655,9 @@ export class ClassHelper {
                     continue;
                 }
                 if (this.isPublic(parameterOfConstructor)) {
-                    _parameters.push(this.visitProperty(constr.parameters[i], sourceFile));
+                    _parameters.push(
+                        this.visitProperty(constr.parameters[i], sourceFile),
+                    );
                 }
             }
             /**
@@ -1427,11 +1667,11 @@ export class ClassHelper {
                 if (constr.jsDoc.length > 0) {
                     const constrTags = constr.jsDoc[0].tags;
                     if (constrTags && constrTags.length > 0) {
-                        constrTags.forEach(tag => {
-                            _parameters.forEach(param => {
+                        constrTags.forEach((tag) => {
+                            _parameters.forEach((param) => {
                                 if (
                                     tag.tagName?.escapedText &&
-                                    tag.tagName.escapedText === 'param'
+                                    tag.tagName.escapedText === "param"
                                 ) {
                                     if (
                                         tag.name?.escapedText &&
@@ -1453,33 +1693,41 @@ export class ClassHelper {
 
     private visitMethodDeclaration(
         method: ts.MethodDeclaration | ts.MethodSignature,
-        sourceFile: ts.SourceFile
+        sourceFile: ts.SourceFile,
     ) {
         const result: any = {
             name:
-                (method.name as any).text || (ts.isIdentifier(method.name) ? method.name.text : ''),
-            args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
-            optional: typeof method.questionToken !== 'undefined',
+                (method.name as any).text ||
+                (ts.isIdentifier(method.name) ? method.name.text : ""),
+            args: method.parameters
+                ? method.parameters.map((prop) => this.visitArgument(prop))
+                : [],
+            optional: typeof method.questionToken !== "undefined",
             returnType: this.visitType(method.type),
             typeParameters: [],
             line: this.getPosition(method, sourceFile).line + 1,
-            ...this.initializeDocumentationFields()
+            ...this.initializeDocumentationFields(),
         };
 
-        if (typeof method.type === 'undefined') {
+        if (typeof method.type === "undefined") {
             // Try to get inferred type
             if ((method as any).symbol) {
                 const symbol: ts.Symbol = (method as any).symbol;
                 if (symbol.valueDeclaration) {
-                    const symbolType = this.typeChecker.getTypeOfSymbolAtLocation(
-                        symbol,
-                        symbol.valueDeclaration
-                    );
+                    const symbolType =
+                        this.typeChecker.getTypeOfSymbolAtLocation(
+                            symbol,
+                            symbol.valueDeclaration,
+                        );
                     if (symbolType) {
                         try {
-                            const signature = this.typeChecker.getSignatureFromDeclaration(method);
+                            const signature =
+                                this.typeChecker.getSignatureFromDeclaration(
+                                    method,
+                                );
                             const returnType = signature.getReturnType();
-                            result.returnType = this.typeChecker.typeToString(returnType);
+                            result.returnType =
+                                this.typeChecker.typeToString(returnType);
                             // tslint:disable-next-line:no-empty
                         } catch (_error) {}
                     }
@@ -1488,8 +1736,8 @@ export class ClassHelper {
         }
 
         if (method.typeParameters && method.typeParameters.length > 0) {
-            result.typeParameters = method.typeParameters.map(typeParameter =>
-                this.visitType(typeParameter)
+            result.typeParameters = method.typeParameters.map((typeParameter) =>
+                this.visitType(typeParameter),
             );
         }
 
@@ -1521,7 +1769,7 @@ export class ClassHelper {
     private visitOutput(
         property: ts.PropertyDeclaration,
         outDecorator: ts.Decorator,
-        sourceFile?: ts.SourceFile
+        sourceFile?: ts.SourceFile,
     ) {
         const inArgs = (outDecorator.expression as any).arguments;
         const _return: any = {
@@ -1529,11 +1777,13 @@ export class ClassHelper {
                 inArgs.length > 0
                     ? (inArgs[0] as any).text
                     : (property.name as any).text ||
-                      (ts.isIdentifier(property.name) ? property.name.text : ''),
+                      (ts.isIdentifier(property.name)
+                          ? property.name.text
+                          : ""),
             defaultValue: property.initializer
                 ? this.stringifyDefaultValue(property.initializer)
                 : undefined,
-            ...this.initializeDocumentationFields()
+            ...this.initializeDocumentationFields(),
         };
 
         if ((property as any).jsDoc) {
@@ -1552,7 +1802,9 @@ export class ClassHelper {
             if (property.initializer) {
                 if (ts.isNewExpression(property.initializer)) {
                     if (property.initializer.expression) {
-                        _return.type = (property.initializer.expression as any).text;
+                        _return.type = (
+                            property.initializer.expression as any
+                        ).text;
                     }
                 }
             }
@@ -1562,15 +1814,17 @@ export class ClassHelper {
 
     private visitArgument(arg: ts.ParameterDeclaration) {
         const _result: any = {
-            name: (arg.name as any).text || (ts.isIdentifier(arg.name) ? arg.name.text : ''),
+            name:
+                (arg.name as any).text ||
+                (ts.isIdentifier(arg.name) ? arg.name.text : ""),
             type: this.visitType(arg),
             optional: !!arg.questionToken,
             dotDotDotToken: !!arg.dotDotDotToken,
-            ...this.initializeDocumentationFields()
+            ...this.initializeDocumentationFields(),
         };
         if (arg.type?.kind && ts.isFunctionTypeNode(arg.type)) {
             _result.function = arg.type.parameters
-                ? arg.type.parameters.map(prop => this.visitArgument(prop))
+                ? arg.type.parameters.map((prop) => this.visitArgument(prop))
                 : [];
         }
         if (arg.initializer) {
@@ -1592,19 +1846,28 @@ export class ClassHelper {
         let hasAlias = false;
 
         const getRequiredField = () =>
-            inArgs[0].properties.find(property => property.name.escapedText === 'required');
+            inArgs[0].properties.find(
+                (property) => property.name.escapedText === "required",
+            );
         const getAliasProperty = () =>
-            inArgs[0].properties.find(property => property.name.escapedText === 'alias');
+            inArgs[0].properties.find(
+                (property) => property.name.escapedText === "alias",
+            );
 
         if (inArgs.length > 0) {
-            isInputConfigStringLiteral = inArgs[0] && ts.isStringLiteral(inArgs[0]);
+            isInputConfigStringLiteral =
+                inArgs[0] && ts.isStringLiteral(inArgs[0]);
 
             isInputConfigObjectLiteralExpression =
                 inArgs[0] && ts.isObjectLiteralExpression(inArgs[0]);
 
             if (isInputConfigObjectLiteralExpression && inArgs[0].properties) {
-                hasRequiredField = isInputConfigObjectLiteralExpression && !!getRequiredField();
-                hasAlias = isInputConfigObjectLiteralExpression ? !!getAliasProperty() : false;
+                hasRequiredField =
+                    isInputConfigObjectLiteralExpression &&
+                    !!getRequiredField();
+                hasAlias = isInputConfigObjectLiteralExpression
+                    ? !!getAliasProperty()
+                    : false;
 
                 _return.required = !!getRequiredField();
             }
@@ -1624,10 +1887,15 @@ export class ClassHelper {
         Object.assign(_return, this.initializeDocumentationFields());
 
         if (inArgs.length > 0 && inArgs[0].properties && hasRequiredField) {
-            _return.optional = getRequiredField().initializer.kind !== SyntaxKind.TrueKeyword;
+            _return.optional =
+                getRequiredField().initializer.kind !== SyntaxKind.TrueKeyword;
         }
 
-        if (!_return.description && property.jsDoc && property.jsDoc.length > 0) {
+        if (
+            !_return.description &&
+            property.jsDoc &&
+            property.jsDoc.length > 0
+        ) {
             const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
             this.processJSDocTags(jsdoctags, _return);
             this.extractAndProcessJSDocComment(property, sourceFile, _return);
@@ -1648,12 +1916,14 @@ export class ClassHelper {
             if (property.symbol) {
                 const symbol: ts.Symbol = property.symbol;
                 if (symbol.valueDeclaration) {
-                    const symbolType = this.typeChecker.getTypeOfSymbolAtLocation(
-                        symbol,
-                        symbol.valueDeclaration
-                    );
+                    const symbolType =
+                        this.typeChecker.getTypeOfSymbolAtLocation(
+                            symbol,
+                            symbol.valueDeclaration,
+                        );
                     if (symbolType) {
-                        _return.type = this.typeChecker.typeToString(symbolType);
+                        _return.type =
+                            this.typeChecker.typeToString(symbolType);
                     }
                 }
             }
@@ -1669,8 +1939,10 @@ export class ClassHelper {
 
         if (nodeHasDecorator(property)) {
             const propertyDecorators = getNodeDecorators(property);
-            _return.decorators = this.formatDecorators(propertyDecorators).filter(
-                item => item.name !== 'Input' && item.name !== 'HostBinding'
+            _return.decorators = this.formatDecorators(
+                propertyDecorators,
+            ).filter(
+                (item) => item.name !== "Input" && item.name !== "HostBinding",
             );
         }
         return _return;
@@ -1681,11 +1953,11 @@ export class ClassHelper {
         const _return: any = {};
         _return.name = inArgs.length > 0 ? inArgs[0].text : property.name.text;
         _return.args = property.parameters
-            ? property.parameters.map(prop => this.visitArgument(prop))
+            ? property.parameters.map((prop) => this.visitArgument(prop))
             : [];
         _return.argsDecorator =
             inArgs.length > 1
-                ? inArgs[1].elements.map(prop => {
+                ? inArgs[1].elements.map((prop) => {
                       return prop.text;
                   })
                 : [];

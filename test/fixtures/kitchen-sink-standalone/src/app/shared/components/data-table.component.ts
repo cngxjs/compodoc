@@ -31,6 +31,11 @@ export interface Column<T = unknown> {
  * ```
  *
  * @since 2.0.0
+ * @storybook https://storybook.example.com/?path=/story/shared-datatable--default
+ * @figma https://www.figma.com/file/abc123/Design-System?node-id=42:1337
+ * @stackblitz https://stackblitz.com/edit/angular-data-table-demo
+ * @github https://github.com/cngxjs/compodocx/blob/develop/test/fixtures/kitchen-sink-standalone/src/app/shared/components/data-table.component.ts
+ * @docs https://cngx.dev/components/data-table
  */
 @Component({
     selector: 'app-data-table',
