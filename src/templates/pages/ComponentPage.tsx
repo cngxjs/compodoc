@@ -343,20 +343,26 @@ export const ComponentPage = (data: any): string => {
                         ''
                     )}
                     {c.zoneless ? <span class="cdx-badge cdx-badge--zoneless">Zoneless</span> : ''}
-                    {typeof c.changeDetection === 'string' &&
-                    c.changeDetection.includes('OnPush') ? (
-                        <span class="cdx-badge cdx-badge--trait">OnPush</span>
-                    ) : (
-                        ''
-                    )}
-                    {typeof c.encapsulation === 'string' &&
-                    c.encapsulation.includes('ShadowDom') ? (
-                        <span class="cdx-badge cdx-badge--trait">Shadow DOM</span>
-                    ) : typeof c.encapsulation === 'string' && c.encapsulation.includes('None') ? (
-                        <span class="cdx-badge cdx-badge--trait">No encapsulation</span>
-                    ) : (
-                        ''
-                    )}
+                    {(() => {
+                        const cd = String(c.changeDetection ?? '');
+                        return cd.includes('OnPush') ? (
+                            <span class="cdx-badge cdx-badge--trait">OnPush</span>
+                        ) : (
+                            ''
+                        );
+                    })()}
+                    {(() => {
+                        const enc = Array.isArray(c.encapsulation)
+                            ? c.encapsulation.join(' ')
+                            : String(c.encapsulation ?? '');
+                        if (enc.includes('ShadowDom')) {
+                            return <span class="cdx-badge cdx-badge--trait">Shadow DOM</span>;
+                        }
+                        if (enc.includes('None')) {
+                            return <span class="cdx-badge cdx-badge--trait">No encapsulation</span>;
+                        }
+                        return '';
+                    })()}
                     {c.preserveWhitespaces ? (
                         <span class="cdx-badge cdx-badge--trait">Preserve whitespace</span>
                     ) : (

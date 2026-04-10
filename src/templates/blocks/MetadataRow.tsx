@@ -1,18 +1,6 @@
 import Html from '@kitajs/html';
 import { resolveType } from '../helpers/link-type';
 import { t } from '../helpers';
-import {
-    IconClass,
-    IconComponent,
-    IconDirective,
-    IconEntity,
-    IconGuard,
-    IconInjectable,
-    IconInterceptor,
-    IconInterface,
-    IconModule,
-    IconPipe
-} from '../components/Icons';
 
 /**
  * Human-friendly labels for Angular decorator property names. Extend as needed.
@@ -68,35 +56,6 @@ export function humanLabel(key: string): string {
     return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
-/** Map an entity type token (matching --color-cdx-entity-*) to its icon. */
-const chipIconFor = (type: string): string => {
-    switch (type) {
-        case 'component':
-            return IconComponent();
-        case 'directive':
-            return IconDirective();
-        case 'pipe':
-            return IconPipe();
-        case 'module':
-            return IconModule();
-        case 'class':
-            return IconClass();
-        case 'interface':
-            return IconInterface();
-        case 'guard':
-            return IconGuard();
-        case 'interceptor':
-            return IconInterceptor();
-        case 'injectable':
-        case 'service':
-            return IconInjectable();
-        case 'entity':
-            return IconEntity();
-        default:
-            return IconClass();
-    }
-};
-
 /**
  * Build a resolved type payload used by `ChipList`. Tries the dep-engine first
  * so we can colour-code entity chips. Unresolved names fall back to a neutral
@@ -117,14 +76,23 @@ function resolveChip(name: string): { href?: string; target?: string; type?: str
     if (!m) {
         return { href: resolved.href, target: resolved.target };
     }
-    let type = m[1];
-    if (type.endsWith('s')) {
-        type = type.slice(0, -1);
-    }
-    // compodoc's URL convention: class → /classes/ via typePath 'classe'
-    if (type === 'classe') {
-        type = 'class';
-    }
+    const raw = m[1];
+    // compodoc's URL conventions. 'miscellaneous' is the only folder that
+    // doesn't follow the `{type}s/` plural rule.
+    const URL_TYPE_MAP: Record<string, string> = {
+        components: 'component',
+        directives: 'directive',
+        pipes: 'pipe',
+        modules: 'module',
+        classes: 'class',
+        interfaces: 'interface',
+        guards: 'guard',
+        interceptors: 'interceptor',
+        injectables: 'injectable',
+        entities: 'entity',
+        miscellaneous: 'miscellaneous'
+    };
+    const type = URL_TYPE_MAP[raw] ?? raw;
     return { href: resolved.href, target: resolved.target, type };
 }
 
@@ -155,15 +123,10 @@ export function MetadataChipsRow(label: string, names: Array<string | { name: st
     const chips = items.map(name => {
         const chip = resolveChip(name);
         const kindClass = chip.type ? ` cdx-chip--${chip.type}` : '';
-        const icon = chip.type ? chipIconFor(chip.type) : '';
-        const iconSpan = icon
-            ? `<span class="cdx-chip-icon" aria-hidden="true">${icon}</span>`
-            : '';
-        const label = `<span class="cdx-chip-label">${name}</span>`;
         if (chip.href) {
-            return `<a class="cdx-chip${kindClass}" href="${chip.href}" target="${chip.target}">${iconSpan}${label}</a>`;
+            return `<a class="cdx-chip${kindClass}" href="${chip.href}" target="${chip.target}">${name}</a>`;
         }
-        return `<span class="cdx-chip${kindClass}">${iconSpan}${label}</span>`;
+        return `<span class="cdx-chip${kindClass}">${name}</span>`;
     });
     return MetadataRow(label, `<div class="cdx-chip-list">${chips.join('')}</div>`);
 }
