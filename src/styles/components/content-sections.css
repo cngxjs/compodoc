@@ -241,6 +241,70 @@ a.cdx-chip:hover {
     }
 }
 
+/* ── Host directives sub-cards ─────────────────────────────
+ * Rendered by MetadataHostDirectivesRow — each host directive is a
+ * stacked block with the directive chip on top and the forwarded
+ * input/output bindings as neutral code-style chips below.
+ */
+
+.cdx-host-dir-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    width: 100%;
+}
+
+.cdx-host-dir-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+}
+
+.cdx-host-dir-item-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.cdx-host-dir-bindings {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.cdx-host-dir-bindings-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-cdx-text-muted);
+    min-width: 3rem;
+}
+
+.cdx-host-dir-binding-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.cdx-host-dir-binding {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.4375rem;
+    border-radius: var(--radius-cdx-sm);
+    background: var(--color-cdx-bg-alt);
+    color: var(--color-cdx-text-secondary);
+    font-family: var(--font-code);
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
 /* When value has multi-line code (template/styles), stack label above */
 .cdx-metadata-row--block {
     grid-template-columns: 1fr;

@@ -1,10 +1,10 @@
 import {
     MetadataChipsRow,
     MetadataCodeRow,
-    MetadataRow,
+    MetadataHostDirectivesRow,
     MetadataSection
 } from '../blocks/MetadataRow';
-import { isInfoSection, linkTypeHtml, t } from '../helpers';
+import { isInfoSection } from '../helpers';
 import { renderEntityPage } from './EntityPage';
 
 const DirectiveMetadata = (directive: any): string => {
@@ -35,23 +35,7 @@ const DirectiveMetadata = (directive: any): string => {
     rows.push(MetadataChipsRow('providers', directive.providers ?? []));
 
     if (directive.hostDirectives?.length > 0) {
-        rows.push(
-            MetadataRow(
-                'hostDirectives',
-                directive.hostDirectives
-                    .map((hd: any) => {
-                        let html = linkTypeHtml(hd.name);
-                        if (hd.inputs?.length > 0) {
-                            html += ` <span class="cdx-metadata-label">${t('inputs')}:</span> ${hd.inputs.join(', ')}`;
-                        }
-                        if (hd.outputs?.length > 0) {
-                            html += ` <span class="cdx-metadata-label">${t('outputs')}:</span> ${hd.outputs.join(', ')}`;
-                        }
-                        return html;
-                    })
-                    .join(' ')
-            )
-        );
+        rows.push(MetadataHostDirectivesRow(directive.hostDirectives));
     }
 
     rows.push(MetadataChipsRow('extends', (directive.extends as string[]) ?? []));

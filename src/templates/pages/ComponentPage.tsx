@@ -13,6 +13,7 @@ import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import {
     MetadataChipsRow,
     MetadataCodeRow,
+    MetadataHostDirectivesRow,
     MetadataRow,
     MetadataSection
 } from '../blocks/MetadataRow';
@@ -103,25 +104,9 @@ const ComponentMetadata = (c: any): string => {
     rows.push(MetadataChipsRow('extends', (c.extends as string[]) ?? []));
     rows.push(MetadataChipsRow('implements', (c.implements as string[]) ?? []));
 
-    // Host directives keep their special rendering (entity chip + I/O note)
+    // Host directives get their own stacked sub-cards
     if (c.hostDirectives?.length > 0) {
-        rows.push(
-            MetadataRow(
-                'hostDirectives',
-                c.hostDirectives
-                    .map((hd: any) => {
-                        let html = linkTypeHtml(hd.name);
-                        if (hd.inputs?.length > 0) {
-                            html += ` <span class="cdx-metadata-label">${t('inputs')}:</span> ${hd.inputs.join(', ')}`;
-                        }
-                        if (hd.outputs?.length > 0) {
-                            html += ` <span class="cdx-metadata-label">${t('outputs')}:</span> ${hd.outputs.join(', ')}`;
-                        }
-                        return html;
-                    })
-                    .join(' ')
-            )
-        );
+        rows.push(MetadataHostDirectivesRow(c.hostDirectives));
     }
 
     // Host literal is rendered as a block because it's a multi-key object

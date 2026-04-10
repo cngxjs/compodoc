@@ -149,6 +149,54 @@ function isLiteralPrimitive(name: string): boolean {
     return false;
 }
 
+type HostDirective = {
+    readonly name: string;
+    readonly inputs?: string[];
+    readonly outputs?: string[];
+};
+
+/**
+ * Renders a metadata row for Angular host directives. Each entry becomes
+ * a stacked sub-card containing the directive chip on top and its input /
+ * output forwarded bindings as small neutral chips below.
+ */
+export function MetadataHostDirectivesRow(hostDirectives: HostDirective[]): string {
+    if (!hostDirectives?.length) {
+        return '';
+    }
+
+    const renderBindings = (label: string, names: string[] | undefined): string => {
+        if (!names?.length) {
+            return '';
+        }
+        const chips = names
+            .map(
+                n =>
+                    `<code class="cdx-host-dir-binding">${n.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string)}</code>`
+            )
+            .join('');
+        return `<div class="cdx-host-dir-bindings"><span class="cdx-host-dir-bindings-label">${label}</span><div class="cdx-host-dir-binding-list">${chips}</div></div>`;
+    };
+
+    const items = hostDirectives.map(hd => {
+        const chip = resolveChip(hd.name);
+        const kindClass = chip.type ? ` cdx-chip--${chip.type}` : '';
+        const head = chip.href
+            ? `<a class="cdx-chip${kindClass}" href="${chip.href}" target="${chip.target}">${hd.name}</a>`
+            : `<span class="cdx-chip${kindClass}">${hd.name}</span>`;
+        const inputs = renderBindings('Inputs', hd.inputs);
+        const outputs = renderBindings('Outputs', hd.outputs);
+        const bindings = inputs + outputs;
+        return `<div class="cdx-host-dir-item">${head}${bindings ? `<div class="cdx-host-dir-item-body">${bindings}</div>` : ''}</div>`;
+    });
+
+    return MetadataRow(
+        'hostDirectives',
+        `<div class="cdx-host-dir-list">${items.join('')}</div>`,
+        true
+    );
+}
+
 export function MetadataChipsRow(label: string, names: Array<string | { name: string }>): string {
     const items = names
         .map(n => (typeof n === 'string' ? n : n.name))
