@@ -417,9 +417,42 @@ export class ComponentHelper {
         const element = node as any;
         const properties = element.initializer?.properties || [];
         properties.forEach((prop: any) => {
-            obj.set(prop.name?.text, prop.initializer?.text);
+            const key = this.readNodeText(prop.name);
+            if (key === undefined) {
+                return;
+            }
+            obj.set(key, this.readNodeText(prop.initializer));
         });
         return obj;
+    }
+
+    /**
+     * Reads the source content of an AST node for the purpose of host /
+     * host-directive metadata extraction.
+     *
+     * Literal kinds (`StringLiteral`, `NoSubstitutionTemplateLiteral`,
+     * `NumericLiteral`) and `Identifier` expose a native `.text` field that
+     * already returns the inner content with surrounding quotes / backticks
+     * stripped. Everything else — `CallExpression`, `PropertyAccessExpression`,
+     * `TemplateExpression`, `ObjectLiteralExpression`, computed property
+     * names, etc. — falls back to `getText()` so complex initializers keep
+     * their full source instead of collapsing to `undefined` the way the
+     * previous `initializer?.text` access did. Phase 2a bug fix — see
+     * .internal/compiler-metadata-extraction-fix-plan.md.
+     */
+    private readNodeText(node: ts.Node | undefined): string | undefined {
+        if (!node) {
+            return undefined;
+        }
+        if (
+            ts.isStringLiteral(node) ||
+            ts.isNoSubstitutionTemplateLiteral(node) ||
+            ts.isNumericLiteral(node) ||
+            ts.isIdentifier(node)
+        ) {
+            return node.text;
+        }
+        return node.getText();
     }
 
     public getSymbolDepsObject(

@@ -111,11 +111,7 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             ]);
         });
 
-        it('current-state: identifier-value hits the .text fast path and works', () => {
-            // Phase 2a bug foreshadowing: `prop.initializer?.text` happens to
-            // work for Identifier initializers because Identifier nodes expose
-            // a `.text` field. This test pins down the "it works by accident"
-            // case so we notice if Phase 2a's getText() switch changes it.
+        it('preserves an Identifier value (fast path via node.text)', () => {
             const source = `
                 @Component({
                     selector: 'app-x',
@@ -131,13 +127,10 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             expect(host.get('(click)')).to.equal('handler');
         });
 
-        it('current-state: non-string/identifier initializers collapse to undefined', () => {
-            // Phase 2a bug: `prop.initializer?.text` is only defined for
-            // StringLiteral / NumericLiteral / NoSubstitutionTemplateLiteral /
-            // Identifier. A CallExpression like `handler()` has no `.text`, so
-            // the Map value is `undefined` — and the downstream host synthesis
-            // in component-dep.factory.ts then stringifies it to the literal
-            // string "undefined". Phase 2a switches to `initializer.getText()`.
+        it('preserves a CallExpression value via getText() fallback (Phase 2a fix)', () => {
+            // Before Phase 2a this collapsed to `undefined` because
+            // CallExpression has no `.text` field. readNodeText() now falls
+            // back to `node.getText()` for non-literal kinds.
             const source = `
                 @Component({
                     selector: 'app-x',
@@ -150,7 +143,62 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             const { props } = parseComponentProps(source);
             const host = componentHelper.getComponentHost(props);
 
-            expect(host.get('(click)')).to.be.undefined;
+            expect(host.get('(click)')).to.equal('handler()');
+        });
+
+        it('preserves a string-literal containing method-call syntax', () => {
+            // Regression: string-literal event handlers must keep their inner
+            // content only — readNodeText() must not accidentally emit the
+            // outer quotes for literal kinds.
+            const source = `
+                @Component({
+                    selector: 'app-x',
+                    host: {
+                        '(submit)': 'this.save($event)'
+                    }
+                })
+                export class X {}
+            `;
+            const { props } = parseComponentProps(source);
+            const host = componentHelper.getComponentHost(props);
+
+            expect(host.get('(submit)')).to.equal('this.save($event)');
+        });
+
+        it('preserves a NumericLiteral value (tabIndex: 0)', () => {
+            const source = `
+                @Component({
+                    selector: 'app-x',
+                    host: {
+                        tabIndex: 0
+                    }
+                })
+                export class X {}
+            `;
+            const { props } = parseComponentProps(source);
+            const host = componentHelper.getComponentHost(props);
+
+            expect(host.get('tabIndex')).to.equal('0');
+        });
+
+        it('preserves a TemplateExpression value via getText() fallback', () => {
+            // NoSubstitutionTemplateLiteral hits the literal .text fast path,
+            // but a TemplateExpression with ${...} interpolation has no
+            // `.text` — it must fall back to getText() which returns the
+            // full backtick form.
+            const source = [
+                '@Component({',
+                "    selector: 'app-x',",
+                '    host: {',
+                "        '[attr.data-state]': `prefix-${state}`",
+                '    }',
+                '})',
+                'export class X {}'
+            ].join('\n');
+            const { props } = parseComponentProps(source);
+            const host = componentHelper.getComponentHost(props);
+
+            expect(host.get('[attr.data-state]')).to.equal('`prefix-${state}`');
         });
     });
 
