@@ -26,6 +26,12 @@ export interface IInjectableDep extends IDep {
     accessors?: Object;
     constructorObj?: Object;
     jsdoctags?: Array<string>;
+
+    storybookUrl?: string;
+    figmaUrl?: string;
+    stackblitzUrl?: string;
+    githubUrl?: string;
+    docsUrl?: string;
 }
 
 export interface IInterceptorDep extends IDep {
@@ -76,6 +82,12 @@ export interface IPipeDep extends IDep {
     ngname: string;
 
     jsdoctags?: Array<string>;
+
+    storybookUrl?: string;
+    figmaUrl?: string;
+    stackblitzUrl?: string;
+    githubUrl?: string;
+    docsUrl?: string;
 }
 
 export interface IInterfaceDep extends IDep {
@@ -92,6 +104,12 @@ export interface IInterfaceDep extends IDep {
     rawdescription?: string;
     methods?: Array<any>;
     extends?: Array<any>;
+
+    storybookUrl?: string;
+    figmaUrl?: string;
+    stackblitzUrl?: string;
+    githubUrl?: string;
+    docsUrl?: string;
 }
 
 export interface IFunctionDecDep extends IDep {

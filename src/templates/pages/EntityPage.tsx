@@ -11,6 +11,7 @@ import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { EntityTabs } from '../blocks/EntityTabs';
+import { ExternalLinks } from '../blocks/ExternalLinks';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconDocument } from '../components/EmptyStateIcons';
@@ -243,6 +244,16 @@ const InfoContent = (props: EntityInfoProps): string => {
             {isInfoSection('examples') &&
                 e.jsdoctags &&
                 JsdocExamplesBlock({ tags: e.jsdoctags, variant: 'code', level: 'section' })}
+
+            {/* 3.5 External links (Storybook, Figma, StackBlitz, GitHub, Docs) */}
+            {ExternalLinks({
+                storybookUrl: e.storybookUrl,
+                figmaUrl: e.figmaUrl,
+                stackblitzUrl: e.stackblitzUrl,
+                githubUrl: e.githubUrl,
+                docsUrl: e.docsUrl,
+                route: e.route
+            })}
 
             {/* 4. Metadata (from entity-specific page) or extends/implements card */}
             {props.metadataHtml

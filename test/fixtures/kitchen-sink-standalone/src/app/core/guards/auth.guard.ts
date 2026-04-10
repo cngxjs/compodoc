@@ -12,6 +12,8 @@ import { CanActivateFn, Router } from '@angular/router';
  * ```
  *
  * @since 2.0.0
+ * @github https://github.com/cngxjs/compodocx/blob/develop/test/fixtures/kitchen-sink-standalone/src/app/core/guards/auth.guard.ts
+ * @docs https://cngx.dev/guards/auth
  */
 export const authGuard: CanActivateFn = (route, state) => {
     const router = inject(Router);

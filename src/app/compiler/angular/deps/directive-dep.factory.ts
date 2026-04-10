@@ -32,13 +32,18 @@ export class DirectiveDepFactory {
             deprecationMessage: IO.deprecationMessage,
             category: IO.category || '',
 
-            // Custom JSDoc tags (Phase 4.6)
+            // Custom JSDoc tags
             signal: IO.signal || false,
             zoneless: IO.zoneless || false,
             beta: IO.beta || false,
             since: IO.since || '',
             breaking: IO.breaking || '',
             group: IO.group || '',
+            storybookUrl: IO.storybookUrl || '',
+            figmaUrl: IO.figmaUrl || '',
+            stackblitzUrl: IO.stackblitzUrl || '',
+            githubUrl: IO.githubUrl || '',
+            docsUrl: IO.docsUrl || '',
 
             hostBindings: IO.hostBindings,
             hostListeners: IO.hostListeners,
@@ -138,6 +143,11 @@ export interface IDirectiveDep extends IDep {
     since?: string;
     breaking?: string;
     group?: string;
+    storybookUrl?: string;
+    figmaUrl?: string;
+    stackblitzUrl?: string;
+    githubUrl?: string;
+    docsUrl?: string;
 
     hostBindings: any;
     hostDirectives: any;

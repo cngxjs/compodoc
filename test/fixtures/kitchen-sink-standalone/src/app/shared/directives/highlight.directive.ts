@@ -9,6 +9,9 @@ import { Directive, ElementRef, HostBinding, HostListener, input, effect, inject
  * ```
  *
  * @since 2.0.0
+ * @storybook https://storybook.example.com/?path=/story/directives-highlight--default
+ * @github https://github.com/cngxjs/compodocx/blob/develop/test/fixtures/kitchen-sink-standalone/src/app/shared/directives/highlight.directive.ts
+ * @docs https://cngx.dev/directives/highlight
  */
 @Directive({
     selector: '[appHighlight]',

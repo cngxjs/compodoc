@@ -24,7 +24,12 @@ export class EntityDepFactory {
             sourceCode: srcFile.text,
             deprecated: IO.deprecated,
             deprecationMessage: IO.deprecationMessage,
-            properties: IO.properties
+            properties: IO.properties,
+            storybookUrl: IO.storybookUrl || '',
+            figmaUrl: IO.figmaUrl || '',
+            stackblitzUrl: IO.stackblitzUrl || '',
+            githubUrl: IO.githubUrl || '',
+            docsUrl: IO.docsUrl || ''
         };
         return infos;
     }
@@ -38,4 +43,9 @@ export interface IEntityDep extends IDep {
     deprecated: boolean;
     deprecationMessage: string;
     properties: Array<any>;
+    storybookUrl?: string;
+    figmaUrl?: string;
+    stackblitzUrl?: string;
+    githubUrl?: string;
+    docsUrl?: string;
 }

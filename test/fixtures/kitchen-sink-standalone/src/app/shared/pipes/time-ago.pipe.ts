@@ -9,6 +9,9 @@ import { Pipe, PipeTransform } from '@angular/core';
  * ```
  *
  * @since 2.0.0
+ * @github https://github.com/cngxjs/compodocx/blob/develop/test/fixtures/kitchen-sink-standalone/src/app/shared/pipes/time-ago.pipe.ts
+ * @docs https://cngx.dev/pipes/time-ago
+ * @stackblitz https://stackblitz.com/edit/angular-timeago-pipe
  */
 @Pipe({
     name: 'timeAgo',

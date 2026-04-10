@@ -7,6 +7,9 @@ import { API_BASE_URL } from '../tokens/api.tokens';
  * Lightweight API service using `inject()`.
  *
  * @since 2.0.0
+ * @github https://github.com/cngxjs/compodocx/blob/develop/test/fixtures/kitchen-sink-standalone/src/app/core/services/api.service.ts
+ * @docs https://cngx.dev/services/api
+ * @stackblitz https://stackblitz.com/edit/angular-api-service-demo
  */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
