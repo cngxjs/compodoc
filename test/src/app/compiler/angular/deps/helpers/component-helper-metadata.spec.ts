@@ -202,6 +202,131 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
         });
     });
 
+    describe('getComponentHostStructured', () => {
+        it('returns an empty array when no host literal is present', () => {
+            const source = `
+                @Component({
+                    selector: 'app-x'
+                })
+                export class X {}
+            `;
+            const { props } = parseComponentProps(source);
+            expect(componentHelper.getComponentHostStructured(props)).to.deep.equal([]);
+        });
+
+        it('classifies a static attribute', () => {
+            const source = `
+                @Component({
+                    selector: 'app-x',
+                    host: { class: 'my-class' }
+                })
+                export class X {}
+            `;
+            const { props } = parseComponentProps(source);
+            expect(componentHelper.getComponentHostStructured(props)).to.deep.equal([
+                { key: 'class', kind: 'static', value: 'my-class' }
+            ]);
+        });
+
+        it('classifies attr / class / style bracket bindings', () => {
+            const source = `
+                @Component({
+                    selector: 'app-x',
+                    host: {
+                        '[attr.aria-label]': '"Admin settings"',
+                        '[class.is-dirty]': 'dirty()',
+                        '[style.display]': 'block'
+                    }
+                })
+                export class X {}
+            `;
+            const { props } = parseComponentProps(source);
+            expect(componentHelper.getComponentHostStructured(props)).to.deep.equal([
+                {
+                    key: '[attr.aria-label]',
+                    kind: 'attr-binding',
+                    value: '"Admin settings"',
+                    target: 'aria-label'
+                },
+                {
+                    key: '[class.is-dirty]',
+                    kind: 'class-binding',
+                    value: 'dirty()',
+                    target: 'is-dirty'
+                },
+                {
+                    key: '[style.display]',
+                    kind: 'style-binding',
+                    value: 'block',
+                    target: 'display'
+                }
+            ]);
+        });
+
+        it('classifies a plain bracket property binding', () => {
+            const source = `
+                @Component({
+                    selector: 'app-x',
+                    host: { '[tabindex]': '0' }
+                })
+                export class X {}
+            `;
+            const { props } = parseComponentProps(source);
+            expect(componentHelper.getComponentHostStructured(props)).to.deep.equal([
+                {
+                    key: '[tabindex]',
+                    kind: 'property-binding',
+                    value: '0',
+                    target: 'tabindex'
+                }
+            ]);
+        });
+
+        it('classifies an event listener', () => {
+            const source = `
+                @Component({
+                    selector: 'app-x',
+                    host: { '(document:keydown.escape)': 'onEscape($event)' }
+                })
+                export class X {}
+            `;
+            const { props } = parseComponentProps(source);
+            expect(componentHelper.getComponentHostStructured(props)).to.deep.equal([
+                {
+                    key: '(document:keydown.escape)',
+                    kind: 'event',
+                    value: 'onEscape($event)',
+                    target: 'document:keydown.escape'
+                }
+            ]);
+        });
+
+        it('replicates the AdminPanelComponent host literal in source order', () => {
+            const source = `
+                @Component({
+                    selector: 'app-x',
+                    host: {
+                        class: 'app-admin-panel',
+                        role: 'region',
+                        '[attr.aria-label]': '"Admin settings"',
+                        '[class.is-dirty]': 'dirty()',
+                        '(document:keydown.escape)': 'onEscape($event)'
+                    }
+                })
+                export class X {}
+            `;
+            const { props } = parseComponentProps(source);
+            const entries = componentHelper.getComponentHostStructured(props);
+            expect(entries.map(e => [e.key, e.kind])).to.deep.equal([
+                ['class', 'static'],
+                ['role', 'static'],
+                ['[attr.aria-label]', 'attr-binding'],
+                ['[class.is-dirty]', 'class-binding'],
+                ['(document:keydown.escape)', 'event']
+            ]);
+        });
+    });
+
     describe('getComponentHostDirectives', () => {
         it('extracts inline object-literal directives with inputs and outputs', () => {
             const source = `

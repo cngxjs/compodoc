@@ -3,6 +3,31 @@ import { detectIndent } from '../../../../../utils';
 import type { ClassHelper } from './class-helper';
 import { type IParseDeepIdentifierResult, SymbolHelper } from './symbol-helper';
 
+/**
+ * Structured representation of a single entry from a `@Component({ host: {...} })`
+ * literal, used by the Phase 2b metadata renderer in `MetadataRow.tsx`. The raw
+ * `host: Map<string, string>` stays on the dep object for the existing
+ * component-dep.factory host-binding / host-listener auto-synthesis pass; this
+ * parallel shape is consumed by the render layer only.
+ */
+export type HostEntry = {
+    /** Raw source form: `class`, `role`, `[attr.aria-label]`, `(click)`, etc. */
+    readonly key: string;
+    /** Classification by key pattern. `raw` is reserved for unexpected shapes. */
+    readonly kind:
+        | 'static'
+        | 'attr-binding'
+        | 'property-binding'
+        | 'class-binding'
+        | 'style-binding'
+        | 'event'
+        | 'raw';
+    /** The initializer source text. */
+    readonly value: string;
+    /** For bindings: the part inside `[...]` or `(...)`. */
+    readonly target?: string;
+};
+
 export class ComponentHelper {
     constructor(
         private classHelper: ClassHelper,
@@ -115,6 +140,74 @@ export class ComponentHelper {
         props: ReadonlyArray<ts.ObjectLiteralElementLike>
     ): Map<string, string> {
         return this.getSymbolDepsObject(props, 'host');
+    }
+
+    /**
+     * Parallel structured extractor for the `host: { ... }` literal. Reads the
+     * same AST node as `getComponentHost` but returns a typed `HostEntry[]`
+     * instead of a flat Map, so the Phase 2b render layer can emit a
+     * code-object-literal metadata row with per-kind styling without having to
+     * re-classify keys at render time.
+     *
+     * Returns an empty array when no `host` literal is present.
+     */
+    public getComponentHostStructured(
+        props: ReadonlyArray<ts.ObjectLiteralElementLike>
+    ): HostEntry[] {
+        let hostNode: ts.ObjectLiteralElementLike | undefined;
+        for (const prop of props) {
+            if (prop.name && (prop.name as any).text === 'host') {
+                hostNode = prop;
+                break;
+            }
+        }
+        if (!hostNode) {
+            return [];
+        }
+        const initializer = (hostNode as any).initializer;
+        if (!initializer || !ts.isObjectLiteralExpression(initializer)) {
+            return [];
+        }
+        const entries: HostEntry[] = [];
+        for (const prop of initializer.properties) {
+            const key = this.readNodeText((prop as any).name);
+            if (key === undefined) {
+                continue;
+            }
+            const value = this.readNodeText((prop as any).initializer) ?? '';
+            entries.push(this.classifyHostEntry(key, value));
+        }
+        return entries;
+    }
+
+    /**
+     * Classify a single host literal entry by key pattern.
+     *
+     * - `(foo)`          → event listener, target = 'foo'
+     * - `[attr.bar]`     → attr binding, target = 'bar'
+     * - `[class.bar]`    → class binding, target = 'bar'
+     * - `[style.bar]`    → style binding, target = 'bar'
+     * - `[bar]`          → property binding, target = 'bar'
+     * - anything else    → static attribute (no target)
+     */
+    private classifyHostEntry(key: string, value: string): HostEntry {
+        if (key.startsWith('(') && key.endsWith(')')) {
+            return { key, kind: 'event', value, target: key.slice(1, -1) };
+        }
+        if (key.startsWith('[') && key.endsWith(']')) {
+            const inner = key.slice(1, -1);
+            if (inner.startsWith('attr.')) {
+                return { key, kind: 'attr-binding', value, target: inner.slice(5) };
+            }
+            if (inner.startsWith('class.')) {
+                return { key, kind: 'class-binding', value, target: inner.slice(6) };
+            }
+            if (inner.startsWith('style.')) {
+                return { key, kind: 'style-binding', value, target: inner.slice(6) };
+            }
+            return { key, kind: 'property-binding', value, target: inner };
+        }
+        return { key, kind: 'static', value };
     }
 
     public getComponentTag(

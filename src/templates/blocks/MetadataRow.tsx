@@ -1,6 +1,6 @@
 import Html from '@kitajs/html';
-import { resolveType } from '../helpers/link-type';
 import { t } from '../helpers';
+import { resolveType } from '../helpers/link-type';
 
 /**
  * Human-friendly labels for Angular decorator property names. Extend as needed.
@@ -204,10 +204,58 @@ export function MetadataHostDirectivesRow(hostDirectives: HostDirective[]): stri
         return `<div class="cdx-host-dir-object">${punct('{')}\n${body}\n${punct('}')}</div>`;
     });
 
-    return MetadataRow(
-        'hostDirectives',
-        `<div class="cdx-host-dir-list">${items.join('')}</div>`
+    return MetadataRow('hostDirectives', `<div class="cdx-host-dir-list">${items.join('')}</div>`);
+}
+
+/**
+ * Structured host literal entry. Matches the `HostEntry` type emitted by
+ * `ComponentHelper.getComponentHostStructured`; kept local here to avoid a
+ * cross-layer import from the compiler package.
+ */
+type HostEntry = {
+    readonly key: string;
+    readonly kind:
+        | 'static'
+        | 'attr-binding'
+        | 'property-binding'
+        | 'class-binding'
+        | 'style-binding'
+        | 'event'
+        | 'raw';
+    readonly value: string;
+    readonly target?: string;
+};
+
+/**
+ * Renders a metadata row for the `@Component({ host: { ... } })` literal as a
+ * code-style object that mirrors the original source. Reuses the
+ * `cdx-host-dir-*` token classes from the host directives renderer because the
+ * visual grammar (punctuation, keys, linkable names) is identical.
+ *
+ * Keys are rendered verbatim (with their quotes or bracket / paren wrapping)
+ * and values as plain tokens. The kind classification from the extractor is
+ * reflected by giving event keys the directive entity color, so they stand
+ * out against static attributes and property bindings.
+ */
+export function MetadataHostRow(entries: HostEntry[]): string {
+    if (!entries?.length) {
+        return '';
+    }
+
+    const punct = (s: string) => `<span class="cdx-host-dir-punct">${s}</span>`;
+    const keyToken = (k: string, kind: HostEntry['kind']) => {
+        const cls = kind === 'event' ? 'cdx-host-dir-name' : 'cdx-host-dir-key';
+        return `<span class="${cls}">${escapeHtml(k)}</span>`;
+    };
+    const valueToken = (v: string) => `<span class="cdx-host-dir-token">${escapeHtml(v)}</span>`;
+
+    const lines = entries.map(
+        e => `  ${keyToken(e.key, e.kind)}${punct(':')} ${valueToken(e.value)}`
     );
+    const body = lines.join(`${punct(',')}\n`);
+    const block = `<div class="cdx-host-dir-object">${punct('{')}\n${body}\n${punct('}')}</div>`;
+
+    return MetadataRow('host', `<div class="cdx-host-dir-list">${block}</div>`);
 }
 
 export function MetadataChipsRow(label: string, names: Array<string | { name: string }>): string {

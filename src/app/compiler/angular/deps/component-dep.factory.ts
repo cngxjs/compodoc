@@ -2,7 +2,7 @@ import * as crypto from 'node:crypto';
 import { cleanLifecycleHooksFromMethods } from '../../../../utils';
 import Configuration from '../../../configuration';
 import type { IDep } from '../dependencies.interfaces';
-import type { ComponentHelper } from './helpers/component-helper';
+import type { ComponentHelper, HostEntry } from './helpers/component-helper';
 
 export class ComponentDepFactory {
     constructor(private helper: ComponentHelper) {}
@@ -21,6 +21,7 @@ export class ComponentDepFactory {
             entryComponents: this.helper.getComponentEntryComponents(props, srcFile),
             exportAs: this.helper.getComponentExportAs(props, srcFile),
             host: this.helper.getComponentHost(props),
+            hostStructured: this.helper.getComponentHostStructured(props),
             inputs: this.helper.getComponentInputsMetadata(props, srcFile),
             // interpolation?: string; // TODO waiting doc infos
             moduleId: this.helper.getComponentModuleId(props, srcFile),
@@ -159,6 +160,7 @@ export interface IComponentDep extends IDep {
     encapsulation: any;
     exportAs: any;
     host: any;
+    hostStructured?: HostEntry[];
     inputs: Array<any>;
     outputs: Array<any>;
     providers: Array<any>;

@@ -8,13 +8,14 @@ import { BlockMethod } from '../blocks/BlockMethod';
 import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
+import { ExternalLinks } from '../blocks/ExternalLinks';
 import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import {
     MetadataChipsRow,
     MetadataCodeRow,
     MetadataHostDirectivesRow,
-    MetadataRow,
+    MetadataHostRow,
     MetadataSection
 } from '../blocks/MetadataRow';
 import { EmptyState } from '../components/EmptyState';
@@ -25,7 +26,6 @@ import {
     EmptyIconTree
 } from '../components/EmptyStateIcons';
 import { IconComponent, IconFile } from '../components/Icons';
-import { ExternalLinks } from '../blocks/ExternalLinks';
 import {
     extractReadmeHeadings,
     isInfoSection,
@@ -44,14 +44,6 @@ const escapeSimpleQuote = (text: string): string => {
         return '';
     }
     return text.replaceAll("'", String.raw`\'`).replaceAll(/(\r\n|\n|\r)/gm, '');
-};
-
-const formatObject = (obj: unknown): string => {
-    let text = JSON.stringify(obj);
-    text = text.replace(/{"/, '{<br>&nbsp;&nbsp;&nbsp;&nbsp;"');
-    text = text.replace(/,"/, ',<br>&nbsp;&nbsp;&nbsp;&nbsp;"');
-    text = text.replace(/}$/, '<br>}');
-    return text;
 };
 
 const breakComma = (text: string): string => {
@@ -109,9 +101,9 @@ const ComponentMetadata = (c: any): string => {
         rows.push(MetadataHostDirectivesRow(c.hostDirectives));
     }
 
-    // Host literal is rendered as a block because it's a multi-key object
-    if (c.host) {
-        rows.push(MetadataRow('host', `<code>${formatObject(c.host)}</code>`, true));
+    // Host literal renders as a code-object-literal sub-card (Phase 2b).
+    if (c.hostStructured?.length > 0) {
+        rows.push(MetadataHostRow(c.hostStructured));
     }
 
     return MetadataSection({ rows });
