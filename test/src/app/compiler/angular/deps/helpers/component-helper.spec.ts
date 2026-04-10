@@ -11,6 +11,7 @@ describe('ComponentHelper', () => {
         getSymbolDeps: ReturnType<typeof vi.fn>;
         parseDeepIndentifier: ReturnType<typeof vi.fn>;
         getSymbolDepsRaw: ReturnType<typeof vi.fn>;
+        getProviderEntries: ReturnType<typeof vi.fn>;
     };
     let project: Project;
     let sourceFile: ts.SourceFile;
@@ -20,7 +21,8 @@ describe('ComponentHelper', () => {
         symbolHelperStub = {
             getSymbolDeps: vi.fn().mockReturnValue([]),
             parseDeepIndentifier: vi.fn().mockReturnValue({}),
-            getSymbolDepsRaw: vi.fn().mockReturnValue([])
+            getSymbolDepsRaw: vi.fn().mockReturnValue([]),
+            getProviderEntries: vi.fn().mockReturnValue([])
         };
         componentHelper = new ComponentHelper(classHelperStub as any, symbolHelperStub as any);
         project = new Project();
@@ -357,24 +359,18 @@ describe('ComponentHelper', () => {
     });
 
     describe('getComponentProviders', () => {
-        it('should extract and parse providers from props', () => {
+        it('should delegate to symbolHelper.getProviderEntries', () => {
             const props = createMockProps({ providers: ['Service1', 'Service2'] });
-            symbolHelperStub.getSymbolDeps.mockReturnValue(['Service1', 'Service2']);
-            symbolHelperStub.parseDeepIndentifier.mockImplementation(name => ({
-                name,
-                type: 'injectable'
-            }));
+            const stubbedEntries = [
+                { name: 'Service1', kind: 'class', type: 'injectable' },
+                { name: 'Service2', kind: 'class', type: 'injectable' }
+            ];
+            symbolHelperStub.getProviderEntries.mockReturnValue(stubbedEntries);
 
             const result = componentHelper.getComponentProviders(props, sourceFile);
 
-            expect(symbolHelperStub.getSymbolDeps).toHaveBeenCalledWith(
-                props,
-                'providers',
-                sourceFile
-            );
-            expect(symbolHelperStub.parseDeepIndentifier).toHaveBeenCalledTimes(2);
-            expect(result).to.have.lengthOf(2);
-            expect(result[0]).to.deep.equal({ name: 'Service1', type: 'injectable' });
+            expect(symbolHelperStub.getProviderEntries).toHaveBeenCalledWith(props, 'providers');
+            expect(result).to.deep.equal(stubbedEntries);
         });
     });
 
@@ -423,24 +419,21 @@ describe('ComponentHelper', () => {
     });
 
     describe('getComponentViewProviders', () => {
-        it('should extract and parse viewProviders from props', () => {
+        it('should delegate to symbolHelper.getProviderEntries with viewProviders key', () => {
             const props = createMockProps({ viewProviders: ['Service1', 'Service2'] });
-            symbolHelperStub.getSymbolDeps.mockReturnValue(['Service1', 'Service2']);
-            symbolHelperStub.parseDeepIndentifier.mockImplementation(name => ({
-                name,
-                type: 'injectable'
-            }));
+            const stubbedEntries = [
+                { name: 'Service1', kind: 'class', type: 'injectable' },
+                { name: 'Service2', kind: 'class', type: 'injectable' }
+            ];
+            symbolHelperStub.getProviderEntries.mockReturnValue(stubbedEntries);
 
             const result = componentHelper.getComponentViewProviders(props, sourceFile);
 
-            expect(symbolHelperStub.getSymbolDeps).toHaveBeenCalledWith(
+            expect(symbolHelperStub.getProviderEntries).toHaveBeenCalledWith(
                 props,
-                'viewProviders',
-                sourceFile
+                'viewProviders'
             );
-            expect(symbolHelperStub.parseDeepIndentifier).toHaveBeenCalledTimes(2);
-            expect(result).to.have.lengthOf(2);
-            expect(result[0]).to.deep.equal({ name: 'Service1', type: 'injectable' });
+            expect(result).to.deep.equal(stubbedEntries);
         });
     });
 

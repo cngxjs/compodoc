@@ -487,7 +487,7 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             return componentHelper.getComponentProviders(props, srcFile);
         }
 
-        it('extracts bare class providers as { name, type: "injectable" }', () => {
+        it('extracts a bare class provider as kind: class with type substring match', () => {
             const source = `
                 @Component({
                     selector: 'app-x',
@@ -497,20 +497,16 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             `;
             const result = providersOf(source);
 
-            // parseDeepIndentifier derives type from substring match on the
-            // identifier name. ApiService contains "service" → "injectable".
             expect(result).to.have.lengthOf(1);
-            expect(result[0]).to.include({ name: 'ApiService', type: 'injectable' });
+            expect(result[0]).to.include({
+                name: 'ApiService',
+                kind: 'class',
+                type: 'injectable'
+            });
+            expect(result[0].provide).to.be.undefined;
         });
 
-        it('current-state: useValue primitive collapses to the string-literal token (loses provide target)', () => {
-            // Phase 3 bug: `parseProviderConfiguration` returns
-            // `prop.getLastToken().getText()` for whichever `useX` key matches
-            // first. The `provide:` target is discarded entirely. A provider
-            // like `{ provide: APP_VERSION, useValue: '2.0.0-admin' }` enters
-            // the pipeline with name: "'2.0.0-admin'" — the quoted string
-            // literal, not APP_VERSION. Phase 3 rewrites this to return a
-            // structured ProviderEntry.
+        it('extracts useValue primitive as kind: useValue with the provide target preserved', () => {
             const source = `
                 @Component({
                     selector: 'app-x',
@@ -523,11 +519,14 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             const result = providersOf(source);
 
             expect(result).to.have.lengthOf(1);
-            expect(result[0].name).to.equal(`'2.0.0-admin'`);
-            expect(result[0].type).to.be.undefined;
+            expect(result[0].name).to.equal('APP_VERSION');
+            expect(result[0].provide).to.equal('APP_VERSION');
+            expect(result[0].kind).to.equal('useValue');
+            expect(result[0].useValue).to.equal(`'2.0.0-admin'`);
+            expect(result[0].valueKind).to.equal('literal');
         });
 
-        it('current-state: useFactory collapses to the factory identifier (loses provide target and deps)', () => {
+        it('extracts useFactory with deps as kind: useFactory', () => {
             const source = `
                 @Component({
                     selector: 'app-x',
@@ -544,18 +543,18 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             const result = providersOf(source);
 
             expect(result).to.have.lengthOf(1);
-            expect(result[0].name).to.equal('adminFeatureFlagsFactory');
-            expect(result[0].type).to.be.undefined;
+            expect(result[0].name).to.equal('FEATURE_FLAGS');
+            expect(result[0].kind).to.equal('useFactory');
+            expect(result[0].factory).to.equal('adminFeatureFlagsFactory');
+            expect(result[0].deps).to.deep.equal(['API_BASE_URL']);
         });
 
-        it('current-state: useClass surfaces the class name (coincidentally useful)', () => {
-            // Matches the provide: target by accident when provide === useClass,
-            // which is the canonical "redundant useClass" pattern.
+        it('extracts useClass as kind: useClass', () => {
             const source = `
                 @Component({
                     selector: 'app-x',
                     providers: [
-                        { provide: ThemeService, useClass: ThemeService }
+                        { provide: ThemeService, useClass: AdminThemeService }
                     ]
                 })
                 export class X {}
@@ -563,10 +562,13 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             const result = providersOf(source);
 
             expect(result).to.have.lengthOf(1);
-            expect(result[0]).to.include({ name: 'ThemeService', type: 'injectable' });
+            expect(result[0].name).to.equal('ThemeService');
+            expect(result[0].kind).to.equal('useClass');
+            expect(result[0].useClass).to.equal('AdminThemeService');
+            expect(result[0].type).to.equal('injectable');
         });
 
-        it('current-state: useExisting surfaces the aliased token, loses the provide target', () => {
+        it('extracts useExisting as kind: useExisting with string-literal provide target', () => {
             const source = `
                 @Component({
                     selector: 'app-x',
@@ -579,11 +581,12 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             const result = providersOf(source);
 
             expect(result).to.have.lengthOf(1);
-            expect(result[0].name).to.equal('ADMIN_AUDIT_CHANNEL');
-            expect(result[0].type).to.be.undefined;
+            expect(result[0].name).to.equal('AuditToken');
+            expect(result[0].kind).to.equal('useExisting');
+            expect(result[0].useExisting).to.equal('ADMIN_AUDIT_CHANNEL');
         });
 
-        it('current-state: multi-flag provider still reports the useValue primitive', () => {
+        it('captures multi: true flag on a useValue provider', () => {
             const source = `
                 @Component({
                     selector: 'app-x',
@@ -596,11 +599,14 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             const result = providersOf(source);
 
             expect(result).to.have.lengthOf(1);
-            expect(result[0].name).to.equal('5');
-            expect(result[0].type).to.be.undefined;
+            expect(result[0].name).to.equal('MAX_RETRIES');
+            expect(result[0].kind).to.equal('useValue');
+            expect(result[0].useValue).to.equal('5');
+            expect(result[0].valueKind).to.equal('literal');
+            expect(result[0].multi).to.equal(true);
         });
 
-        it('extracts a bare InjectionToken variable reference as its identifier name', () => {
+        it('extracts a bare InjectionToken variable reference as kind: class', () => {
             const source = `
                 @Component({
                     selector: 'app-x',
@@ -612,15 +618,42 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
 
             expect(result).to.have.lengthOf(1);
             expect(result[0].name).to.equal('ADMIN_AUDIT_CHANNEL');
-            expect(result[0].type).to.be.undefined;
+            expect(result[0].kind).to.equal('class');
         });
 
-        it('current-state: replicates the AdminPanelComponent providers list order and broken values', () => {
-            // Mirrors test/fixtures/kitchen-sink-standalone/.../admin-panel.component.ts
-            // as of this commit. When Phase 3 rewrites parseProviderConfiguration
-            // update the expected names to the structured ProviderEntry shape
-            // (name should become the provide: target: APP_VERSION, STORAGE_KEY,
-            // FEATURE_FLAGS, 'AuditToken', MAX_RETRIES).
+        it('classifies useValue with an identifier initializer as valueKind: identifier', () => {
+            const source = `
+                @Component({
+                    selector: 'app-x',
+                    providers: [
+                        { provide: CONFIG, useValue: DEFAULT_CONFIG }
+                    ]
+                })
+                export class X {}
+            `;
+            const result = providersOf(source);
+
+            expect(result[0].valueKind).to.equal('identifier');
+            expect(result[0].useValue).to.equal('DEFAULT_CONFIG');
+        });
+
+        it('classifies useValue with an object-literal initializer as valueKind: expression', () => {
+            const source = `
+                @Component({
+                    selector: 'app-x',
+                    providers: [
+                        { provide: CONFIG, useValue: { timeout: 5000, retries: 3 } }
+                    ]
+                })
+                export class X {}
+            `;
+            const result = providersOf(source);
+
+            expect(result[0].valueKind).to.equal('expression');
+            expect(result[0].useValue).to.include('timeout: 5000');
+        });
+
+        it('replicates the AdminPanelComponent providers list preserving provide: targets', () => {
             const source = `
                 @Component({
                     selector: 'app-x',
@@ -643,16 +676,44 @@ describe('ComponentHelper — metadata extraction (baseline)', () => {
             `;
             const result = providersOf(source);
 
-            expect(result.map(p => p.name)).to.deep.equal([
-                'ApiService',
-                'ThemeService',
-                `'2.0.0-admin'`,
-                `'admin-panel-store'`,
-                'adminFeatureFlagsFactory',
-                'ADMIN_AUDIT_CHANNEL',
-                '5',
-                'ADMIN_AUDIT_CHANNEL'
+            expect(result.map(p => [p.name, p.kind])).to.deep.equal([
+                ['ApiService', 'class'],
+                ['ThemeService', 'useClass'],
+                ['APP_VERSION', 'useValue'],
+                ['STORAGE_KEY', 'useValue'],
+                ['FEATURE_FLAGS', 'useFactory'],
+                ['AuditToken', 'useExisting'],
+                ['MAX_RETRIES', 'useValue'],
+                ['ADMIN_AUDIT_CHANNEL', 'class']
             ]);
+        });
+
+        it('every ProviderEntry has a non-empty name (backwards-compat invariant)', () => {
+            const source = `
+                @Component({
+                    selector: 'app-x',
+                    providers: [
+                        ApiService,
+                        { provide: ThemeService, useClass: ThemeService },
+                        { provide: APP_VERSION, useValue: '2.0.0-admin' },
+                        {
+                            provide: FEATURE_FLAGS,
+                            useFactory: adminFeatureFlagsFactory,
+                            deps: [API_BASE_URL]
+                        },
+                        { provide: 'AuditToken', useExisting: ADMIN_AUDIT_CHANNEL },
+                        { provide: MAX_RETRIES, useValue: 5, multi: true },
+                        ADMIN_AUDIT_CHANNEL
+                    ]
+                })
+                export class X {}
+            `;
+            const result = providersOf(source);
+
+            for (const entry of result) {
+                expect(entry.name).to.be.a('string');
+                expect(entry.name.length).to.be.greaterThan(0);
+            }
         });
     });
 });

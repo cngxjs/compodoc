@@ -1,7 +1,9 @@
 import { SyntaxKind, ts } from 'ts-morph';
 import { detectIndent } from '../../../../../utils';
 import type { ClassHelper } from './class-helper';
-import { type IParseDeepIdentifierResult, SymbolHelper } from './symbol-helper';
+import { type IParseDeepIdentifierResult, type ProviderEntry, SymbolHelper } from './symbol-helper';
+
+export type { ProviderEntry };
 
 /**
  * Structured representation of a single entry from a `@Component({ host: {...} })`
@@ -551,11 +553,9 @@ export class ComponentHelper {
 
     public getComponentProviders(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
-        srcFile: ts.SourceFile
-    ): Array<IParseDeepIdentifierResult> {
-        return this.symbolHelper
-            .getSymbolDeps(props, 'providers', srcFile)
-            .map(name => this.symbolHelper.parseDeepIndentifier(name));
+        _srcFile: ts.SourceFile
+    ): ProviderEntry[] {
+        return this.symbolHelper.getProviderEntries(props, 'providers');
     }
 
     public getComponentImports(
@@ -578,11 +578,9 @@ export class ComponentHelper {
 
     public getComponentViewProviders(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
-        srcFile: ts.SourceFile
-    ): Array<IParseDeepIdentifierResult> {
-        return this.symbolHelper
-            .getSymbolDeps(props, 'viewProviders', srcFile)
-            .map(name => this.symbolHelper.parseDeepIndentifier(name));
+        _srcFile: ts.SourceFile
+    ): ProviderEntry[] {
+        return this.symbolHelper.getProviderEntries(props, 'viewProviders');
     }
 
     public getComponentTemplateUrl(

@@ -3,6 +3,7 @@ import { cleanLifecycleHooksFromMethods } from '../../../../utils';
 import Configuration from '../../../configuration';
 import type { IDep } from '../dependencies.interfaces';
 import type { ComponentHelper, HostDirectiveEntry } from './helpers/component-helper';
+import type { ProviderEntry } from './helpers/symbol-helper';
 
 export class DirectiveDepFactory {
     constructor(private helper: ComponentHelper) {}
@@ -124,7 +125,7 @@ export interface IDirectiveDep extends IDep {
     sourceCode: string;
 
     selector: string;
-    providers: Array<any>;
+    providers: ProviderEntry[];
     exportAs: string;
 
     inputsClass: any;

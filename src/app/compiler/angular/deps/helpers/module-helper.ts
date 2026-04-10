@@ -1,7 +1,7 @@
 import type { ts } from 'ts-morph';
 import type { Deps } from '../../dependencies.interfaces';
 import type { ComponentCache } from './component-helper';
-import { type IParseDeepIdentifierResult, SymbolHelper } from './symbol-helper';
+import { type ProviderEntry, SymbolHelper } from './symbol-helper';
 
 export class ModuleHelper {
     constructor(
@@ -9,13 +9,26 @@ export class ModuleHelper {
         private symbolHelper: SymbolHelper = new SymbolHelper()
     ) {}
 
+    /**
+     * Module-level providers. Returns the structured `ProviderEntry[]` shape
+     * and enriches each entry's `file` field from the import / local-variable
+     * scan in `parseDeepIndentifier`, because `menu-helpers.ts` reads
+     * `prov.file` to decide whether to hide the provider from the side menu.
+     */
     public getModuleProviders(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
         srcFile: ts.SourceFile
-    ): Array<IParseDeepIdentifierResult> {
-        return this.symbolHelper
-            .getSymbolDeps(props, 'providers', srcFile)
-            .map(providerName => this.symbolHelper.parseDeepIndentifier(providerName, srcFile));
+    ): ProviderEntry[] {
+        const entries = this.symbolHelper.getProviderEntries(props, 'providers');
+        for (const entry of entries) {
+            if (entry.name) {
+                const enriched = this.symbolHelper.parseDeepIndentifier(entry.name, srcFile);
+                if (enriched?.file) {
+                    (entry as any).file = enriched.file;
+                }
+            }
+        }
+        return entries;
     }
 
     public getModuleDeclarations(
