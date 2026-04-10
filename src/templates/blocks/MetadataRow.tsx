@@ -1,6 +1,45 @@
 import Html from '@kitajs/html';
 import { resolveType } from '../helpers/link-type';
 import { t } from '../helpers';
+import {
+    IconClass,
+    IconComponent,
+    IconDirective,
+    IconEntity,
+    IconGuard,
+    IconInjectable,
+    IconInterceptor,
+    IconInterface,
+    IconModule,
+    IconPipe
+} from '../components/Icons';
+
+const hostDirIconFor = (type: string): string => {
+    switch (type) {
+        case 'component':
+            return IconComponent();
+        case 'directive':
+            return IconDirective();
+        case 'pipe':
+            return IconPipe();
+        case 'module':
+            return IconModule();
+        case 'class':
+            return IconClass();
+        case 'interface':
+            return IconInterface();
+        case 'guard':
+            return IconGuard();
+        case 'interceptor':
+            return IconInterceptor();
+        case 'injectable':
+            return IconInjectable();
+        case 'entity':
+            return IconEntity();
+        default:
+            return IconDirective();
+    }
+};
 
 /**
  * Human-friendly labels for Angular decorator property names. Extend as needed.
@@ -155,10 +194,14 @@ type HostDirective = {
     readonly outputs?: string[];
 };
 
+const escapeHtml = (s: string): string =>
+    s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string);
+
 /**
- * Renders a metadata row for Angular host directives. Each entry becomes
- * a stacked sub-card containing the directive chip on top and its input /
- * output forwarded bindings as small neutral chips below.
+ * Renders a metadata row for Angular host directives. Each entry renders
+ * as an auto-width card inspired by the Depends On relationship rows:
+ * an entity-tinted icon box on the left, directive name on top and the
+ * forwarded inputs / outputs as inline code tokens below.
  */
 export function MetadataHostDirectivesRow(hostDirectives: HostDirective[]): string {
     if (!hostDirectives?.length) {
@@ -169,25 +212,24 @@ export function MetadataHostDirectivesRow(hostDirectives: HostDirective[]): stri
         if (!names?.length) {
             return '';
         }
-        const chips = names
-            .map(
-                n =>
-                    `<code class="cdx-host-dir-binding">${n.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string)}</code>`
-            )
+        const tokens = names
+            .map(n => `<code class="cdx-host-dir-token">${escapeHtml(n)}</code>`)
             .join('');
-        return `<div class="cdx-host-dir-bindings"><span class="cdx-host-dir-bindings-label">${label}</span><div class="cdx-host-dir-binding-list">${chips}</div></div>`;
+        return `<span class="cdx-host-dir-flow"><span class="cdx-host-dir-flow-label">${label}</span>${tokens}</span>`;
     };
 
     const items = hostDirectives.map(hd => {
         const chip = resolveChip(hd.name);
-        const kindClass = chip.type ? ` cdx-chip--${chip.type}` : '';
-        const head = chip.href
-            ? `<a class="cdx-chip${kindClass}" href="${chip.href}" target="${chip.target}">${hd.name}</a>`
-            : `<span class="cdx-chip${kindClass}">${hd.name}</span>`;
-        const inputs = renderBindings('Inputs', hd.inputs);
-        const outputs = renderBindings('Outputs', hd.outputs);
-        const bindings = inputs + outputs;
-        return `<div class="cdx-host-dir-item">${head}${bindings ? `<div class="cdx-host-dir-item-body">${bindings}</div>` : ''}</div>`;
+        const type = chip.type ?? 'directive';
+        const icon = hostDirIconFor(type);
+        const inputs = renderBindings('in', hd.inputs);
+        const outputs = renderBindings('out', hd.outputs);
+        const bindings =
+            inputs || outputs ? `<div class="cdx-host-dir-bindings">${inputs}${outputs}</div>` : '';
+        const nameHtml = chip.href
+            ? `<a class="cdx-host-dir-name" href="${chip.href}" target="${chip.target}">${hd.name}</a>`
+            : `<span class="cdx-host-dir-name">${hd.name}</span>`;
+        return `<div class="cdx-host-dir-card cdx-host-dir-card--${type}"><span class="cdx-host-dir-icon" aria-hidden="true">${icon}</span><div class="cdx-host-dir-body">${nameHtml}${bindings}</div></div>`;
     });
 
     return MetadataRow(
