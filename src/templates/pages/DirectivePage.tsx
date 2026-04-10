@@ -2,6 +2,7 @@ import {
     MetadataChipsRow,
     MetadataCodeRow,
     MetadataHostDirectivesRow,
+    MetadataHostRow,
     MetadataProvidersRow,
     MetadataSection
 } from '../blocks/MetadataRow';
@@ -16,6 +17,7 @@ const DirectiveMetadata = (directive: any): string => {
         directive.selector ||
         directive.providers?.length > 0 ||
         directive.hostDirectives?.length > 0 ||
+        directive.hostStructured?.length > 0 ||
         directive.exportAs;
     const hasExtends = directive.extends?.length > 0;
     const hasImplements = directive.implements?.length > 0;
@@ -37,6 +39,10 @@ const DirectiveMetadata = (directive: any): string => {
 
     if (directive.hostDirectives?.length > 0) {
         rows.push(MetadataHostDirectivesRow(directive.hostDirectives));
+    }
+
+    if (directive.hostStructured?.length > 0) {
+        rows.push(MetadataHostRow(directive.hostStructured));
     }
 
     rows.push(MetadataChipsRow('extends', (directive.extends as string[]) ?? []));

@@ -2,7 +2,7 @@ import * as crypto from 'node:crypto';
 import { cleanLifecycleHooksFromMethods } from '../../../../utils';
 import Configuration from '../../../configuration';
 import type { IDep } from '../dependencies.interfaces';
-import type { ComponentHelper, HostDirectiveEntry } from './helpers/component-helper';
+import type { ComponentHelper, HostDirectiveEntry, HostEntry } from './helpers/component-helper';
 import type { ProviderEntry } from './helpers/symbol-helper';
 
 export class DirectiveDepFactory {
@@ -23,6 +23,7 @@ export class DirectiveDepFactory {
             providers: this.helper.getComponentProviders(props, srcFile),
             exportAs: this.helper.getComponentExportAs(props, srcFile),
             hostDirectives: [...this.helper.getComponentHostDirectives(props, srcFile)],
+            hostStructured: this.helper.getComponentHostStructured(props),
 
             standalone: !!this.helper.getComponentStandalone(props, srcFile),
 
@@ -153,6 +154,7 @@ export interface IDirectiveDep extends IDep {
     hostBindings: any;
     hostDirectives: HostDirectiveEntry[];
     hostListeners: any;
+    hostStructured?: HostEntry[];
 
     propertiesClass: any;
     methodsClass: any;
