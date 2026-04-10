@@ -115,8 +115,45 @@ export function MetadataCodeRow(label: string, value: string): string {
  * Metadata row whose value is a list of entities rendered as clickable chips.
  * Each chip is colour-coded by entity type (from `--color-cdx-entity-*`).
  */
+/**
+ * Return true if `name` looks like a literal useValue primitive rather
+ * than an entity identifier — e.g. `'2.0.0-admin'`, `"abc"`, `42`, `true`.
+ * Compodoc's provider extractor sometimes passes useValue literals as
+ * provider names; they should be filtered out of entity chip lists.
+ */
+function isLiteralPrimitive(name: string): boolean {
+    const trimmed = name.trim();
+    if (!trimmed) {
+        return true;
+    }
+    // Quoted string literal
+    if (
+        (trimmed.startsWith("'") && trimmed.endsWith("'")) ||
+        (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+        (trimmed.startsWith('`') && trimmed.endsWith('`'))
+    ) {
+        return true;
+    }
+    // Numeric / boolean / null / undefined literal
+    if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+        return true;
+    }
+    if (
+        trimmed === 'true' ||
+        trimmed === 'false' ||
+        trimmed === 'null' ||
+        trimmed === 'undefined'
+    ) {
+        return true;
+    }
+    return false;
+}
+
 export function MetadataChipsRow(label: string, names: Array<string | { name: string }>): string {
-    const items = names.map(n => (typeof n === 'string' ? n : n.name)).filter(Boolean);
+    const items = names
+        .map(n => (typeof n === 'string' ? n : n.name))
+        .filter(Boolean)
+        .filter(n => !isLiteralPrimitive(n));
     if (items.length === 0) {
         return '';
     }

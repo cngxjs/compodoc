@@ -415,6 +415,7 @@ export class DependenciesEngine {
             () => this.findInCompodocDependencies(name, this.components),
             () => this.findInCompodocDependencies(name, this.entities),
             () => this.findInCompodocDependencies(name, this.directives),
+            () => this.findInCompodocDependencies(name, this.pipes),
             () => this.findInCompodocDependencies(name, this.miscellaneous.variables),
             () => this.findInCompodocDependencies(name, this.miscellaneous.functions),
             () => this.findInCompodocDependencies(name, this.miscellaneous.typealiases),
