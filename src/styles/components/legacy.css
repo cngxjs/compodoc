@@ -95,20 +95,20 @@ i {
     font-style: italic;
 }
 
-.content ol:not([class*='cdx-']) {
+.content ol:not([class*="cdx-"]) {
     list-style-type: decimal;
     margin-top: 0;
     padding-left: var(--spacing-cdx-xl);
     margin-bottom: var(--spacing-cdx-lg);
 }
-.content ul:not([class*='cdx-']) {
+.content ul:not([class*="cdx-"]) {
     list-style: disc;
     margin-top: 0;
     padding-left: var(--spacing-cdx-xl);
     margin-bottom: var(--spacing-cdx-lg);
 }
 .content ul.cdx-tab-bar {
-    padding-left: 0;
+    /* padding-left: 0; */
     margin-top: var(--spacing-cdx-lg);
 }
 .content ul ul {
@@ -188,4 +188,3 @@ ul.index-list {
     text-decoration: none;
     display: inline-block;
 }
-

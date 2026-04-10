@@ -38,7 +38,11 @@ const SignatureBlock = (props: {
                     <code>{functionSignature(sig)}</code>
                 </span>
             </div>
-            {DefinedInRow({ line: sig.line, file: props.file, navTabs: props.navTabs })}
+            {DefinedInRow({
+                line: sig.line,
+                file: props.file,
+                navTabs: props.navTabs
+            })}
             {sig.description && (
                 <div class="cdx-member-description">
                     {parseDescription(sig.description, props.depth)}
@@ -125,7 +129,12 @@ export const BlockAccessors = (props: BlockAccessorsProps): string => {
                     </>
                 ) as string;
 
-                return MemberCard({ id: key, deprecated: isDeprecated, header, children: body });
+                return MemberCard({
+                    id: key,
+                    deprecated: isDeprecated,
+                    header,
+                    children: body
+                });
             })}
         </section>
     ) as string;
