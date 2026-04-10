@@ -241,144 +241,57 @@ a.cdx-chip:hover {
     }
 }
 
-/* ── Host directives ─────────────────────────────────────
- * Rendered by MetadataHostDirectivesRow — each host directive is an
- * auto-width card styled after the Depends On relationship rows: an
- * entity-tinted icon box on the left, directive name on top and the
- * forwarded inputs/outputs as small inline code tokens below.
+/* ── Host directives (object literal style) ──────────────
+ * Rendered by MetadataHostDirectivesRow — each host directive is a
+ * TypeScript object literal printed in monospace that mirrors the
+ * original `@Component({ hostDirectives: [...] })` source. Only the
+ * directive identifier is a clickable link.
  */
 
 .cdx-host-dir-list {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.cdx-host-dir-card {
-    --cdx-host-dir-color: var(--color-cdx-entity-directive);
-
-    display: inline-flex;
-    align-items: center;
-    gap: 0.625rem;
-    padding: 0.4375rem 0.75rem 0.4375rem 0.5rem;
-    background: var(--color-cdx-bg-elevated);
-    border: 1px solid color-mix(in srgb, var(--cdx-host-dir-color) 22%, transparent);
-    border-radius: var(--radius-cdx-md);
-    transition:
-        background 150ms ease,
-        border-color 150ms ease,
-        transform 150ms ease;
-}
-
-.cdx-host-dir-card:has(.cdx-host-dir-name:hover) {
-    border-color: var(--cdx-host-dir-color);
-    transform: translateY(-1px);
-}
-
-.cdx-host-dir-card--component {
-    --cdx-host-dir-color: var(--color-cdx-entity-component);
-}
-.cdx-host-dir-card--directive {
-    --cdx-host-dir-color: var(--color-cdx-entity-directive);
-}
-.cdx-host-dir-card--class {
-    --cdx-host-dir-color: var(--color-cdx-entity-class);
-}
-.cdx-host-dir-card--interface {
-    --cdx-host-dir-color: var(--color-cdx-entity-interface);
-}
-
-.cdx-host-dir-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.875rem;
-    height: 1.875rem;
-    border-radius: var(--radius-cdx-sm);
-    background: color-mix(in srgb, var(--cdx-host-dir-color) 14%, transparent);
-    color: var(--cdx-host-dir-color);
-    flex-shrink: 0;
-}
-
-.cdx-host-dir-icon svg {
-    width: 1rem;
-    height: 1rem;
-}
-
-.cdx-host-dir-body {
-    display: flex;
     flex-direction: column;
-    gap: 0.125rem;
-    min-width: 0;
+    gap: 0.375rem;
+    width: 100%;
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+}
+
+.cdx-host-dir-object {
+    white-space: pre;
+    overflow-x: auto;
+    color: var(--color-cdx-text);
+}
+
+.cdx-host-dir-punct {
+    color: var(--color-cdx-text-muted);
+}
+
+.cdx-host-dir-key {
+    color: var(--color-cdx-text-secondary);
+    font-weight: 500;
 }
 
 .cdx-host-dir-name {
-    font-size: 0.8125rem;
+    color: var(--color-cdx-entity-directive);
     font-weight: 600;
-    color: var(--color-cdx-text);
     text-decoration: none;
-    letter-spacing: -0.005em;
-    line-height: 1.2;
     transition: color 150ms ease;
 }
 
 .cdx-host-dir-name:hover {
-    color: var(--cdx-host-dir-color);
-}
-
-.cdx-host-dir-bindings {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    align-items: baseline;
-    margin-top: 0.125rem;
-}
-
-.cdx-host-dir-flow {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem;
-    font-size: 0.6875rem;
-    line-height: 1.4;
-}
-
-.cdx-host-dir-flow-label {
-    font-family: var(--font-code);
-    font-size: 0.625rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-cdx-text-muted);
-}
-
-.cdx-host-dir-flow-label::after {
-    content: '›';
-    margin-left: 0.25rem;
-    color: var(--color-cdx-text-muted);
-    opacity: 0.6;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 .cdx-host-dir-token {
-    display: inline-flex;
-    align-items: center;
-    padding: 0 0.25rem;
-    border-radius: var(--radius-cdx-sm);
-    background: color-mix(in srgb, var(--cdx-host-dir-color) 8%, transparent);
-    color: var(--cdx-host-dir-color);
-    font-family: var(--font-code);
-    font-size: 0.6875rem;
-    line-height: 1.5;
-    white-space: nowrap;
+    color: var(--color-cdx-text);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cdx-host-dir-card,
     .cdx-host-dir-name {
         transition: none;
-    }
-    .cdx-host-dir-card:has(.cdx-host-dir-name:hover) {
-        transform: none;
     }
 }
 

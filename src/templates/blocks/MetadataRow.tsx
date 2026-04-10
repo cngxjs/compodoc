@@ -1,45 +1,6 @@
 import Html from '@kitajs/html';
 import { resolveType } from '../helpers/link-type';
 import { t } from '../helpers';
-import {
-    IconClass,
-    IconComponent,
-    IconDirective,
-    IconEntity,
-    IconGuard,
-    IconInjectable,
-    IconInterceptor,
-    IconInterface,
-    IconModule,
-    IconPipe
-} from '../components/Icons';
-
-const hostDirIconFor = (type: string): string => {
-    switch (type) {
-        case 'component':
-            return IconComponent();
-        case 'directive':
-            return IconDirective();
-        case 'pipe':
-            return IconPipe();
-        case 'module':
-            return IconModule();
-        case 'class':
-            return IconClass();
-        case 'interface':
-            return IconInterface();
-        case 'guard':
-            return IconGuard();
-        case 'interceptor':
-            return IconInterceptor();
-        case 'injectable':
-            return IconInjectable();
-        case 'entity':
-            return IconEntity();
-        default:
-            return IconDirective();
-    }
-};
 
 /**
  * Human-friendly labels for Angular decorator property names. Extend as needed.
@@ -198,38 +159,49 @@ const escapeHtml = (s: string): string =>
     s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string);
 
 /**
- * Renders a metadata row for Angular host directives. Each entry renders
- * as an auto-width card inspired by the Depends On relationship rows:
- * an entity-tinted icon box on the left, directive name on top and the
- * forwarded inputs / outputs as inline code tokens below.
+ * Renders a metadata row for Angular host directives as code-style object
+ * literals that mirror the original `@Component({ hostDirectives: [...] })`
+ * source. Developers immediately recognise the shape because it's literally
+ * what they wrote.
+ *
+ * Output looks like:
+ *
+ *     {
+ *       directive: HighlightDirective,
+ *       inputs: [color, hoverColor, enabled]
+ *     }
+ *     {
+ *       directive: TooltipDirective
+ *     }
  */
 export function MetadataHostDirectivesRow(hostDirectives: HostDirective[]): string {
     if (!hostDirectives?.length) {
         return '';
     }
 
-    const renderBindings = (label: string, names: string[] | undefined): string => {
-        if (!names?.length) {
-            return '';
-        }
-        const tokens = names
-            .map(n => `<code class="cdx-host-dir-token">${escapeHtml(n)}</code>`)
-            .join('');
-        return `<span class="cdx-host-dir-flow"><span class="cdx-host-dir-flow-label">${label}</span>${tokens}</span>`;
-    };
+    const punct = (s: string) => `<span class="cdx-host-dir-punct">${s}</span>`;
+    const key = (k: string) => `<span class="cdx-host-dir-key">${k}</span>`;
+    const token = (t: string) => `<span class="cdx-host-dir-token">${escapeHtml(t)}</span>`;
+
+    const renderNames = (names: string[]): string => names.map(n => token(n)).join(punct(', '));
 
     const items = hostDirectives.map(hd => {
-        const chip = resolveChip(hd.name);
-        const type = chip.type ?? 'directive';
-        const icon = hostDirIconFor(type);
-        const inputs = renderBindings('in', hd.inputs);
-        const outputs = renderBindings('out', hd.outputs);
-        const bindings =
-            inputs || outputs ? `<div class="cdx-host-dir-bindings">${inputs}${outputs}</div>` : '';
-        const nameHtml = chip.href
-            ? `<a class="cdx-host-dir-name" href="${chip.href}" target="${chip.target}">${hd.name}</a>`
+        const resolved = resolveType(hd.name);
+        const nameHtml = resolved
+            ? `<a class="cdx-host-dir-name" href="${resolved.href}" target="${resolved.target}">${hd.name}</a>`
             : `<span class="cdx-host-dir-name">${hd.name}</span>`;
-        return `<div class="cdx-host-dir-card cdx-host-dir-card--${type}"><span class="cdx-host-dir-icon" aria-hidden="true">${icon}</span><div class="cdx-host-dir-body">${nameHtml}${bindings}</div></div>`;
+
+        const lines: string[] = [];
+        lines.push(`  ${key('directive:')} ${nameHtml}`);
+        if (hd.inputs?.length) {
+            lines.push(`  ${key('inputs:')} ${punct('[')}${renderNames(hd.inputs)}${punct(']')}`);
+        }
+        if (hd.outputs?.length) {
+            lines.push(`  ${key('outputs:')} ${punct('[')}${renderNames(hd.outputs)}${punct(']')}`);
+        }
+
+        const body = lines.join(`${punct(',')}\n`);
+        return `<div class="cdx-host-dir-object">${punct('{')}\n${body}\n${punct('}')}</div>`;
     });
 
     return MetadataRow(
