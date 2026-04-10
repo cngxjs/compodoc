@@ -132,8 +132,18 @@ export type EntityInfoProps = {
     readonly contextLine?: string;
     readonly sourceCode?: string;
     readonly relationships?: {
-        incoming: Array<{ name: string; type: string }>;
-        outgoing: Array<{ name: string; type: string }>;
+        incoming: Array<{
+            name: string;
+            type: string;
+            description?: string;
+            subtype?: string;
+        }>;
+        outgoing: Array<{
+            name: string;
+            type: string;
+            description?: string;
+            subtype?: string;
+        }>;
     };
 };
 
