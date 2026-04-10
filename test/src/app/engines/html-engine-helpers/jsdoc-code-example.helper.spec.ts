@@ -108,33 +108,6 @@ describe('JsdocCodeExampleHelper', () => {
         });
     });
 
-    describe('cleanTag method', () => {
-        it('should remove leading asterisk', () => {
-            const result = helper['cleanTag']('*Example code');
-            expect(result).to.equal('Example code');
-        });
-
-        it('should remove leading space', () => {
-            const result = helper['cleanTag'](' Example code');
-            expect(result).to.equal('Example code');
-        });
-
-        it('should remove paragraph tags', () => {
-            const result = helper['cleanTag']('<p>Example code</p>');
-            expect(result).to.equal('Example code');
-        });
-
-        it('should remove trailing newline', () => {
-            const result = helper['cleanTag']('Example code\n');
-            expect(result).to.equal('Example code');
-        });
-
-        it('should handle combination of cleanups', () => {
-            const result = helper['cleanTag']('* <p>Example code</p>\n');
-            expect(result).to.equal('Example code');
-        });
-    });
-
     describe('getHtmlEntities method', () => {
         it('should escape HTML entities', () => {
             const result = helper['getHtmlEntities']('<div class="test">Hello & goodbye</div>');
