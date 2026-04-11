@@ -87,7 +87,7 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                                 })}
                             </>
                         ) : (
-                            <p>{props.readme}</p>
+                            <div class="cdx-readme">{props.readme}</div>
                         )}
                     </div>
                 )}

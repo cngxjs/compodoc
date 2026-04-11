@@ -459,7 +459,7 @@ export const ComponentPage = (data: any): string => {
                                 })}
                             </>
                         ) : (
-                            <p>{c.readme}</p>
+                            <div class="cdx-readme">{c.readme}</div>
                         )}
                     </div>
                 )}
