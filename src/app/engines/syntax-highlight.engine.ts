@@ -48,6 +48,10 @@ export interface MemberInfo {
     name: string;
     kind: string;
     line: number;
+    /** 0-based nesting depth derived from leading whitespace of the
+     *  declaration line. Used by the client-side sticky scroll stack
+     *  to group pinned lines into a parent-child chain. */
+    depth: number;
 }
 
 export interface HighlightOptions {
@@ -229,27 +233,30 @@ type MemberPattern = {
 };
 
 const MEMBER_PATTERNS: readonly MemberPattern[] = [
-    // Top-level entity-likes (set/clear currentClass scope)
-    { pattern: /^\s*(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/, kind: 'class', topLevel: true },
+    // Top-level entity-likes (set/clear currentClass scope).
+    // Intentionally anchored at column 0 (`^` with no leading `\s*`)
+    // so nested `const x = …`, `function y()` inside a class body are
+    // NOT picked up as top-level declarations.
+    { pattern: /^(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/, kind: 'class', topLevel: true },
     {
-        pattern: /^\s*(?:export\s+)?(?:abstract\s+)?interface\s+(\w+)/,
+        pattern: /^(?:export\s+)?(?:abstract\s+)?interface\s+(\w+)/,
         kind: 'interface',
         topLevel: true
     },
-    { pattern: /^\s*(?:export\s+)?enum\s+(\w+)/, kind: 'enum', topLevel: true },
+    { pattern: /^(?:export\s+)?enum\s+(\w+)/, kind: 'enum', topLevel: true },
     // Top-level non-entity declarations (emit member, no nested scope)
     {
-        pattern: /^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)/,
+        pattern: /^(?:export\s+)?(?:async\s+)?function\s+(\w+)/,
         kind: 'function',
         topLevel: true
     },
     {
-        pattern: /^\s*(?:export\s+)?(?:const|let)\s+(\w+)\s*[:=]/,
+        pattern: /^(?:export\s+)?(?:const|let)\s+(\w+)\s*[:=]/,
         kind: 'const',
         topLevel: true
     },
     {
-        pattern: /^\s*(?:export\s+)?type\s+(\w+)\s*[=<]/,
+        pattern: /^(?:export\s+)?type\s+(\w+)\s*[=<]/,
         kind: 'type',
         topLevel: true
     },
@@ -289,6 +296,28 @@ const KEYWORD_BLACKLIST = new Set([
  *   inside a `const X = { ... }` body are NOT treated as properties).
  * - Class-body members — only when a `currentClass` is set.
  */
+/** Count leading whitespace columns (each tab = 4 spaces). */
+const leadingIndent = (line: string): number => {
+    let n = 0;
+    for (const ch of line) {
+        if (ch === ' ') {
+            n += 1;
+            continue;
+        }
+        if (ch === '\t') {
+            n += 4;
+            continue;
+        }
+        break;
+    }
+    return n;
+};
+
+/** Convert an indent column count to a 0-based depth level. Assumes
+ *  the common 4-space indent used by the kitchen-sink fixtures and
+ *  most Angular codebases. */
+const indentToDepth = (indent: number): number => Math.floor(indent / 4);
+
 export function detectMembers(code: string): MemberInfo[] {
     const lines = code.split('\n');
     const members: MemberInfo[] = [];
@@ -305,14 +334,21 @@ export function detectMembers(code: string): MemberInfo[] {
                 continue;
             }
 
+            const depth = indentToDepth(leadingIndent(lines[i]));
+
             if (topLevel) {
                 // class/interface/enum open a nested scope for subsequent
                 // member-pattern matches; function/const/type do not.
                 currentClass =
                     kind === 'class' || kind === 'interface' || kind === 'enum' ? name : '';
-                members.push({ name, kind, line: i + 1 });
+                members.push({ name, kind, line: i + 1, depth });
             } else if (currentClass) {
-                members.push({ name: `${currentClass}.${name}`, kind, line: i + 1 });
+                members.push({
+                    name: `${currentClass}.${name}`,
+                    kind,
+                    line: i + 1,
+                    depth
+                });
             }
             break;
         }
@@ -357,6 +393,7 @@ function memberMarkerTransformer(members: MemberInfo[]): ShikiTransformer {
             if (member) {
                 hast.properties['data-cdx-member'] = member.name;
                 hast.properties['data-cdx-member-kind'] = member.kind;
+                hast.properties['data-cdx-member-depth'] = String(member.depth);
             }
         }
     };

@@ -84,67 +84,147 @@ pre.line-numbers code {
   padding: var(--spacing-cdx-md) 0;
 }
 */
-.cdx-source-viewer {
-    @apply relative overflow-hidden;
-    border: 1px solid var(--color-cdx-border);
-    border-radius: var(--radius-cdx-md);
-}
-
-.cdx-source-viewer pre {
-    border: none;
-    border-radius: 0;
-    margin: 0;
-}
-
-/* Sticky file-path + scope header.
+/* ─── Source viewer (VS Code style editor panel) ─────────────────
  *
- * Server renders `<div class="cdx-source-header"><span class="cdx-source-header-path">…</span><span class="cdx-source-scope"></span></div>`.
- * Client (`initSourceScope` in code-blocks.ts) fills the scope span with
- * the currently-visible class member as the user scrolls. The header is
- * always present — even when the scope span is empty — so HTML/SCSS tabs
- * (no TS members) and TS files without detected members still show a
- * plain path row instead of nothing.
+ * Rendered by src/templates/blocks/SourceViewer.tsx. Wraps every
+ * Source / Template / Styles tab body in a cohesive "editor panel"
+ * so the Source tabs look like a VS Code window rather than a
+ * stand-alone <pre>.
+ *
+ * Structure:
+ *   .cdx-source-viewer
+ *     ├─ .cdx-source-viewer-header  (sticky tab-title bar)
+ *     │   ├─ .cdx-source-viewer-icon   (file-type icon)
+ *     │   ├─ .cdx-source-viewer-path   (file path, breadcrumb-like)
+ *     │   ├─ .cdx-source-scope          (client-injected scope)
+ *     │   └─ .cdx-source-viewer-copy    (integrated copy button)
+ *     └─ .cdx-source-viewer-body   (<pre> Shiki output, scrollable)
+ *
+ * The viewer has its OWN scroll context — `max-height` + `overflow-y`
+ * — so the sticky header pins to the TOP of the viewer panel,
+ * independent of the outer .content scroll container.
  */
-.cdx-source-header {
-    @apply sticky z-10 flex items-center;
-    top: 0;
+.cdx-source-viewer {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-lg);
+    box-shadow: var(--shadow-cdx-sm);
+    /* NO overflow:hidden — it would make `.cdx-source-viewer` a scroll
+       container and break sticky positioning on the child header and
+       the sticky scroll stack. Children carry matching corner radii
+       so backgrounds don't poke past the outer curve. */
+}
+
+/* Scroll-margin offset for `scrollIntoView` on any source-viewer line.
+   Covers the pinned header (~34px) + stack top offset (10px) + up to
+   3 sticky scroll stack lines (~22px each ≈ 66px) + a small breathing
+   gap. Without this, clicking a sticky stack chip scrolls the target
+   line behind the chrome. Applies to all `.line` elements so body
+   permalinks and hash jumps get the same treatment. */
+.cdx-source-viewer .line {
+    scroll-margin-top: 120px;
+}
+
+/* 1px invisible sentinel inserted by the client just before the header.
+   IntersectionObserver toggles `.is-stuck` on the header based on
+   whether the sentinel is in view (see `initSourceScope`). Positioned
+   as a normal-flow block so its intersection state tracks outer page
+   scroll accurately. */
+.cdx-source-viewer-stick-sentinel {
+    height: 1px;
+    margin-top: -1px;
+    pointer-events: none;
+}
+
+/* Tab-title bar — sticky with a negative top offset to cancel the
+   `.content { padding: 2rem }` inset on the outer page scroll
+   container. Without the offset, `top: 0` would pin the header 2rem
+   below the viewport top. */
+.cdx-source-viewer-header {
+    @apply sticky z-20 flex items-center;
+    /* -33px compensates for the `.content { padding: 2rem }` = 32px
+       plus a 1px visual breathing gap so the header pins flush with
+       the viewport top when the outer page scrolls past the viewer. */
+    top: -33px;
     gap: var(--spacing-cdx-sm);
-    padding: var(--spacing-cdx-xs) var(--spacing-cdx-md);
-    background: hsl(220 16% 94% / 0.95);
-    backdrop-filter: blur(6px);
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
+    background: var(--color-cdx-bg-alt);
     border-bottom: 1px solid var(--color-cdx-border);
-    border-top-left-radius: var(--radius-cdx-md);
-    border-top-right-radius: var(--radius-cdx-md);
+    border-top-left-radius: var(--radius-cdx-lg);
+    border-top-right-radius: var(--radius-cdx-lg);
     font-family: var(--font-code);
-    font-size: 11px;
-    color: var(--color-cdx-text-muted);
-    min-height: 26px;
+    font-size: 12px;
+    color: var(--color-cdx-text-secondary);
+    min-height: 34px;
+    flex-shrink: 0;
+    transition: border-radius 150ms ease;
+}
+
+/* When a sentinel placed above the header scrolls out of view, the
+   client toggles `.is-stuck` so we can drop the top corner radii —
+   pinned at the viewport edge the rounded corners look orphaned
+   because the rest of the rounded container is scrolled below. */
+.cdx-source-viewer-header.is-stuck {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.dark .cdx-source-viewer-header {
+    background: hsl(225 16% 14%);
+    border-bottom-color: hsl(225 16% 22%);
+}
+
+.cdx-source-viewer-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--color-cdx-primary);
+}
+
+.cdx-source-viewer-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.cdx-source-viewer--typescript .cdx-source-viewer-icon {
+    color: hsl(211 60% 48%);
+}
+
+.cdx-source-viewer--html .cdx-source-viewer-icon {
+    color: hsl(14 78% 52%);
+}
+
+.cdx-source-viewer--scss .cdx-source-viewer-icon {
+    color: hsl(330 68% 54%);
+}
+
+.cdx-source-viewer-path {
+    color: var(--color-cdx-text-secondary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.dark .cdx-source-header {
-    background: hsl(225 16% 12% / 0.95);
-}
-
-.cdx-source-header-path {
-    color: var(--color-cdx-text-muted);
     flex-shrink: 0;
 }
 
+/* Client-injected scope indicator — takes over the remaining horizontal
+   space to the left of the copy button. Empty until initSourceScope
+   fills it, hidden by :not(:empty)::before trick below. */
 .cdx-source-scope {
-    color: var(--color-cdx-text-secondary);
+    color: var(--color-cdx-text-muted);
+    flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* Separator between the path and the scope. Hidden when the scope span
-   is empty so the header reads as a plain path row. */
 .cdx-source-scope:not(:empty)::before {
     content: '›';
-    margin-right: var(--spacing-cdx-sm);
+    margin: 0 var(--spacing-cdx-sm);
     color: var(--color-cdx-text-muted);
     opacity: 0.5;
 }
@@ -163,6 +243,148 @@ pre.line-numbers code {
     text-decoration: underline;
 }
 
+/* Push the copy button to the far right even when the scope is empty. */
+.cdx-source-scope:empty {
+    flex: 1 1 auto;
+}
+
+.cdx-source-viewer-copy {
+    @apply inline-flex items-center justify-center cursor-pointer;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-cdx-sm);
+    background: transparent;
+    color: var(--color-cdx-text-muted);
+    flex-shrink: 0;
+    transition: var(--cdx-transition-fast);
+}
+
+.cdx-source-viewer-copy:hover {
+    background: var(--color-cdx-bg-elevated);
+    border-color: var(--color-cdx-border);
+    color: var(--color-cdx-text);
+}
+
+.cdx-source-viewer-copy--copied {
+    background: color-mix(in srgb, var(--color-cdx-primary) 12%, transparent);
+    border-color: color-mix(in srgb, var(--color-cdx-primary) 30%, transparent);
+    color: var(--color-cdx-primary);
+}
+
+.cdx-source-viewer-copy .cdx-icon {
+    margin-right: 0;
+}
+
+/* Sticky scroll stack — VS Code style pinned decl lines.
+ *
+ * Empty at server render time. Client JS (`initSourceScope` in
+ * code-blocks.ts) clones up to 3 currently-active member decl lines
+ * (class → method → nested function) here as the user scrolls, each
+ * one a cloned `.line` that preserves Shiki syntax highlighting.
+ *
+ * Sticky offset is the header height (34px) so the stack sits flush
+ * below the pinned header. Cloned Shiki `.line` elements are wrapped
+ * in a flex column with `display: block; white-space: pre` so the
+ * clones stack vertically and keep their leading-indent whitespace
+ * (by default they're inline <span>s that would collapse into a
+ * single horizontal row outside their parent <pre>).
+ */
+.cdx-source-viewer-sticky-stack {
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    /* Offset from the pinned header gives a few pixels of breathing
+       room between header and stack so the two chrome layers read as
+       separate bands. */
+    top: 10px;
+    z-index: 19;
+    /* Match the header chrome — stack reads as a continuation of the
+       tab header, visually separated from the live Shiki code body. */
+    background: var(--color-cdx-bg-alt);
+    border-bottom: 1px solid var(--color-cdx-border);
+    font-family: var(--font-code);
+    font-size: 13px;
+    line-height: 1.6;
+    /* Horizontal padding matches the global `pre { padding: md }` rule
+       so the stack's line numbers sit at the same x as the body's
+       line numbers when scrolled past. */
+    padding: 4px var(--spacing-cdx-md);
+}
+
+.dark .cdx-source-viewer-sticky-stack {
+    background: hsl(225 16% 14%);
+}
+
+/* Lift the stack visually above the code body with a subtle drop
+   shadow so the transition is clear when scrolling. */
+.cdx-source-viewer-sticky-stack:not(:empty) {
+    box-shadow: 0 4px 8px -4px hsl(0 0% 0% / 0.15);
+}
+
+.dark .cdx-source-viewer-sticky-stack:not(:empty) {
+    box-shadow: 0 4px 8px -4px hsl(0 0% 0% / 0.35);
+}
+
+/* Hide when empty (nothing to pin) so it takes no vertical space. */
+.cdx-source-viewer-sticky-stack:empty {
+    display: none;
+}
+
+/* Each cloned Shiki `<span class="line">` is forced to block layout
+   with preserved whitespace so the line-number gutter, the leading
+   indentation, and the inline syntax highlighting all survive the
+   clone-out-of-pre operation. No explicit left padding or absolute
+   positioning — the stack container owns the 12px left gutter (via
+   `padding: 4px var(--spacing-cdx-md)` above), and Shiki's own
+   leading-whitespace tokens naturally shift nested methods 4 spaces
+   right. Result: line numbers and code columns in the stack align
+   1:1 with the body below when the user scrolls past a pinned decl. */
+.cdx-source-viewer-sticky-stack > .line {
+    display: block;
+    white-space: pre;
+    padding: 2px 8px 2px 0;
+    background: var(--color-cdx-bg-alt);
+    cursor: pointer;
+    transition: background-color 100ms ease;
+}
+
+.dark .cdx-source-viewer-sticky-stack > .line {
+    background: hsl(225 16% 14%);
+}
+
+.cdx-source-viewer-sticky-stack > .line:hover {
+    background: hsl(220 20% 14% / 0.06);
+}
+
+.dark .cdx-source-viewer-sticky-stack > .line:hover {
+    background: hsl(220 16% 90% / 0.04);
+}
+
+/* Body wraps the Shiki output. No explicit background — the Shiki
+   themes set their own bg on `<pre>` inline (light mode: white, dark
+   mode: #24292e via `--shiki-dark-bg`), so the body inherits the
+   theme-appropriate editor surface colour automatically. */
+.cdx-source-viewer-body {
+    overflow-x: auto;
+    border-bottom-left-radius: var(--radius-cdx-lg);
+    border-bottom-right-radius: var(--radius-cdx-lg);
+}
+
+/* Reset the global `pre { border, margin, border-radius }` rule from
+   the top of this file — inside the viewer the outer container owns
+   those. Background is deliberately left untouched so the Shiki
+   inline `background-color:...` drives the editor surface colour. */
+.cdx-source-viewer-body pre {
+    border: none !important;
+    margin: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-left-radius: var(--radius-cdx-lg) !important;
+    border-bottom-right-radius: var(--radius-cdx-lg) !important;
+}
+
 .cdx-line-number {
     display: inline-block;
     width: 3.5ch;
@@ -179,12 +401,12 @@ pre.line-numbers code {
     color: var(--color-cdx-text-secondary);
 }
 
-.cdx-source-code .line:hover {
+.cdx-source-viewer .line:hover {
     background: hsl(220 20% 14% / 0.06);
     transition: background 80ms ease;
 }
 
-.dark .cdx-source-code .line:hover {
+.dark .cdx-source-viewer .line:hover {
     background: hsl(220 16% 90% / 0.06);
 }
 

@@ -1,9 +1,8 @@
 import Html from '@kitajs/html';
-import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconBook, EmptyIconFile } from '../components/EmptyStateIcons';
 import { extractReadmeHeadings, isInitialTab, isReadmeEmpty, isTabEnabled, t } from '../helpers';
-import { shortPath } from '../helpers/short-url';
+import { SourceViewer } from './SourceViewer';
 
 type Tab = {
     readonly id: string;
@@ -100,20 +99,11 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                         aria-labelledby="source-tab"
                     >
                         {props.sourceCode ? (
-                            <div class="cdx-source-code">
-                                {props.filePath && (
-                                    <div class="cdx-source-header">
-                                        <span class="cdx-source-header-path">
-                                            {shortPath(props.filePath)}
-                                        </span>
-                                        <span class="cdx-source-scope" aria-live="polite"></span>
-                                    </div>
-                                )}
-                                {highlightCode(props.sourceCode, {
-                                    lang: 'typescript',
-                                    mode: 'source'
-                                })}
-                            </div>
+                            SourceViewer({
+                                filePath: props.filePath,
+                                sourceCode: props.sourceCode,
+                                lang: 'typescript'
+                            })
                         ) : (
                             EmptyState({
                                 icon: EmptyIconFile(),

@@ -1,5 +1,4 @@
 import Html from '@kitajs/html';
-import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockIndex } from '../blocks/BlockIndex';
@@ -10,6 +9,7 @@ import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { ExternalLinks } from '../blocks/ExternalLinks';
 import { RouteChip } from '../blocks/RouteChip';
+import { SourceViewer } from '../blocks/SourceViewer';
 import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import {
@@ -40,7 +40,6 @@ import {
     relativeUrl,
     t
 } from '../helpers';
-import { shortPath } from '../helpers/short-url';
 
 const escapeSimpleQuote = (text: string): string => {
     if (!text) {
@@ -471,20 +470,11 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="source-tab"
                     >
-                        <div class="cdx-source-code">
-                            {c.file && (
-                                <div class="cdx-source-header">
-                                    <span class="cdx-source-header-path">
-                                        {shortPath(c.file)}
-                                    </span>
-                                    <span class="cdx-source-scope" aria-live="polite"></span>
-                                </div>
-                            )}
-                            {highlightCode(c.sourceCode ?? '', {
-                                lang: 'typescript',
-                                mode: 'source'
-                            })}
-                        </div>
+                        {SourceViewer({
+                            filePath: c.file,
+                            sourceCode: c.sourceCode ?? '',
+                            lang: 'typescript'
+                        })}
                     </div>
                 )}
 
@@ -495,26 +485,18 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="templateData-tab"
                     >
-                        {c.templateData?.trim() ? (
-                            <div class="cdx-source-code">
-                                {c.templateUrl?.[0] && (
-                                    <div class="cdx-source-header">
-                                        <span class="cdx-source-header-path">
-                                            {shortPath(c.templateUrl[0])}
-                                        </span>
-                                        <span class="cdx-source-scope" aria-live="polite"></span>
-                                    </div>
-                                )}
-                                {highlightCode(c.templateData, { lang: 'html', mode: 'source' })}
-                            </div>
-                        ) : (
-                            EmptyState({
-                                icon: EmptyIconHtml(),
-                                title: t('empty-template-title'),
-                                description: t('empty-template-desc'),
-                                variant: 'full'
-                            })
-                        )}
+                        {c.templateData?.trim()
+                            ? SourceViewer({
+                                  filePath: c.templateUrl?.[0],
+                                  sourceCode: c.templateData,
+                                  lang: 'html'
+                              })
+                            : EmptyState({
+                                  icon: EmptyIconHtml(),
+                                  title: t('empty-template-title'),
+                                  description: t('empty-template-desc'),
+                                  variant: 'full'
+                              })}
                     </div>
                 )}
 
@@ -526,32 +508,21 @@ export const ComponentPage = (data: any): string => {
                         aria-labelledby="styleData-tab"
                     >
                         {c.styleUrlsData?.length > 0
-                            ? c.styleUrlsData.map((s: any) => (
-                                  <div class="cdx-source-code">
-                                      {s.styleUrl && (
-                                          <div class="cdx-source-header">
-                                              <span class="cdx-source-header-path">
-                                                  {shortPath(s.styleUrl)}
-                                              </span>
-                                              <span
-                                                  class="cdx-source-scope"
-                                                  aria-live="polite"
-                                              ></span>
-                                          </div>
-                                      )}
-                                      {highlightCode(s.data, { lang: 'scss', mode: 'source' })}
-                                  </div>
-                              ))
+                            ? c.styleUrlsData.map((s: any) =>
+                                  SourceViewer({
+                                      filePath: s.styleUrl,
+                                      sourceCode: s.data,
+                                      lang: 'scss'
+                                  })
+                              )
                             : ''}
-                        {c.stylesData && c.stylesData !== '' && (
-                            <div class="cdx-source-code">
-                                <div class="cdx-source-header">
-                                    <span class="cdx-source-header-path">Inline Styles</span>
-                                    <span class="cdx-source-scope" aria-live="polite"></span>
-                                </div>
-                                {highlightCode(c.stylesData, { lang: 'scss', mode: 'source' })}
-                            </div>
-                        )}
+                        {c.stylesData &&
+                            c.stylesData !== '' &&
+                            SourceViewer({
+                                sourceCode: c.stylesData,
+                                lang: 'scss',
+                                label: 'Inline Styles'
+                            })}
                         {!(c.styleUrlsData?.length > 0) &&
                             !(c.stylesData && c.stylesData !== '') &&
                             EmptyState({

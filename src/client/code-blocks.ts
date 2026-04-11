@@ -76,6 +76,8 @@ export const initCodeBlocks = () => {
 };
 
 const initCopyButtons = () => {
+    // Floating copy button for bare <pre> blocks outside a source viewer
+    // (inline code snippets in markdown, examples, etc.)
     document.querySelectorAll<HTMLElement>('pre:has(> code), pre.shiki').forEach(pre => {
         if (!pre.hasAttribute('role')) {
             pre.setAttribute('tabindex', '0');
@@ -88,6 +90,10 @@ const initCopyButtons = () => {
             }
         );
 
+        // Source-viewer blocks have their own copy button in the header.
+        if (pre.closest('.cdx-source-viewer')) {
+            return;
+        }
         if (pre.querySelector('.cdx-code-copy')) {
             return;
         }
@@ -114,6 +120,32 @@ const initCopyButtons = () => {
         pre.style.position = 'relative';
         pre.appendChild(btn);
     });
+
+    // Wire up the integrated `.cdx-source-viewer-copy` button in each
+    // source viewer tab header.
+    document
+        .querySelectorAll<HTMLButtonElement>('.cdx-source-viewer-copy')
+        .forEach(btn => {
+            if (btn.dataset.cdxBound) {
+                return;
+            }
+            btn.dataset.cdxBound = '1';
+            btn.addEventListener('click', () => {
+                const viewer = btn.closest('.cdx-source-viewer');
+                const code = viewer?.querySelector('pre code');
+                if (!code) {
+                    return;
+                }
+                navigator.clipboard.writeText(code.textContent || '').then(() => {
+                    btn.classList.add('cdx-source-viewer-copy--copied');
+                    btn.setAttribute('aria-label', 'Copied!');
+                    setTimeout(() => {
+                        btn.classList.remove('cdx-source-viewer-copy--copied');
+                        btn.setAttribute('aria-label', 'Copy source');
+                    }, 2000);
+                });
+            });
+        });
 };
 
 const initLinkToSource = () => {
@@ -136,7 +168,7 @@ const initLinkToSource = () => {
                 history.replaceState(null, '', `#L${lineNr}`);
 
                 setTimeout(() => {
-                    const pre = document.querySelector('.cdx-source-code pre');
+                    const pre = document.querySelector('.cdx-source-viewer pre');
                     if (!pre) {
                         return;
                     }
@@ -148,7 +180,7 @@ const initLinkToSource = () => {
 };
 
 const initLinePermalinks = () => {
-    document.querySelectorAll<HTMLElement>('.cdx-source-code pre').forEach(pre => {
+    document.querySelectorAll<HTMLElement>('.cdx-source-viewer pre').forEach(pre => {
         if (pre.dataset.cdxPermalinks) {
             return;
         }
@@ -195,7 +227,7 @@ const initHashHighlight = () => {
 
         // wait for tab switch animation
         setTimeout(() => {
-            const pre = document.querySelector('.cdx-source-code pre');
+            const pre = document.querySelector('.cdx-source-viewer pre');
             if (pre) {
                 highlightLines(pre, range.start, range.end);
             }
@@ -207,28 +239,78 @@ const initHashHighlight = () => {
 };
 
 /**
- * Progressively enhances the static `.cdx-source-header` block with the
- * current scope inside the server-rendered `<span class="cdx-source-scope">`
- * placeholder. Scope updates as the user scrolls via IntersectionObserver.
+ * VS Code-style "sticky scroll" for source viewers.
  *
- * No new DOM elements are created — the server always renders the path row,
- * this function only fills the empty trailing scope span. When no
- * `[data-cdx-member]` lines exist (HTML/SCSS tabs, files without detected
- * members) the span stays empty and the CSS `:empty` rule hides the
- * separator so the header reads as a plain path row.
+ * Keeps the current class / method / nested-block declaration lines
+ * pinned at the top of the source viewer as the user scrolls past
+ * them. Drives two DOM consumers simultaneously:
+ *
+ *   1. The text scope indicator in the tab header
+ *      (`.cdx-source-viewer-header .cdx-source-scope`) — shows the
+ *      full dotted scope (e.g. `UserListComponent › ngOnInit`).
+ *   2. The sticky scroll stack (`.cdx-source-viewer-sticky-stack`) —
+ *      clones up to 3 real decl lines (depth 0, 1, 2) with their
+ *      Shiki highlighting preserved, stacked below the header.
+ *
+ * Driven by a scroll listener on the outer page scroll container
+ * (`.content`) — the source viewer itself has no internal scroll in
+ * this phase. On every scroll frame we compute, per depth level, the
+ * most-recently scrolled-past member line whose natural position is
+ * above the sticky stack's pin point, and render the resulting chain.
  */
+const STICKY_STACK_MAX_DEPTH = 3;
+const STICKY_STACK_LINE_OFFSET = 68; // header (34) + stack top offset (34)
+
 const initSourceScope = () => {
-    document.querySelectorAll<HTMLElement>('.cdx-source-code').forEach(container => {
-        const pre = container.querySelector('pre');
+    const viewers = document.querySelectorAll<HTMLElement>('.cdx-source-viewer');
+    if (viewers.length === 0) {
+        return;
+    }
+
+    const scrollRoot =
+        document.querySelector<HTMLElement>('.content') ||
+        (document.scrollingElement as HTMLElement | null) ||
+        document.documentElement;
+
+    viewers.forEach(viewer => {
+        // Guard against SPA re-navigation creating duplicate scroll
+        // listeners. Duplicate listeners = duplicate chain computations
+        // racing on the same stack element = stale pinned lines that
+        // don't clear between frames.
+        if (viewer.dataset.cdxScopeInit === '1') {
+            return;
+        }
+        viewer.dataset.cdxScopeInit = '1';
+
+        const pre = viewer.querySelector<HTMLElement>('pre');
         if (!pre) {
             return;
         }
 
-        const scopeSpan = container.querySelector<HTMLElement>(
-            '.cdx-source-header .cdx-source-scope'
+        const header = viewer.querySelector<HTMLElement>('.cdx-source-viewer-header');
+        const scopeSpan = viewer.querySelector<HTMLElement>(
+            '.cdx-source-viewer-header .cdx-source-scope'
         );
-        if (!scopeSpan) {
-            return;
+        const stackEl = viewer.querySelector<HTMLElement>('.cdx-source-viewer-sticky-stack');
+
+        // Sticky-state detector: insert a 1px sentinel just above the
+        // header and observe it. Intersection false = sentinel is
+        // scrolled out of view = header is currently pinned. Toggle
+        // `.is-stuck` so the CSS can drop the top corner radii while
+        // the header is flush with the viewport edge.
+        if (header && !viewer.querySelector<HTMLElement>('.cdx-source-viewer-stick-sentinel')) {
+            const sentinel = document.createElement('div');
+            sentinel.className = 'cdx-source-viewer-stick-sentinel';
+            sentinel.setAttribute('aria-hidden', 'true');
+            viewer.insertBefore(sentinel, header);
+
+            const stickObserver = new IntersectionObserver(
+                ([entry]) => {
+                    header.classList.toggle('is-stuck', !entry.isIntersecting);
+                },
+                { threshold: 0, rootMargin: '0px 0px 0px 0px' }
+            );
+            stickObserver.observe(sentinel);
         }
 
         const memberLines = pre.querySelectorAll<HTMLElement>('[data-cdx-member]');
@@ -236,19 +318,24 @@ const initSourceScope = () => {
             return;
         }
 
-        const memberEntries: Array<{ el: HTMLElement; name: string; kind: string }> = [];
+        const members: Array<{
+            el: HTMLElement;
+            name: string;
+            depth: number;
+        }> = [];
         memberLines.forEach(el => {
-            memberEntries.push({
+            members.push({
                 el,
                 name: el.dataset.cdxMember || '',
-                kind: el.dataset.cdxMemberKind || ''
+                depth: Number.parseInt(el.dataset.cdxMemberDepth || '0', 10)
             });
         });
 
         let currentScope = '';
+        let currentStackKey = '';
 
         const renderScope = (name: string) => {
-            if (name === currentScope) {
+            if (!scopeSpan || name === currentScope) {
                 return;
             }
             currentScope = name;
@@ -269,69 +356,93 @@ const initSourceScope = () => {
                         : `${segment}<span class="cdx-source-scope-sep" aria-hidden="true">&rsaquo;</span>`;
                 })
                 .join('');
-
-            scopeSpan
-                .querySelectorAll<HTMLElement>('.cdx-source-scope-segment')
-                .forEach(seg => {
-                    seg.addEventListener('click', () => {
-                        const ref = seg.dataset.cdxMemberRef || '';
-                        const memberName = ref.split('.').pop() || '';
-                        const infoTab = document.querySelector('#info');
-                        if (!infoTab) {
-                            return;
-                        }
-                        const allHeaders =
-                            infoTab.querySelectorAll<HTMLElement>('.cdx-member-name');
-                        for (const h of allHeaders) {
-                            if (h.textContent?.trim().includes(memberName)) {
-                                const infoTabBtn =
-                                    document.querySelector<HTMLElement>('#info-tab');
-                                if (infoTabBtn) {
-                                    infoTabBtn.click();
-                                }
-                                setTimeout(() => {
-                                    h.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                }, 100);
-                                return;
-                            }
-                        }
-                    });
-                });
         };
 
-        // Initial scope — show the first detected member before the user
-        // scrolls. This avoids the visual "empty bar" gap on page load.
-        if (memberEntries[0]) {
-            renderScope(memberEntries[0].name);
-        }
-
-        const observer = new IntersectionObserver(
-            entries => {
-                let topVisible: { name: string; top: number } | null = null;
-
-                for (const entry of entries) {
-                    if (entry.isIntersecting) {
-                        const el = entry.target as HTMLElement;
-                        const name = el.dataset.cdxMember || '';
-                        const top = entry.boundingClientRect.top;
-                        if (!topVisible || top < topVisible.top) {
-                            topVisible = { name, top };
-                        }
-                    }
-                }
-
-                if (topVisible) {
-                    renderScope(topVisible.name);
-                }
-            },
-            {
-                root: container,
-                rootMargin: '-10% 0px -80% 0px',
-                threshold: 0
+        const renderStack = (chain: Array<{ el: HTMLElement; name: string }>) => {
+            if (!stackEl) {
+                return;
             }
-        );
+            const key = chain.map(c => c.name).join('|');
+            if (key === currentStackKey) {
+                return;
+            }
+            currentStackKey = key;
 
-        memberEntries.forEach(({ el }) => observer.observe(el));
+            stackEl.innerHTML = '';
+            for (const entry of chain) {
+                const clone = entry.el.cloneNode(true) as HTMLElement;
+                clone.classList.add('cdx-source-sticky-line');
+                clone.addEventListener('click', () => {
+                    entry.el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+                stackEl.appendChild(clone);
+            }
+        };
+
+        const update = () => {
+            const viewerRect = viewer.getBoundingClientRect();
+            // Viewer has no layout (inside a display:none tab panel
+            // on initial load, before user switches to the Source
+            // tab). All member rects would also be zero, which would
+            // incorrectly mark every decl as "scrolled past" and
+            // render a stale chain on mount. Bail out — we'll re-run
+            // when the user scrolls after the tab is visible.
+            if (viewerRect.width === 0 || viewerRect.height === 0) {
+                return;
+            }
+            // Viewer out of view entirely — nothing to pin.
+            if (viewerRect.bottom < 0 || viewerRect.top > window.innerHeight) {
+                renderStack([]);
+                return;
+            }
+
+            // Pin trigger Y coordinate — everything above this is
+            // "scrolled past" and eligible for the stack.
+            const triggerY = STICKY_STACK_LINE_OFFSET;
+
+            const activeByDepth: Record<number, (typeof members)[number]> = {};
+            for (const m of members) {
+                const rect = m.el.getBoundingClientRect();
+                if (rect.top <= triggerY) {
+                    if (m.depth < STICKY_STACK_MAX_DEPTH) {
+                        activeByDepth[m.depth] = m;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            const chain: Array<(typeof members)[number]> = [];
+            for (let d = 0; d < STICKY_STACK_MAX_DEPTH; d++) {
+                if (activeByDepth[d]) {
+                    chain.push(activeByDepth[d]);
+                }
+            }
+
+            // Scope text follows the deepest active chain.
+            const deepest = chain[chain.length - 1];
+            renderScope(deepest ? deepest.name : members[0]?.name || '');
+            renderStack(chain);
+        };
+
+        // Initial render — pin the first member as the scope so the
+        // header is never visually empty on mount.
+        update();
+
+        let ticking = false;
+        const onScroll = () => {
+            if (ticking) {
+                return;
+            }
+            ticking = true;
+            requestAnimationFrame(() => {
+                update();
+                ticking = false;
+            });
+        };
+
+        scrollRoot.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
     });
 };
 
@@ -342,7 +453,7 @@ const escapeAttr = (str: string) => str.replace(/"/g, '&quot;').replace(/'/g, '&
 
 const initLanguageChips = () => {
     document.querySelectorAll<HTMLElement>('pre:has(> code), pre.shiki').forEach(pre => {
-        if (pre.querySelector('.cdx-code-lang-chip') || pre.closest('.cdx-source-code')) {
+        if (pre.querySelector('.cdx-code-lang-chip') || pre.closest('.cdx-source-viewer')) {
             return;
         }
 
@@ -369,7 +480,7 @@ const initLanguageChips = () => {
 
 const initExpandableSnippets = () => {
     document.querySelectorAll<HTMLElement>('pre:has(> code), pre.shiki').forEach(pre => {
-        if (pre.closest('.cdx-source-code') || pre.dataset.cdxExpandChecked) {
+        if (pre.closest('.cdx-source-viewer') || pre.dataset.cdxExpandChecked) {
             return;
         }
         pre.dataset.cdxExpandChecked = '1';
