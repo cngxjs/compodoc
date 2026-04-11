@@ -88,8 +88,7 @@ export const MiscellaneousFunctions = (props: MiscFunctionsProps): string =>
                         methods,
                         title: '',
                         file: '',
-                        depth: props.depth,
-                        collapsible: false
+                        depth: props.depth
                     })}
                 </div>
             ))}
