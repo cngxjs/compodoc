@@ -28,7 +28,11 @@
 
 .cdx-deprecation-banner {
     border-left: 3px solid var(--color-cdx-entity-service);
-    background: color-mix(in srgb, var(--color-cdx-entity-service) 6%, var(--color-cdx-bg));
+    background: color-mix(
+        in srgb,
+        var(--color-cdx-entity-service) 6%,
+        var(--color-cdx-bg)
+    );
     padding: var(--spacing-cdx-md) var(--spacing-cdx-lg);
     border-radius: var(--radius-cdx-md);
     font-size: 0.875rem;
@@ -42,13 +46,17 @@
 }
 
 .dark .cdx-deprecation-banner {
-    background: color-mix(in srgb, var(--color-cdx-entity-service) 10%, var(--color-cdx-bg));
+    background: color-mix(
+        in srgb,
+        var(--color-cdx-entity-service) 10%,
+        var(--color-cdx-bg)
+    );
 }
 .cdx-prose {
     font-size: 0.9375rem;
     line-height: 1.65;
     color: var(--color-cdx-text);
-    max-width: 72ch;
+    /* max-width: 72ch; */
 }
 
 .cdx-prose > p {
@@ -107,7 +115,8 @@
     gap: 0 var(--spacing-cdx-lg);
     padding: var(--spacing-cdx-sm) var(--spacing-cdx-xl);
     align-items: baseline;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-cdx-border) 50%, transparent);
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--color-cdx-border) 50%, transparent);
     transition: background 150ms ease;
 }
 
@@ -182,7 +191,11 @@
 }
 
 a.cdx-chip:hover {
-    background: color-mix(in srgb, var(--cdx-chip-color) 10%, var(--color-cdx-bg-elevated));
+    background: color-mix(
+        in srgb,
+        var(--cdx-chip-color) 10%,
+        var(--color-cdx-bg-elevated)
+    );
     border-color: var(--cdx-chip-color);
     color: var(--cdx-chip-color);
     text-decoration: none;
