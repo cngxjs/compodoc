@@ -11,10 +11,10 @@
     @apply mt-6 mb-2;
 }
 
-.cdx-overview-graph {
-    margin-top: var(--spacing-cdx-xl);
-}
-
+/* `cdx-overview-graph` class is still emitted by Overview.tsx but is
+   now redundant — the base `.cdx-graph-container` rule in graphs.css
+   provides the top margin. Kept as a no-op selector so we do not have
+   to touch Overview.tsx just to remove the class. */
 .cdx-overview-kpi-row {
     container-type: inline-size;
     @apply grid gap-4 mt-6 mb-8;
