@@ -15,6 +15,7 @@ type Tab = {
 type EntityTabsProps = {
     readonly navTabs: Tab[];
     readonly infoContent: string;
+    readonly apiContent?: string;
     readonly readme?: string;
     readonly sourceCode?: string;
     readonly filePath?: string;
@@ -54,6 +55,17 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                         aria-labelledby="info-tab"
                     >
                         {props.infoContent}
+                    </div>
+                )}
+
+                {isTabEnabled(props.navTabs, 'api') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(props.navTabs, 'api') ? ' active' : ''}`}
+                        id="api"
+                        role="tabpanel"
+                        aria-labelledby="api-tab"
+                    >
+                        {props.apiContent ?? ''}
                     </div>
                 )}
 

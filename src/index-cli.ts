@@ -412,6 +412,10 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             Configuration.mainData.infoTabSections = configFile.infoTabSections;
         }
 
+        if (configFile.apiTabSections) {
+            Configuration.mainData.apiTabSections = configFile.apiTabSections;
+        }
+
         if (configFile.includes) {
             Configuration.mainData.includes = configFile.includes;
         }

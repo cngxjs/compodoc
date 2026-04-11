@@ -28,7 +28,14 @@ import {
     IconModule,
     IconPipe
 } from '../components/Icons';
-import { extractDeclaration, isInfoSection, linkTypeHtml, parseDescription, t } from '../helpers';
+import {
+    extractDeclaration,
+    isApiSection,
+    isInfoSection,
+    linkTypeHtml,
+    parseDescription,
+    t
+} from '../helpers';
 
 /** Map entity key to CSS color variable, badge class, and watermark icon */
 const entityMeta: Record<
@@ -196,6 +203,14 @@ const ExtendsMetadataCard = (e: any): string => {
     ) as string;
 };
 
+/**
+ * Overview-style content for class-like entities: description, examples,
+ * external links, metadata, relationships. Lives on the **Info** tab.
+ * Member surface (inputs/outputs/methods/...) lives in {@link ApiContent}.
+ *
+ * When the entity has no meaningful content at all, returns a page-level
+ * empty state instead.
+ */
 const InfoContent = (props: EntityInfoProps): string => {
     const e = props.entity;
 
@@ -266,14 +281,16 @@ const InfoContent = (props: EntityInfoProps): string => {
             })}
 
             {/* 4. Metadata (from entity-specific page) or extends/implements card */}
-            {props.metadataHtml
-                ? props.metadataHtml
-                : isInfoSection('extends') && props.showExtends !== false
-                  ? ExtendsMetadataCard(e)
-                  : ''}
+            {isInfoSection('metadata') &&
+                (props.metadataHtml
+                    ? props.metadataHtml
+                    : isInfoSection('extends') && props.showExtends !== false
+                      ? ExtendsMetadataCard(e)
+                      : '')}
 
             {/* 4.5 Relationships (cross-linking) */}
-            {props.relationships &&
+            {isInfoSection('relationships') &&
+                props.relationships &&
                 (props.relationships.incoming?.length > 0 ||
                     props.relationships.outgoing?.length > 0) &&
                 BlockRelationshipGraph({
@@ -281,9 +298,22 @@ const InfoContent = (props: EntityInfoProps): string => {
                     outgoing: props.relationships.outgoing,
                     entityName: e.name
                 })}
+        </>
+    ) as string;
+};
 
+/**
+ * Member surface for class-like entities: index, constructor, inputs, outputs,
+ * host bindings/listeners, methods, properties, index signatures, accessors.
+ * Lives on the **API** tab.
+ */
+const ApiContent = (props: EntityInfoProps): string => {
+    const e = props.entity;
+
+    return (
+        <>
             {/* 5. Index */}
-            {isInfoSection('index') &&
+            {isApiSection('index') &&
                 props.showIndex !== false &&
                 BlockIndex({
                     properties: e.propertiesClass ?? e.properties,
@@ -297,7 +327,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                 })}
 
             {/* 6. Constructor */}
-            {isInfoSection('constructor') &&
+            {isApiSection('constructor') &&
                 props.showConstructor !== false &&
                 e.constructorObj &&
                 BlockConstructor({
@@ -308,7 +338,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                 })}
 
             {/* 7. Inputs */}
-            {isInfoSection('inputs') &&
+            {isApiSection('inputs') &&
                 props.showInputs !== false &&
                 e.inputsClass?.length > 0 &&
                 BlockInput({
@@ -319,7 +349,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                 })}
 
             {/* 8. Outputs */}
-            {isInfoSection('outputs') &&
+            {isApiSection('outputs') &&
                 props.showOutputs !== false &&
                 e.outputsClass?.length > 0 &&
                 BlockOutput({
@@ -330,7 +360,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                 })}
 
             {/* 9. Host Bindings */}
-            {isInfoSection('hostBindings') &&
+            {isApiSection('hostBindings') &&
                 props.showHostBindings !== false &&
                 e.hostBindings?.length > 0 &&
                 BlockProperty({
@@ -342,7 +372,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                 })}
 
             {/* 10. Host Listeners */}
-            {isInfoSection('hostListeners') &&
+            {isApiSection('hostListeners') &&
                 props.showHostListeners !== false &&
                 e.hostListeners?.length > 0 &&
                 BlockHostListener({
@@ -354,7 +384,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                 })}
 
             {/* 11. Methods */}
-            {isInfoSection('methods') &&
+            {isApiSection('methods') &&
                 props.showMethods !== false &&
                 (e.methodsClass ?? e.methods)?.length > 0 &&
                 BlockMethod({
@@ -365,7 +395,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                 })}
 
             {/* 12. Properties */}
-            {isInfoSection('properties') &&
+            {isApiSection('properties') &&
                 props.showProperties !== false &&
                 (e.propertiesClass ?? e.properties)?.length > 0 &&
                 BlockProperty({
@@ -376,7 +406,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                 })}
 
             {/* 13. Index Signatures */}
-            {isInfoSection('indexSignatures') &&
+            {isApiSection('indexSignatures') &&
                 props.showIndexSignatures !== false &&
                 e.indexSignatures?.length > 0 &&
                 BlockIndexSignatures({
@@ -387,7 +417,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                 })}
 
             {/* 14. Accessors */}
-            {isInfoSection('accessors') &&
+            {isApiSection('accessors') &&
                 props.showAccessors !== false &&
                 e.accessors &&
                 Object.keys(e.accessors).length > 0 &&
@@ -464,6 +494,7 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
             {EntityTabs({
                 navTabs: props.navTabs,
                 infoContent: InfoContent(props),
+                apiContent: ApiContent(props),
                 readme: e.readme,
                 sourceCode: e.sourceCode,
                 filePath: e.file,

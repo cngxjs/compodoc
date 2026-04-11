@@ -29,6 +29,7 @@ import {
 import { IconComponent, IconFile } from '../components/Icons';
 import {
     extractReadmeHeadings,
+    isApiSection,
     isInfoSection,
     isInitialTab,
     isReadmeEmpty,
@@ -110,6 +111,11 @@ const ComponentMetadata = (c: any): string => {
     return MetadataSection({ rows });
 };
 
+/**
+ * Overview-style content rendered on the **Info** tab: description, examples,
+ * external links, decorator metadata, host literal, content slots, relationships.
+ * Member surface (inputs/outputs/methods/...) lives in {@link ApiContent}.
+ */
 const InfoContent = (data: any): string => {
     const c = data.component;
     const depth = data.depth;
@@ -143,9 +149,9 @@ const InfoContent = (data: any): string => {
                 route: c.route
             })}
 
-            {ComponentMetadata(c)}
+            {isInfoSection('metadata') && ComponentMetadata(c)}
 
-            {c.slots?.length > 0 && (
+            {isInfoSection('metadata') && c.slots?.length > 0 && (
                 <section class="cdx-content-section">
                     <h3 class="cdx-section-heading">Content Slots</h3>
                     <dl class="cdx-metadata-card">
@@ -161,14 +167,28 @@ const InfoContent = (data: any): string => {
                 </section>
             )}
 
-            {data.relationships &&
+            {isInfoSection('relationships') &&
+                data.relationships &&
                 BlockRelationshipGraph({
                     incoming: data.relationships.incoming,
                     outgoing: data.relationships.outgoing,
                     entityName: c.name
                 })}
+        </>
+    ) as string;
+};
 
-            {isInfoSection('index') &&
+/**
+ * Member surface rendered on the **API** tab: index, constructor, inputs,
+ * outputs, host bindings/listeners, methods, properties, accessors.
+ */
+const ApiContent = (data: any): string => {
+    const c = data.component;
+    const depth = data.depth;
+
+    return (
+        <>
+            {isApiSection('index') &&
                 BlockIndex({
                     properties: c.propertiesClass,
                     methods: c.methodsClass,
@@ -179,7 +199,7 @@ const InfoContent = (data: any): string => {
                     accessors: c.accessors
                 })}
 
-            {isInfoSection('constructor') &&
+            {isApiSection('constructor') &&
                 c.constructorObj &&
                 BlockConstructor({
                     constructor: c.constructorObj,
@@ -187,13 +207,13 @@ const InfoContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
-            {isInfoSection('inputs') &&
+            {isApiSection('inputs') &&
                 c.inputsClass?.length > 0 &&
                 BlockInput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
-            {isInfoSection('outputs') &&
+            {isApiSection('outputs') &&
                 c.outputsClass?.length > 0 &&
                 BlockOutput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
-            {isInfoSection('hostBindings') &&
+            {isApiSection('hostBindings') &&
                 c.hostBindings?.length > 0 &&
                 BlockProperty({
                     properties: c.hostBindings,
@@ -202,7 +222,7 @@ const InfoContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
-            {isInfoSection('hostListeners') &&
+            {isApiSection('hostListeners') &&
                 c.hostListeners?.length > 0 &&
                 BlockMethod({
                     methods: c.hostListeners,
@@ -211,7 +231,7 @@ const InfoContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
-            {isInfoSection('methods') &&
+            {isApiSection('methods') &&
                 c.methodsClass?.length > 0 &&
                 BlockMethod({
                     methods: c.methodsClass,
@@ -219,7 +239,7 @@ const InfoContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
-            {isInfoSection('properties') &&
+            {isApiSection('properties') &&
                 c.propertiesClass?.length > 0 &&
                 BlockProperty({
                     properties: c.propertiesClass,
@@ -227,7 +247,7 @@ const InfoContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
-            {isInfoSection('accessors') &&
+            {isApiSection('accessors') &&
                 c.accessors &&
                 Object.keys(c.accessors).length > 0 &&
                 BlockAccessors({
@@ -407,6 +427,17 @@ export const ComponentPage = (data: any): string => {
                         aria-labelledby="info-tab"
                     >
                         {InfoContent(data)}
+                    </div>
+                )}
+
+                {isTabEnabled(navTabs, 'api') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'api') ? ' active' : ''}`}
+                        id="api"
+                        role="tabpanel"
+                        aria-labelledby="api-tab"
+                    >
+                        {ApiContent(data)}
                     </div>
                 )}
 

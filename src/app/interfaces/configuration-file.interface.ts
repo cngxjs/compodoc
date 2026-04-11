@@ -53,6 +53,7 @@ export interface ConfigurationFileInterface {
     include;
     publicApiOnly: string;
     infoTabSections: string[];
+    apiTabSections: string[];
     stackblitz: boolean;
     stackblitzTemplate: string;
     groupBy: 'folder' | 'category' | 'none';

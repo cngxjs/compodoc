@@ -17,6 +17,7 @@ import { I18nHelper } from './html-engine-helpers/i18n.helper';
 import { IfEqualStringHelper } from './html-engine-helpers/if-equal-string.helper';
 import { IfStringHelper } from './html-engine-helpers/if-string.helper';
 import { IndexableSignatureHelper } from './html-engine-helpers/indexable-signature.helper';
+import { IsApiSectionHelper } from './html-engine-helpers/is-api-section.helper';
 import { IsInfoSectionHelper } from './html-engine-helpers/is-info-section.helper';
 import { IsInitialTabHelper } from './html-engine-helpers/is-initial-tab.helper';
 import { IsNotToggleHelper } from './html-engine-helpers/is-not-toggle.helper';
@@ -81,6 +82,7 @@ export class HtmlEngineHelpers {
         this.registerHelper(bars, 'capitalize', new CapitalizeHelper());
         this.registerHelper(bars, 'parse-property', new ParsePropertyHelper());
         this.registerHelper(bars, 'isInfoSection', new IsInfoSectionHelper());
+        this.registerHelper(bars, 'isApiSection', new IsApiSectionHelper());
         this.registerHelper(bars, 'highlightCode', new HighlightCodeHelper());
     }
 

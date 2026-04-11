@@ -19,6 +19,7 @@ import {
     cleanSourcesForWatch,
     findMainSourceFolder
 } from '../utils/utils';
+import { hasAnyApiSections } from '../templates/helpers/tab-helpers';
 import type { IComponentDep } from './compiler/angular/deps/component-dep.factory';
 import { AngularDependencies } from './compiler/angular-dependencies';
 import Configuration from './configuration';
@@ -1414,6 +1415,28 @@ export class Application {
                 (!dependency.styles || dependency.styles.length === 0)
             ) {
                 return;
+            }
+
+            // API tab: drop it in legacy single-tab mode, or when the
+            // dependency has no member content to populate it.
+            if (customTab.id === 'api') {
+                if (!hasAnyApiSections()) {
+                    return;
+                }
+                const hasApiMembers = !!(
+                    dependency.constructorObj ||
+                    dependency.inputsClass?.length ||
+                    dependency.outputsClass?.length ||
+                    dependency.hostBindings?.length ||
+                    dependency.hostListeners?.length ||
+                    (dependency.methodsClass ?? dependency.methods)?.length ||
+                    (dependency.propertiesClass ?? dependency.properties)?.length ||
+                    dependency.indexSignatures?.length ||
+                    (dependency.accessors && Object.keys(dependency.accessors).length)
+                );
+                if (!hasApiMembers) {
+                    return;
+                }
             }
 
             navTabs.push(navTab);
