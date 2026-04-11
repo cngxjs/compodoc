@@ -70,7 +70,7 @@ export const initCodeBlocks = () => {
     initLinkToSource();
     initLinePermalinks();
     initHashHighlight();
-    initSourceBreadcrumb();
+    initSourceScope();
     initLanguageChips();
     initExpandableSnippets();
 };
@@ -206,14 +206,28 @@ const initHashHighlight = () => {
     window.addEventListener('hashchange', applyHash);
 };
 
-const initSourceBreadcrumb = () => {
+/**
+ * Progressively enhances the static `.cdx-source-header` block with the
+ * current scope inside the server-rendered `<span class="cdx-source-scope">`
+ * placeholder. Scope updates as the user scrolls via IntersectionObserver.
+ *
+ * No new DOM elements are created — the server always renders the path row,
+ * this function only fills the empty trailing scope span. When no
+ * `[data-cdx-member]` lines exist (HTML/SCSS tabs, files without detected
+ * members) the span stays empty and the CSS `:empty` rule hides the
+ * separator so the header reads as a plain path row.
+ */
+const initSourceScope = () => {
     document.querySelectorAll<HTMLElement>('.cdx-source-code').forEach(container => {
         const pre = container.querySelector('pre');
         if (!pre) {
             return;
         }
 
-        if (container.querySelector('.cdx-source-breadcrumb')) {
+        const scopeSpan = container.querySelector<HTMLElement>(
+            '.cdx-source-header .cdx-source-scope'
+        );
+        if (!scopeSpan) {
             return;
         }
 
@@ -221,12 +235,6 @@ const initSourceBreadcrumb = () => {
         if (memberLines.length === 0) {
             return;
         }
-
-        const bar = document.createElement('div');
-        bar.className = 'cdx-source-breadcrumb';
-        bar.setAttribute('aria-live', 'polite');
-        bar.setAttribute('aria-label', 'Current scope');
-        container.insertBefore(bar, pre);
 
         const memberEntries: Array<{ el: HTMLElement; name: string; kind: string }> = [];
         memberLines.forEach(el => {
@@ -239,38 +247,45 @@ const initSourceBreadcrumb = () => {
 
         let currentScope = '';
 
-        const updateBreadcrumb = (name: string) => {
+        const renderScope = (name: string) => {
             if (name === currentScope) {
                 return;
             }
             currentScope = name;
 
+            if (!name) {
+                scopeSpan.textContent = '';
+                return;
+            }
+
             const parts = name.split('.');
-            bar.innerHTML = parts
+            scopeSpan.innerHTML = parts
                 .map((part, i) => {
                     const isLast = i === parts.length - 1;
                     const fullName = parts.slice(0, i + 1).join('.');
-                    const segment = `<span class="cdx-breadcrumb-segment" data-cdx-member-ref="${escapeAttr(fullName)}">${escapeHtmlClient(part)}</span>`;
+                    const segment = `<span class="cdx-source-scope-segment" data-cdx-member-ref="${escapeAttr(fullName)}">${escapeHtmlClient(part)}</span>`;
                     return isLast
                         ? segment
-                        : `${segment}<span class="cdx-breadcrumb-sep">&rsaquo;</span>`;
+                        : `${segment}<span class="cdx-source-scope-sep" aria-hidden="true">&rsaquo;</span>`;
                 })
                 .join('');
 
-            bar.querySelectorAll<HTMLElement>('.cdx-breadcrumb-segment').forEach(seg => {
-                seg.addEventListener('click', () => {
-                    const ref = seg.dataset.cdxMemberRef || '';
-                    const memberName = ref.split('.').pop() || '';
-                    const infoTab = document.querySelector('#info');
-                    if (infoTab) {
-                        const _header = infoTab.querySelector(
-                            `[id*="${memberName}"], .cdx-member-name`
-                        ) as HTMLElement;
+            scopeSpan
+                .querySelectorAll<HTMLElement>('.cdx-source-scope-segment')
+                .forEach(seg => {
+                    seg.addEventListener('click', () => {
+                        const ref = seg.dataset.cdxMemberRef || '';
+                        const memberName = ref.split('.').pop() || '';
+                        const infoTab = document.querySelector('#info');
+                        if (!infoTab) {
+                            return;
+                        }
                         const allHeaders =
                             infoTab.querySelectorAll<HTMLElement>('.cdx-member-name');
                         for (const h of allHeaders) {
                             if (h.textContent?.trim().includes(memberName)) {
-                                const infoTabBtn = document.querySelector<HTMLElement>('#info-tab');
+                                const infoTabBtn =
+                                    document.querySelector<HTMLElement>('#info-tab');
                                 if (infoTabBtn) {
                                     infoTabBtn.click();
                                 }
@@ -280,10 +295,15 @@ const initSourceBreadcrumb = () => {
                                 return;
                             }
                         }
-                    }
+                    });
                 });
-            });
         };
+
+        // Initial scope — show the first detected member before the user
+        // scrolls. This avoids the visual "empty bar" gap on page load.
+        if (memberEntries[0]) {
+            renderScope(memberEntries[0].name);
+        }
 
         const observer = new IntersectionObserver(
             entries => {
@@ -301,7 +321,7 @@ const initSourceBreadcrumb = () => {
                 }
 
                 if (topVisible) {
-                    updateBreadcrumb(topVisible.name);
+                    renderScope(topVisible.name);
                 }
             },
             {

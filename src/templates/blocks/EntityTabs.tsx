@@ -103,7 +103,10 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                             <div class="cdx-source-code">
                                 {props.filePath && (
                                     <div class="cdx-source-header">
-                                        <span>{shortPath(props.filePath)}</span>
+                                        <span class="cdx-source-header-path">
+                                            {shortPath(props.filePath)}
+                                        </span>
+                                        <span class="cdx-source-scope" aria-live="polite"></span>
                                     </div>
                                 )}
                                 {highlightCode(props.sourceCode, {

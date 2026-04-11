@@ -96,18 +96,71 @@ pre.line-numbers code {
     margin: 0;
 }
 
+/* Sticky file-path + scope header.
+ *
+ * Server renders `<div class="cdx-source-header"><span class="cdx-source-header-path">…</span><span class="cdx-source-scope"></span></div>`.
+ * Client (`initSourceScope` in code-blocks.ts) fills the scope span with
+ * the currently-visible class member as the user scrolls. The header is
+ * always present — even when the scope span is empty — so HTML/SCSS tabs
+ * (no TS members) and TS files without detected members still show a
+ * plain path row instead of nothing.
+ */
 .cdx-source-header {
-    @apply flex items-center justify-between;
-    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
-    background: hsl(220 16% 94%);
+    @apply sticky z-10 flex items-center;
+    top: 0;
+    gap: var(--spacing-cdx-sm);
+    padding: var(--spacing-cdx-xs) var(--spacing-cdx-md);
+    background: hsl(220 16% 94% / 0.95);
+    backdrop-filter: blur(6px);
     border-bottom: 1px solid var(--color-cdx-border);
+    border-top-left-radius: var(--radius-cdx-md);
+    border-top-right-radius: var(--radius-cdx-md);
     font-family: var(--font-code);
-    font-size: 12px;
+    font-size: 11px;
     color: var(--color-cdx-text-muted);
+    min-height: 26px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dark .cdx-source-header {
-    background: hsl(225 16% 12%);
+    background: hsl(225 16% 12% / 0.95);
+}
+
+.cdx-source-header-path {
+    color: var(--color-cdx-text-muted);
+    flex-shrink: 0;
+}
+
+.cdx-source-scope {
+    color: var(--color-cdx-text-secondary);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Separator between the path and the scope. Hidden when the scope span
+   is empty so the header reads as a plain path row. */
+.cdx-source-scope:not(:empty)::before {
+    content: '›';
+    margin-right: var(--spacing-cdx-sm);
+    color: var(--color-cdx-text-muted);
+    opacity: 0.5;
+}
+
+.cdx-source-scope-sep {
+    margin: 0 var(--spacing-cdx-xs);
+    opacity: 0.4;
+}
+
+.cdx-source-scope-segment {
+    cursor: pointer;
+}
+
+.cdx-source-scope-segment:hover {
+    color: var(--color-cdx-primary);
+    text-decoration: underline;
 }
 
 .cdx-line-number {
@@ -202,42 +255,6 @@ pre.line-numbers code {
 
 .cdx-fold-summary::-webkit-details-marker {
     display: none;
-}
-
-/* --- Source breadcrumb bar --- */
-
-.cdx-source-breadcrumb {
-    @apply sticky z-10;
-    top: 0;
-    padding: var(--spacing-cdx-xs) var(--spacing-cdx-md);
-    background: hsl(220 16% 94% / 0.95);
-    backdrop-filter: blur(4px);
-    border-bottom: 1px solid var(--color-cdx-border);
-    font-family: var(--font-code);
-    font-size: 11px;
-    color: var(--color-cdx-text-secondary);
-    min-height: 24px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.dark .cdx-source-breadcrumb {
-    background: hsl(225 16% 12% / 0.95);
-}
-
-.cdx-breadcrumb-sep {
-    margin: 0 var(--spacing-cdx-xs);
-    opacity: 0.4;
-}
-
-.cdx-breadcrumb-segment {
-    cursor: pointer;
-}
-
-.cdx-breadcrumb-segment:hover {
-    color: var(--color-cdx-primary);
-    text-decoration: underline;
 }
 
 /* --- Copy button --- */
