@@ -37,6 +37,11 @@
     padding: var(--spacing-cdx-lg) var(--spacing-cdx-xl) var(--spacing-cdx-md);
     background: var(--color-cdx-bg-alt);
     border-bottom: 1px solid var(--color-cdx-border);
+    /* Match the parent .cdx-member-card border-radius so the bg-alt
+       header fill does not bleed past the rounded top corners of the
+       card. */
+    border-top-left-radius: var(--radius-cdx-lg, 12px);
+    border-top-right-radius: var(--radius-cdx-lg, 12px);
 }
 
 .cdx-member-name {
@@ -347,19 +352,29 @@
     background: color-mix(in srgb, #c2185b 6%, transparent);
 }
 
-.cdx-param-type a {
+/* Nested anchors inside param-type / member-returns code wrappers must NOT
+   get their own background — the outer code wrapper already carries a
+   tinted background and stacking a second bg on the inner <a> produces
+   the double-tint pill. Selector specificity (0,2,1) is chosen to match
+   the competing .cdx-member-body a[target='_self'] / [target='_blank']
+   rules; this block comes after them in the file so it wins the tie. */
+.cdx-member-body .cdx-param-type a,
+.cdx-member-body .cdx-member-returns a {
     color: inherit;
+    background: transparent;
+    padding: 0;
     text-decoration: none;
+}
+
+.cdx-member-body .cdx-param-type a:hover,
+.cdx-member-body .cdx-member-returns a:hover {
+    text-decoration: underline;
+    background: transparent;
 }
 
 .dark .cdx-param-type {
     color: #f48fb1;
     background: color-mix(in srgb, #f48fb1 10%, transparent);
-}
-
-.cdx-param-type a[target='_self'] {
-    color: var(--color-cdx-primary);
-    background: color-mix(in srgb, var(--color-cdx-primary) 8%, transparent);
 }
 
 .cdx-member-signature a[target='_blank'] {
