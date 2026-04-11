@@ -160,7 +160,6 @@ export const TRANSLATION_KA_GE = {
     signature: 'ხელმოწერა',
     'signal-adoption': 'სიგნალები',
     source: 'წყარო',
-    'source-preview': 'კოდის გადახედვა',
     standalone: 'დამოუკიდებელი',
     'standalone-adoption': 'დამოუკიდებელი',
     statements: 'განცხადებები',

@@ -1,5 +1,4 @@
 import Html from '@kitajs/html';
-import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockHostListener } from '../blocks/BlockHostListener';
@@ -12,6 +11,7 @@ import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { EntityTabs } from '../blocks/EntityTabs';
 import { ExternalLinks } from '../blocks/ExternalLinks';
+import { RouteChip } from '../blocks/RouteChip';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconDocument } from '../components/EmptyStateIcons';
@@ -29,7 +29,6 @@ import {
     IconPipe
 } from '../components/Icons';
 import {
-    extractDeclaration,
     isApiSection,
     isInfoSection,
     linkTypeHtml,
@@ -137,7 +136,6 @@ export type EntityInfoProps = {
     readonly showTokenBadge?: boolean;
     readonly showJsdocBadges?: boolean;
     readonly contextLine?: string;
-    readonly sourceCode?: string;
     readonly relationships?: {
         incoming: Array<{
             name: string;
@@ -233,7 +231,10 @@ const InfoContent = (props: EntityInfoProps): string => {
                 </div>
             )}
 
-            {/* 2. Description */}
+            {/* 2. Route chip (above description) */}
+            {RouteChip({ route: e.route })}
+
+            {/* 3. Description */}
             {isInfoSection('description') && e.description && (
                 <section class="cdx-content-section">
                     <h3 class="cdx-section-heading">{t('description')}</h3>
@@ -241,44 +242,10 @@ const InfoContent = (props: EntityInfoProps): string => {
                 </section>
             )}
 
-            {/* 2.5 Mini Code Preview */}
-            {props.sourceCode &&
-                (() => {
-                    const declaration = extractDeclaration(props.sourceCode);
-                    if (!declaration) {
-                        return '';
-                    }
-                    return (
-                        <section class="cdx-content-section">
-                            <details class="cdx-code-preview">
-                                <summary class="cdx-code-preview-toggle">
-                                    {t('source-preview') || 'Source Preview'}
-                                </summary>
-                                <div class="cdx-code-snippet">
-                                    {highlightCode(declaration, {
-                                        lang: 'typescript',
-                                        mode: 'snippet'
-                                    })}
-                                </div>
-                            </details>
-                        </section>
-                    );
-                })()}
-
             {/* 3. Examples */}
             {isInfoSection('examples') &&
                 e.jsdoctags &&
                 JsdocExamplesBlock({ tags: e.jsdoctags, variant: 'code', level: 'section' })}
-
-            {/* 3.5 External links (Storybook, Figma, StackBlitz, GitHub, Docs) */}
-            {ExternalLinks({
-                storybookUrl: e.storybookUrl,
-                figmaUrl: e.figmaUrl,
-                stackblitzUrl: e.stackblitzUrl,
-                githubUrl: e.githubUrl,
-                docsUrl: e.docsUrl,
-                route: e.route
-            })}
 
             {/* 4. Metadata (from entity-specific page) or extends/implements card */}
             {isInfoSection('metadata') &&
@@ -490,6 +457,13 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                         <span>{e.file}</span>
                     </p>
                 )}
+                {ExternalLinks({
+                    storybookUrl: e.storybookUrl,
+                    figmaUrl: e.figmaUrl,
+                    stackblitzUrl: e.stackblitzUrl,
+                    githubUrl: e.githubUrl,
+                    docsUrl: e.docsUrl
+                })}
             </div>
             {EntityTabs({
                 navTabs: props.navTabs,

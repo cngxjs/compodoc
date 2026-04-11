@@ -1,7 +1,6 @@
 export { capitalize } from './capitalize';
 export type { CoverageStats } from './coverage-stats';
 export { computeCoverageStats } from './coverage-stats';
-export { extractDeclaration } from './extract-declaration';
 export { functionSignature } from './function-signature';
 export { t } from './i18n';
 export { indexableSignature } from './indexable-signature';

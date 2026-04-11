@@ -161,7 +161,6 @@ export const TRANSLATION_JA_JP = {
     signature: 'シグネチャ',
     'signal-adoption': 'シグナル',
     source: 'ソース',
-    'source-preview': 'ソースプレビュー',
     standalone: 'Standalone',
     'standalone-adoption': 'スタンドアロン',
     statements: '文',

@@ -9,6 +9,7 @@ import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { ExternalLinks } from '../blocks/ExternalLinks';
+import { RouteChip } from '../blocks/RouteChip';
 import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import {
@@ -129,6 +130,8 @@ const InfoContent = (data: any): string => {
                 </div>
             )}
 
+            {RouteChip({ route: c.route })}
+
             {isInfoSection('description') && c.description && (
                 <section class="cdx-content-section">
                     <h3 class="cdx-section-heading">{t('description')}</h3>
@@ -139,15 +142,6 @@ const InfoContent = (data: any): string => {
             {isInfoSection('examples') &&
                 c.jsdoctags &&
                 JsdocExamplesBlock({ tags: c.jsdoctags, variant: 'code', level: 'section' })}
-
-            {ExternalLinks({
-                storybookUrl: c.storybookUrl,
-                figmaUrl: c.figmaUrl,
-                stackblitzUrl: c.stackblitzUrl,
-                githubUrl: c.githubUrl,
-                docsUrl: c.docsUrl,
-                route: c.route
-            })}
 
             {isInfoSection('metadata') && ComponentMetadata(c)}
 
@@ -374,13 +368,19 @@ export const ComponentPage = (data: any): string => {
                         ''
                     )}
                 </div>
-                {c.selector ? <p class="cdx-entity-hero-context">{c.selector}</p> : ''}
                 {!data.disableFilePath && c.file && (
                     <p class="cdx-entity-hero-file" title="Source file" aria-label="Source file">
                         {IconFile()}
                         <span>{c.file}</span>
                     </p>
                 )}
+                {ExternalLinks({
+                    storybookUrl: c.storybookUrl,
+                    figmaUrl: c.figmaUrl,
+                    stackblitzUrl: c.stackblitzUrl,
+                    githubUrl: c.githubUrl,
+                    docsUrl: c.docsUrl
+                })}
             </div>
 
             <ul class="cdx-tab-bar">
@@ -474,7 +474,10 @@ export const ComponentPage = (data: any): string => {
                         <div class="cdx-source-code">
                             {c.file && (
                                 <div class="cdx-source-header">
-                                    <span>{shortPath(c.file)}</span>
+                                    <span class="cdx-source-header-path">
+                                        {shortPath(c.file)}
+                                    </span>
+                                    <span class="cdx-source-scope" aria-live="polite"></span>
                                 </div>
                             )}
                             {highlightCode(c.sourceCode ?? '', {
@@ -496,7 +499,10 @@ export const ComponentPage = (data: any): string => {
                             <div class="cdx-source-code">
                                 {c.templateUrl?.[0] && (
                                     <div class="cdx-source-header">
-                                        <span>{shortPath(c.templateUrl[0])}</span>
+                                        <span class="cdx-source-header-path">
+                                            {shortPath(c.templateUrl[0])}
+                                        </span>
+                                        <span class="cdx-source-scope" aria-live="polite"></span>
                                     </div>
                                 )}
                                 {highlightCode(c.templateData, { lang: 'html', mode: 'source' })}
@@ -524,7 +530,13 @@ export const ComponentPage = (data: any): string => {
                                   <div class="cdx-source-code">
                                       {s.styleUrl && (
                                           <div class="cdx-source-header">
-                                              <span>{shortPath(s.styleUrl)}</span>
+                                              <span class="cdx-source-header-path">
+                                                  {shortPath(s.styleUrl)}
+                                              </span>
+                                              <span
+                                                  class="cdx-source-scope"
+                                                  aria-live="polite"
+                                              ></span>
                                           </div>
                                       )}
                                       {highlightCode(s.data, { lang: 'scss', mode: 'source' })}
@@ -534,7 +546,8 @@ export const ComponentPage = (data: any): string => {
                         {c.stylesData && c.stylesData !== '' && (
                             <div class="cdx-source-code">
                                 <div class="cdx-source-header">
-                                    <span>Inline Styles</span>
+                                    <span class="cdx-source-header-path">Inline Styles</span>
+                                    <span class="cdx-source-scope" aria-live="polite"></span>
                                 </div>
                                 {highlightCode(c.stylesData, { lang: 'scss', mode: 'source' })}
                             </div>

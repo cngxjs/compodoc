@@ -3,7 +3,6 @@ import {
     IconBook,
     IconExternalLink,
     IconFigma,
-    IconGitBranch,
     IconGithub,
     IconStorybook,
     IconZap
@@ -15,11 +14,10 @@ type ExternalLinksProps = {
     readonly stackblitzUrl?: string;
     readonly githubUrl?: string;
     readonly docsUrl?: string;
-    readonly route?: string;
 };
 
 type LinkDef = {
-    readonly key: keyof Omit<ExternalLinksProps, 'route'>;
+    readonly key: keyof ExternalLinksProps;
     readonly label: string;
     readonly icon: () => string;
     readonly kind: string;
@@ -44,13 +42,15 @@ const LINK_DEFS: readonly LinkDef[] = [
 ];
 
 /**
- * Renders a cluster of external resource links (Storybook, Figma, StackBlitz,
- * GitHub, docs) and an optional route badge. Returns empty string if nothing
- * is configured.
+ * Renders a cluster of external resource links (Storybook, Figma,
+ * StackBlitz, GitHub, docs). Returns empty string if nothing is
+ * configured. Lives in the entity hero on every page template so the
+ * cluster is visible on every tab, not just Info. Route is rendered
+ * separately by {@link RouteChip} inside the Info tab description.
  */
 export const ExternalLinks = (props: ExternalLinksProps): string => {
     const links = LINK_DEFS.filter(def => !!props[def.key]);
-    if (links.length === 0 && !props.route) {
+    if (links.length === 0) {
         return '';
     }
 
@@ -71,14 +71,6 @@ export const ExternalLinks = (props: ExternalLinksProps): string => {
                     </span>
                 </a>
             ))}
-            {props.route && (
-                <span class="cdx-ext-link cdx-ext-link--route" title={`Route: ${props.route}`}>
-                    <span class="cdx-ext-link-icon">{IconGitBranch()}</span>
-                    <span class="cdx-ext-link-label">
-                        <code>{props.route}</code>
-                    </span>
-                </span>
-            )}
         </div>
     ) as string;
 };

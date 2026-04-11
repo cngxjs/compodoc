@@ -119,20 +119,55 @@
         color-mix(in srgb, var(--color-cdx-entity-interface) 20%, transparent);
 }
 
-/* Route badge — not a link, just an info chip */
-.cdx-ext-link--route {
+/* ─── Route chip ─────────────────────────────────────────────
+ *
+ * Rendered by src/templates/blocks/RouteChip.tsx — lives in the Info
+ * tab description (NOT the hero) because it's description-level data,
+ * not a tab-independent external resource. Visually an inline chip
+ * with an icon, a small uppercase "ROUTE" label, and a monospace path.
+ */
+.cdx-route-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-cdx-sm);
+    padding: 0.3rem 0.625rem;
+    margin: var(--spacing-cdx-sm) 0 var(--spacing-cdx-sm);
     background: color-mix(in srgb, var(--color-cdx-primary) 8%, transparent);
-    border-color: color-mix(in srgb, var(--color-cdx-primary) 30%, transparent);
+    border: 1px solid
+        color-mix(in srgb, var(--color-cdx-primary) 30%, transparent);
+    border-radius: var(--radius-cdx-md);
     color: var(--color-cdx-primary);
-    cursor: default;
+    font-size: 0.8125rem;
+    line-height: 1;
 }
 
-.cdx-ext-link--route:hover {
-    background: color-mix(in srgb, var(--color-cdx-primary) 8%, transparent);
-    border-color: color-mix(in srgb, var(--color-cdx-primary) 30%, transparent);
-    color: var(--color-cdx-primary);
-    transform: none;
-    box-shadow: none;
+.cdx-route-chip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+}
+
+.cdx-route-chip-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.cdx-route-chip-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.cdx-route-chip-path {
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    background: transparent;
+    padding: 0;
+    color: inherit;
 }
 
 @media (prefers-reduced-motion: reduce) {
