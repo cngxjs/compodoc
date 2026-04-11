@@ -1,11 +1,15 @@
-import Html from '@kitajs/html';
-import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
-import { OverviewHero } from '../blocks/OverviewHero';
-import { OverviewStats } from '../blocks/OverviewStats';
-import { EmptyState } from '../components/EmptyState';
-import { EmptyIconDashboard } from '../components/EmptyStateIcons';
-import { iconFor } from '../components/Icons';
-import { t } from '../helpers';
+import Html from "@kitajs/html";
+import {
+    DEPENDENCY_LEGEND_ITEMS,
+    GraphLegend,
+    GraphZoomControls,
+} from "../blocks/GraphControls";
+import { OverviewHero } from "../blocks/OverviewHero";
+import { OverviewStats } from "../blocks/OverviewStats";
+import { EmptyState } from "../components/EmptyState";
+import { EmptyIconDashboard } from "../components/EmptyStateIcons";
+import { iconFor } from "../components/Icons";
+import { t } from "../helpers";
 
 type OverviewProps = {
     readonly modules?: unknown[];
@@ -49,7 +53,8 @@ const hasAnyEntities = (props: OverviewProps): boolean =>
 
 export const Overview = (props: OverviewProps): string => {
     const hasModules = (props.modules?.length ?? 0) > 0;
-    const showGraph = !props.disableGraph && !props.disableMainGraph && hasModules;
+    const showGraph =
+        !props.disableGraph && !props.disableMainGraph && hasModules;
     const hasDepGraph = (props.dependencyGraph?.nodes?.length ?? 0) > 0;
     const showDepGraph = !props.disableGraph && !hasModules && hasDepGraph;
 
@@ -57,18 +62,18 @@ export const Overview = (props: OverviewProps): string => {
         <>
             {/* 1. Project Summary Hero */}
             {OverviewHero({
-                projectName: props.documentationMainName || t('overview'),
+                projectName: props.documentationMainName || t("overview"),
                 angularVersion: props.angularVersion || undefined,
                 hasZoneless: [
                     ...((props.components as any[]) ?? []),
-                    ...((props.directives as any[]) ?? [])
+                    ...((props.directives as any[]) ?? []),
                 ].some((e: any) => e.zoneless),
-                generatedAt: props.generatedAt || new Date().toISOString()
+                generatedAt: props.generatedAt || new Date().toISOString(),
             })}
 
             {/* 2. Module Graph (NgModule apps only) */}
             {showGraph && (
-                <div class="cdx-graph-container">
+                <div class="cdx-graph-container cdx-overview-graph">
                     <div class="cdx-graph-viewport">
                         <div id="module-graph-svg">{props.mainGraph}</div>
                         <button
@@ -77,7 +82,7 @@ export const Overview = (props: OverviewProps): string => {
                             class="cdx-graph-fullscreen-btn"
                             aria-label="Fullscreen"
                         >
-                            {iconFor('ion-ios-resize')}
+                            {iconFor("ion-ios-resize")}
                         </button>
                     </div>
                     {GraphZoomControls({})}
@@ -96,13 +101,13 @@ export const Overview = (props: OverviewProps): string => {
                             </li>
                         ))}
                     </ul>
-                    <div class="cdx-graph-container cdx-graph-container--compact">
+                    <div class="cdx-graph-container cdx-overview-graph">
                         <div class="cdx-graph-viewport">
                             <div id="dependency-graph-container"></div>
                         </div>
-                        {GraphZoomControls({ prefix: 'dep-' })}
-                        {GraphLegend({ items: DEPENDENCY_LEGEND_ITEMS })}
+                        {GraphZoomControls({ prefix: "dep-" })}
                     </div>
+                    {GraphLegend({ items: DEPENDENCY_LEGEND_ITEMS })}
                 </>
             )}
 
@@ -122,17 +127,17 @@ export const Overview = (props: OverviewProps): string => {
                       routes: props.routes as any[],
                       routesLength: props.routesLength,
                       appConfig: props.appConfig,
-                      coverageData: props.coverageData
+                      coverageData: props.coverageData,
                   })
                 : EmptyState({
                       icon: EmptyIconDashboard(),
-                      title: t('empty-overview-title'),
-                      description: t('empty-overview-desc'),
+                      title: t("empty-overview-title"),
+                      description: t("empty-overview-desc"),
                       action: {
-                          label: t('empty-overview-action'),
-                          href: 'https://compodocx.dev/guide/getting-started'
+                          label: t("empty-overview-action"),
+                          href: "https://compodocx.dev/guide/getting-started",
                       },
-                      variant: 'page'
+                      variant: "page",
                   })}
         </>
     ) as string;

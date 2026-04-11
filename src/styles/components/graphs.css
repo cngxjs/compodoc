@@ -1,5 +1,5 @@
 .cdx-graph-container {
-    /* margin-top: var(--spacing-cdx-xl); */
+    /* margin-top scoped per consumer (see overview.css for page-level graphs) */
 }
 
 .cdx-graph-viewport {

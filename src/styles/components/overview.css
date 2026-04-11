@@ -11,6 +11,10 @@
     @apply mt-6 mb-2;
 }
 
+.cdx-overview-graph {
+    margin-top: var(--spacing-cdx-xl);
+}
+
 .cdx-overview-kpi-row {
     container-type: inline-size;
     @apply grid gap-4 mt-6 mb-8;
