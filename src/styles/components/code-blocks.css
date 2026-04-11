@@ -31,11 +31,21 @@ pre::-webkit-scrollbar-thumb {
 code {
     @apply bg-transparent;
     padding: 2px 0;
+    /* Monospace glyphs render visually larger than sans-serif at the same
+       em size — drop inline <code> to 0.875em so it sits flush with the
+       surrounding body text. <pre> code is reset below so Shiki keeps its
+       own size. */
+    font-size: 0.875em;
+    /* Match the pink family already used by .cdx-param-type / returns.
+       Dark counterpart is #e09393 in compodocx.css. Component-specific
+       rules override this fallback where a different colour is needed. */
+    color: #c2185b;
 }
 
 pre code {
     font-size: inherit;
     line-height: inherit;
+    color: inherit;
 }
 
 pre.line-numbers {

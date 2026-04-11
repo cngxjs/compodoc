@@ -164,6 +164,29 @@
     --shadow-cdx-lg: 0 12px 32px hsl(0 0% 0% / 0.4);
 }
 
+/* Global inline <code> + <a> fallback colours.
+   Component-specific rules (sidebar, topbar, menu, hero, badges, member
+   cards, etc.) have their own higher-specificity colour rules and override
+   these where needed. Scoped colour tokens instead of a global fallback
+   would duplicate the colour across every content component, so we take
+   the same approach as the existing .dark overrides and just give the
+   base elements a default that matches the design system. */
+a {
+    color: var(--color-cdx-primary);
+}
+
+/* Global hover underline for all anchors. Sidebar menu and tab bar
+   opt out below — their own hover treatment (color shift + bg tint)
+   replaces the underline. */
+a:hover {
+    text-decoration: underline;
+}
+
+.menu a:hover,
+.cdx-tab-bar a:hover {
+    text-decoration: none;
+}
+
 .dark code {
     color: #e09393;
 }
