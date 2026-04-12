@@ -1,3 +1,5 @@
+import { registerLineHandler, updateHash } from './hash-router';
+
 const LANG_MAP: Record<string, string> = {
     typescript: 'TypeScript',
     javascript: 'JavaScript',
@@ -55,24 +57,22 @@ const highlightLines = (container: Element, start: number, end: number) => {
     }
 };
 
-const parseLineHash = (hash: string): { start: number; end: number } | null => {
-    const match = hash.match(/^#L(\d+)(?:-L(\d+))?$/);
-    if (!match) {
-        return null;
+/** Called by hash-router when it resolves a #L{n} deep-link. */
+export const highlightLineRange = (panel: HTMLElement, start: number, end: number): void => {
+    const pre = panel.querySelector<HTMLElement>('.cdx-source-viewer pre');
+    if (pre) {
+        highlightLines(pre, start, end);
     }
-    const start = parseInt(match[1], 10);
-    const end = match[2] ? parseInt(match[2], 10) : start;
-    return { start: Math.min(start, end), end: Math.max(start, end) };
 };
 
 export const initCodeBlocks = () => {
     initCopyButtons();
     initLinkToSource();
     initLinePermalinks();
-    initHashHighlight();
     initSourceScope();
     initLanguageChips();
     initExpandableSnippets();
+    registerLineHandler(highlightLineRange);
 };
 
 const initCopyButtons = () => {
@@ -155,23 +155,9 @@ const initLinkToSource = () => {
 
         link.addEventListener('click', e => {
             e.preventDefault();
-            const targetLine = link.getAttribute('data-cdx-line');
-            const sourceTab = document.querySelector<HTMLElement>('#source-tab');
-            if (sourceTab) {
-                sourceTab.click();
-            }
-
-            if (targetLine) {
-                const lineNr = parseInt(targetLine, 10);
-                history.replaceState(null, '', `#L${lineNr}`);
-
-                setTimeout(() => {
-                    const pre = document.querySelector('.cdx-source-viewer pre');
-                    if (!pre) {
-                        return;
-                    }
-                    highlightLines(pre, lineNr, lineNr);
-                }, 300);
+            const line = link.getAttribute('data-cdx-line');
+            if (line) {
+                updateHash(`#L${line}`);
             }
         });
     });
@@ -200,40 +186,13 @@ const initLinePermalinks = () => {
             if (e.shiftKey && rangeStart !== null) {
                 const start = Math.min(rangeStart, lineNr);
                 const end = Math.max(rangeStart, lineNr);
-                history.replaceState(null, '', `#L${start}-L${end}`);
-                highlightLines(pre, start, end);
+                updateHash(`#L${start}-L${end}`);
             } else {
                 rangeStart = lineNr;
-                history.replaceState(null, '', `#L${lineNr}`);
-                highlightLines(pre, lineNr, lineNr);
+                updateHash(`#L${lineNr}`);
             }
         });
     });
-};
-
-const initHashHighlight = () => {
-    const applyHash = () => {
-        const range = parseLineHash(location.hash);
-        if (!range) {
-            return;
-        }
-
-        const sourceTab = document.querySelector<HTMLElement>('#source-tab');
-        if (sourceTab && !sourceTab.classList.contains('active')) {
-            sourceTab.click();
-        }
-
-        // wait for tab switch animation
-        setTimeout(() => {
-            const pre = document.querySelector('.cdx-source-viewer pre');
-            if (pre) {
-                highlightLines(pre, range.start, range.end);
-            }
-        }, 100);
-    };
-
-    applyHash();
-    window.addEventListener('hashchange', applyHash);
 };
 
 /**
@@ -418,7 +377,7 @@ const initSourceScope = () => {
             }
 
             // Scope text follows the deepest active chain.
-            const deepest = chain[chain.length - 1];
+            const deepest = chain.at(-1);
             renderScope(deepest ? deepest.name : members[0]?.name || '');
             renderStack(chain);
         };

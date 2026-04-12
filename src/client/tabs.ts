@@ -1,36 +1,16 @@
 /**
- * Tab switching behavior.
- * Uses cdx-tab-bar pill bar and cdx-tab-panel panels.
- * Implements WAI-ARIA Tabs pattern: roving tabindex, arrow/Home/End keys,
- * aria-selected, active pill highlighting.
+ * Keyboard navigation for tabs (WAI-ARIA roving tabindex).
+ * Click handling lives in hash-router.ts via event delegation.
  */
 
-/** Activate a specific tab and its panel */
-const activateTab = (tab: HTMLElement, tabList: HTMLElement) => {
-    // Deactivate all tabs in this group
-    tabList.querySelectorAll<HTMLElement>('[role="tab"]').forEach(t => {
-        t.classList.remove('active');
-        t.setAttribute('aria-selected', 'false');
-        t.setAttribute('tabindex', '-1');
-    });
+import { updateHash } from './hash-router';
 
-    // Deactivate all panels
-    const targetId = tab.dataset.cdxTarget || tab.getAttribute('href');
-    if (targetId) {
-        const targetPane = document.querySelector(targetId);
-        const tabContent = targetPane?.parentElement;
-        if (tabContent) {
-            tabContent.querySelectorAll<HTMLElement>('.cdx-tab-panel').forEach(pane => {
-                pane.classList.remove('active');
-            });
-        }
-        targetPane?.classList.add('active');
+/** Switch tab from keyboard — updates the URL hash and moves focus. */
+const activateTab = (tab: HTMLElement) => {
+    const href = tab.getAttribute('href');
+    if (href) {
+        updateHash(href);
     }
-
-    // Activate selected tab
-    tab.classList.add('active');
-    tab.setAttribute('aria-selected', 'true');
-    tab.setAttribute('tabindex', '0');
     tab.focus();
 };
 
@@ -40,14 +20,6 @@ export const initTabs = () => {
         if (!tabs.length) {
             return;
         }
-
-        // Click handler
-        tabs.forEach(tab => {
-            tab.addEventListener('click', e => {
-                e.preventDefault();
-                activateTab(tab, tabList);
-            });
-        });
 
         // Keyboard navigation
         tabList.addEventListener('keydown', e => {
@@ -81,7 +53,7 @@ export const initTabs = () => {
             }
 
             e.preventDefault();
-            activateTab(tabs[next], tabList);
+            activateTab(tabs[next]);
         });
     });
 };

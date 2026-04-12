@@ -39,31 +39,31 @@ export default defineConfig({
         {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts'],
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts', '**/tab-routing.spec.ts'],
         },
 
         {
             name: 'chrome',
             use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts'],
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts', '**/tab-routing.spec.ts'],
         },
 
         {
             name: 'firefox',
             use: { ...devices['Desktop Firefox'] },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts'],
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts', '**/tab-routing.spec.ts'],
         },
 
         {
             name: 'webkit',
             use: { ...devices['Desktop Safari'] },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts'],
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts', '**/tab-routing.spec.ts'],
         },
 
         {
             name: 'Microsoft Edge',
             use: { ...devices['Desktop Edge'], channel: 'msedge' },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts'],
+            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts', '**/tab-routing.spec.ts'],
         },
 
         /* todomvc-ng2 fixture tests (empty states, etc.) — uses port 4001 */
@@ -77,7 +77,7 @@ export default defineConfig({
         {
             name: 'standalone',
             use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:4002' },
-            testMatch: ['**/standalone-features.spec.ts', '**/source-viewer.spec.ts'],
+            testMatch: ['**/standalone-features.spec.ts', '**/source-viewer.spec.ts', '**/tab-routing.spec.ts'],
         },
     ],
 

@@ -1,3 +1,8 @@
+.cdx-member-card,
+.cdx-section-heading {
+    scroll-margin-top: 48px;
+}
+
 .cdx-member-card {
     border: 1px solid var(--color-cdx-border);
     border-radius: var(--radius-cdx-lg, 12px);

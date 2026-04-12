@@ -136,6 +136,13 @@ body {
     container-type: inline-size;
     container-name: content;
     margin: 0 auto;
+    transition: opacity 120ms ease;
+}
+
+/* Hide content until hash-router has switched to the right tab.
+   Set by the inline <head> script, removed by initHashRouter(). */
+.cdx-hash-pending .content-data {
+    opacity: 0;
 }
 
 @media (max-width: 1023px) {
