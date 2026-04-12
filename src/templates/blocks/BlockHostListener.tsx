@@ -1,5 +1,4 @@
 import Html from '@kitajs/html';
-import { IconChevronRight } from '../components/Icons';
 import {
     hasJsdocParams,
     jsdocReturnsComment,
@@ -50,9 +49,6 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
                         </span>
                         <span class="cdx-member-type">
                             {m.returnType && linkTypeHtml(m.returnType)}
-                            <span class="cdx-member-chevron" aria-hidden="true">
-                                {IconChevronRight()}
-                            </span>
                         </span>
                     </header>
                 ) as string;
@@ -137,7 +133,6 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
                 return MemberCard({
                     id: m.name,
                     deprecated: m.deprecated,
-                    collapsible: true,
                     header,
                     children: body
                 });

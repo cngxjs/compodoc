@@ -1,0 +1,197 @@
+/* ----------------------------------------------------------------
+   README content — user-authored markdown converted to HTML.
+
+   The markdown → HTML output contains bare elements (<h1>, <ul>,
+   <pre>, <code>, etc.) with no cdx-* classes, so Tailwind 4 Preflight
+   strips every browser default and leaves them looking naked. These
+   descendant selectors re-apply design-system styling to everything
+   inside a .cdx-readme container.
+
+   Used by the Readme tab on ComponentPage and every entity page via
+   EntityTabs — never style bare elements outside a .cdx-readme
+   wrapper because that would leak back into the rest of the shell.
+   ---------------------------------------------------------------- */
+
+.cdx-readme {
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: var(--color-cdx-text);
+}
+
+/* --- Headings --- */
+
+.cdx-readme h1,
+.cdx-readme h2,
+.cdx-readme h3,
+.cdx-readme h4,
+.cdx-readme h5,
+.cdx-readme h6 {
+    color: var(--color-cdx-text);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+}
+
+.cdx-readme > :first-child {
+    margin-top: 0;
+}
+
+.cdx-readme h1 {
+    font-size: 1.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-cdx-border);
+}
+
+.cdx-readme h2 {
+    font-size: 1.375rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--color-cdx-border);
+    margin-top: 2.5rem;
+}
+
+.cdx-readme h3 {
+    font-size: 1.125rem;
+}
+
+.cdx-readme h4 {
+    font-size: 1rem;
+}
+
+.cdx-readme h5,
+.cdx-readme h6 {
+    font-size: 0.9375rem;
+    color: var(--color-cdx-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* --- Paragraphs & inline prose --- */
+
+.cdx-readme p {
+    margin-bottom: 1rem;
+}
+
+.cdx-readme p:last-child {
+    margin-bottom: 0;
+}
+
+.cdx-readme strong {
+    font-weight: 600;
+    color: var(--color-cdx-text);
+}
+
+.cdx-readme em {
+    font-style: italic;
+}
+
+.cdx-readme a {
+    color: var(--color-cdx-primary);
+    text-decoration: none;
+}
+
+.cdx-readme a:hover {
+    text-decoration: underline;
+}
+
+/* --- Lists --- */
+
+.cdx-readme ul,
+.cdx-readme ol {
+    margin: 0 0 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.cdx-readme ul {
+    list-style: disc;
+}
+
+.cdx-readme ol {
+    list-style: decimal;
+}
+
+.cdx-readme li {
+    margin-bottom: 0.375rem;
+}
+
+.cdx-readme li:last-child {
+    margin-bottom: 0;
+}
+
+.cdx-readme li > ul,
+.cdx-readme li > ol {
+    margin-top: 0.375rem;
+    margin-bottom: 0.375rem;
+}
+
+/* --- Inline code (give it the pill treatment the global rule strips) --- */
+
+.cdx-readme :not(pre) > code {
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
+    padding: 0.125rem 0.375rem;
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    color: var(--color-cdx-text);
+}
+
+/* --- Block code: the shared `pre` rule in code-blocks.css handles
+       the container; only add spacing inside the readme flow. */
+
+.cdx-readme pre {
+    margin-bottom: 1rem;
+}
+
+/* --- Blockquote --- */
+
+.cdx-readme blockquote {
+    border-left: 3px solid var(--color-cdx-border);
+    padding: 0.25rem 0 0.25rem 1rem;
+    margin: 0 0 1rem 0;
+    color: var(--color-cdx-text-secondary);
+    font-style: italic;
+}
+
+.cdx-readme blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+/* --- Horizontal rule --- */
+
+.cdx-readme hr {
+    border: 0;
+    border-top: 1px solid var(--color-cdx-border);
+    margin: 2rem 0;
+}
+
+/* --- Tables (reuse the same visual grammar as cdx-table) --- */
+
+.cdx-readme table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+.cdx-readme th,
+.cdx-readme td {
+    border: 1px solid var(--color-cdx-border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+}
+
+.cdx-readme th {
+    background: var(--color-cdx-bg-alt);
+    font-weight: 600;
+}
+
+/* --- Images --- */
+
+.cdx-readme img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-cdx-md);
+    margin: 0.5rem 0;
+}

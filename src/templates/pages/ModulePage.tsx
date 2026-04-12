@@ -2,7 +2,7 @@ import Html from '@kitajs/html';
 import { BlockMethod } from '../blocks/BlockMethod';
 import { EntityTabs } from '../blocks/EntityTabs';
 import { GraphZoomControls } from '../blocks/GraphControls';
-import { IconInterface, IconMaximize } from '../components/Icons';
+import { IconFile, IconInterface, IconMaximize, IconModule } from '../components/Icons';
 import { parseDescription, relativeUrl, t } from '../helpers';
 
 const NG2_MODULES = ['BrowserModule', 'FormsModule', 'HttpModule', 'RouterModule'];
@@ -51,17 +51,17 @@ export const ModulePage = (data: any): string => {
     const depth = data.depth;
     const _base = relativeUrl(depth);
 
+    const hasModuleLists =
+        (mod.declarations?.length ?? 0) > 0 ||
+        (mod.entryComponents?.length ?? 0) > 0 ||
+        (mod.providers?.length ?? 0) > 0 ||
+        (mod.imports?.length ?? 0) > 0 ||
+        (mod.exports?.length ?? 0) > 0 ||
+        (mod.bootstrap?.length ?? 0) > 0 ||
+        (mod.schemas?.length ?? 0) > 0;
+
     const infoContent = (
         <>
-            {!data.disableFilePath && (
-                <section class="cdx-content-section">
-                    <h3 class="cdx-section-heading">{t('file')}</h3>
-                    <p>
-                        <code>{mod.file}</code>
-                    </p>
-                </section>
-            )}
-
             {mod.ngid && (
                 <section class="cdx-content-section">
                     <h3 class="cdx-section-heading">{t('identifier')}</h3>
@@ -70,10 +70,10 @@ export const ModulePage = (data: any): string => {
             )}
 
             {mod.deprecated && (
-                <section class="cdx-content-section">
-                    <h3 class="cdx-section-heading deprecated">{t('deprecated')}</h3>
-                    <p>{mod.deprecationMessage}</p>
-                </section>
+                <div class="cdx-deprecation-banner" role="alert">
+                    <strong>{t('deprecated')}</strong>
+                    <span>{mod.deprecationMessage}</span>
+                </div>
             )}
 
             {mod.description && (
@@ -83,99 +83,128 @@ export const ModulePage = (data: any): string => {
                 </section>
             )}
 
-            <div class="cdx-module-lists">
-                {ModuleList({
-                    items: mod.declarations,
-                    titleKey: 'declarations',
-                    docsPath: 'declarations',
-                    depth,
-                    buildHref: (item, b) => `${b}${item.type}s/${item.name}.html`
-                })}
-                {ModuleList({
-                    items: mod.entryComponents,
-                    titleKey: 'entrycomponents',
-                    docsPath: 'entryComponents',
-                    depth,
-                    buildHref: (item, b) => `${b}${item.type}s/${item.name}.html`
-                })}
-                {ModuleList({
-                    items: mod.providers,
-                    titleKey: 'providers',
-                    docsPath: 'providers',
-                    depth,
-                    buildHref: (item, b) => {
-                        if (item.type === 'injectable') {
-                            return `${b}injectables/${item.name}.html`;
-                        }
-                        if (item.type === 'interceptor') {
-                            return `${b}interceptors/${item.name}.html`;
-                        }
-                        return null;
-                    }
-                })}
-                {ModuleList({
-                    items: mod.imports,
-                    titleKey: 'imports',
-                    docsPath: 'imports',
-                    depth,
-                    buildHref: (item, b) =>
-                        isAngularModule(item.name) ? null : `${b}modules/${item.name}.html`
-                })}
-                {ModuleList({
-                    items: mod.exports,
-                    titleKey: 'exports',
-                    docsPath: 'exports',
-                    depth,
-                    buildHref: (item, b) =>
-                        isAngularModule(item.name) ? null : `${b}${item.type}s/${item.name}.html`
-                })}
-                {ModuleList({
-                    items: mod.bootstrap,
-                    titleKey: 'bootstrap',
-                    docsPath: 'bootstrap',
-                    depth,
-                    buildHref: (item, b) => `${b}${item.type}s/${item.name}.html`
-                })}
-                {mod.schemas?.length > 0 && (
-                    <div class="cdx-module-list-section">
-                        <h3>
-                            {t('schemas')}
-                            <a
-                                href="https://angular.dev/api/core/NgModule"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title="Official documentation about module schemas"
-                            >
-                                {IconInterface()}
-                            </a>
-                        </h3>
-                        <ul class="cdx-entity-list">
-                            {mod.schemas.map((s: string) => (
-                                <li class="cdx-entity-list-item">
+            {hasModuleLists && (
+                <section class="cdx-content-section">
+                    <h3 class="cdx-section-heading">{t('metadata')}</h3>
+                    <div class="cdx-module-lists">
+                        {ModuleList({
+                            items: mod.declarations,
+                            titleKey: 'declarations',
+                            docsPath: 'declarations',
+                            depth,
+                            buildHref: (item, b) => `${b}${item.type}s/${item.name}.html`
+                        })}
+                        {ModuleList({
+                            items: mod.entryComponents,
+                            titleKey: 'entrycomponents',
+                            docsPath: 'entryComponents',
+                            depth,
+                            buildHref: (item, b) => `${b}${item.type}s/${item.name}.html`
+                        })}
+                        {ModuleList({
+                            items: mod.providers,
+                            titleKey: 'providers',
+                            docsPath: 'providers',
+                            depth,
+                            buildHref: (item, b) => {
+                                if (item.type === 'injectable') {
+                                    return `${b}injectables/${item.name}.html`;
+                                }
+                                if (item.type === 'interceptor') {
+                                    return `${b}interceptors/${item.name}.html`;
+                                }
+                                return null;
+                            }
+                        })}
+                        {ModuleList({
+                            items: mod.imports,
+                            titleKey: 'imports',
+                            docsPath: 'imports',
+                            depth,
+                            buildHref: (item, b) =>
+                                isAngularModule(item.name) ? null : `${b}modules/${item.name}.html`
+                        })}
+                        {ModuleList({
+                            items: mod.exports,
+                            titleKey: 'exports',
+                            docsPath: 'exports',
+                            depth,
+                            buildHref: (item, b) =>
+                                isAngularModule(item.name)
+                                    ? null
+                                    : `${b}${item.type}s/${item.name}.html`
+                        })}
+                        {ModuleList({
+                            items: mod.bootstrap,
+                            titleKey: 'bootstrap',
+                            docsPath: 'bootstrap',
+                            depth,
+                            buildHref: (item, b) => `${b}${item.type}s/${item.name}.html`
+                        })}
+                        {mod.schemas?.length > 0 && (
+                            <div class="cdx-module-list-section">
+                                <h3>
+                                    {t('schemas')}
                                     <a
-                                        href={`https://angular.dev/api/core/${s}`}
+                                        href="https://angular.dev/api/core/NgModule"
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        title="Official documentation about module schemas"
                                     >
-                                        {s}
+                                        {IconInterface()}
                                     </a>
-                                </li>
-                            ))}
-                        </ul>
+                                </h3>
+                                <ul class="cdx-entity-list">
+                                    {mod.schemas.map((s: string) => (
+                                        <li class="cdx-entity-list-item">
+                                            <a
+                                                href={`https://angular.dev/api/core/${s}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {s}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
-                )}
-            </div>
+                </section>
+            )}
 
-            {mod.methods && BlockMethod({ methods: mod.methods, file: mod.file, depth })}
+            {mod.methods?.length > 0 &&
+                BlockMethod({ methods: mod.methods, file: mod.file, depth })}
         </>
     ) as string;
 
     return (
         <>
-            <ol class="cdx-breadcrumb">
-                <li class="">{t('modules')}</li>
-                <li class={mod.deprecated ? 'cdx-member-name--deprecated' : ''}>{data.name}</li>
-            </ol>
+            <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-entity-module)">
+                <div class="cdx-entity-hero-watermark" aria-hidden="true">
+                    {IconModule()}
+                </div>
+                <nav aria-label="Breadcrumb">
+                    <ol class="cdx-breadcrumb">
+                        <li>{t('modules')}</li>
+                        <li aria-current="page">{data.name}</li>
+                    </ol>
+                </nav>
+                <h1 class="cdx-entity-hero-name">
+                    <span class={mod.deprecated ? 'cdx-member-name--deprecated' : ''}>
+                        {data.name}
+                    </span>
+                </h1>
+                <div class="cdx-entity-hero-badges">
+                    <span class="cdx-badge cdx-badge--entity-module">Module</span>
+                </div>
+                {!data.disableFilePath && mod.file && (
+                    <p class="cdx-entity-hero-file" title="Source file" aria-label="Source file">
+                        {IconFile()}
+                        <span>{mod.file}</span>
+                    </p>
+                )}
+            </div>
 
             {!data.disableGraph && mod.graph && (
                 <div class="cdx-graph-container">

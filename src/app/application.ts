@@ -6,6 +6,7 @@ import polka from 'polka';
 import sirv from 'sirv';
 
 import { SyntaxKind } from 'ts-morph';
+import { hasAnyApiSections } from '../templates/helpers/tab-helpers';
 import AngularVersionUtil from '../utils/angular-version.util';
 import { COMPODOC_CONSTANTS } from '../utils/constants';
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
@@ -1414,6 +1415,28 @@ export class Application {
                 (!dependency.styles || dependency.styles.length === 0)
             ) {
                 return;
+            }
+
+            // API tab: drop it in legacy single-tab mode, or when the
+            // dependency has no member content to populate it.
+            if (customTab.id === 'api') {
+                if (!hasAnyApiSections()) {
+                    return;
+                }
+                const hasApiMembers = !!(
+                    dependency.constructorObj ||
+                    dependency.inputsClass?.length ||
+                    dependency.outputsClass?.length ||
+                    dependency.hostBindings?.length ||
+                    dependency.hostListeners?.length ||
+                    (dependency.methodsClass ?? dependency.methods)?.length ||
+                    (dependency.propertiesClass ?? dependency.properties)?.length ||
+                    dependency.indexSignatures?.length ||
+                    (dependency.accessors && Object.keys(dependency.accessors).length)
+                );
+                if (!hasApiMembers) {
+                    return;
+                }
             }
 
             navTabs.push(navTab);

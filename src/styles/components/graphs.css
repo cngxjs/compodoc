@@ -1,10 +1,24 @@
 .cdx-graph-container {
-    /* margin-top: var(--spacing-cdx-xl); */
+    /* Page-level graphs (Overview, ModulePage) sit directly below the
+       entity hero — breathe top. Reset below for graphs rendered inside
+       a tab panel (ComponentPage dependency tab) where the tab bar
+       already provides separation. */
+    margin-top: var(--spacing-cdx-xl);
+}
+
+.cdx-tab-panel .cdx-graph-container {
+    margin-top: 0;
 }
 
 .cdx-graph-viewport {
-    /* @apply relative border border-[var(--color-cdx-border)] bg-[var(--color-cdx-bg-alt)] overflow-hidden;
-    border-radius: var(--radius-cdx-lg); */
+    /* Positioned ancestor for the absolutely-positioned fullscreen
+       button so it sits top-right of the graph area, not of the page. */
+    position: relative;
+    /* Match the Graphviz SVG fill for .graph > polygon so the viewport
+       edges blend into the graph canvas — no seam between the container
+       and the graph background. */
+    background: var(--color-cdx-bg-alt);
+    border-radius: var(--radius-cdx-md);
 }
 
 .cdx-graph-container--compact .cdx-graph-viewport {
@@ -19,7 +33,7 @@
 }
 
 .cdx-graph-fullscreen-btn {
-    @apply absolute cursor-pointer;
+    @apply absolute cursor-pointer inline-flex items-center justify-center;
     top: var(--spacing-cdx-sm);
     right: var(--spacing-cdx-sm);
     background: var(--color-cdx-bg-elevated);
@@ -27,6 +41,12 @@
     border-radius: var(--radius-cdx-sm);
     padding: var(--spacing-cdx-xs);
     color: var(--color-cdx-text-muted);
+}
+.cdx-graph-fullscreen-btn .cdx-icon {
+    /* Override the global .cdx-icon margin-right: 0.5rem — this button
+       has only the icon and no adjacent text, so the margin shifts the
+       SVG off-center inside its padding box. */
+    margin-right: 0;
 }
 .cdx-graph-fullscreen-btn:hover {
     color: var(--color-cdx-text);
@@ -60,6 +80,12 @@
     @apply inline-block rounded-full;
     width: 10px;
     height: 10px;
+    /* `--color-cdx-border-strong` adapts across themes — medium-dark
+       gray in light mode (visible on white bg-elevated), medium-light
+       gray in dark mode (visible on dark bg-elevated). This makes the
+       HTML-element legend dot (which uses bg-elevated as its fill)
+       actually visible instead of blending into the legend chrome. */
+    border: 1px solid var(--color-cdx-border-strong);
 }
 
 /* Module graph (Graphviz SVG) — override hardcoded colors */

@@ -1,5 +1,4 @@
 import Html from '@kitajs/html';
-import { IconChevronRight } from '../components/Icons';
 import {
     functionSignature,
     hasJsdocParams,
@@ -19,7 +18,6 @@ type BlockMethodProps = {
     readonly title?: string;
     readonly depth?: number;
     readonly navTabs?: any[];
-    readonly collapsible?: boolean;
 };
 
 export const BlockMethod = (props: BlockMethodProps): string => {
@@ -51,9 +49,6 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                         </span>
                         <span class="cdx-member-type">
                             {m.returnType && linkTypeHtml(m.returnType)}
-                            <span class="cdx-member-chevron" aria-hidden="true">
-                                {IconChevronRight()}
-                            </span>
                         </span>
                     </header>
                 ) as string;
@@ -140,7 +135,6 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                 return MemberCard({
                     id: m.name,
                     deprecated: m.deprecated,
-                    collapsible: props.collapsible !== false,
                     header,
                     children: body
                 });

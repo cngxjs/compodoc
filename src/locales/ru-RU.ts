@@ -162,7 +162,6 @@ export const TRANSLATION_RU_RU = {
     signature: 'Сигнатура',
     'signal-adoption': 'Сигналы',
     source: 'Источник',
-    'source-preview': 'Предпросмотр кода',
     standalone: 'Автономный',
     'standalone-adoption': 'Автономный',
     statements: 'Утверждения',

@@ -90,6 +90,7 @@ const EntityLink = (props: {
                 data-cdx-desc={previewDesc(props.description)}
             >
                 {props.name}
+                {props.deprecated ? Badge({ label: 'D', cssClass: 'cdx-badge--deprecated' }) : ''}
                 {props.standalone ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' }) : ''}
                 {props.isToken ? Badge({ label: 'T', cssClass: 'cdx-badge--token' }) : ''}
                 {props.beta ? Badge({ label: 'B', cssClass: 'cdx-badge--beta' }) : ''}
@@ -500,6 +501,12 @@ export const Menu = (props: MenuProps): string => {
                                         class={mod.deprecated ? 'cdx-member-name--deprecated' : ''}
                                     >
                                         {mod.name}
+                                        {mod.deprecated
+                                            ? Badge({
+                                                  label: 'D',
+                                                  cssClass: 'cdx-badge--deprecated'
+                                              })
+                                            : ''}
                                     </a>
                                     {ModuleSubSection({
                                         items: mod.compodocLinks?.components,

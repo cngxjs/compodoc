@@ -557,6 +557,7 @@ test.describe('Keyboard navigation', () => {
 
     test('j/k navigate between member cards with focus ring', async ({ page }) => {
         await page.goto('/injectables/UserService.html');
+        await page.locator('[role="tab"]', { hasText: 'API' }).click();
         await page.keyboard.press('j');
         const focused = page.locator('.cdx-member-card--focused');
         await expect(focused).toHaveCount(1);
@@ -569,6 +570,7 @@ test.describe('Keyboard navigation', () => {
 
     test('j/k scrolls focused card into view', async ({ page }) => {
         await page.goto('/injectables/UserService.html');
+        await page.locator('[role="tab"]', { hasText: 'API' }).click();
         await page.keyboard.press('j');
         const focused = page.locator('.cdx-member-card--focused');
         await expect(focused).toBeVisible();
@@ -577,6 +579,7 @@ test.describe('Keyboard navigation', () => {
 
     test('Escape clears member focus', async ({ page }) => {
         await page.goto('/injectables/UserService.html');
+        await page.locator('[role="tab"]', { hasText: 'API' }).click();
         await page.keyboard.press('j');
         await expect(page.locator('.cdx-member-card--focused')).toHaveCount(1);
         await page.keyboard.press('Escape');
@@ -645,56 +648,11 @@ test.describe('Entity preview panel', () => {
     });
 });
 
-test.describe('Mini code preview', () => {
-    test('entity page shows collapsed Source Preview details element', async ({ page }) => {
-        await page.goto('/directives/HighlightDirective.html');
-        const details = page.locator('details.cdx-code-preview');
-        await expect(details).toBeVisible();
-        // Should be collapsed by default
-        const isOpen = await details.evaluate(el => (el as HTMLDetailsElement).open);
-        expect(isOpen).toBe(false);
-    });
-
-    test('click toggles open and shows highlighted code', async ({ page }) => {
-        await page.goto('/directives/HighlightDirective.html');
-        const details = page.locator('details.cdx-code-preview');
-        await details.locator('summary').click();
-        const isOpen = await details.evaluate(el => (el as HTMLDetailsElement).open);
-        expect(isOpen).toBe(true);
-        const code = details.locator('.shiki');
-        await expect(code).toBeVisible();
-    });
-
-    test('declaration shows decorator + class signature, not full method bodies', async ({
-        page
-    }) => {
-        await page.goto('/directives/HighlightDirective.html');
-        const details = page.locator('details.cdx-code-preview');
-        await details.locator('summary').click();
-        const text = await details.textContent();
-        expect(text).toContain('@Directive');
-        expect(text).toContain('// ...');
-    });
-
-    test('entity without sourceCode shows no preview section', async ({ page }) => {
-        await page.goto('/injectables/API_BASE_URL.html');
-        const details = page.locator('details.cdx-code-preview');
-        expect(await details.count()).toBe(0);
-    });
-
-    test('preview uses Shiki syntax highlighting', async ({ page }) => {
-        await page.goto('/directives/HighlightDirective.html');
-        const details = page.locator('details.cdx-code-preview');
-        await details.locator('summary').click();
-        const shiki = details.locator('.shiki');
-        await expect(shiki).toBeVisible();
-    });
-});
-
 test.describe('Responsive member cards', () => {
     test('member header stacks vertically at narrow viewport', async ({ page }) => {
         await page.setViewportSize({ width: 400, height: 800 });
         await page.goto('/injectables/UserService.html');
+        await page.locator('[role="tab"]', { hasText: 'API' }).click();
         const header = page.locator('.cdx-member-header').first();
         await expect(header).toBeVisible();
         const direction = await header.evaluate(el => getComputedStyle(el).flexDirection);
@@ -704,6 +662,7 @@ test.describe('Responsive member cards', () => {
     test('member header is row layout at normal viewport', async ({ page }) => {
         await page.setViewportSize({ width: 1200, height: 800 });
         await page.goto('/injectables/UserService.html');
+        await page.locator('[role="tab"]', { hasText: 'API' }).click();
         const header = page.locator('.cdx-member-header').first();
         await expect(header).toBeVisible();
         const direction = await header.evaluate(el => getComputedStyle(el).flexDirection);

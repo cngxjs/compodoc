@@ -70,9 +70,7 @@ export const DirectivePage = (data: any): string =>
         showMethods: true,
         showProperties: true,
         showAccessors: true,
-        contextLine: data.directive?.selector,
         showStandaloneBadge: true,
         showJsdocBadges: true,
-        relationships: data.relationships,
-        sourceCode: data.directive?.sourceCode
+        relationships: data.relationships
     });

@@ -68,7 +68,7 @@ export const Overview = (props: OverviewProps): string => {
 
             {/* 2. Module Graph (NgModule apps only) */}
             {showGraph && (
-                <div class="cdx-graph-container">
+                <div class="cdx-graph-container cdx-overview-graph">
                     <div class="cdx-graph-viewport">
                         <div id="module-graph-svg">{props.mainGraph}</div>
                         <button
@@ -96,13 +96,13 @@ export const Overview = (props: OverviewProps): string => {
                             </li>
                         ))}
                     </ul>
-                    <div class="cdx-graph-container cdx-graph-container--compact">
+                    <div class="cdx-graph-container cdx-overview-graph">
                         <div class="cdx-graph-viewport">
                             <div id="dependency-graph-container"></div>
                         </div>
                         {GraphZoomControls({ prefix: 'dep-' })}
-                        {GraphLegend({ items: DEPENDENCY_LEGEND_ITEMS })}
                     </div>
+                    {GraphLegend({ items: DEPENDENCY_LEGEND_ITEMS })}
                 </>
             )}
 

@@ -160,7 +160,6 @@ export const TRANSLATION_HU_HU = {
     signature: 'Aláírás',
     'signal-adoption': 'Szignálok',
     source: 'Forrás',
-    'source-preview': 'Forras elonezet',
     standalone: 'Standalone',
     'standalone-adoption': 'Önálló',
     statements: 'Utasítások',

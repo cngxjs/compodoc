@@ -32,6 +32,12 @@
     background: hsl(35 80% 94%);
 }
 
+.cdx-badge--deprecated {
+    color: #fff;
+    border: 1px solid var(--color-cdx-danger);
+    background: var(--color-cdx-danger);
+}
+
 .cdx-badge--factory {
     color: hsl(200 50% 35%);
     border: 1px solid hsl(200 40% 55%);
@@ -202,6 +208,12 @@
     color: hsl(35 70% 65%);
     border-color: hsl(35 50% 40%);
     background: hsl(35 40% 18%);
+}
+
+.dark .cdx-badge--deprecated {
+    color: var(--color-cdx-bg);
+    border-color: var(--color-cdx-danger);
+    background: var(--color-cdx-danger);
 }
 
 .dark .cdx-badge--factory {

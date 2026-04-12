@@ -48,6 +48,10 @@ export interface MemberInfo {
     name: string;
     kind: string;
     line: number;
+    /** 0-based nesting depth derived from leading whitespace of the
+     *  declaration line. Used by the client-side sticky scroll stack
+     *  to group pinned lines into a parent-child chain. */
+    depth: number;
 }
 
 export interface HighlightOptions {
@@ -221,10 +225,42 @@ export function detectFoldRegions(code: string): FoldRegion[] {
 // Member detection (text scanning for breadcrumb data)
 // ---------------------------------------------------------------------------
 
-const MEMBER_PATTERNS: Array<{ pattern: RegExp; kind: string }> = [
-    { pattern: /^\s*(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/, kind: 'class' },
-    { pattern: /^\s*(?:export\s+)?(?:abstract\s+)?interface\s+(\w+)/, kind: 'interface' },
-    { pattern: /^\s*(?:export\s+)?enum\s+(\w+)/, kind: 'enum' },
+type MemberPattern = {
+    readonly pattern: RegExp;
+    readonly kind: string;
+    /** Top-level declarations produce a member even without an enclosing class. */
+    readonly topLevel?: boolean;
+};
+
+const MEMBER_PATTERNS: readonly MemberPattern[] = [
+    // Top-level entity-likes (set/clear currentClass scope).
+    // Intentionally anchored at column 0 (`^` with no leading `\s*`)
+    // so nested `const x = …`, `function y()` inside a class body are
+    // NOT picked up as top-level declarations.
+    { pattern: /^(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/, kind: 'class', topLevel: true },
+    {
+        pattern: /^(?:export\s+)?(?:abstract\s+)?interface\s+(\w+)/,
+        kind: 'interface',
+        topLevel: true
+    },
+    { pattern: /^(?:export\s+)?enum\s+(\w+)/, kind: 'enum', topLevel: true },
+    // Top-level non-entity declarations (emit member, no nested scope)
+    {
+        pattern: /^(?:export\s+)?(?:async\s+)?function\s+(\w+)/,
+        kind: 'function',
+        topLevel: true
+    },
+    {
+        pattern: /^(?:export\s+)?(?:const|let)\s+(\w+)\s*[:=]/,
+        kind: 'const',
+        topLevel: true
+    },
+    {
+        pattern: /^(?:export\s+)?type\s+(\w+)\s*[=<]/,
+        kind: 'type',
+        topLevel: true
+    },
+    // Class-body members (require currentClass)
     {
         pattern:
             /^\s*(?:public|private|protected|readonly|static|abstract|async|override|get|set)\s+(\w+)\s*[(:]/,
@@ -234,43 +270,87 @@ const MEMBER_PATTERNS: Array<{ pattern: RegExp; kind: string }> = [
     { pattern: /^\s+(?:readonly\s+)?(\w+)\s*[=:;]/, kind: 'property' }
 ];
 
-/** Detect class members and type declarations. Line-by-line patterns, not a full parser. */
+const KEYWORD_BLACKLIST = new Set([
+    'if',
+    'for',
+    'while',
+    'switch',
+    'return',
+    'const',
+    'let',
+    'var',
+    'import',
+    'from',
+    'type'
+]);
+
+/**
+ * Detect class members and top-level declarations. Line-by-line regex — not
+ * a full parser. Emits:
+ *
+ * - Top-level entity-likes (`class`, `interface`, `enum`) — become a scope so
+ *   subsequent indented modifier/method/property lines get scoped under them
+ *   (`ClassName.methodName`).
+ * - Top-level non-entities (`function`, exported `const`/`let`, `type`) —
+ *   emitted as their own member, do NOT become a scope (indented lines
+ *   inside a `const X = { ... }` body are NOT treated as properties).
+ * - Class-body members — only when a `currentClass` is set.
+ */
+/** Count leading whitespace columns (each tab = 4 spaces). */
+const leadingIndent = (line: string): number => {
+    let n = 0;
+    for (const ch of line) {
+        if (ch === ' ') {
+            n += 1;
+            continue;
+        }
+        if (ch === '\t') {
+            n += 4;
+            continue;
+        }
+        break;
+    }
+    return n;
+};
+
+/** Convert an indent column count to a 0-based depth level. Assumes
+ *  the common 4-space indent used by the kitchen-sink fixtures and
+ *  most Angular codebases. */
+const indentToDepth = (indent: number): number => Math.floor(indent / 4);
+
 export function detectMembers(code: string): MemberInfo[] {
     const lines = code.split('\n');
     const members: MemberInfo[] = [];
     let currentClass = '';
 
     for (let i = 0; i < lines.length; i++) {
-        for (const { pattern, kind } of MEMBER_PATTERNS) {
+        for (const { pattern, kind, topLevel } of MEMBER_PATTERNS) {
             const match = lines[i].match(pattern);
-            if (match) {
-                const name = match[1];
-                if (
-                    [
-                        'if',
-                        'for',
-                        'while',
-                        'switch',
-                        'return',
-                        'const',
-                        'let',
-                        'var',
-                        'import',
-                        'from',
-                        'type'
-                    ].includes(name)
-                ) {
-                    continue;
-                }
-
-                if (kind === 'class' || kind === 'interface' || kind === 'enum') {
-                    currentClass = name;
-                    members.push({ name, kind, line: i + 1 });
-                } else if (currentClass) {
-                    members.push({ name: `${currentClass}.${name}`, kind, line: i + 1 });
-                }
-                break;
+            if (!match) {
+                continue;
             }
+            const name = match[1];
+            if (KEYWORD_BLACKLIST.has(name)) {
+                continue;
+            }
+
+            const depth = indentToDepth(leadingIndent(lines[i]));
+
+            if (topLevel) {
+                // class/interface/enum open a nested scope for subsequent
+                // member-pattern matches; function/const/type do not.
+                currentClass =
+                    kind === 'class' || kind === 'interface' || kind === 'enum' ? name : '';
+                members.push({ name, kind, line: i + 1, depth });
+            } else if (currentClass) {
+                members.push({
+                    name: `${currentClass}.${name}`,
+                    kind,
+                    line: i + 1,
+                    depth
+                });
+            }
+            break;
         }
     }
 
@@ -313,6 +393,7 @@ function memberMarkerTransformer(members: MemberInfo[]): ShikiTransformer {
             if (member) {
                 hast.properties['data-cdx-member'] = member.name;
                 hast.properties['data-cdx-member-kind'] = member.kind;
+                hast.properties['data-cdx-member-depth'] = String(member.depth);
             }
         }
     };

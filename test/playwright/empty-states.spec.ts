@@ -4,6 +4,7 @@ test.describe('Empty States', () => {
     test.describe('Page variant — bare entity with no members', () => {
         test('class with no members shows page empty state', async ({ page }) => {
             await page.goto('/classes/Tada.html');
+            await page.locator('[role="tab"]', { hasText: 'Info' }).click();
 
             const info = page.locator('#info');
             const emptyState = info.locator('.cdx-empty-state--page');
@@ -52,7 +53,7 @@ test.describe('Empty States', () => {
 
             const sourcePanel = page.locator('#source');
             await expect(sourcePanel.locator('.cdx-empty-state')).not.toBeVisible();
-            await expect(sourcePanel.locator('.cdx-source-code')).toBeVisible();
+            await expect(sourcePanel.locator('.cdx-source-viewer')).toBeVisible();
         });
     });
 
@@ -87,12 +88,13 @@ test.describe('Empty States', () => {
 
         test('component with inputs DOES render Inputs section', async ({ page }) => {
             await page.goto('/components/AboutComponent.html');
+            await page.locator('[role="tab"]', { hasText: 'API' }).click();
 
-            const info = page.locator('#info');
-            const inputsHeading = info.locator('h3', { hasText: /^Inputs$/ });
+            const api = page.locator('#api');
+            const inputsHeading = api.locator('h3', { hasText: /^Inputs$/ });
             await expect(inputsHeading).toBeVisible();
 
-            const memberCards = info.locator('[data-compodoc="block-inputs"] .cdx-member-card');
+            const memberCards = api.locator('[data-compodoc="block-inputs"] .cdx-member-card');
             await expect(memberCards).not.toHaveCount(0);
         });
     });
@@ -100,10 +102,15 @@ test.describe('Empty States', () => {
     test.describe('Entity page with content — no false empty states', () => {
         test('class with members does NOT show page empty state', async ({ page }) => {
             await page.goto('/classes/Clock.html');
+            await page.locator('[role="tab"]', { hasText: 'Info' }).click();
 
             const info = page.locator('#info');
             await expect(info.locator('.cdx-empty-state--page')).not.toBeVisible();
-            await expect(info.locator('h3', { hasText: 'Properties' })).toBeVisible();
+
+            // Properties section is on the API tab
+            await page.locator('[role="tab"]', { hasText: 'API' }).click();
+            const api = page.locator('#api');
+            await expect(api.locator('h3', { hasText: 'Properties' })).toBeVisible();
         });
 
         test('component with full content has no empty states on info tab', async ({ page }) => {

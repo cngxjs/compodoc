@@ -1,5 +1,4 @@
 import Html from '@kitajs/html';
-import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockIndex } from '../blocks/BlockIndex';
@@ -19,6 +18,8 @@ import {
     MetadataProvidersRow,
     MetadataSection
 } from '../blocks/MetadataRow';
+import { RouteChip } from '../blocks/RouteChip';
+import { SourceViewer } from '../blocks/SourceViewer';
 import { EmptyState } from '../components/EmptyState';
 import {
     EmptyIconBook,
@@ -29,6 +30,7 @@ import {
 import { IconComponent, IconFile } from '../components/Icons';
 import {
     extractReadmeHeadings,
+    isApiSection,
     isInfoSection,
     isInitialTab,
     isReadmeEmpty,
@@ -38,7 +40,6 @@ import {
     relativeUrl,
     t
 } from '../helpers';
-import { shortPath } from '../helpers/short-url';
 
 const escapeSimpleQuote = (text: string): string => {
     if (!text) {
@@ -110,6 +111,11 @@ const ComponentMetadata = (c: any): string => {
     return MetadataSection({ rows });
 };
 
+/**
+ * Overview-style content rendered on the **Info** tab: description, examples,
+ * external links, decorator metadata, host literal, content slots, relationships.
+ * Member surface (inputs/outputs/methods/...) lives in {@link ApiContent}.
+ */
 const InfoContent = (data: any): string => {
     const c = data.component;
     const depth = data.depth;
@@ -123,6 +129,8 @@ const InfoContent = (data: any): string => {
                 </div>
             )}
 
+            {RouteChip({ route: c.route })}
+
             {isInfoSection('description') && c.description && (
                 <section class="cdx-content-section">
                     <h3 class="cdx-section-heading">{t('description')}</h3>
@@ -134,18 +142,9 @@ const InfoContent = (data: any): string => {
                 c.jsdoctags &&
                 JsdocExamplesBlock({ tags: c.jsdoctags, variant: 'code', level: 'section' })}
 
-            {ExternalLinks({
-                storybookUrl: c.storybookUrl,
-                figmaUrl: c.figmaUrl,
-                stackblitzUrl: c.stackblitzUrl,
-                githubUrl: c.githubUrl,
-                docsUrl: c.docsUrl,
-                route: c.route
-            })}
+            {isInfoSection('metadata') && ComponentMetadata(c)}
 
-            {ComponentMetadata(c)}
-
-            {c.slots?.length > 0 && (
+            {isInfoSection('metadata') && c.slots?.length > 0 && (
                 <section class="cdx-content-section">
                     <h3 class="cdx-section-heading">Content Slots</h3>
                     <dl class="cdx-metadata-card">
@@ -161,14 +160,28 @@ const InfoContent = (data: any): string => {
                 </section>
             )}
 
-            {data.relationships &&
+            {isInfoSection('relationships') &&
+                data.relationships &&
                 BlockRelationshipGraph({
                     incoming: data.relationships.incoming,
                     outgoing: data.relationships.outgoing,
                     entityName: c.name
                 })}
+        </>
+    ) as string;
+};
 
-            {isInfoSection('index') &&
+/**
+ * Member surface rendered on the **API** tab: index, constructor, inputs,
+ * outputs, host bindings/listeners, methods, properties, accessors.
+ */
+const ApiContent = (data: any): string => {
+    const c = data.component;
+    const depth = data.depth;
+
+    return (
+        <>
+            {isApiSection('index') &&
                 BlockIndex({
                     properties: c.propertiesClass,
                     methods: c.methodsClass,
@@ -179,7 +192,7 @@ const InfoContent = (data: any): string => {
                     accessors: c.accessors
                 })}
 
-            {isInfoSection('constructor') &&
+            {isApiSection('constructor') &&
                 c.constructorObj &&
                 BlockConstructor({
                     constructor: c.constructorObj,
@@ -187,13 +200,13 @@ const InfoContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
-            {isInfoSection('inputs') &&
+            {isApiSection('inputs') &&
                 c.inputsClass?.length > 0 &&
                 BlockInput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
-            {isInfoSection('outputs') &&
+            {isApiSection('outputs') &&
                 c.outputsClass?.length > 0 &&
                 BlockOutput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
-            {isInfoSection('hostBindings') &&
+            {isApiSection('hostBindings') &&
                 c.hostBindings?.length > 0 &&
                 BlockProperty({
                     properties: c.hostBindings,
@@ -202,7 +215,7 @@ const InfoContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
-            {isInfoSection('hostListeners') &&
+            {isApiSection('hostListeners') &&
                 c.hostListeners?.length > 0 &&
                 BlockMethod({
                     methods: c.hostListeners,
@@ -211,7 +224,7 @@ const InfoContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
-            {isInfoSection('methods') &&
+            {isApiSection('methods') &&
                 c.methodsClass?.length > 0 &&
                 BlockMethod({
                     methods: c.methodsClass,
@@ -219,7 +232,7 @@ const InfoContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
-            {isInfoSection('properties') &&
+            {isApiSection('properties') &&
                 c.propertiesClass?.length > 0 &&
                 BlockProperty({
                     properties: c.propertiesClass,
@@ -227,7 +240,7 @@ const InfoContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
-            {isInfoSection('accessors') &&
+            {isApiSection('accessors') &&
                 c.accessors &&
                 Object.keys(c.accessors).length > 0 &&
                 BlockAccessors({
@@ -354,13 +367,19 @@ export const ComponentPage = (data: any): string => {
                         ''
                     )}
                 </div>
-                {c.selector ? <p class="cdx-entity-hero-context">{c.selector}</p> : ''}
                 {!data.disableFilePath && c.file && (
                     <p class="cdx-entity-hero-file" title="Source file" aria-label="Source file">
                         {IconFile()}
                         <span>{c.file}</span>
                     </p>
                 )}
+                {ExternalLinks({
+                    storybookUrl: c.storybookUrl,
+                    figmaUrl: c.figmaUrl,
+                    stackblitzUrl: c.stackblitzUrl,
+                    githubUrl: c.githubUrl,
+                    docsUrl: c.docsUrl
+                })}
             </div>
 
             <ul class="cdx-tab-bar">
@@ -410,6 +429,17 @@ export const ComponentPage = (data: any): string => {
                     </div>
                 )}
 
+                {isTabEnabled(navTabs, 'api') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'api') ? ' active' : ''}`}
+                        id="api"
+                        role="tabpanel"
+                        aria-labelledby="api-tab"
+                    >
+                        {ApiContent(data)}
+                    </div>
+                )}
+
                 {isTabEnabled(navTabs, 'readme') && (
                     <div
                         class={`cdx-tab-panel${isInitialTab(navTabs, 'readme') ? ' active' : ''}`}
@@ -428,7 +458,7 @@ export const ComponentPage = (data: any): string => {
                                 })}
                             </>
                         ) : (
-                            <p>{c.readme}</p>
+                            <div class="cdx-readme">{c.readme}</div>
                         )}
                     </div>
                 )}
@@ -440,17 +470,11 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="source-tab"
                     >
-                        <div class="cdx-source-code">
-                            {c.file && (
-                                <div class="cdx-source-header">
-                                    <span>{shortPath(c.file)}</span>
-                                </div>
-                            )}
-                            {highlightCode(c.sourceCode ?? '', {
-                                lang: 'typescript',
-                                mode: 'source'
-                            })}
-                        </div>
+                        {SourceViewer({
+                            filePath: c.file,
+                            sourceCode: c.sourceCode ?? '',
+                            lang: 'typescript'
+                        })}
                     </div>
                 )}
 
@@ -461,23 +485,18 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="templateData-tab"
                     >
-                        {c.templateData?.trim() ? (
-                            <div class="cdx-source-code">
-                                {c.templateUrl?.[0] && (
-                                    <div class="cdx-source-header">
-                                        <span>{shortPath(c.templateUrl[0])}</span>
-                                    </div>
-                                )}
-                                {highlightCode(c.templateData, { lang: 'html', mode: 'source' })}
-                            </div>
-                        ) : (
-                            EmptyState({
-                                icon: EmptyIconHtml(),
-                                title: t('empty-template-title'),
-                                description: t('empty-template-desc'),
-                                variant: 'full'
-                            })
-                        )}
+                        {c.templateData?.trim()
+                            ? SourceViewer({
+                                  filePath: c.templateUrl?.[0],
+                                  sourceCode: c.templateData,
+                                  lang: 'html'
+                              })
+                            : EmptyState({
+                                  icon: EmptyIconHtml(),
+                                  title: t('empty-template-title'),
+                                  description: t('empty-template-desc'),
+                                  variant: 'full'
+                              })}
                     </div>
                 )}
 
@@ -489,25 +508,21 @@ export const ComponentPage = (data: any): string => {
                         aria-labelledby="styleData-tab"
                     >
                         {c.styleUrlsData?.length > 0
-                            ? c.styleUrlsData.map((s: any) => (
-                                  <div class="cdx-source-code">
-                                      {s.styleUrl && (
-                                          <div class="cdx-source-header">
-                                              <span>{shortPath(s.styleUrl)}</span>
-                                          </div>
-                                      )}
-                                      {highlightCode(s.data, { lang: 'scss', mode: 'source' })}
-                                  </div>
-                              ))
+                            ? c.styleUrlsData.map((s: any) =>
+                                  SourceViewer({
+                                      filePath: s.styleUrl,
+                                      sourceCode: s.data,
+                                      lang: 'scss'
+                                  })
+                              )
                             : ''}
-                        {c.stylesData && c.stylesData !== '' && (
-                            <div class="cdx-source-code">
-                                <div class="cdx-source-header">
-                                    <span>Inline Styles</span>
-                                </div>
-                                {highlightCode(c.stylesData, { lang: 'scss', mode: 'source' })}
-                            </div>
-                        )}
+                        {c.stylesData &&
+                            c.stylesData !== '' &&
+                            SourceViewer({
+                                sourceCode: c.stylesData,
+                                lang: 'scss',
+                                label: 'Inline Styles'
+                            })}
                         {!(c.styleUrlsData?.length > 0) &&
                             !(c.stylesData && c.stylesData !== '') &&
                             EmptyState({

@@ -161,7 +161,6 @@ export const TRANSLATION_NL_NL = {
     signature: 'Handtekening',
     'signal-adoption': 'Signals',
     source: 'Bron',
-    'source-preview': 'Broncode voorbeeld',
     standalone: 'Standalone',
     'standalone-adoption': 'Standalone',
     statements: 'Statements',

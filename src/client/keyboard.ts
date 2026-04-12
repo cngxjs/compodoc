@@ -98,12 +98,6 @@ const navigateMember = (direction: 1 | -1) => {
     const card = cards[currentMemberIndex];
     card.classList.add('cdx-member-card--focused');
 
-    // Open collapsed details if present
-    const details = card.querySelector('details:not([open])');
-    if (details) {
-        (details as HTMLDetailsElement).open = true;
-    }
-
     // Scroll into view
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     card.scrollIntoView({ block: 'nearest', behavior: prefersReducedMotion ? 'auto' : 'smooth' });

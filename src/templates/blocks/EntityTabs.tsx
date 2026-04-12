@@ -1,9 +1,8 @@
 import Html from '@kitajs/html';
-import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconBook, EmptyIconFile } from '../components/EmptyStateIcons';
 import { extractReadmeHeadings, isInitialTab, isReadmeEmpty, isTabEnabled, t } from '../helpers';
-import { shortPath } from '../helpers/short-url';
+import { SourceViewer } from './SourceViewer';
 
 type Tab = {
     readonly id: string;
@@ -15,6 +14,7 @@ type Tab = {
 type EntityTabsProps = {
     readonly navTabs: Tab[];
     readonly infoContent: string;
+    readonly apiContent?: string;
     readonly readme?: string;
     readonly sourceCode?: string;
     readonly filePath?: string;
@@ -57,6 +57,17 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                     </div>
                 )}
 
+                {isTabEnabled(props.navTabs, 'api') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(props.navTabs, 'api') ? ' active' : ''}`}
+                        id="api"
+                        role="tabpanel"
+                        aria-labelledby="api-tab"
+                    >
+                        {props.apiContent ?? ''}
+                    </div>
+                )}
+
                 {isTabEnabled(props.navTabs, 'readme') && (
                     <div
                         class={`cdx-tab-panel${isInitialTab(props.navTabs, 'readme') ? ' active' : ''}`}
@@ -75,7 +86,7 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                                 })}
                             </>
                         ) : (
-                            <p>{props.readme}</p>
+                            <div class="cdx-readme">{props.readme}</div>
                         )}
                     </div>
                 )}
@@ -87,26 +98,18 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                         role="tabpanel"
                         aria-labelledby="source-tab"
                     >
-                        {props.sourceCode ? (
-                            <div class="cdx-source-code">
-                                {props.filePath && (
-                                    <div class="cdx-source-header">
-                                        <span>{shortPath(props.filePath)}</span>
-                                    </div>
-                                )}
-                                {highlightCode(props.sourceCode, {
-                                    lang: 'typescript',
-                                    mode: 'source'
-                                })}
-                            </div>
-                        ) : (
-                            EmptyState({
-                                icon: EmptyIconFile(),
-                                title: t('empty-source-title'),
-                                description: t('empty-source-desc'),
-                                variant: 'full'
-                            })
-                        )}
+                        {props.sourceCode
+                            ? SourceViewer({
+                                  filePath: props.filePath,
+                                  sourceCode: props.sourceCode,
+                                  lang: 'typescript'
+                              })
+                            : EmptyState({
+                                  icon: EmptyIconFile(),
+                                  title: t('empty-source-title'),
+                                  description: t('empty-source-desc'),
+                                  variant: 'full'
+                              })}
                     </div>
                 )}
 

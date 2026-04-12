@@ -160,7 +160,6 @@ export const TRANSLATION_FR_FR = {
     signature: 'Signature',
     'signal-adoption': 'Signals',
     source: 'Source',
-    'source-preview': 'Apercu du code',
     standalone: 'Standalone',
     'standalone-adoption': 'Standalone',
     statements: 'Déclarations',

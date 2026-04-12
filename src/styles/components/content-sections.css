@@ -27,28 +27,43 @@
 }
 
 .cdx-deprecation-banner {
-    border-left: 3px solid var(--color-cdx-entity-service);
-    background: color-mix(in srgb, var(--color-cdx-entity-service) 6%, var(--color-cdx-bg));
+    /* border: 1px solid
+        color-mix(in srgb, var(--color-cdx-danger) 35%, var(--color-cdx-border)); */
+    border-left: 4px solid var(--color-cdx-danger);
+    background: color-mix(
+        in srgb,
+        var(--color-cdx-danger) 8%,
+        var(--color-cdx-bg-elevated)
+    );
+    color: var(--color-cdx-text);
     padding: var(--spacing-cdx-md) var(--spacing-cdx-lg);
-    border-radius: var(--radius-cdx-md);
+    /* border-radius: var(--radius-cdx-md); */
     font-size: 0.875rem;
     margin-bottom: 1.5rem;
-    line-height: 1.5;
+    line-height: 1.55;
 }
 
 .cdx-deprecation-banner strong {
-    font-weight: 600;
+    color: var(--color-cdx-danger);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.75rem;
     margin-right: var(--spacing-cdx-sm);
 }
 
 .dark .cdx-deprecation-banner {
-    background: color-mix(in srgb, var(--color-cdx-entity-service) 10%, var(--color-cdx-bg));
+    background: color-mix(
+        in srgb,
+        var(--color-cdx-danger) 12%,
+        var(--color-cdx-bg-alt)
+    );
 }
 .cdx-prose {
     font-size: 0.9375rem;
     line-height: 1.65;
     color: var(--color-cdx-text);
-    max-width: 72ch;
+    /* max-width: 72ch; */
 }
 
 .cdx-prose > p {
@@ -94,7 +109,6 @@
     grid-template-columns: max-content 1fr;
     border: 1px solid var(--color-cdx-border);
     border-radius: var(--radius-cdx-lg);
-    background: var(--color-cdx-bg-alt);
     padding: var(--spacing-cdx-xs) 0;
     overflow: hidden;
     margin: 0;
@@ -107,7 +121,8 @@
     gap: 0 var(--spacing-cdx-lg);
     padding: var(--spacing-cdx-sm) var(--spacing-cdx-xl);
     align-items: baseline;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-cdx-border) 50%, transparent);
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--color-cdx-border) 50%, transparent);
     transition: background 150ms ease;
 }
 
@@ -182,7 +197,11 @@
 }
 
 a.cdx-chip:hover {
-    background: color-mix(in srgb, var(--cdx-chip-color) 10%, var(--color-cdx-bg-elevated));
+    background: color-mix(
+        in srgb,
+        var(--cdx-chip-color) 10%,
+        var(--color-cdx-bg-elevated)
+    );
     border-color: var(--cdx-chip-color);
     color: var(--cdx-chip-color);
     text-decoration: none;

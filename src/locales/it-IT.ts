@@ -159,7 +159,6 @@ export const TRANSLATION_IT_IT = {
     signature: 'Signature',
     'signal-adoption': 'Segnali',
     source: 'Fonte',
-    'source-preview': 'Anteprima del codice',
     standalone: 'Standalone',
     'standalone-adoption': 'Standalone',
     statements: 'Statements',

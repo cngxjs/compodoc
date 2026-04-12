@@ -4,24 +4,34 @@ import {
     ViewEncapsulation,
     inject,
     signal,
-    InjectionToken
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+    InjectionToken,
+} from "@angular/core";
+import { CommonModule } from "@angular/common";
+import {
+    trigger,
+    state,
+    style,
+    transition,
+    animate,
+} from "@angular/animations";
 
-import { HasUnsavedChanges } from '../../core/guards/unsaved-changes.guard';
-import { SignalCardComponent } from '../../shared/components/signal-card.component';
-import { DataTableComponent } from '../../shared/components/data-table.component';
-import { HighlightDirective } from '../../shared/directives/highlight.directive';
-import { TooltipDirective } from '../../shared/directives/tooltip.directive';
-import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
-import { TruncatePipe } from '../../shared/pipes/truncate.pipe';
-import { ThemeService } from '../../core/services/theme.service';
-import { ApiService } from '../../core/services/api.service';
-import { TodoStore } from '../../core/services/todo.store';
-import { FEATURE_FLAGS, API_BASE_URL, APP_VERSION } from '../../core/tokens/api.tokens';
-import { STORAGE_KEY } from '../../core/tokens/storage.tokens';
-import { MAX_RETRIES } from '../../core/tokens/retry.tokens';
+import { HasUnsavedChanges } from "../../core/guards/unsaved-changes.guard";
+import { SignalCardComponent } from "../../shared/components/signal-card.component";
+import { DataTableComponent } from "../../shared/components/data-table.component";
+import { HighlightDirective } from "../../shared/directives/highlight.directive";
+import { TooltipDirective } from "../../shared/directives/tooltip.directive";
+import { TimeAgoPipe } from "../../shared/pipes/time-ago.pipe";
+import { TruncatePipe } from "../../shared/pipes/truncate.pipe";
+import { ThemeService } from "../../core/services/theme.service";
+import { ApiService } from "../../core/services/api.service";
+import { TodoStore } from "../../core/services/todo.store";
+import {
+    FEATURE_FLAGS,
+    API_BASE_URL,
+    APP_VERSION,
+} from "../../core/tokens/api.tokens";
+import { STORAGE_KEY } from "../../core/tokens/storage.tokens";
+import { MAX_RETRIES } from "../../core/tokens/retry.tokens";
 
 /**
  * Factory for a feature-flag map tailored to the admin experience.
@@ -31,7 +41,7 @@ export function adminFeatureFlagsFactory(baseFlags: Record<string, boolean>) {
     return {
         ...baseFlags,
         adminDashboard: true,
-        experimentalBulkEdit: true
+        experimentalBulkEdit: true,
     };
 }
 
@@ -39,10 +49,13 @@ export function adminFeatureFlagsFactory(baseFlags: Record<string, boolean>) {
  * Local injection token for an admin audit channel name.
  * Used by the component's own providers below.
  */
-export const ADMIN_AUDIT_CHANNEL = new InjectionToken<string>('ADMIN_AUDIT_CHANNEL', {
-    providedIn: 'root',
-    factory: () => 'admin-audit-default'
-});
+export const ADMIN_AUDIT_CHANNEL = new InjectionToken<string>(
+    "ADMIN_AUDIT_CHANNEL",
+    {
+        providedIn: "root",
+        factory: () => "admin-audit-default",
+    },
+);
 
 /**
  * Extracted host-directive configuration. Demonstrates the case where the
@@ -51,7 +64,7 @@ export const ADMIN_AUDIT_CHANNEL = new InjectionToken<string>('ADMIN_AUDIT_CHANN
  */
 export const TOOLTIP_HOST_DIRECTIVE = {
     directive: TooltipDirective,
-    inputs: ['appTooltip: tooltip', 'position']
+    inputs: ["appTooltip: tooltip", "position"],
 };
 
 /**
@@ -65,6 +78,14 @@ export const TOOLTIP_HOST_DIRECTIVE = {
  * bindings/listeners and host directives.
  *
  * Implements {@link HasUnsavedChanges} for the route guard.
+ * @example
+ * ```typescript
+// Bind button state to an alert
+<cngx-action-button #btn="cngxActionButton" [action]="save">
+  Save
+</cngx-action-button>
+<cngx-alert [state]="btn.state" title="Save Status" />
+```
  *
  * @category Features
  * @route /admin
@@ -76,7 +97,7 @@ export const TOOLTIP_HOST_DIRECTIVE = {
  * @docs https://cngx.dev/features/admin-panel
  */
 @Component({
-    selector: 'app-admin-panel',
+    selector: "app-admin-panel",
     standalone: true,
     imports: [
         // module
@@ -89,7 +110,7 @@ export const TOOLTIP_HOST_DIRECTIVE = {
         TooltipDirective,
         // pipes
         TimeAgoPipe,
-        TruncatePipe
+        TruncatePipe,
     ],
     providers: [
         // bare class shorthand — uses useClass internally
@@ -97,63 +118,66 @@ export const TOOLTIP_HOST_DIRECTIVE = {
         // explicit useClass
         { provide: ThemeService, useClass: ThemeService },
         // useValue for primitives
-        { provide: APP_VERSION, useValue: '2.0.0-admin' },
+        { provide: APP_VERSION, useValue: "2.0.0-admin" },
         // useValue for objects
-        { provide: STORAGE_KEY, useValue: 'admin-panel-store' },
+        { provide: STORAGE_KEY, useValue: "admin-panel-store" },
         // useFactory with deps
         {
             provide: FEATURE_FLAGS,
             useFactory: adminFeatureFlagsFactory,
-            deps: [API_BASE_URL]
+            deps: [API_BASE_URL],
         },
         // useExisting aliasing
-        { provide: 'AuditToken', useExisting: ADMIN_AUDIT_CHANNEL },
+        { provide: "AuditToken", useExisting: ADMIN_AUDIT_CHANNEL },
         // multi provider
         { provide: MAX_RETRIES, useValue: 5, multi: true },
         // local token defined above
-        ADMIN_AUDIT_CHANNEL
+        ADMIN_AUDIT_CHANNEL,
     ],
     viewProviders: [
         // Scoped to the component view — a separate TodoStore instance
         // only the template can see.
-        { provide: TodoStore, useClass: TodoStore }
+        { provide: TodoStore, useClass: TodoStore },
     ],
-    exportAs: 'appAdminPanel',
+    exportAs: "appAdminPanel",
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.ShadowDom,
     preserveWhitespaces: false,
-    interpolation: ['{{', '}}'],
+    interpolation: ["{{", "}}"],
     host: {
-        class: 'app-admin-panel',
-        role: 'region',
-        '[attr.aria-label]': '"Admin settings"',
-        '[class.is-dirty]': 'dirty()',
-        '(document:keydown.escape)': 'onEscape($event)'
+        class: "app-admin-panel",
+        role: "region",
+        "[attr.aria-label]": '"Admin settings"',
+        "[class.is-dirty]": "dirty()",
+        "(document:keydown.escape)": "onEscape($event)",
     },
     hostDirectives: [
         {
             directive: HighlightDirective,
-            inputs: ['color', 'hoverColor', 'enabled'],
-            outputs: []
+            inputs: ["color", "hoverColor", "enabled"],
+            outputs: [],
         },
         // Bare directive class
         TooltipDirective,
         // Reference to an extracted const (see TOOLTIP_HOST_DIRECTIVE above)
-        TOOLTIP_HOST_DIRECTIVE
+        TOOLTIP_HOST_DIRECTIVE,
     ],
     animations: [
-        trigger('settingsToggle', [
-            state('collapsed', style({ height: '0px', opacity: 0 })),
-            state('expanded', style({ height: '*', opacity: 1 })),
-            transition('collapsed <=> expanded', [animate('200ms ease-in-out')])
-        ])
+        trigger("settingsToggle", [
+            state("collapsed", style({ height: "0px", opacity: 0 })),
+            state("expanded", style({ height: "*", opacity: 1 })),
+            transition("collapsed <=> expanded", [
+                animate("200ms ease-in-out"),
+            ]),
+        ]),
     ],
     template: `
         <h1>Admin Panel</h1>
         <app-signal-card
             [title]="'Settings'"
             [(expanded)]="settingsExpanded"
-            [selectedIndex]="selectedIdx">
+            [selectedIndex]="selectedIdx"
+        >
             <div appHighlight [color]="'#f0f0f0'" [hoverColor]="'#e0e0ff'">
                 <button appTooltip="Save current settings">Save</button>
             </div>
@@ -166,11 +190,11 @@ export const TOOLTIP_HOST_DIRECTIVE = {
                 padding: 1rem;
             }
             :host(.is-dirty) h1::after {
-                content: ' *';
+                content: " *";
                 color: crimson;
             }
-        `
-    ]
+        `,
+    ],
 })
 export class AdminPanelComponent implements HasUnsavedChanges {
     private readonly theme = inject(ThemeService);

@@ -1,7 +1,6 @@
 export { capitalize } from './capitalize';
 export type { CoverageStats } from './coverage-stats';
 export { computeCoverageStats } from './coverage-stats';
-export { extractDeclaration } from './extract-declaration';
 export { functionSignature } from './function-signature';
 export { t } from './i18n';
 export { indexableSignature } from './indexable-signature';
@@ -21,7 +20,13 @@ export { parseProperty } from './parse-property';
 export { relativeUrl } from './relative-url';
 export { shortPath, shortUrl } from './short-url';
 export { signalKindLabel } from './signal-kind';
-export { isInfoSection, isInitialTab, isTabEnabled } from './tab-helpers';
+export {
+    hasAnyApiSections,
+    isApiSection,
+    isInfoSection,
+    isInitialTab,
+    isTabEnabled
+} from './tab-helpers';
 
 /** Check if a member has private or protected modifiers (SyntaxKind 123 = Private, 124 = Protected). */
 export const isInternalMember = (modifierKind?: number[]): boolean =>

@@ -161,7 +161,6 @@ export const TRANSLATION_DE_DE = {
     signature: 'Unterschrift',
     'signal-adoption': 'Signals',
     source: 'Quelle',
-    'source-preview': 'Quelltext-Vorschau',
     standalone: 'Standalone',
     'standalone-adoption': 'Standalone',
     statements: 'Statements',
