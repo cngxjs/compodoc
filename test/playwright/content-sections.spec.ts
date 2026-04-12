@@ -46,6 +46,7 @@ test.describe('Content Sections', () => {
     test.describe('Deprecation banner', () => {
         test('deprecated entity shows deprecation banner', async ({ page }) => {
             await page.goto('/injectables/TodoStore.html');
+            await page.locator('[role="tab"]', { hasText: 'Info' }).click();
 
             const banner = page.locator('.cdx-deprecation-banner');
             await expect(banner).toBeVisible();
@@ -208,6 +209,7 @@ test.describe('Content Sections', () => {
         test('index entries do not overflow the index container', async ({ page }) => {
             // CompodocComponent has many long signal names
             await page.goto('/components/CompodocComponent.html');
+            await page.locator('[role="tab"]', { hasText: 'API' }).click();
 
             const indexBox = page.locator('.cdx-index');
             const indexRect = await indexBox.boundingBox();
@@ -251,6 +253,7 @@ test.describe('Content Sections', () => {
         test('index collapses to single column on narrow viewport', async ({ page }) => {
             await page.setViewportSize({ width: 400, height: 800 });
             await page.goto('/injectables/TodoStore.html');
+            await page.locator('[role="tab"]', { hasText: 'API' }).click();
 
             const entries = page.locator('.cdx-index-entries').first();
             const columns = await entries.evaluate(el => getComputedStyle(el).gridTemplateColumns);
@@ -262,6 +265,7 @@ test.describe('Content Sections', () => {
 
         test('index indicators do not shrink', async ({ page }) => {
             await page.goto('/components/CompodocComponent.html');
+            await page.locator('[role="tab"]', { hasText: 'API' }).click();
 
             const indicator = page.locator('.cdx-index-indicator').first();
             const width = await indicator.evaluate(el => el.getBoundingClientRect().width);
@@ -273,6 +277,7 @@ test.describe('Content Sections', () => {
     test.describe('Extends in metadata', () => {
         test('class with extends shows extends row in metadata card', async ({ page }) => {
             await page.goto('/classes/Todo.html');
+            await page.locator('[role="tab"]', { hasText: 'Info' }).click();
 
             const card = page.locator('.cdx-metadata-card');
             if ((await card.count()) > 0) {

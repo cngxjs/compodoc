@@ -557,6 +557,7 @@ test.describe('Keyboard navigation', () => {
 
     test('j/k navigate between member cards with focus ring', async ({ page }) => {
         await page.goto('/injectables/UserService.html');
+        await page.locator('[role="tab"]', { hasText: 'API' }).click();
         await page.keyboard.press('j');
         const focused = page.locator('.cdx-member-card--focused');
         await expect(focused).toHaveCount(1);
@@ -569,6 +570,7 @@ test.describe('Keyboard navigation', () => {
 
     test('j/k scrolls focused card into view', async ({ page }) => {
         await page.goto('/injectables/UserService.html');
+        await page.locator('[role="tab"]', { hasText: 'API' }).click();
         await page.keyboard.press('j');
         const focused = page.locator('.cdx-member-card--focused');
         await expect(focused).toBeVisible();
@@ -577,6 +579,7 @@ test.describe('Keyboard navigation', () => {
 
     test('Escape clears member focus', async ({ page }) => {
         await page.goto('/injectables/UserService.html');
+        await page.locator('[role="tab"]', { hasText: 'API' }).click();
         await page.keyboard.press('j');
         await expect(page.locator('.cdx-member-card--focused')).toHaveCount(1);
         await page.keyboard.press('Escape');
@@ -649,6 +652,7 @@ test.describe('Responsive member cards', () => {
     test('member header stacks vertically at narrow viewport', async ({ page }) => {
         await page.setViewportSize({ width: 400, height: 800 });
         await page.goto('/injectables/UserService.html');
+        await page.locator('[role="tab"]', { hasText: 'API' }).click();
         const header = page.locator('.cdx-member-header').first();
         await expect(header).toBeVisible();
         const direction = await header.evaluate(el => getComputedStyle(el).flexDirection);
@@ -658,6 +662,7 @@ test.describe('Responsive member cards', () => {
     test('member header is row layout at normal viewport', async ({ page }) => {
         await page.setViewportSize({ width: 1200, height: 800 });
         await page.goto('/injectables/UserService.html');
+        await page.locator('[role="tab"]', { hasText: 'API' }).click();
         const header = page.locator('.cdx-member-header').first();
         await expect(header).toBeVisible();
         const direction = await header.evaluate(el => getComputedStyle(el).flexDirection);

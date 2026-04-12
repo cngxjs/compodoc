@@ -64,12 +64,13 @@ test.describe('Entity Page Hero', () => {
     });
 
     test.describe('Context lines', () => {
-        test('component shows selector as context', async ({ page }) => {
+        test('component shows selector in metadata table', async ({ page }) => {
             await page.goto('/components/AboutComponent.html');
+            await page.locator('[role="tab"]', { hasText: 'Info' }).click();
 
-            const context = page.locator('.cdx-entity-hero-context');
-            await expect(context).toBeVisible();
-            await expect(context).toHaveText('about');
+            // Selector moved from hero context line to metadata table
+            const selectorLabel = page.locator('.cdx-metadata-label', { hasText: 'selector' });
+            await expect(selectorLabel).toBeVisible();
         });
 
         test('class with implements shows context line', async ({ page }) => {
