@@ -10,6 +10,7 @@ import { initAnimations } from './animate';
 import { initCodeBlocks } from './code-blocks';
 import { initCoverage } from './coverage';
 import { initGraphs } from './graphs';
+import { applyHashTarget, resolveHash } from './hash-router';
 import { resetKeyboardState } from './keyboard';
 import { expandToActive } from './sidebar';
 import { initTabs } from './tabs';
@@ -273,22 +274,19 @@ const navigate = async (
         updateActiveLink(url, clickedAnchor);
         expandToActive();
 
-        // Scroll to top or to anchor
-        const hash = new URL(url, window.location.origin).hash;
-        if (hash) {
-            const target = document.querySelector(hash);
-            if (target) {
-                target.scrollIntoView();
-            }
-        } else {
-            document.querySelector('.content')?.scrollTo(0, 0);
-        }
-
         // Reset keyboard navigation state
         resetKeyboardState();
 
-        // Re-initialize page components
-        reinitPage();
+        // Re-init before hash apply so the line handler is registered.
+        await reinitPage();
+
+        // Scroll to hash target or reset to top
+        const hash = new URL(url, window.location.origin).hash;
+        if (hash) {
+            applyHashTarget(resolveHash(hash));
+        } else {
+            document.querySelector('.content')?.scrollTo(0, 0);
+        }
 
         // Notify parent frame
         notifyParentFrame();

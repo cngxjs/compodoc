@@ -3,6 +3,7 @@ import { initCodeBlocks } from './code-blocks';
 import { initCommandPalette } from './command-palette';
 import { initCoverage } from './coverage';
 import { initGraphs } from './graphs';
+import { initHashRouter } from './hash-router';
 import { initKeyboard } from './keyboard';
 import { initRouter } from './router';
 import { initSidebar } from './sidebar';
@@ -19,6 +20,7 @@ const init = () => {
     initSidebar();
     initTabs();
     initCodeBlocks();
+    initHashRouter();
     initRouter();
     initCommandPalette();
     initGraphs();
