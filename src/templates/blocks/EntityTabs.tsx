@@ -98,20 +98,18 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                         role="tabpanel"
                         aria-labelledby="source-tab"
                     >
-                        {props.sourceCode ? (
-                            SourceViewer({
-                                filePath: props.filePath,
-                                sourceCode: props.sourceCode,
-                                lang: 'typescript'
-                            })
-                        ) : (
-                            EmptyState({
-                                icon: EmptyIconFile(),
-                                title: t('empty-source-title'),
-                                description: t('empty-source-desc'),
-                                variant: 'full'
-                            })
-                        )}
+                        {props.sourceCode
+                            ? SourceViewer({
+                                  filePath: props.filePath,
+                                  sourceCode: props.sourceCode,
+                                  lang: 'typescript'
+                              })
+                            : EmptyState({
+                                  icon: EmptyIconFile(),
+                                  title: t('empty-source-title'),
+                                  description: t('empty-source-desc'),
+                                  variant: 'full'
+                              })}
                     </div>
                 )}
 

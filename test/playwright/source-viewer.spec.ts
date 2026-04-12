@@ -104,9 +104,7 @@ test.describe('Source viewer — scroll margin', () => {
         await page.locator('a#source-tab').click();
 
         const firstLine = page.locator('#source .cdx-source-viewer-body .line').first();
-        const scrollMargin = await firstLine.evaluate(el =>
-            getComputedStyle(el).scrollMarginTop
-        );
+        const scrollMargin = await firstLine.evaluate(el => getComputedStyle(el).scrollMarginTop);
         // Either the 120px from the CSS rule or an already-resolved px
         // value. Accept anything non-zero and >= 100px to give us
         // breathing room for future adjustments.

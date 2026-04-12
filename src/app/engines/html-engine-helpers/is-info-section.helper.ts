@@ -1,5 +1,5 @@
-import Configuration from '../../configuration';
 import { DEFAULT_INFO_SECTIONS } from '../../../utils/constants';
+import Configuration from '../../configuration';
 import type { IHandlebarsOptions, IHtmlEngineHelper } from './html-engine-helper.interface';
 
 /**

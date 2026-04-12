@@ -122,9 +122,7 @@ export const ModulePage = (data: any): string => {
                             docsPath: 'imports',
                             depth,
                             buildHref: (item, b) =>
-                                isAngularModule(item.name)
-                                    ? null
-                                    : `${b}modules/${item.name}.html`
+                                isAngularModule(item.name) ? null : `${b}modules/${item.name}.html`
                         })}
                         {ModuleList({
                             items: mod.exports,
@@ -182,10 +180,7 @@ export const ModulePage = (data: any): string => {
 
     return (
         <>
-            <div
-                class="cdx-entity-hero"
-                style="--cdx-hero-color: var(--color-cdx-entity-module)"
-            >
+            <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-entity-module)">
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {IconModule()}
                 </div>

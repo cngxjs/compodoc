@@ -123,29 +123,27 @@ const initCopyButtons = () => {
 
     // Wire up the integrated `.cdx-source-viewer-copy` button in each
     // source viewer tab header.
-    document
-        .querySelectorAll<HTMLButtonElement>('.cdx-source-viewer-copy')
-        .forEach(btn => {
-            if (btn.dataset.cdxBound) {
+    document.querySelectorAll<HTMLButtonElement>('.cdx-source-viewer-copy').forEach(btn => {
+        if (btn.dataset.cdxBound) {
+            return;
+        }
+        btn.dataset.cdxBound = '1';
+        btn.addEventListener('click', () => {
+            const viewer = btn.closest('.cdx-source-viewer');
+            const code = viewer?.querySelector('pre code');
+            if (!code) {
                 return;
             }
-            btn.dataset.cdxBound = '1';
-            btn.addEventListener('click', () => {
-                const viewer = btn.closest('.cdx-source-viewer');
-                const code = viewer?.querySelector('pre code');
-                if (!code) {
-                    return;
-                }
-                navigator.clipboard.writeText(code.textContent || '').then(() => {
-                    btn.classList.add('cdx-source-viewer-copy--copied');
-                    btn.setAttribute('aria-label', 'Copied!');
-                    setTimeout(() => {
-                        btn.classList.remove('cdx-source-viewer-copy--copied');
-                        btn.setAttribute('aria-label', 'Copy source');
-                    }, 2000);
-                });
+            navigator.clipboard.writeText(code.textContent || '').then(() => {
+                btn.classList.add('cdx-source-viewer-copy--copied');
+                btn.setAttribute('aria-label', 'Copied!');
+                setTimeout(() => {
+                    btn.classList.remove('cdx-source-viewer-copy--copied');
+                    btn.setAttribute('aria-label', 'Copy source');
+                }, 2000);
             });
         });
+    });
 };
 
 const initLinkToSource = () => {

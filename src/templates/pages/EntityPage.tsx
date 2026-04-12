@@ -11,8 +11,8 @@ import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { EntityTabs } from '../blocks/EntityTabs';
 import { ExternalLinks } from '../blocks/ExternalLinks';
-import { RouteChip } from '../blocks/RouteChip';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
+import { RouteChip } from '../blocks/RouteChip';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconDocument } from '../components/EmptyStateIcons';
 import {
@@ -28,13 +28,7 @@ import {
     IconModule,
     IconPipe
 } from '../components/Icons';
-import {
-    isApiSection,
-    isInfoSection,
-    linkTypeHtml,
-    parseDescription,
-    t
-} from '../helpers';
+import { isApiSection, isInfoSection, linkTypeHtml, parseDescription, t } from '../helpers';
 
 /** Map entity key to CSS color variable, badge class, and watermark icon */
 const entityMeta: Record<

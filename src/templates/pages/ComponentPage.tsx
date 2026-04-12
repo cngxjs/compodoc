@@ -8,8 +8,6 @@ import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { ExternalLinks } from '../blocks/ExternalLinks';
-import { RouteChip } from '../blocks/RouteChip';
-import { SourceViewer } from '../blocks/SourceViewer';
 import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import {
@@ -20,6 +18,8 @@ import {
     MetadataProvidersRow,
     MetadataSection
 } from '../blocks/MetadataRow';
+import { RouteChip } from '../blocks/RouteChip';
+import { SourceViewer } from '../blocks/SourceViewer';
 import { EmptyState } from '../components/EmptyState';
 import {
     EmptyIconBook,

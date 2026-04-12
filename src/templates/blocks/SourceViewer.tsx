@@ -44,8 +44,12 @@ type SourceViewerProps = {
 };
 
 const fileIconFor = (lang: SourceViewerLang): string => {
-    if (lang === 'html') return IconFileHtml();
-    if (lang === 'scss') return IconFileCss();
+    if (lang === 'html') {
+        return IconFileHtml();
+    }
+    if (lang === 'scss') {
+        return IconFileCss();
+    }
     return IconFileTs();
 };
 

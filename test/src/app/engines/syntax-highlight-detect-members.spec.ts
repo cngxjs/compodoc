@@ -155,7 +155,7 @@ describe('detectMembers', () => {
         // to the preceding class.
         const code = [
             'export class Foo {}',
-            "export const factory = { create(): Foo { return new Foo(); } };"
+            'export const factory = { create(): Foo { return new Foo(); } };'
         ].join('\n');
         const members = detectMembers(code);
         const names = members.map(m => m.name);
@@ -168,9 +168,7 @@ describe('detectMembers', () => {
     });
 
     it('sets line number to 1-based file position', () => {
-        const code = ['// comment', '', 'export class Foo {', '    bar(): void {}', '}'].join(
-            '\n'
-        );
+        const code = ['// comment', '', 'export class Foo {', '    bar(): void {}', '}'].join('\n');
         const members = detectMembers(code);
         const foo = members.find(m => m.name === 'Foo');
         const bar = members.find(m => m.name === 'Foo.bar');

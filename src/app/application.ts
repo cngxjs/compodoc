@@ -6,6 +6,7 @@ import polka from 'polka';
 import sirv from 'sirv';
 
 import { SyntaxKind } from 'ts-morph';
+import { hasAnyApiSections } from '../templates/helpers/tab-helpers';
 import AngularVersionUtil from '../utils/angular-version.util';
 import { COMPODOC_CONSTANTS } from '../utils/constants';
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
@@ -19,7 +20,6 @@ import {
     cleanSourcesForWatch,
     findMainSourceFolder
 } from '../utils/utils';
-import { hasAnyApiSections } from '../templates/helpers/tab-helpers';
 import type { IComponentDep } from './compiler/angular/deps/component-dep.factory';
 import { AngularDependencies } from './compiler/angular-dependencies';
 import Configuration from './configuration';

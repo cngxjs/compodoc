@@ -1,73 +1,73 @@
 export const COMPODOC_CONSTANTS = {
     navTabDefinitions: [
         {
-            id: "readme",
-            href: "#readme",
-            "data-link": "readme",
-            label: "README",
-            depTypes: ["all"],
+            id: 'readme',
+            href: '#readme',
+            'data-link': 'readme',
+            label: 'README',
+            depTypes: ['all']
         },
         {
-            id: "info",
-            href: "#info",
-            "data-link": "info",
-            label: "Info",
-            depTypes: ["all"],
+            id: 'info',
+            href: '#info',
+            'data-link': 'info',
+            label: 'Info',
+            depTypes: ['all']
         },
         {
-            id: "api",
-            href: "#api",
-            "data-link": "api",
-            label: "API",
+            id: 'api',
+            href: '#api',
+            'data-link': 'api',
+            label: 'API',
             depTypes: [
-                "component",
-                "directive",
-                "injectable",
-                "pipe",
-                "class",
-                "interface",
-                "guard",
-                "interceptor",
-                "entity",
-            ],
+                'component',
+                'directive',
+                'injectable',
+                'pipe',
+                'class',
+                'interface',
+                'guard',
+                'interceptor',
+                'entity'
+            ]
         },
 
         {
-            id: "source",
-            href: "#source",
-            "data-link": "source",
-            label: "Source",
-            depTypes: ["all"],
+            id: 'source',
+            href: '#source',
+            'data-link': 'source',
+            label: 'Source',
+            depTypes: ['all']
         },
         {
-            id: "templateData",
-            href: "#templateData",
-            "data-link": "template",
-            label: "Template",
-            depTypes: ["component"],
+            id: 'templateData',
+            href: '#templateData',
+            'data-link': 'template',
+            label: 'Template',
+            depTypes: ['component']
         },
         {
-            id: "styleData",
-            href: "#styleData",
-            "data-link": "style",
-            label: "Styles",
-            depTypes: ["component"],
+            id: 'styleData',
+            href: '#styleData',
+            'data-link': 'style',
+            label: 'Styles',
+            depTypes: ['component']
         },
         {
-            id: "tree",
-            href: "#tree",
-            "data-link": "dom-tree",
-            label: "DOM Tree",
-            depTypes: ["component"],
+            id: 'tree',
+            href: '#tree',
+            'data-link': 'dom-tree',
+            label: 'DOM Tree',
+            depTypes: ['component']
         },
         {
-            id: "example",
-            href: "#example",
-            "data-link": "example",
-            label: "Examples",
-            depTypes: ["component", "directive", "injectable", "pipe"],
-        },
-    ],
+            id: 'example',
+            href: '#example',
+            'data-link': 'example',
+            label: 'Examples',
+            depTypes: ['component', 'directive', 'injectable', 'pipe']
+        }
+    ]
 };
 
 /**
@@ -82,25 +82,25 @@ export const COMPODOC_CONSTANTS = {
  * user hasn't explicitly configured `infoTabSections` / `apiTabSections`.
  */
 export const DEFAULT_INFO_SECTIONS: ReadonlyArray<string> = [
-    "deprecated",
-    "description",
-    "examples",
-    "metadata",
-    "extends",
-    "relationships",
+    'deprecated',
+    'description',
+    'examples',
+    'metadata',
+    'extends',
+    'relationships'
 ];
 
 export const DEFAULT_API_SECTIONS: ReadonlyArray<string> = [
-    "index",
-    "constructor",
-    "inputs",
-    "outputs",
-    "hostBindings",
-    "hostListeners",
-    "methods",
-    "properties",
-    "accessors",
-    "indexSignatures",
+    'index',
+    'constructor',
+    'inputs',
+    'outputs',
+    'hostBindings',
+    'hostListeners',
+    'methods',
+    'properties',
+    'accessors',
+    'indexSignatures'
 ];
 
 /**

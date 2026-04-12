@@ -1,42 +1,37 @@
-import Html from "@kitajs/html";
-import {
-    IconEnum,
-    IconFunction,
-    IconTypealias,
-    IconVariable,
-} from "../components/Icons";
-import { t } from "../helpers";
+import Html from '@kitajs/html';
+import { IconEnum, IconFunction, IconTypealias, IconVariable } from '../components/Icons';
+import { t } from '../helpers';
 
-type MiscKind = "function" | "variable" | "typealias" | "enum";
+type MiscKind = 'function' | 'variable' | 'typealias' | 'enum';
 
 const MISC_META: Record<
     MiscKind,
     { color: string; icon: () => string; label: string; plural: string }
 > = {
     function: {
-        color: "var(--color-cdx-entity-function)",
+        color: 'var(--color-cdx-entity-function)',
         icon: IconFunction,
-        label: "Function",
-        plural: "functions",
+        label: 'Function',
+        plural: 'functions'
     },
     variable: {
-        color: "var(--color-cdx-entity-service)",
+        color: 'var(--color-cdx-entity-service)',
         icon: IconVariable,
-        label: "Variable",
-        plural: "variables",
+        label: 'Variable',
+        plural: 'variables'
     },
     typealias: {
-        color: "var(--color-cdx-entity-typealias)",
+        color: 'var(--color-cdx-entity-typealias)',
         icon: IconTypealias,
-        label: "Type Alias",
-        plural: "type-aliases",
+        label: 'Type Alias',
+        plural: 'type-aliases'
     },
     enum: {
-        color: "var(--color-cdx-entity-enum)",
+        color: 'var(--color-cdx-entity-enum)',
         icon: IconEnum,
-        label: "Enumeration",
-        plural: "enumerations",
-    },
+        label: 'Enumeration',
+        plural: 'enumerations'
+    }
 };
 
 type MiscHeroProps = {
@@ -52,13 +47,11 @@ export const MiscHero = (props: MiscHeroProps): string => {
                 {meta.icon()}
             </div>
             <span class="cdx-entity-hero-file cdx-entity-hero-file--breadcrumb">
-                {t("miscellaneous")} &gt; {t(meta.plural)}
+                {t('miscellaneous')} &gt; {t(meta.plural)}
             </span>
             <h1 class="cdx-entity-hero-name">{t(meta.plural)}</h1>
             <div class="cdx-entity-hero-badges">
-                <span class={`cdx-badge cdx-badge--entity-${props.kind}`}>
-                    {meta.label}
-                </span>
+                <span class={`cdx-badge cdx-badge--entity-${props.kind}`}>{meta.label}</span>
                 <span class="cdx-badge cdx-badge--outline">{props.count}</span>
             </div>
         </div>
