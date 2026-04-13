@@ -490,6 +490,7 @@ export class Application {
         // Auto-detect groupBy if not explicitly set by user
         if (!Configuration.mainData.groupBy) {
             const hasModules = dependenciesData.modules && dependenciesData.modules.length > 0;
+            Configuration.mainData.hasNgModules = hasModules;
             Configuration.mainData.groupBy = hasModules ? 'none' : 'folder';
         }
 

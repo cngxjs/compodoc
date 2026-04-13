@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import Configuration from '../../app/configuration';
 import { buildGroupTree, type GroupNode } from '../../app/engines/dependencies.engine';
 import { t } from '../helpers';
 import { getAloneElements, isToggled } from '../helpers/menu-helpers';
@@ -91,7 +92,7 @@ const EntityLink = (props: {
             >
                 {props.name}
                 {props.deprecated ? Badge({ label: 'D', cssClass: 'cdx-badge--deprecated' }) : ''}
-                {props.standalone ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' }) : ''}
+                {props.standalone && Configuration.mainData.hasNgModules ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' }) : ''}
                 {props.isToken ? Badge({ label: 'T', cssClass: 'cdx-badge--token' }) : ''}
                 {props.beta ? Badge({ label: 'B', cssClass: 'cdx-badge--beta' }) : ''}
                 {props.factoryKind

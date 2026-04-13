@@ -85,6 +85,7 @@ export class Configuration implements ConfigurationInterface {
         routesLength: 0,
         angularVersion: '',
         hasZoneJs: true,
+        hasNgModules: false,
         exportFormat: COMPODOC_DEFAULTS.exportFormat,
         coverageData: {} as CoverageData,
         customFavicon: '',

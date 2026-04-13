@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockHostListener } from '../blocks/BlockHostListener';
@@ -437,7 +438,7 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 </h1>
                 <div class="cdx-entity-hero-badges">
                     <span class={`cdx-badge ${meta.badge}`}>{meta.label}</span>
-                    {props.showStandaloneBadge && e.standalone ? (
+                    {props.showStandaloneBadge && e.standalone && Configuration.mainData.hasNgModules ? (
                         <span class="cdx-badge cdx-badge--standalone">Standalone</span>
                     ) : (
                         ''

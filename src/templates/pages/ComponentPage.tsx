@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockIndex } from '../blocks/BlockIndex';
@@ -358,7 +359,7 @@ export const ComponentPage = (data: any): string => {
                 </h1>
                 <div class="cdx-entity-hero-badges">
                     <span class="cdx-badge cdx-badge--entity-component">Component</span>
-                    {c.standalone ? (
+                    {c.standalone && Configuration.mainData.hasNgModules ? (
                         <span class="cdx-badge cdx-badge--standalone">Standalone</span>
                     ) : (
                         ''
