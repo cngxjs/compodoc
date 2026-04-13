@@ -35,8 +35,9 @@
     margin-bottom: 0.75rem;
 }
 
-/* Heading anchor permalink — hidden by default, shown on hover */
-.cdx-readme :is(h1, h2, h3, h4, h5, h6) > .cdx-member-permalink {
+/* Heading anchor permalink — hidden by default, shown on hover.
+   Applied globally to both .cdx-readme (Readme tab) and .cdx-prose (descriptions). */
+:is(.cdx-readme, .cdx-prose) :is(h1, h2, h3, h4, h5, h6) > .cdx-member-permalink {
     @apply opacity-0 no-underline;
     margin-left: 0.5rem;
     color: var(--color-cdx-text-muted);
@@ -45,11 +46,11 @@
     transition: opacity 150ms ease;
 }
 
-.cdx-readme :is(h1, h2, h3, h4, h5, h6):hover > .cdx-member-permalink {
+:is(.cdx-readme, .cdx-prose) :is(h1, h2, h3, h4, h5, h6):hover > .cdx-member-permalink {
     opacity: 0.5;
 }
 
-.cdx-readme :is(h1, h2, h3, h4, h5, h6) > .cdx-member-permalink:hover {
+:is(.cdx-readme, .cdx-prose) :is(h1, h2, h3, h4, h5, h6) > .cdx-member-permalink:hover {
     opacity: 1;
     color: var(--color-cdx-primary);
 }
