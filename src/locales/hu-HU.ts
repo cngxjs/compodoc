@@ -12,7 +12,7 @@ export const TRANSLATION_HU_HU = {
     constructor: 'Konstruktor',
     coverage: 'Lefedettség',
     'coverage-empty-description':
-        'Futtassa a compodoc-ot dokumentált entitásokkal a lefedettség megtekintéséhez.',
+        'Futtassa a compodocx-ot dokumentált entitásokkal a lefedettség megtekintéséhez.',
     'coverage-overview': 'Dokumentáció lefedettség',
     'coverage-page-title': 'Dokumentáció lefedettség',
     declarations: 'Deklarációk',

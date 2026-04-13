@@ -11,7 +11,7 @@ export const TRANSLATION_ZH_TW = {
     components: '元件列表',
     constructor: '建構式方法',
     coverage: '覆蓋率',
-    'coverage-empty-description': '使用已記錄文件的實體執行 compodoc 以查看覆蓋率。',
+    'coverage-empty-description': '使用已記錄文件的實體執行 compodocx 以查看覆蓋率。',
     'coverage-overview': '文件覆蓋率',
     'coverage-page-title': '覆蓋率頁面標題',
     declarations: 'Declarations',

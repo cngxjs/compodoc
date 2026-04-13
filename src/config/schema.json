@@ -7,9 +7,9 @@
         "config": {
             "$id": "/properties/config",
             "type": "string",
-            "title": "A configuration file : .compodocrc, .compodocrc.json, .compodocrc.yaml or compodoc property in package.json",
+            "title": "A configuration file : .compodocrc, .compodocrc.json, .compodocrc.yaml, .compodocxrc, .compodocxrc.json, .compodocxrc.yaml, or compodoc/compodocx property in package.json",
             "default": "",
-            "examples": [".compodocrc"]
+            "examples": [".compodocxrc", ".compodocrc"]
         },
         "tsconfig": {
             "$id": "/properties/tsconfig",

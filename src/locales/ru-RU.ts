@@ -12,7 +12,7 @@ export const TRANSLATION_RU_RU = {
     constructor: 'Конструктор',
     coverage: 'Покрытие',
     'coverage-empty-description':
-        'Запустите compodoc с задокументированными сущностями, чтобы увидеть покрытие.',
+        'Запустите compodocx с задокументированными сущностями, чтобы увидеть покрытие.',
     'coverage-overview': 'Покрытие документации',
     'coverage-page-title': 'Покрытие документацией',
     declarations: 'Декларации',

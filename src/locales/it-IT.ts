@@ -11,7 +11,7 @@ export const TRANSLATION_IT_IT = {
     components: 'Componenti',
     constructor: 'Costruttore',
     coverage: 'Copertura',
-    'coverage-empty-description': 'Esegui compodoc con entità documentate per vedere la copertura.',
+    'coverage-empty-description': 'Esegui compodocx con entità documentate per vedere la copertura.',
     'coverage-overview': 'Copertura documentazione',
     'coverage-page-title': 'Copertura codice',
     declarations: 'Dichiarazioni',

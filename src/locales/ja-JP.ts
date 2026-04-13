@@ -12,7 +12,7 @@ export const TRANSLATION_JA_JP = {
     constructor: 'コンストラクタ',
     coverage: 'カバレッジ',
     'coverage-empty-description':
-        'カバレッジを確認するには、ドキュメント化されたエンティティで compodoc を実行してください。',
+        'カバレッジを確認するには、ドキュメント化されたエンティティで compodocx を実行してください。',
     'coverage-overview': 'ドキュメントカバレッジ',
     'coverage-page-title': 'カバレッジ',
     declarations: '宣言',

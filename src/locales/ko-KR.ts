@@ -11,7 +11,7 @@ export const TRANSLATION_KO_KR = {
     components: '컴포넌트',
     constructor: '생성자',
     coverage: '커버리지',
-    'coverage-empty-description': '커버리지를 확인하려면 문서화된 엔티티로 compodoc를 실행하세요.',
+    'coverage-empty-description': '커버리지를 확인하려면 문서화된 엔티티로 compodocx를 실행하세요.',
     'coverage-overview': '문서화 커버리지',
     'coverage-page-title': '문서 커버리지',
     declarations: '선언',

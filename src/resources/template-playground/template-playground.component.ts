@@ -583,7 +583,7 @@ export class TemplatePlaygroundComponent implements OnInit, OnDestroy {
 
       // Get filename from response headers or construct it
       const contentDisposition = response.headers.get('Content-Disposition');
-      let filename = `compodoc-templates-${this.sessionId}.zip`;
+      let filename = `compodocx-templates-${this.sessionId}.zip`;
 
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);

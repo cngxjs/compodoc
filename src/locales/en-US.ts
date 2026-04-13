@@ -12,7 +12,7 @@ export const TRANSLATION_EN_US = {
     components: 'Components',
     constructor: 'Constructor',
     coverage: 'Coverage',
-    'coverage-empty-description': 'Run compodoc with documented entities to see coverage.',
+    'coverage-empty-description': 'Run compodocx with documented entities to see coverage.',
     'coverage-overview': 'Documentation Coverage',
     'coverage-page-title': 'Documentation coverage',
     declarations: 'Declarations',

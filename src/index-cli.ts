@@ -44,7 +44,7 @@ export class CliApplication extends Application {
             .usage('<src> [options]')
             .option(
                 '-c, --config [config]',
-                'A configuration file : .compodocrc, .compodocrc.json, .compodocrc.yaml, or compodoc/compodocx property in package.json'
+                'A configuration file : .compodocxrc, .compodocxrc.json, .compodocxrc.yaml (also supports .compodocrc variants), or compodocx/compodoc property in package.json'
             )
             .option('-p, --tsconfig [config]', 'A tsconfig.json file')
             .option(

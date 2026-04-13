@@ -12,7 +12,7 @@ export const TRANSLATION_BG_BG = {
     constructor: 'Конструктор',
     coverage: 'Покритие',
     'coverage-empty-description':
-        'Стартирайте compodoc с документирани елементи, за да видите покритието.',
+        'Стартирайте compodocx с документирани елементи, за да видите покритието.',
     'coverage-overview': 'Покритие на документацията',
     'coverage-page-title': 'Coverage на документацията',
     declarations: 'Декларации',

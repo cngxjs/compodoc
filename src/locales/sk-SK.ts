@@ -12,7 +12,7 @@ export const TRANSLATION_SK_SK = {
     constructor: 'Konštruktor',
     coverage: 'Pokrytie',
     'coverage-empty-description':
-        'Spustite compodoc so zdokumentovanými entitami, aby ste videli pokrytie.',
+        'Spustite compodocx so zdokumentovanými entitami, aby ste videli pokrytie.',
     'coverage-overview': 'Pokrytie dokumentácie',
     'coverage-page-title': 'Pokrytie dokumentáciou',
     declarations: 'Deklarácie',

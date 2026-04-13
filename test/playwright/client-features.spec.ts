@@ -5,7 +5,7 @@ test.describe('Sidebar', () => {
         page
     }) => {
         await page.goto('/');
-        await page.evaluate(() => localStorage.removeItem('compodoc-sidebar-state'));
+        await page.evaluate(() => localStorage.removeItem('compodocx-sidebar-state'));
         await page.reload();
 
         const sidebar = page.locator('#sidebar');
@@ -20,14 +20,14 @@ test.describe('Sidebar', () => {
 
     test('desktop: expand/collapse persists to localStorage', async ({ page }) => {
         await page.goto('/');
-        await page.evaluate(() => localStorage.removeItem('compodoc-sidebar-state'));
+        await page.evaluate(() => localStorage.removeItem('compodocx-sidebar-state'));
         await page.reload();
 
         const toggler = page.locator('#sidebar [data-cdx-toggle="collapse"]').first();
         await toggler.click();
         await page.waitForTimeout(300);
 
-        const saved = await page.evaluate(() => localStorage.getItem('compodoc-sidebar-state'));
+        const saved = await page.evaluate(() => localStorage.getItem('compodocx-sidebar-state'));
         expect(saved).toBeTruthy();
         const state = JSON.parse(saved!);
         const hasOpenEntry = Object.values(state).some(v => v === true);

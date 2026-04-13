@@ -6,7 +6,24 @@
  */
 
 const DARK_STORAGE_KEY = 'compodocx_darkmode-state';
-const THEME_STORAGE_KEY = 'compodoc-theme';
+const DARK_LEGACY_KEY = 'compodoc_darkmode-state';
+const THEME_STORAGE_KEY = 'compodocx-theme';
+const THEME_LEGACY_KEY = 'compodoc-theme';
+
+/** Read from new key, fall back to legacy, migrate if found. */
+const migrateKey = (key: string, legacy: string): string | null => {
+    try {
+        const value = localStorage.getItem(key);
+        if (value !== null) return value;
+        const old = localStorage.getItem(legacy);
+        if (old !== null) {
+            localStorage.setItem(key, old);
+            localStorage.removeItem(legacy);
+            return old;
+        }
+    } catch { /* localStorage blocked */ }
+    return null;
+};
 
 const getSystemPreference = (): boolean =>
     window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -104,7 +121,7 @@ const bindThemePicker = () => {
 
     // Sync initial selection from localStorage
     try {
-        const saved = localStorage.getItem(THEME_STORAGE_KEY);
+        const saved = migrateKey(THEME_STORAGE_KEY, THEME_LEGACY_KEY);
         if (saved) {
             document.querySelectorAll<HTMLElement>('[data-cdx-theme]').forEach(opt => {
                 opt.setAttribute(
@@ -120,7 +137,7 @@ const bindThemePicker = () => {
 
 export const initTheme = () => {
     // Dark mode
-    const stored = localStorage.getItem(DARK_STORAGE_KEY);
+    const stored = migrateKey(DARK_STORAGE_KEY, DARK_LEGACY_KEY);
     const dark = stored !== null ? stored === 'true' : getSystemPreference();
     applyDarkMode(dark);
 

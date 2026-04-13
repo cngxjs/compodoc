@@ -12,7 +12,7 @@ export const TRANSLATION_PT_BR = {
     constructor: 'Construtor',
     coverage: 'Cobertura',
     'coverage-empty-description':
-        'Execute o compodoc com entidades documentadas para ver a cobertura.',
+        'Execute o compodocx com entidades documentadas para ver a cobertura.',
     'coverage-overview': 'Cobertura de documentação',
     'coverage-page-title': 'Cobertura da documentação',
     declarations: 'Declarações',

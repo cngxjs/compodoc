@@ -12,7 +12,7 @@ export const TRANSLATION_KA_GE = {
     constructor: 'კონსტრუქტორი',
     coverage: 'გაშუქება',
     'coverage-empty-description':
-        'გაშუქების სანახავად გაუშვით compodoc დოკუმენტირებული ერთეულებით.',
+        'გაშუქების სანახავად გაუშვით compodocx დოკუმენტირებული ერთეულებით.',
     'coverage-overview': 'დოკუმენტაციის დაფარვა',
     'coverage-page-title': 'დოკუმენტაციის გაშუქება',
     declarations: 'დეკლარაციები',

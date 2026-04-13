@@ -509,7 +509,7 @@ export const Menu = (props: MenuProps): string => {
                                             : ''}
                                     </a>
                                     {ModuleSubSection({
-                                        items: mod.compodocLinks?.components,
+                                        items: mod.compodocxLinks?.components,
                                         type: 'components',
                                         iconHtml: IconComponent(),
                                         labelKey: 'components',
@@ -517,7 +517,7 @@ export const Menu = (props: MenuProps): string => {
                                         moduleId: mod.id
                                     })}
                                     {ModuleSubSection({
-                                        items: mod.compodocLinks?.directives,
+                                        items: mod.compodocxLinks?.directives,
                                         type: 'directives',
                                         iconHtml: IconDirective(),
                                         labelKey: 'directives',
@@ -525,7 +525,7 @@ export const Menu = (props: MenuProps): string => {
                                         moduleId: mod.id
                                     })}
                                     {ModuleSubSection({
-                                        items: mod.compodocLinks?.injectables,
+                                        items: mod.compodocxLinks?.injectables,
                                         type: 'injectables',
                                         iconHtml: IconInjectable(),
                                         labelKey: 'injectables',
@@ -533,7 +533,7 @@ export const Menu = (props: MenuProps): string => {
                                         moduleId: mod.id
                                     })}
                                     {ModuleSubSection({
-                                        items: mod.compodocLinks?.pipes,
+                                        items: mod.compodocxLinks?.pipes,
                                         type: 'pipes',
                                         iconHtml: IconPipe(),
                                         labelKey: 'pipes',

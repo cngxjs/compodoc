@@ -157,7 +157,7 @@ export const CoverageReport = (props: CoverageReportProps): string => {
                     title: t('no-documentation-coverage-data'),
                     description:
                         t('coverage-empty-description') ||
-                        'Run compodoc with documented entities to see coverage.',
+                        'Run compodocx with documented entities to see coverage.',
                     variant: 'page'
                 })}
             </>

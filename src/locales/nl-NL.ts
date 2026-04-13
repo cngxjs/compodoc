@@ -12,7 +12,7 @@ export const TRANSLATION_NL_NL = {
     constructor: 'Constructor',
     coverage: 'Dekking',
     'coverage-empty-description':
-        'Voer compodoc uit met gedocumenteerde entiteiten om de dekking te zien.',
+        'Voer compodocx uit met gedocumenteerde entiteiten om de dekking te zien.',
     'coverage-overview': 'Documentatiedekking',
     'coverage-page-title': 'Documentatie coverage',
     declarations: 'Declaraties',
