@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { functionSignature, hasJsdocParams, modifKind, parseDescription, t } from '../helpers';
+import { codeWrap, functionSignature, hasJsdocParams, modifKind, parseDescription, t } from '../helpers';
 import { DefinedInRow } from './DefinedInRow';
 import { JsdocExamplesBlock } from './JsdocExamplesBlock';
 import { ParamsTable } from './ParamsTable';
@@ -26,7 +26,7 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
                         </div>
                     )}
                     <div class="cdx-member-signature">
-                        <code>{functionSignature(ctor)}</code>
+                        {codeWrap(functionSignature(ctor))}
                     </div>
                     {DefinedInRow({ line: ctor.line, file: props.file, navTabs: props.navTabs })}
                     {ctor.description && (

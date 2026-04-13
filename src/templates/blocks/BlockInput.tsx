@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { linkTypeHtml, parseDescription, t } from '../helpers';
+import { codeWrap, linkTypeHtml, parseDescription, t } from '../helpers';
 import { DefinedInRow } from './DefinedInRow';
 import { MemberCard } from './MemberCard';
 
@@ -58,7 +58,7 @@ export const BlockInput = (props: BlockInputProps): string => {
                         {inp.defaultValue && (
                             <div class="cdx-member-row">
                                 <i>{t('default-value')} : </i>
-                                <code>{inp.defaultValue}</code>
+                                {codeWrap(inp.defaultValue)}
                             </div>
                         )}
                         {DefinedInRow({

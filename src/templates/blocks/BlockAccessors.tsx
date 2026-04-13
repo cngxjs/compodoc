@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import {
+    codeWrap,
     functionSignature,
     hasJsdocParams,
     jsdocReturnsComment,
@@ -35,7 +36,7 @@ const SignatureBlock = (props: {
             <div class="cdx-member-row">
                 <span class="cdx-accessor-label">
                     <b>{props.label}</b>
-                    <code>{functionSignature(sig)}</code>
+                    {codeWrap(functionSignature(sig))}
                 </span>
             </div>
             {DefinedInRow({

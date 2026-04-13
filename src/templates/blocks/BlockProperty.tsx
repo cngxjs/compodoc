@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import {
+    codeWrap,
     hasJsdocParams,
     linkTypeHtml,
     modifKind,
@@ -69,21 +70,19 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                         {p.defaultValue && (
                             <div class="cdx-member-row">
                                 <i>{t('default-value')} : </i>
-                                <code>{p.defaultValue}</code>
+                                {codeWrap(p.defaultValue)}
                             </div>
                         )}
                         {p.decorators && (
                             <div class="cdx-member-row">
                                 <b>{t('decorators')} : </b>
-                                <code>
-                                    {p.decorators
-                                        .map((d: any) =>
-                                            d.stringifiedArguments
-                                                ? `@${d.name}(${d.stringifiedArguments})`
-                                                : `@${d.name}()`
-                                        )
-                                        .join(', ')}
-                                </code>
+                                {codeWrap(p.decorators
+                                    .map((d: any) =>
+                                        d.stringifiedArguments
+                                            ? `@${d.name}(${d.stringifiedArguments})`
+                                            : `@${d.name}()`
+                                    )
+                                    .join(', '))}
                             </div>
                         )}
                         {DefinedInRow({

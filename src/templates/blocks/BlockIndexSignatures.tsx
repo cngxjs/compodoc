@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { indexableSignature, linkTypeHtml, parseDescription, t } from '../helpers';
+import { codeWrap, indexableSignature, linkTypeHtml, parseDescription, t } from '../helpers';
 import { DefinedInRow } from './DefinedInRow';
 import { MemberCard } from './MemberCard';
 
@@ -19,9 +19,7 @@ export const BlockIndexSignatures = (props: BlockIndexSignaturesProps): string =
                 const header = (
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
-                            <code>
-                                {indexableSignature(idx)}:{linkTypeHtml(idx.returnType)}
-                            </code>
+                            {codeWrap(`${indexableSignature(idx)}:${linkTypeHtml(idx.returnType)}`)}
                         </span>
                     </header>
                 ) as string;

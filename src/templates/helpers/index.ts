@@ -32,6 +32,12 @@ export {
 export const isInternalMember = (modifierKind?: number[]): boolean =>
     (modifierKind ?? []).some(k => k === 123 || k === 124);
 
+/** Wrap content in `<code>` (single-line) or `<pre>` (multi-line). */
+export const codeWrap = (html: string): string => {
+    const tag = html.includes('\n') || html.length > 80 ? 'pre' : 'code';
+    return `<${tag}>${html}</${tag}>`;
+};
+
 /** A readme that is only a heading (no paragraphs, lists, code blocks) is treated as empty. */
 export const isReadmeEmpty = (readme: string | undefined): boolean => {
     if (!readme) {

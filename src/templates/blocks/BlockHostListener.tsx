@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import {
+    codeWrap,
     hasJsdocParams,
     jsdocReturnsComment,
     linkTypeHtml,
@@ -63,23 +64,19 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
                         {m.argsDecorator && (
                             <div class="cdx-member-row">
                                 <i>{t('arguments')} : </i>
-                                <code>
-                                    {m.argsDecorator.map((a: string) => `'${a}' `).join('')}
-                                </code>
+                                {codeWrap(m.argsDecorator.map((a: string) => `'${a}' `).join(''))}
                             </div>
                         )}
                         {m.decorators && (
                             <div class="cdx-member-row">
                                 <b>{t('decorators')} : </b>
-                                <code>
-                                    {m.decorators
-                                        .map((d: any) =>
-                                            d.stringifiedArguments
-                                                ? `@${d.name}(${d.stringifiedArguments})`
-                                                : `@${d.name}()`
-                                        )
-                                        .join(', ')}
-                                </code>
+                                {codeWrap(m.decorators
+                                    .map((d: any) =>
+                                        d.stringifiedArguments
+                                            ? `@${d.name}(${d.stringifiedArguments})`
+                                            : `@${d.name}()`
+                                    )
+                                    .join(', '))}
                             </div>
                         )}
                         {DefinedInRow({
