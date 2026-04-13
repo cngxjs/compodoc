@@ -126,6 +126,8 @@ export const TRANSLATION_EN_US = {
     no: 'No',
     'no-documentation-coverage-data': 'No documentation coverage data',
     'no-graph': 'No graph available.',
+    'no-overview': 'No overview available',
+    'no-overview-desc': 'Add a description or metadata to this entity to see an overview here.',
     'no-matching-entities': 'No matching entities',
     'no-iframe': 'Your browser does not support iframes.',
     'no-result-matching': 'No results matching',

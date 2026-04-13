@@ -162,6 +162,20 @@ const hasMembers = (e: any): boolean =>
         e.implements?.length
     );
 
+/** True when the Info tab has visible content (description, metadata, or relationships). */
+const hasInfoContent = (e: any, props: EntityInfoProps): boolean =>
+    !!(
+        e.deprecated ||
+        e.route ||
+        e.description ||
+        (e.jsdoctags?.length) ||
+        props.metadataHtml ||
+        e.extends?.length ||
+        e.implements?.length ||
+        props.relationships?.incoming?.length ||
+        props.relationships?.outgoing?.length
+    );
+
 /** Render extends/implements as metadata card rows for entities without decorator metadata */
 const ExtendsMetadataCard = (e: any): string => {
     const hasExtends = e.extends?.length > 0;
@@ -211,7 +225,16 @@ const InfoContent = (props: EntityInfoProps): string => {
             icon: EmptyIconDocument(),
             title: t('empty-entity-title'),
             description: t('empty-entity-desc', { entityType: t(props.entityKey) }),
-            variant: 'page'
+            variant: 'full'
+        }) as string;
+    }
+
+    if (!hasInfoContent(e, props)) {
+        return EmptyState({
+            icon: EmptyIconDocument(),
+            title: t('no-overview'),
+            description: t('no-overview-desc'),
+            variant: 'full'
         }) as string;
     }
 

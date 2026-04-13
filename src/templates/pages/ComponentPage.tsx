@@ -23,6 +23,7 @@ import { SourceViewer } from '../blocks/SourceViewer';
 import { EmptyState } from '../components/EmptyState';
 import {
     EmptyIconBook,
+    EmptyIconDocument,
     EmptyIconHtml,
     EmptyIconPalette,
     EmptyIconTree
@@ -116,9 +117,38 @@ const ComponentMetadata = (c: any): string => {
  * external links, decorator metadata, host literal, content slots, relationships.
  * Member surface (inputs/outputs/methods/...) lives in {@link ApiContent}.
  */
+const hasComponentInfoContent = (data: any): boolean => {
+    const c = data.component;
+    return !!(
+        c.deprecated ||
+        c.route ||
+        c.description ||
+        c.jsdoctags?.length ||
+        c.selector ||
+        c.extends?.length ||
+        c.implements?.length ||
+        c.providers?.length ||
+        c.viewProviders?.length ||
+        c.hostDirectives?.length ||
+        c.hostStructured?.length ||
+        c.slots?.length ||
+        data.relationships?.incoming?.length ||
+        data.relationships?.outgoing?.length
+    );
+};
+
 const InfoContent = (data: any): string => {
     const c = data.component;
     const depth = data.depth;
+
+    if (!hasComponentInfoContent(data)) {
+        return EmptyState({
+            icon: EmptyIconDocument(),
+            title: t('no-overview'),
+            description: t('no-overview-desc'),
+            variant: 'full'
+        }) as string;
+    }
 
     return (
         <>
