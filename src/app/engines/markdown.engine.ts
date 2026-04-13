@@ -36,9 +36,7 @@ export class MarkdownEngine {
             } catch {
                 highlighted = `<pre class="shiki"><code>${this.escape(code)}</code></pre>`;
             }
-            return `<b>${I18nEngine.translate(
-                'example'
-            )} :</b><div class="cdx-code-snippet">${highlighted}</div>`;
+            return `<div class="cdx-code-snippet">${highlighted}</div>`;
         };
 
         renderer.table = (header, body) => {
