@@ -126,6 +126,8 @@ export const TRANSLATION_KO_KR = {
     no: '아니오',
     'no-documentation-coverage-data': '문서 커버리지 데이터 없음',
     'no-graph': '사용할 수 있는 그래프가 없습니다.',
+    'no-overview': '개요를 사용할 수 없습니다',
+    'no-overview-desc': '이 엔티티에 설명이나 메타데이터를 추가하면 여기에 개요가 표시됩니다.',
     'no-iframe': '사용중인 브라우저가 iframe을 지원하지 않습니다',
     'no-matching-entities': '일치하는 엔티티 없음',
     'no-result-matching': '검색 결과가 없습니다',

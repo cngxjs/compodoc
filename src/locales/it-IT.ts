@@ -126,6 +126,8 @@ export const TRANSLATION_IT_IT = {
     no: 'No',
     'no-documentation-coverage-data': 'Nessun dato di copertura della documentazione',
     'no-graph': 'Grafico non disponibile.',
+    'no-overview': 'Nessuna panoramica disponibile',
+    'no-overview-desc': 'Aggiungi una descrizione o metadati a questa entità per vedere una panoramica qui.',
     'no-iframe': 'Il tuo browser non supporta iframe.',
     'no-matching-entities': 'Nessuna entità corrispondente',
     'no-result-matching': 'Nessun risultato corrispondente',

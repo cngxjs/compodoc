@@ -127,6 +127,8 @@ export const TRANSLATION_ES_ES = {
     no: 'No',
     'no-documentation-coverage-data': 'Sin datos de cobertura de documentación',
     'no-graph': 'No hay gráfica disponible.',
+    'no-overview': 'No hay resumen disponible',
+    'no-overview-desc': 'Agregue una descripción o metadatos a esta entidad para ver un resumen aquí.',
     'no-iframe': 'Tu navegador no soporta iframes.',
     'no-matching-entities': 'Sin entidades coincidentes',
     'no-result-matching': 'No hay resultados que coincidan',

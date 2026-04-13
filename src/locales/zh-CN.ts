@@ -126,6 +126,8 @@ export const TRANSLATION_ZH_CN = {
     no: '否',
     'no-documentation-coverage-data': '无文档覆盖率数据',
     'no-graph': '无数据显示',
+    'no-overview': '暂无概述',
+    'no-overview-desc': '为此实体添加描述或元数据以在此处查看概述。',
     'no-iframe': '你的浏览器不支持iframes',
     'no-matching-entities': '没有匹配的实体',
     'no-result-matching': '无匹配的结果',

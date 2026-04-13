@@ -127,6 +127,8 @@ export const TRANSLATION_BG_BG = {
     no: 'Не',
     'no-documentation-coverage-data': 'Няма данни за покритие с документация',
     'no-graph': 'Няма наличен граф.',
+    'no-overview': 'Няма наличен преглед',
+    'no-overview-desc': 'Добавете описание или метаданни към тази същност, за да видите преглед тук.',
     'no-iframe': 'Браузърът Ви не поддържа iframe.',
     'no-matching-entities': 'Няма съвпадащи обекти',
     'no-result-matching': 'Няма намерени резултати.',

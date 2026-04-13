@@ -128,6 +128,8 @@ export const TRANSLATION_NL_NL = {
     no: 'Nee',
     'no-documentation-coverage-data': 'Geen documentatiedekkingsgegevens',
     'no-graph': 'Geen diagram beschikbaar.',
+    'no-overview': 'Geen overzicht beschikbaar',
+    'no-overview-desc': 'Voeg een beschrijving of metadata toe aan deze entiteit om hier een overzicht te zien.',
     'no-iframe': 'Uw browser ondersteund geen iframes.',
     'no-matching-entities': 'Geen overeenkomende entiteiten',
     'no-result-matching': 'Geen overeenkomende resultaten',

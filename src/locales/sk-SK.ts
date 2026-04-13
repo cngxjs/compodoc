@@ -127,6 +127,8 @@ export const TRANSLATION_SK_SK = {
     no: 'Nie',
     'no-documentation-coverage-data': 'Žiadne dáta pokrytia dokumentáciou',
     'no-graph': 'Nie je k dispozícii žiadny graf.',
+    'no-overview': 'Žiadny prehľad nie je k dispozícii',
+    'no-overview-desc': 'Pridajte popis alebo metadáta k tejto entite, aby ste tu videli prehľad.',
     'no-iframe': 'Váš prehliadač nepodporuje iframe',
     'no-matching-entities': 'Žiadne zodpovedajúce entity',
     'no-result-matching': 'Nenájdené žiadne výsledky pre',

@@ -126,6 +126,8 @@ export const TRANSLATION_ZH_TW = {
     no: '否',
     'no-documentation-coverage-data': '無文件覆蓋率資料',
     'no-graph': '無數據顯示',
+    'no-overview': '暫無概述',
+    'no-overview-desc': '為此實體新增描述或中繼資料以在此處查看概述。',
     'no-iframe': '你的瀏覽器不支援 iframes',
     'no-matching-entities': '沒有匹配的實體',
     'no-result-matching': '無匹配的結果',

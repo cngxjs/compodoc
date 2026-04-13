@@ -128,6 +128,8 @@ export const TRANSLATION_PL_PL = {
     no: 'Nie',
     'no-documentation-coverage-data': 'Brak danych pokrycia dokumentacją',
     'no-graph': 'Graf niedostępny.',
+    'no-overview': 'Brak dostępnego przeglądu',
+    'no-overview-desc': 'Dodaj opis lub metadane do tej encji, aby zobaczyć tutaj przegląd.',
     'no-iframe': "Twoja przeglądarka nie wspiera iframe'ów.",
     'no-matching-entities': 'Brak pasujących podmiotów',
     'no-result-matching': 'Brak pasujących wyników',

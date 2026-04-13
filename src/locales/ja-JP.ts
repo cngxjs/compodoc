@@ -128,6 +128,8 @@ export const TRANSLATION_JA_JP = {
     no: 'いいえ',
     'no-documentation-coverage-data': 'ドキュメントカバレッジデータがありません',
     'no-graph': '使用できるグラフがありません',
+    'no-overview': '概要はありません',
+    'no-overview-desc': 'この要素に説明またはメタデータを追加すると、ここに概要が表示されます。',
     'no-iframe': 'ブラウザがiframeを対応していません',
     'no-matching-entities': '一致するエンティティがありません',
     'no-result-matching': '見つかりませんでした',

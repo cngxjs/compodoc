@@ -129,6 +129,8 @@ export const TRANSLATION_RU_RU = {
     no: 'Нет',
     'no-documentation-coverage-data': 'Нет данных о покрытии документацией',
     'no-graph': 'Диаграмма недоступна.',
+    'no-overview': 'Обзор недоступен',
+    'no-overview-desc': 'Добавьте описание или метаданные к этой сущности, чтобы увидеть здесь обзор.',
     'no-iframe': 'Браузер не поддерживает iframes.',
     'no-matching-entities': 'Нет совпадающих сущностей',
     'no-result-matching': 'Результаты не найдены',
