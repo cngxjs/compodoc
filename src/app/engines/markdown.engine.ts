@@ -54,6 +54,17 @@ export class MarkdownEngine {
             );
         };
 
+        renderer.heading = (text: string, level: number) => {
+            const slug = text
+                .toLowerCase()
+                .replace(/<[^>]+>/g, '')
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim();
+            return `<h${level} id="${slug}">${text}<a href="#${slug}" class="cdx-member-permalink" aria-hidden="true">#</a></h${level}>`;
+        };
+
         renderer.image = (href: string, title: string, text: string) => {
             let out = `<img src="${href}" alt="${text}" class="img-responsive"`;
             if (title) {

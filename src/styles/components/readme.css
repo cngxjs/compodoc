@@ -28,10 +28,30 @@
 .cdx-readme h6 {
     color: var(--color-cdx-text);
     font-weight: 600;
+    scroll-margin-top: 48px;
     letter-spacing: -0.01em;
     line-height: 1.3;
     margin-top: 2rem;
     margin-bottom: 0.75rem;
+}
+
+/* Heading anchor permalink — hidden by default, shown on hover */
+.cdx-readme :is(h1, h2, h3, h4, h5, h6) > .cdx-member-permalink {
+    @apply opacity-0 no-underline;
+    margin-left: 0.5rem;
+    color: var(--color-cdx-text-muted);
+    font-weight: 400;
+    font-size: 0.75em;
+    transition: opacity 150ms ease;
+}
+
+.cdx-readme :is(h1, h2, h3, h4, h5, h6):hover > .cdx-member-permalink {
+    opacity: 0.5;
+}
+
+.cdx-readme :is(h1, h2, h3, h4, h5, h6) > .cdx-member-permalink:hover {
+    opacity: 1;
+    color: var(--color-cdx-primary);
 }
 
 .cdx-readme > :first-child {
