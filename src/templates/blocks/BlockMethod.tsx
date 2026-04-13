@@ -5,7 +5,7 @@ import {
     hasJsdocParams,
     jsdocReturnsComment,
     linkTypeHtml,
-    modifKind,
+    modifKind, modifSlug,
     parseDescription,
     t
 } from '../helpers';
@@ -32,7 +32,7 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
                             {(m.modifierKind ?? []).map((k: number) => (
-                                <span class="cdx-member-modifier">{modifKind(k)}</span>
+                                <span class={`cdx-member-modifier cdx-member-modifier--${modifSlug(k)}`}>{modifKind(k)}</span>
                             ))}
                             {m.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
                             <span

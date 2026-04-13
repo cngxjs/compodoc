@@ -118,12 +118,7 @@ i {
     margin-bottom: var(--spacing-cdx-sm);
 }
 
-.cdx-member-modifier {
-    background: #636363;
-    padding: 1px 5px;
-    color: white;
-    border-radius: var(--radius-cdx-sm);
-}
+/* Modifier base styling moved to member-card.css — see cdx-member-modifier--* variants */
 .cdx-member-modifier:empty {
     display: none;
 }

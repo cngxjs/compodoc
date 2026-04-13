@@ -85,10 +85,49 @@
     display: inline-block;
     font-family: var(--font-code);
     font-size: 0.7rem;
-    font-weight: 600;
+    font-weight: 500;
     padding: 1px 5px;
     border-radius: var(--radius-cdx-sm);
     margin-right: var(--spacing-cdx-sm);
+    color: hsl(220 10% 45%);
+    background: hsl(220 10% 95%);
+    border: 1px solid hsl(220 10% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--private {
+    color: hsl(0 50% 40%);
+    background: hsl(0 40% 95%);
+    border-color: hsl(0 35% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--protected {
+    color: hsl(35 60% 35%);
+    background: hsl(35 50% 95%);
+    border-color: hsl(35 40% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--readonly {
+    color: hsl(210 50% 40%);
+    background: hsl(210 40% 95%);
+    border-color: hsl(210 35% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--static {
+    color: hsl(270 40% 42%);
+    background: hsl(270 30% 95%);
+    border-color: hsl(270 25% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--async {
+    color: hsl(170 45% 32%);
+    background: hsl(170 35% 95%);
+    border-color: hsl(170 30% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--abstract {
+    color: hsl(300 35% 40%);
+    background: hsl(300 25% 95%);
+    border-color: hsl(300 20% 85%);
     background: var(--color-cdx-bg-alt);
     color: var(--color-cdx-text-secondary);
     border: 1px solid var(--color-cdx-border);

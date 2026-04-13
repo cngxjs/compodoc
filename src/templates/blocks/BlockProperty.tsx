@@ -3,7 +3,7 @@ import {
     codeWrap,
     hasJsdocParams,
     linkTypeHtml,
-    modifKind,
+    modifKind, modifSlug,
     parseDescription,
     signalKindLabel,
     t
@@ -32,7 +32,7 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
                             {(p.modifierKind ?? []).map((k: number) => (
-                                <span class="cdx-member-modifier">{modifKind(k)}</span>
+                                <span class={`cdx-member-modifier cdx-member-modifier--${modifSlug(k)}`}>{modifKind(k)}</span>
                             ))}
                             {p.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
                             <span

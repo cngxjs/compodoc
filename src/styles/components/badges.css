@@ -1,5 +1,5 @@
 .cdx-badge {
-    @apply ml-1 inline-block px-1.5 py-0 text-[10px] font-semibold uppercase leading-4;
+    @apply ml-1 inline-block px-1.5 py-0 text-[10px] font-semibold leading-4;
     border-radius: var(--radius-cdx-sm);
     vertical-align: middle;
 }
@@ -91,12 +91,22 @@
     background: hsl(190 45% 94%);
 }
 
-.cdx-badge--input-signal,
-.cdx-badge--output-signal,
+.cdx-badge--input-signal {
+    color: hsl(145 50% 28%);
+    border: 1px solid hsl(145 40% 48%);
+    background: hsl(145 40% 94%);
+}
+
+.cdx-badge--output-signal {
+    color: hsl(350 50% 35%);
+    border: 1px solid hsl(350 40% 55%);
+    background: hsl(350 40% 94%);
+}
+
 .cdx-badge--model {
-    color: hsl(170 55% 30%);
-    border: 1px solid hsl(170 45% 48%);
-    background: hsl(170 45% 94%);
+    color: hsl(260 45% 40%);
+    border: 1px solid hsl(260 35% 55%);
+    background: hsl(260 35% 94%);
 }
 
 .cdx-badge--view-child,
@@ -106,6 +116,13 @@
     color: hsl(30 60% 35%);
     border: 1px solid hsl(30 50% 50%);
     background: hsl(30 50% 94%);
+}
+
+.cdx-badge--host-binding,
+.cdx-badge--host-listener {
+    color: hsl(200 45% 35%);
+    border: 1px solid hsl(200 35% 55%);
+    background: hsl(200 35% 94%);
 }
 
 .cdx-badge--inject {
@@ -256,12 +273,20 @@
     border-color: hsl(190 30% 35%);
     background: hsl(190 25% 16%);
 }
-.dark .cdx-badge--input-signal,
-.dark .cdx-badge--output-signal,
+.dark .cdx-badge--input-signal {
+    color: hsl(145 45% 65%);
+    border-color: hsl(145 30% 35%);
+    background: hsl(145 25% 16%);
+}
+.dark .cdx-badge--output-signal {
+    color: hsl(350 50% 70%);
+    border-color: hsl(350 30% 38%);
+    background: hsl(350 25% 16%);
+}
 .dark .cdx-badge--model {
-    color: hsl(170 50% 65%);
-    border-color: hsl(170 30% 35%);
-    background: hsl(170 25% 16%);
+    color: hsl(260 45% 70%);
+    border-color: hsl(260 25% 40%);
+    background: hsl(260 25% 18%);
 }
 .dark .cdx-badge--view-child,
 .dark .cdx-badge--view-children,
@@ -270,6 +295,12 @@
     color: hsl(30 55% 65%);
     border-color: hsl(30 35% 35%);
     background: hsl(30 25% 16%);
+}
+.dark .cdx-badge--host-binding,
+.dark .cdx-badge--host-listener {
+    color: hsl(200 45% 65%);
+    border-color: hsl(200 25% 38%);
+    background: hsl(200 25% 16%);
 }
 .dark .cdx-badge--inject {
     color: hsl(320 45% 70%);

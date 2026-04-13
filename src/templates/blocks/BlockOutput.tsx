@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { linkTypeHtml, parseDescription, t } from '../helpers';
+import { linkTypeHtml, parseDescription, signalKindLabel, t } from '../helpers';
 import { DefinedInRow } from './DefinedInRow';
 import { MemberCard } from './MemberCard';
 
@@ -25,7 +25,7 @@ export const BlockOutput = (props: BlockOutputProps): string => {
                             </span>
                             {out.signalKind && (
                                 <span class={`cdx-badge cdx-badge--${out.signalKind}`}>
-                                    {out.signalKind === 'output-signal' ? 'Signal' : ''}
+                                    {signalKindLabel(out.signalKind)}
                                 </span>
                             )}
                             <a

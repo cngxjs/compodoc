@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { codeWrap, functionSignature, hasJsdocParams, modifKind, parseDescription, t } from '../helpers';
+import { codeWrap, functionSignature, hasJsdocParams, modifKind, modifSlug, parseDescription, t } from '../helpers';
 import { DefinedInRow } from './DefinedInRow';
 import { JsdocExamplesBlock } from './JsdocExamplesBlock';
 import { ParamsTable } from './ParamsTable';
@@ -21,7 +21,7 @@ export const BlockConstructor = (props: BlockConstructorProps): string => {
                     {ctor.modifierKind && ctor.modifierKind.length > 0 && (
                         <div class="cdx-member-row">
                             {ctor.modifierKind.map((k: number) => (
-                                <span class="cdx-member-modifier">{modifKind(k)}</span>
+                                <span class={`cdx-member-modifier cdx-member-modifier--${modifSlug(k)}`}>{modifKind(k)}</span>
                             ))}
                         </div>
                     )}

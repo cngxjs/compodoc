@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { codeWrap, linkTypeHtml, parseDescription, t } from '../helpers';
+import { codeWrap, linkTypeHtml, parseDescription, signalKindLabel, t } from '../helpers';
 import { DefinedInRow } from './DefinedInRow';
 import { MemberCard } from './MemberCard';
 
@@ -25,11 +25,7 @@ export const BlockInput = (props: BlockInputProps): string => {
                             </span>
                             {inp.signalKind && (
                                 <span class={`cdx-badge cdx-badge--${inp.signalKind}`}>
-                                    {inp.signalKind === 'input-signal'
-                                        ? 'Signal'
-                                        : inp.signalKind === 'model'
-                                          ? 'Model'
-                                          : ''}
+                                    {signalKindLabel(inp.signalKind)}
                                 </span>
                             )}
                             {inp.required && (

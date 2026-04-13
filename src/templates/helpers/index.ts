@@ -13,7 +13,7 @@ export {
 } from './jsdoc';
 export { linkTypeHtml, resolveType } from './link-type';
 export { modifIcon, modifIconFromArray } from './modif-icon';
-export { modifKind } from './modif-kind';
+export { modifKind, modifSlug } from './modif-kind';
 export { oneParameterHas } from './one-parameter-has';
 export { parseDescription } from './parse-description';
 export { parseProperty } from './parse-property';
@@ -33,9 +33,11 @@ export const isInternalMember = (modifierKind?: number[]): boolean =>
     (modifierKind ?? []).some(k => k === 123 || k === 124);
 
 /** Wrap content in `<code>` (single-line) or `<pre>` (multi-line). */
-export const codeWrap = (html: string): string => {
-    const tag = html.includes('\n') || html.length > 80 ? 'pre' : 'code';
-    return `<${tag}>${html}</${tag}>`;
+export const codeWrap = (html: unknown): string => {
+    const str = String(html ?? '');
+    if (!str) return '';
+    const tag = str.includes('\n') || str.length > 80 ? 'pre' : 'code';
+    return `<${tag}>${str}</${tag}>`;
 };
 
 /** A readme that is only a heading (no paragraphs, lists, code blocks) is treated as empty. */
