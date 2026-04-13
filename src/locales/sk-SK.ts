@@ -102,6 +102,7 @@ export const TRANSLATION_SK_SK = {
     'html-element-with-directive': 'HTML element s direktívou',
     identifier: 'Identifikátor',
     implements: 'Implementuje',
+    import: 'Import',
     imports: 'Importuje',
     index: 'Index',
     indexable: 'Indexovateľný',

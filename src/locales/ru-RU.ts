@@ -104,6 +104,7 @@ export const TRANSLATION_RU_RU = {
     'html-element-with-directive': 'Html-элемент с директивой',
     identifier: 'Идентификатор',
     implements: 'Реализует',
+    import: 'Import',
     imports: 'Импорт',
     index: 'Индекс',
     indexable: 'Индексируемый',

@@ -101,6 +101,7 @@ export const TRANSLATION_ZH_CN = {
     'html-element-with-directive': '带指令的Html元素',
     identifier: '标识符',
     implements: '实现',
+    import: 'Import',
     imports: '引入',
     index: '索引',
     indexable: 'Indexable',

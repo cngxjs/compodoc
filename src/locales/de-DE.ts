@@ -103,6 +103,7 @@ export const TRANSLATION_DE_DE = {
     'html-element-with-directive': 'Html-Element mit Direktive',
     identifier: 'Kennung',
     implements: 'Implementiert',
+    import: 'Import',
     imports: 'Importiert',
     index: 'Index',
     indexable: 'Indizierbar',

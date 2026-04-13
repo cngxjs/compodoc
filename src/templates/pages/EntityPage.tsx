@@ -1,6 +1,7 @@
 import Html from '@kitajs/html';
 import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
+import { resolveImportPath } from '../helpers/import-resolver';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockHostListener } from '../blocks/BlockHostListener';
 import { BlockIndex } from '../blocks/BlockIndex';
@@ -241,6 +242,14 @@ const InfoContent = (props: EntityInfoProps): string => {
 
     return (
         <>
+            {/* 0. Import statement */}
+            {isInfoSection('import') && (() => {
+                const importPath = resolveImportPath(e.file);
+                return importPath
+                    ? `<section class="cdx-content-section"><h3 class="cdx-section-heading">${t('import')}</h3><pre class="cdx-import-statement"><code>import { ${e.name} } from "${importPath}";</code></pre></section>`
+                    : '';
+            })()}
+
             {/* 1. Deprecation banner */}
             {isInfoSection('deprecated') && e.deprecated && (
                 <div class="cdx-deprecation-banner" role="alert">

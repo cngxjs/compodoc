@@ -26,6 +26,26 @@
     }
 }
 
+.cdx-import-statement {
+    background: var(--color-cdx-bg-alt);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+    padding: 0.625rem 1rem;
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    margin: 0;
+    overflow-x: auto;
+}
+
+.cdx-import-statement code {
+    color: var(--color-cdx-text);
+    background: transparent;
+    padding: 0;
+    border: none;
+    font-size: inherit;
+}
+
 .cdx-deprecation-banner {
     /* border: 1px solid
         color-mix(in srgb, var(--color-cdx-danger) 35%, var(--color-cdx-border)); */

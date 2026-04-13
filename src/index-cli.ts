@@ -928,6 +928,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                     logger.info('Using tsconfig file ', _file);
 
                     const tsConfigFile = readConfig(_file);
+
+                    // Store path aliases for import statement rendering
+                    Configuration.mainData.tsconfigPaths =
+                        tsConfigFile.compilerOptions?.paths ?? {};
+                    Configuration.mainData.tsconfigBaseUrl =
+                        tsConfigFile.compilerOptions?.baseUrl ?? '';
+
                     if (tsConfigFile.files) {
                         scannedFiles = tsConfigFile.files;
                         // Normalize path of these files

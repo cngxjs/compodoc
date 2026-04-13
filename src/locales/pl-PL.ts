@@ -103,6 +103,7 @@ export const TRANSLATION_PL_PL = {
     'html-element-with-directive': 'Html element z dyrektywą',
     identifier: 'Identyfikator',
     implements: 'Implementuje',
+    import: 'Import',
     imports: 'Importuje',
     index: 'Indeks',
     indexable: 'Indeksowany',

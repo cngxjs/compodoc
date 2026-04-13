@@ -103,6 +103,7 @@ export const TRANSLATION_NL_NL = {
     'html-element-with-directive': 'Html element met directive',
     identifier: 'Identifier',
     implements: 'Implementeert',
+    import: 'Import',
     imports: 'Imports',
     index: 'Index',
     indexable: 'Indexeerbaar',

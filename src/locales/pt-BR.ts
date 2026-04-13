@@ -102,6 +102,7 @@ export const TRANSLATION_PT_BR = {
     'html-element-with-directive': 'Elemento HTML com diretiva',
     identifier: 'Identificador',
     implements: 'Implementa',
+    import: 'Import',
     imports: 'Imports',
     index: 'Index',
     indexable: 'Indexável',

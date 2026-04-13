@@ -102,6 +102,7 @@ export const TRANSLATION_KA_GE = {
     'html-element-with-directive': 'Html ელემენტი დირექტივით',
     identifier: 'იდენტიფიკატორი',
     implements: 'ახორციელებს',
+    import: 'Import',
     imports: 'იმპორტი',
     index: 'ინდექსი',
     indexable: 'ინდექსირებადი',

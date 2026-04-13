@@ -101,6 +101,7 @@ export const TRANSLATION_KO_KR = {
     'html-element-with-directive': '지시어가 있는 HTML 요소',
     identifier: '식별자',
     implements: '구현',
+    import: 'Import',
     imports: '가져오기',
     index: '색인',
     indexable: 'Indexable',

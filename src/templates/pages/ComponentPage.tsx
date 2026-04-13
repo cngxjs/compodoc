@@ -1,6 +1,7 @@
 import Html from '@kitajs/html';
 import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
+import { resolveImportPath } from '../helpers/import-resolver';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockIndex } from '../blocks/BlockIndex';
 import { BlockInput } from '../blocks/BlockInput';
@@ -153,6 +154,13 @@ const InfoContent = (data: any): string => {
 
     return (
         <>
+            {isInfoSection('import') && (() => {
+                const importPath = resolveImportPath(c.file);
+                return importPath
+                    ? `<section class="cdx-content-section"><h3 class="cdx-section-heading">${t('import')}</h3><pre class="cdx-import-statement"><code>import { ${c.name} } from "${importPath}";</code></pre></section>`
+                    : '';
+            })()}
+
             {isInfoSection('deprecated') && c.deprecated && (
                 <div class="cdx-deprecation-banner" role="alert">
                     <strong>{t('deprecated')}</strong>

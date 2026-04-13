@@ -103,6 +103,7 @@ export const TRANSLATION_JA_JP = {
     'html-element-with-directive': 'ディレクティブHtml要素',
     identifier: '識別子',
     implements: '実装',
+    import: 'Import',
     imports: 'インポート',
     index: '索引',
     indexable: 'インデクサブル',

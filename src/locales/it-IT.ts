@@ -101,6 +101,7 @@ export const TRANSLATION_IT_IT = {
     'html-element-with-directive': 'Elemento html con direttive',
     identifier: 'Identificatore',
     implements: 'Implementa',
+    import: 'Import',
     imports: 'Importa',
     index: 'Indice',
     indexable: 'Indicizzabile',

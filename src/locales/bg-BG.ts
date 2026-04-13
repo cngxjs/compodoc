@@ -102,6 +102,7 @@ export const TRANSLATION_BG_BG = {
     'html-element-with-directive': 'HTML-елемент с директива',
     identifier: 'Идентификатор',
     implements: 'Имплементира',
+    import: 'Import',
     imports: 'Imports',
     index: 'Индекс',
     indexable: 'Индексируем',

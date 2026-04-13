@@ -102,6 +102,7 @@ export const TRANSLATION_EN_US = {
     'html-element-with-directive': 'Html element with directive',
     identifier: 'Identifier',
     implements: 'Implements',
+    import: 'Import',
     imports: 'Imports',
     index: 'Index',
     indexable: 'Indexable',

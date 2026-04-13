@@ -102,6 +102,7 @@ export const TRANSLATION_HU_HU = {
     'html-element-with-directive': 'Html elem direktívával',
     identifier: 'Azonosító',
     implements: 'Implementált interfészek',
+    import: 'Import',
     imports: 'Importok',
     index: 'Tartalomjegyzék',
     indexable: 'Indexelhető',
