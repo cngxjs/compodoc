@@ -128,6 +128,7 @@ const hasComponentInfoContent = (data: any): boolean => {
         c.description ||
         c.jsdoctags?.length ||
         c.selector ||
+        c.constructorObj ||
         c.extends?.length ||
         c.implements?.length ||
         c.providers?.length ||
@@ -200,6 +201,15 @@ const InfoContent = (data: any): string => {
                 </section>
             )}
 
+            {isInfoSection('constructor') &&
+                c.constructorObj &&
+                BlockConstructor({
+                    constructor: c.constructorObj,
+                    file: c.file,
+                    depth,
+                    navTabs: data.navTabs
+                })}
+
             {isInfoSection('relationships') &&
                 data.relationships &&
                 BlockRelationshipGraph({
@@ -245,14 +255,6 @@ const ApiContent = (data: any): string => {
                     accessors: c.accessors
                 })}
 
-            {isApiSection('constructor') &&
-                c.constructorObj &&
-                BlockConstructor({
-                    constructor: c.constructorObj,
-                    file: c.file,
-                    depth,
-                    navTabs: data.navTabs
-                })}
             {isApiSection('inputs') &&
                 c.inputsClass?.length > 0 &&
                 BlockInput({ element: c, file: c.file, depth, navTabs: data.navTabs })}

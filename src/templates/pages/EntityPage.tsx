@@ -173,6 +173,7 @@ const hasInfoContent = (e: any, props: EntityInfoProps): boolean =>
         e.description ||
         (e.jsdoctags?.length) ||
         props.metadataHtml ||
+        e.constructorObj ||
         e.extends?.length ||
         e.implements?.length ||
         props.relationships?.incoming?.length ||
@@ -283,6 +284,17 @@ const InfoContent = (props: EntityInfoProps): string => {
                       ? ExtendsMetadataCard(e)
                       : '')}
 
+            {/* 4b. Constructor */}
+            {isInfoSection('constructor') &&
+                props.showConstructor !== false &&
+                e.constructorObj &&
+                BlockConstructor({
+                    constructor: e.constructorObj,
+                    file: e.file,
+                    depth: props.depth,
+                    navTabs: props.navTabs
+                })}
+
             {/* 4.5 Relationships (cross-linking) */}
             {isInfoSection('relationships') &&
                 props.relationships &&
@@ -332,17 +344,6 @@ const ApiContent = (props: EntityInfoProps): string => {
                     hostListeners: e.hostListeners,
                     accessors: e.accessors,
                     indexSignatures: e.indexSignatures
-                })}
-
-            {/* 6. Constructor */}
-            {isApiSection('constructor') &&
-                props.showConstructor !== false &&
-                e.constructorObj &&
-                BlockConstructor({
-                    constructor: e.constructorObj,
-                    file: e.file,
-                    depth: props.depth,
-                    navTabs: props.navTabs
                 })}
 
             {/* 7. Inputs */}

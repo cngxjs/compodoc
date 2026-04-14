@@ -88,12 +88,12 @@ export const DEFAULT_INFO_SECTIONS: ReadonlyArray<string> = [
     'examples',
     'metadata',
     'extends',
+    'constructor',
     'relationships'
 ];
 
 export const DEFAULT_API_SECTIONS: ReadonlyArray<string> = [
     'index',
-    'constructor',
     'inputs',
     'outputs',
     'derivedState',
