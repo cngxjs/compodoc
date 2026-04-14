@@ -3,7 +3,6 @@ import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockDerivedState } from '../blocks/BlockDerivedState';
 import { BlockHostBindings } from '../blocks/BlockHostBindings';
-import { BlockHostListener } from '../blocks/BlockHostListener';
 import { BlockHostListeners } from '../blocks/BlockHostListeners';
 import { BlockIndex } from '../blocks/BlockIndex';
 import { BlockIndexSignatures } from '../blocks/BlockIndexSignatures';
@@ -12,7 +11,11 @@ import { BlockMethod } from '../blocks/BlockMethod';
 import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
+import { DependenciesSection } from '../blocks/DependenciesSection';
 import { EntityTabs } from '../blocks/EntityTabs';
+import { HostSection } from '../blocks/HostSection';
+import { ImportStatement } from '../blocks/ImportStatement';
+import { ProvidersSection } from '../blocks/ProvidersSection';
 import { ExternalLinks } from '../blocks/ExternalLinks';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import { RouteChip } from '../blocks/RouteChip';
@@ -32,93 +35,6 @@ import {
     IconPipe
 } from '../components/Icons';
 import { isApiSection, isInfoSection, linkTypeHtml, parseDescription, t } from '../helpers';
-import { resolveImportPath } from '../helpers/import-resolver';
-
-/** Parse inject() modifiers from the defaultValue string. */
-const parseInjectModifiers = (defaultValue: string): string[] => {
-    const mods: string[] = [];
-    if (!defaultValue) {
-        return mods;
-    }
-    if (/optional\s*:\s*true/.test(defaultValue)) {
-        mods.push('optional');
-    }
-    if (/skipSelf\s*:\s*true/.test(defaultValue)) {
-        mods.push('skipSelf');
-    }
-    if (/self\s*:\s*true/.test(defaultValue)) {
-        mods.push('self');
-    }
-    if (/host\s*:\s*true/.test(defaultValue)) {
-        mods.push('host');
-    }
-    return mods;
-};
-
-/** Dependencies section merging inject() properties and constructor params. */
-const DependenciesSection = (props: { injectProps: any[]; constructorArgs: any[] }): string => {
-    const items: Array<{
-        name: string;
-        type: string;
-        source: 'inject' | 'constructor';
-        modifiers: string[];
-    }> = [];
-
-    for (const p of props.injectProps) {
-        items.push({
-            name: p.name,
-            type: p.type ?? '',
-            source: 'inject',
-            modifiers: parseInjectModifiers(p.defaultValue ?? '')
-        });
-    }
-
-    for (const arg of props.constructorArgs) {
-        items.push({
-            name: arg.name,
-            type: arg.type ?? '',
-            source: 'constructor',
-            modifiers: arg.optional ? ['optional'] : []
-        });
-    }
-
-    if (items.length === 0) {
-        return '';
-    }
-
-    return (
-        <section class="cdx-content-section" data-compodoc="block-dependencies">
-            <h3 class="cdx-section-heading" id="dependencies">
-                {t('dependencies')}
-                <a class="cdx-member-permalink" href="#dependencies">
-                    #
-                </a>
-            </h3>
-            <div class="cdx-deps-list">
-                {items.map(item => (
-                    <div class="cdx-deps-item">
-                        <span class="cdx-deps-name">
-                            {item.type ? linkTypeHtml(item.type) : item.name}
-                        </span>
-                        <span class="cdx-deps-badges">
-                            <span
-                                class={`cdx-badge cdx-badge--${item.source === 'inject' ? 'inject' : 'constructor-di'}`}
-                            >
-                                {item.source === 'inject' ? 'inject()' : 'constructor'}
-                            </span>
-                            {item.modifiers.map(mod => (
-                                <span class="cdx-member-modifier">{mod}</span>
-                            ))}
-                        </span>
-                        {item.source === 'inject' && item.name && (
-                            <span class="cdx-deps-alias">{item.name}</span>
-                        )}
-                    </div>
-                ))}
-            </div>
-        </section>
-    ) as string;
-};
 
 /** Map entity key to CSS color variable, badge class, and watermark icon */
 const entityMeta: Record<
@@ -261,6 +177,9 @@ const hasInfoContent = (e: any, props: EntityInfoProps): boolean =>
         e.jsdoctags?.length ||
         props.metadataHtml ||
         e.constructorObj ||
+        e.hostStructured?.length ||
+        e.providers?.length ||
+        e.viewProviders?.length ||
         (e.propertiesClass ?? e.properties ?? []).some((p: any) => p.signalKind === 'inject') ||
         e.extends?.length ||
         e.implements?.length ||
@@ -338,13 +257,7 @@ const InfoContent = (props: EntityInfoProps): string => {
     return (
         <>
             {/* 0. Import statement */}
-            {isInfoSection('import') &&
-                (() => {
-                    const importPath = resolveImportPath(e.file);
-                    return importPath
-                        ? `<section class="cdx-content-section"><h3 class="cdx-section-heading" id="import">${t('import')}<a class="cdx-member-permalink" href="#import">#</a></h3><p class="cdx-import-line"><span class="cdx-import-kw">import</span> { <span class="cdx-import-name">${e.name}</span> } <span class="cdx-import-kw">from</span> <span class="cdx-import-str">'${importPath}'</span></p></section>`
-                        : '';
-                })()}
+            {isInfoSection('import') && ImportStatement({ name: e.name, file: e.file })}
 
             {/* 1. Deprecation banner */}
             {isInfoSection('deprecated') && e.deprecated && (
@@ -383,7 +296,22 @@ const InfoContent = (props: EntityInfoProps): string => {
                       ? ExtendsMetadataCard(e)
                       : '')}
 
-            {/* 4b. Dependencies (inject() + constructor merged) */}
+            {/* 4b. Host section */}
+            {isInfoSection('host') &&
+                e.hostStructured?.length > 0 &&
+                HostSection(e.hostStructured)}
+
+            {/* 4c. Providers */}
+            {isInfoSection('providers') &&
+                e.providers?.length > 0 &&
+                ProvidersSection({ title: t('providers'), entries: e.providers })}
+
+            {/* 4d. View Providers */}
+            {isInfoSection('viewProviders') &&
+                e.viewProviders?.length > 0 &&
+                ProvidersSection({ title: t('view-providers'), entries: e.viewProviders })}
+
+            {/* 4e. Dependencies (inject() + constructor merged) */}
             {isInfoSection('dependencies') &&
                 (() => {
                     const allProps = e.propertiesClass ?? e.properties ?? [];

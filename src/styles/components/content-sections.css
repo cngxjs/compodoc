@@ -91,6 +91,7 @@
     padding: var(--spacing-cdx-md) var(--spacing-cdx-lg);
     /* border-radius: var(--radius-cdx-md); */
     font-size: 0.875rem;
+    margin-top: 1.5rem;
     margin-bottom: 1.5rem;
     line-height: 1.55;
 }
