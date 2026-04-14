@@ -12,9 +12,7 @@ const DirectiveMetadata = (directive: any): string => {
         return '';
     }
     const hasMetadata =
-        directive.selector ||
-        directive.hostDirectives?.length > 0 ||
-        directive.exportAs;
+        directive.selector || directive.hostDirectives?.length > 0 || directive.exportAs;
     const hasExtends = directive.extends?.length > 0;
     const hasImplements = directive.implements?.length > 0;
     if (!hasMetadata && !hasExtends && !hasImplements) {

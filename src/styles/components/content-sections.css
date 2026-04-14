@@ -610,7 +610,8 @@ a.cdx-chip:hover {
     --cdx-badge-color: hsl(210 45% 50%);
     background: var(--cdx-badge-bg);
     color: var(--cdx-badge-color);
-    border: 1px solid color-mix(in srgb, var(--cdx-badge-color) 30%, transparent);
+    border: 1px solid
+        color-mix(in srgb, var(--cdx-badge-color) 30%, transparent);
 }
 
 .dark .cdx-badge--constructor-di {

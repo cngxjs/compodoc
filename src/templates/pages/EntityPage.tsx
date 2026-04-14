@@ -13,11 +13,11 @@ import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { DependenciesSection } from '../blocks/DependenciesSection';
 import { EntityTabs } from '../blocks/EntityTabs';
+import { ExternalLinks } from '../blocks/ExternalLinks';
 import { HostSection } from '../blocks/HostSection';
 import { ImportStatement } from '../blocks/ImportStatement';
-import { ProvidersSection } from '../blocks/ProvidersSection';
-import { ExternalLinks } from '../blocks/ExternalLinks';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
+import { ProvidersSection } from '../blocks/ProvidersSection';
 import { RouteChip } from '../blocks/RouteChip';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconDocument } from '../components/EmptyStateIcons';
@@ -297,9 +297,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                       : '')}
 
             {/* 4b. Host section */}
-            {isInfoSection('host') &&
-                e.hostStructured?.length > 0 &&
-                HostSection(e.hostStructured)}
+            {isInfoSection('host') && e.hostStructured?.length > 0 && HostSection(e.hostStructured)}
 
             {/* 4c. Providers */}
             {isInfoSection('providers') &&

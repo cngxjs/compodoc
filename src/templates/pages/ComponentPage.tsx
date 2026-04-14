@@ -12,10 +12,9 @@ import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { DependenciesSection } from '../blocks/DependenciesSection';
 import { ExternalLinks } from '../blocks/ExternalLinks';
+import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
 import { HostSection } from '../blocks/HostSection';
 import { ImportStatement } from '../blocks/ImportStatement';
-import { ProvidersSection } from '../blocks/ProvidersSection';
-import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import {
     MetadataChipsRow,
@@ -23,6 +22,7 @@ import {
     MetadataHostDirectivesRow,
     MetadataSection
 } from '../blocks/MetadataRow';
+import { ProvidersSection } from '../blocks/ProvidersSection';
 import { RouteChip } from '../blocks/RouteChip';
 import { SourceViewer } from '../blocks/SourceViewer';
 import { EmptyState } from '../components/EmptyState';
@@ -45,7 +45,6 @@ import {
     relativeUrl,
     t
 } from '../helpers';
-
 
 const escapeSimpleQuote = (text: string): string => {
     if (!text) {
