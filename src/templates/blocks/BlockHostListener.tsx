@@ -4,7 +4,8 @@ import {
     hasJsdocParams,
     jsdocReturnsComment,
     linkTypeHtml,
-    modifKind, modifSlug,
+    modifKind,
+    modifSlug,
     parseDescription,
     t
 } from '../helpers';
@@ -32,7 +33,11 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
                             {(m.modifierKind ?? []).map((k: number) => (
-                                <span class={`cdx-member-modifier cdx-member-modifier--${modifSlug(k)}`}>{modifKind(k)}</span>
+                                <span
+                                    class={`cdx-member-modifier cdx-member-modifier--${modifSlug(k)}`}
+                                >
+                                    {modifKind(k)}
+                                </span>
                             ))}
                             {m.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
                             <span
@@ -70,13 +75,15 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
                         {m.decorators && (
                             <div class="cdx-member-row">
                                 <b>{t('decorators')} : </b>
-                                {codeWrap(m.decorators
-                                    .map((d: any) =>
-                                        d.stringifiedArguments
-                                            ? `@${d.name}(${d.stringifiedArguments})`
-                                            : `@${d.name}()`
-                                    )
-                                    .join(', '))}
+                                {codeWrap(
+                                    m.decorators
+                                        .map((d: any) =>
+                                            d.stringifiedArguments
+                                                ? `@${d.name}(${d.stringifiedArguments})`
+                                                : `@${d.name}()`
+                                        )
+                                        .join(', ')
+                                )}
                             </div>
                         )}
                         {DefinedInRow({

@@ -21,7 +21,9 @@ describe('BlockDerivedState', () => {
     it('renders computed badge for computed property', () => {
         const html = BlockDerivedState({
             ...baseProps,
-            properties: [{ name: 'val', signalKind: 'computed', defaultValue: 'computed(() => 1)' }],
+            properties: [
+                { name: 'val', signalKind: 'computed', defaultValue: 'computed(() => 1)' }
+            ],
             allSignalProps: []
         });
 
@@ -32,11 +34,13 @@ describe('BlockDerivedState', () => {
     it('renders linked-signal badge for linkedSignal property', () => {
         const html = BlockDerivedState({
             ...baseProps,
-            properties: [{
-                name: 'val',
-                signalKind: 'linked-signal',
-                defaultValue: 'linkedSignal(() => 1)'
-            }],
+            properties: [
+                {
+                    name: 'val',
+                    signalKind: 'linked-signal',
+                    defaultValue: 'linkedSignal(() => 1)'
+                }
+            ],
             allSignalProps: []
         });
 
@@ -47,11 +51,13 @@ describe('BlockDerivedState', () => {
     it('renders code body in pre block', () => {
         const html = BlockDerivedState({
             ...baseProps,
-            properties: [{
-                name: 'x',
-                signalKind: 'computed',
-                defaultValue: 'computed(() => this.a() + this.b())'
-            }],
+            properties: [
+                {
+                    name: 'x',
+                    signalKind: 'computed',
+                    defaultValue: 'computed(() => this.a() + this.b())'
+                }
+            ],
             allSignalProps: []
         });
 
@@ -63,12 +69,14 @@ describe('BlockDerivedState', () => {
     it('renders dependency chain when signalDeps match known signal props', () => {
         const html = BlockDerivedState({
             ...baseProps,
-            properties: [{
-                name: 'total',
-                signalKind: 'computed',
-                signalDeps: ['count', 'price'],
-                defaultValue: 'computed(() => this.count() * this.price())'
-            }],
+            properties: [
+                {
+                    name: 'total',
+                    signalKind: 'computed',
+                    signalDeps: ['count', 'price'],
+                    defaultValue: 'computed(() => this.count() * this.price())'
+                }
+            ],
             allSignalProps: [
                 { name: 'count', signalKind: 'signal' },
                 { name: 'price', signalKind: 'signal' }
@@ -86,12 +94,14 @@ describe('BlockDerivedState', () => {
     it('filters signalDeps to only known signal properties', () => {
         const html = BlockDerivedState({
             ...baseProps,
-            properties: [{
-                name: 'label',
-                signalKind: 'computed',
-                signalDeps: ['name', 'someService'],
-                defaultValue: 'computed(() => this.name() + this.someService())'
-            }],
+            properties: [
+                {
+                    name: 'label',
+                    signalKind: 'computed',
+                    signalDeps: ['name', 'someService'],
+                    defaultValue: 'computed(() => this.name() + this.someService())'
+                }
+            ],
             allSignalProps: [
                 { name: 'name', signalKind: 'signal' }
                 // someService is NOT a signal prop
@@ -105,12 +115,14 @@ describe('BlockDerivedState', () => {
     it('omits dependency chain when no signalDeps match', () => {
         const html = BlockDerivedState({
             ...baseProps,
-            properties: [{
-                name: 'val',
-                signalKind: 'computed',
-                signalDeps: ['unknownMethod'],
-                defaultValue: 'computed(() => 42)'
-            }],
+            properties: [
+                {
+                    name: 'val',
+                    signalKind: 'computed',
+                    signalDeps: ['unknownMethod'],
+                    defaultValue: 'computed(() => 42)'
+                }
+            ],
             allSignalProps: []
         });
 
@@ -120,11 +132,13 @@ describe('BlockDerivedState', () => {
     it('omits dependency chain when signalDeps is empty', () => {
         const html = BlockDerivedState({
             ...baseProps,
-            properties: [{
-                name: 'val',
-                signalKind: 'computed',
-                defaultValue: 'computed(() => 42)'
-            }],
+            properties: [
+                {
+                    name: 'val',
+                    signalKind: 'computed',
+                    defaultValue: 'computed(() => 42)'
+                }
+            ],
             allSignalProps: []
         });
 
@@ -134,12 +148,14 @@ describe('BlockDerivedState', () => {
     it('renders source link with line number', () => {
         const html = BlockDerivedState({
             ...baseProps,
-            properties: [{
-                name: 'x',
-                signalKind: 'computed',
-                defaultValue: 'computed(() => 1)',
-                line: 42
-            }],
+            properties: [
+                {
+                    name: 'x',
+                    signalKind: 'computed',
+                    defaultValue: 'computed(() => 1)',
+                    line: 42
+                }
+            ],
             allSignalProps: []
         });
 
@@ -150,12 +166,14 @@ describe('BlockDerivedState', () => {
     it('renders description when present', () => {
         const html = BlockDerivedState({
             ...baseProps,
-            properties: [{
-                name: 'x',
-                signalKind: 'computed',
-                defaultValue: 'computed(() => 1)',
-                description: 'A computed value'
-            }],
+            properties: [
+                {
+                    name: 'x',
+                    signalKind: 'computed',
+                    defaultValue: 'computed(() => 1)',
+                    description: 'A computed value'
+                }
+            ],
             allSignalProps: []
         });
 
@@ -166,12 +184,14 @@ describe('BlockDerivedState', () => {
     it('renders dot separator between multiple deps', () => {
         const html = BlockDerivedState({
             ...baseProps,
-            properties: [{
-                name: 'sum',
-                signalKind: 'computed',
-                signalDeps: ['a', 'b'],
-                defaultValue: 'computed(() => this.a() + this.b())'
-            }],
+            properties: [
+                {
+                    name: 'sum',
+                    signalKind: 'computed',
+                    signalDeps: ['a', 'b'],
+                    defaultValue: 'computed(() => this.a() + this.b())'
+                }
+            ],
             allSignalProps: [
                 { name: 'a', signalKind: 'signal' },
                 { name: 'b', signalKind: 'signal' }
@@ -184,12 +204,14 @@ describe('BlockDerivedState', () => {
     it('renders arrow before self chip', () => {
         const html = BlockDerivedState({
             ...baseProps,
-            properties: [{
-                name: 'x',
-                signalKind: 'computed',
-                signalDeps: ['a'],
-                defaultValue: 'computed(() => this.a())'
-            }],
+            properties: [
+                {
+                    name: 'x',
+                    signalKind: 'computed',
+                    signalDeps: ['a'],
+                    defaultValue: 'computed(() => this.a())'
+                }
+            ],
             allSignalProps: [{ name: 'a', signalKind: 'signal' }]
         });
 

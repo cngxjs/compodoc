@@ -16,7 +16,12 @@ export const BlockDerivedState = (props: BlockDerivedStateProps): string => {
 
     return (
         <section data-compodoc="block-derived-state">
-            <h3 id="derived-state">{t('derived-state')}<a class="cdx-member-permalink" href="#derived-state">#</a></h3>
+            <h3 id="derived-state">
+                {t('derived-state')}
+                <a class="cdx-member-permalink" href="#derived-state">
+                    #
+                </a>
+            </h3>
             {props.properties.map((p: any) => {
                 const cls = ['cdx-io-member'];
                 if (p.signalKind) {
@@ -36,7 +41,9 @@ export const BlockDerivedState = (props: BlockDerivedStateProps): string => {
                                 class={`cdx-io-member-name${p.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {p.name}
-                                <a class="cdx-member-permalink" href={`#${p.name}`}>#</a>
+                                <a class="cdx-member-permalink" href={`#${p.name}`}>
+                                    #
+                                </a>
                             </span>
                             {p.type && (
                                 <span class="cdx-io-member-type">{linkTypeHtml(p.type)}</span>
@@ -70,7 +77,9 @@ export const BlockDerivedState = (props: BlockDerivedStateProps): string => {
                         )}
                         {/* biome-ignore lint/style/useSelfClosingElements: pre must not have whitespace */}
                         {p.defaultValue && (
-                            <pre class="cdx-derived-body"><code>{p.defaultValue}</code></pre>
+                            <pre class="cdx-derived-body">
+                                <code>{p.defaultValue}</code>
+                            </pre>
                         )}
                         {p.line && isTabEnabled(props.navTabs, 'source') && (
                             <div class="cdx-io-member-source">

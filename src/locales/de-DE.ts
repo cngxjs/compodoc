@@ -131,7 +131,8 @@ export const TRANSLATION_DE_DE = {
     'no-documentation-coverage-data': 'Keine Dokumentationsabdeckungsdaten',
     'no-graph': 'Kein Graph verfügbar.',
     'no-overview': 'Keine Übersicht verfügbar',
-    'no-overview-desc': 'Fügen Sie dieser Entität eine Beschreibung oder Metadaten hinzu, um hier eine Übersicht zu sehen.',
+    'no-overview-desc':
+        'Fügen Sie dieser Entität eine Beschreibung oder Metadaten hinzu, um hier eine Übersicht zu sehen.',
     'no-iframe': 'Dein Browser unterstützt keine iframes.',
     'no-matching-entities': 'Keine passenden Entitäten',
     'no-result-matching': 'Kein passendes Ergebnis',

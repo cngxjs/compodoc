@@ -130,7 +130,8 @@ export const TRANSLATION_FR_FR = {
     'no-documentation-coverage-data': 'Aucune donnée de couverture de documentation',
     'no-graph': 'Aucun graphique disponible.',
     'no-overview': 'Aucun aperçu disponible',
-    'no-overview-desc': 'Ajoutez une description ou des métadonnées à cette entité pour voir un aperçu ici.',
+    'no-overview-desc':
+        'Ajoutez une description ou des métadonnées à cette entité pour voir un aperçu ici.',
     'no-iframe': 'Votre navigateur ne supporte pas les iframes.',
     'no-matching-entities': 'Aucune entité correspondante',
     'no-result-matching': 'Aucun résultat matchant',

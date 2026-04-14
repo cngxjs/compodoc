@@ -21,7 +21,9 @@ const migrateKey = (key: string, legacy: string): string | null => {
             localStorage.removeItem(legacy);
             return old;
         }
-    } catch { /* localStorage blocked */ }
+    } catch {
+        /* localStorage blocked */
+    }
     return null;
 };
 

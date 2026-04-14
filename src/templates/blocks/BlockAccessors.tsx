@@ -20,7 +20,12 @@ type BlockAccessorsProps = {
 export const BlockAccessors = (props: BlockAccessorsProps): string => {
     return (
         <section data-compodoc="block-accessors">
-            <h3 id="accessors">{t('accessors')}<a class="cdx-member-permalink" href="#accessors">#</a></h3>
+            <h3 id="accessors">
+                {t('accessors')}
+                <a class="cdx-member-permalink" href="#accessors">
+                    #
+                </a>
+            </h3>
             {Object.entries(props.accessors).map(([key, acc]) => {
                 const isDeprecated = !!(
                     acc.getSignature?.deprecated || acc.setSignature?.deprecated
@@ -38,21 +43,17 @@ export const BlockAccessors = (props: BlockAccessorsProps): string => {
                                 class={`cdx-io-member-name${isDeprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {key}
-                                <a class="cdx-member-permalink" href={`#${key}`}>#</a>
+                                <a class="cdx-member-permalink" href={`#${key}`}>
+                                    #
+                                </a>
                             </span>
                             {returnType && (
-                                <span class="cdx-io-member-type">
-                                    {linkTypeHtml(returnType)}
-                                </span>
+                                <span class="cdx-io-member-type">{linkTypeHtml(returnType)}</span>
                             )}
                         </div>
                         <div class="cdx-io-member-badges">
-                            {acc.getSignature && (
-                                <span class="cdx-member-modifier">get</span>
-                            )}
-                            {acc.setSignature && (
-                                <span class="cdx-member-modifier">set</span>
-                            )}
+                            {acc.getSignature && <span class="cdx-member-modifier">get</span>}
+                            {acc.setSignature && <span class="cdx-member-modifier">set</span>}
                         </div>
                         {isDeprecated && (
                             <div class="cdx-member-deprecated">
@@ -62,10 +63,14 @@ export const BlockAccessors = (props: BlockAccessorsProps): string => {
                             </div>
                         )}
                         {acc.getSignature?.args?.length > 0 && (
-                            <pre class="cdx-derived-body"><code>{functionSignature(acc.getSignature)}</code></pre>
+                            <pre class="cdx-derived-body">
+                                <code>{functionSignature(acc.getSignature)}</code>
+                            </pre>
                         )}
                         {acc.setSignature?.args?.length > 0 && (
-                            <pre class="cdx-derived-body"><code>{functionSignature(acc.setSignature)}</code></pre>
+                            <pre class="cdx-derived-body">
+                                <code>{functionSignature(acc.setSignature)}</code>
+                            </pre>
                         )}
                         {acc.getSignature?.description && (
                             <div class="cdx-io-member-desc">
@@ -74,30 +79,35 @@ export const BlockAccessors = (props: BlockAccessorsProps): string => {
                         )}
                         {acc.setSignature?.description &&
                             acc.setSignature.description !== acc.getSignature?.description && (
-                            <div class="cdx-io-member-desc">
-                                {parseDescription(acc.setSignature.description, props.depth ?? 0)}
-                            </div>
-                        )}
-                        {acc.getSignature?.jsdoctags && hasJsdocParams(acc.getSignature.jsdoctags) && (
-                            <div class="cdx-io-member-desc">
-                                {ParamsTable({
-                                    jsdocTags: acc.getSignature.jsdoctags,
-                                    depth: props.depth ?? 0,
-                                    showOptional: true,
-                                    showDefaultValue: false
-                                })}
-                            </div>
-                        )}
-                        {acc.setSignature?.jsdoctags && hasJsdocParams(acc.setSignature.jsdoctags) && (
-                            <div class="cdx-io-member-desc">
-                                {ParamsTable({
-                                    jsdocTags: acc.setSignature.jsdoctags,
-                                    depth: props.depth ?? 0,
-                                    showOptional: true,
-                                    showDefaultValue: false
-                                })}
-                            </div>
-                        )}
+                                <div class="cdx-io-member-desc">
+                                    {parseDescription(
+                                        acc.setSignature.description,
+                                        props.depth ?? 0
+                                    )}
+                                </div>
+                            )}
+                        {acc.getSignature?.jsdoctags &&
+                            hasJsdocParams(acc.getSignature.jsdoctags) && (
+                                <div class="cdx-io-member-desc">
+                                    {ParamsTable({
+                                        jsdocTags: acc.getSignature.jsdoctags,
+                                        depth: props.depth ?? 0,
+                                        showOptional: true,
+                                        showDefaultValue: false
+                                    })}
+                                </div>
+                            )}
+                        {acc.setSignature?.jsdoctags &&
+                            hasJsdocParams(acc.setSignature.jsdoctags) && (
+                                <div class="cdx-io-member-desc">
+                                    {ParamsTable({
+                                        jsdocTags: acc.setSignature.jsdoctags,
+                                        depth: props.depth ?? 0,
+                                        showOptional: true,
+                                        showDefaultValue: false
+                                    })}
+                                </div>
+                            )}
                         {returnType && acc.getSignature?.jsdoctags && (
                             <div class="cdx-io-member-desc">
                                 {jsdocReturnsComment(acc.getSignature.jsdoctags)}
@@ -105,16 +115,16 @@ export const BlockAccessors = (props: BlockAccessorsProps): string => {
                         )}
                         {(() => {
                             const line = acc.getSignature?.line ?? acc.setSignature?.line;
-                            return line && isTabEnabled(props.navTabs, 'source')
-                                ? (
-                                    <div class="cdx-io-member-source">
-                                        {/* biome-ignore lint/a11y/useValidAnchor: href rewritten by client JS via data-cdx-line */}
-                                        <a href="#" data-cdx-line={String(line)}>
-                                            {props.file}:{line}
-                                        </a>
-                                    </div>
-                                )
-                                : '';
+                            return line && isTabEnabled(props.navTabs, 'source') ? (
+                                <div class="cdx-io-member-source">
+                                    {/* biome-ignore lint/a11y/useValidAnchor: href rewritten by client JS via data-cdx-line */}
+                                    <a href="#" data-cdx-line={String(line)}>
+                                        {props.file}:{line}
+                                    </a>
+                                </div>
+                            ) : (
+                                ''
+                            );
                         })()}
                     </div>
                 );

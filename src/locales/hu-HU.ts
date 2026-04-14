@@ -130,7 +130,8 @@ export const TRANSLATION_HU_HU = {
     'no-documentation-coverage-data': 'Nincsenek dokumentációs lefedettségi adatok',
     'no-graph': 'Grafikon nem elérhető.',
     'no-overview': 'Nincs elérhető áttekintés',
-    'no-overview-desc': 'Adjon hozzá leírást vagy metaadatokat ehhez az entitáshoz, hogy itt áttekintést lásson.',
+    'no-overview-desc':
+        'Adjon hozzá leírást vagy metaadatokat ehhez az entitáshoz, hogy itt áttekintést lásson.',
     'no-iframe': 'A böngészője nem támogatja az iframe-eket.',
     'no-matching-entities': 'Nincs egyező entitás',
     'no-result-matching': 'Nincs találat',

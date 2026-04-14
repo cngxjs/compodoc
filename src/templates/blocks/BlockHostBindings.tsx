@@ -12,7 +12,12 @@ export const BlockHostBindings = (props: BlockHostBindingsProps): string => {
 
     return (
         <section data-compodoc="block-host-bindings">
-            <h3 id="hostbindings">{t('hostbindings')}<a class="cdx-member-permalink" href="#hostbindings">#</a></h3>
+            <h3 id="hostbindings">
+                {t('hostbindings')}
+                <a class="cdx-member-permalink" href="#hostbindings">
+                    #
+                </a>
+            </h3>
             <table class="cdx-table cdx-host-table">
                 <thead>
                     <tr>

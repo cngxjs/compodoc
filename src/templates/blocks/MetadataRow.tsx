@@ -168,8 +168,7 @@ export function MetadataHostDirectivesRow(hostDirectives: HostDirective[]): stri
         return '';
     }
 
-    const chip = (name: string) =>
-        `<span class="cdx-host-dir-chip">${escapeHtml(name)}</span>`;
+    const chip = (name: string) => `<span class="cdx-host-dir-chip">${escapeHtml(name)}</span>`;
 
     const items = hostDirectives.map(hd => {
         const resolved = resolveType(hd.name);
@@ -407,7 +406,12 @@ export function MetadataSection(props: {
     }
     return (
         <section class="cdx-content-section" data-compodoc="block-metadata">
-            <h3 class="cdx-section-heading" id="metadata">{props.title ?? t('metadata')}<a class="cdx-member-permalink" href="#metadata">#</a></h3>
+            <h3 class="cdx-section-heading" id="metadata">
+                {props.title ?? t('metadata')}
+                <a class="cdx-member-permalink" href="#metadata">
+                    #
+                </a>
+            </h3>
             <dl class="cdx-metadata-card">{rows.join('')}</dl>
         </section>
     ) as string;

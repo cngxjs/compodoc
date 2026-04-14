@@ -92,7 +92,9 @@ const EntityLink = (props: {
             >
                 {props.name}
                 {props.deprecated ? Badge({ label: 'D', cssClass: 'cdx-badge--deprecated' }) : ''}
-                {props.standalone && Configuration.mainData.hasNgModules ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' }) : ''}
+                {props.standalone && Configuration.mainData.hasNgModules
+                    ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' })
+                    : ''}
                 {props.isToken ? Badge({ label: 'T', cssClass: 'cdx-badge--token' }) : ''}
                 {props.beta ? Badge({ label: 'B', cssClass: 'cdx-badge--beta' }) : ''}
                 {props.factoryKind

@@ -19,7 +19,9 @@ const migrateStorageKey = (): string | null => {
             localStorage.removeItem(LEGACY_STORAGE_KEY);
             return legacy;
         }
-    } catch { /* localStorage blocked */ }
+    } catch {
+        /* localStorage blocked */
+    }
     return null;
 };
 

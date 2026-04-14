@@ -130,7 +130,8 @@ export const TRANSLATION_PT_BR = {
     'no-documentation-coverage-data': 'Sem dados de cobertura de documentação',
     'no-graph': 'Sem gráfico disponível.',
     'no-overview': 'Nenhuma visão geral disponível',
-    'no-overview-desc': 'Adicione uma descrição ou metadados a esta entidade para ver uma visão geral aqui.',
+    'no-overview-desc':
+        'Adicione uma descrição ou metadados a esta entidade para ver uma visão geral aqui.',
     'no-iframe': 'Seu browser não tem suporte a iframes.',
     'no-matching-entities': 'Nenhuma entidade correspondente',
     'no-result-matching': 'Nenhum resultado correspondente',

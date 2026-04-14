@@ -18,15 +18,19 @@ type BlockPropertyProps = {
     readonly navTabs?: any[];
 };
 
-const isUndefined = (v: unknown): boolean =>
-    v === undefined || v === 'undefined' || v === '';
+const isUndefined = (v: unknown): boolean => v === undefined || v === 'undefined' || v === '';
 
 export const BlockProperty = (props: BlockPropertyProps): string => {
     return (
         <section data-compodoc="block-properties">
             <h3 id={props.title ? props.title.toLowerCase() : 'properties'}>
                 {props.title ?? t('properties')}
-                <a class="cdx-member-permalink" href={`#${props.title ? props.title.toLowerCase() : 'properties'}`}>#</a>
+                <a
+                    class="cdx-member-permalink"
+                    href={`#${props.title ? props.title.toLowerCase() : 'properties'}`}
+                >
+                    #
+                </a>
             </h3>
             {props.properties.map((p: any) => {
                 const cls = ['cdx-io-member', 'cdx-io-member--property'];
@@ -43,12 +47,12 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                                 class={`cdx-io-member-name${p.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {p.name}
-                                <a class="cdx-member-permalink" href={`#${p.name}`}>#</a>
+                                <a class="cdx-member-permalink" href={`#${p.name}`}>
+                                    #
+                                </a>
                             </span>
                             {p.type && (
-                                <span class="cdx-io-member-type">
-                                    {linkTypeHtml(p.type)}
-                                </span>
+                                <span class="cdx-io-member-type">{linkTypeHtml(p.type)}</span>
                             )}
                         </div>
                         <div class="cdx-io-member-badges">
@@ -58,21 +62,15 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                                 </span>
                             )}
                             {(p.modifierKind ?? []).map((k: number) => (
-                                <span class="cdx-member-modifier">
-                                    {modifKind(k)}
-                                </span>
+                                <span class="cdx-member-modifier">{modifKind(k)}</span>
                             ))}
-                            {p.optional && (
-                                <span class="cdx-member-modifier">{t('optional')}</span>
-                            )}
+                            {p.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
                             {p.required && (
                                 <span class="cdx-badge cdx-badge--factory">Required</span>
                             )}
                         </div>
                         {p.deprecated && p.deprecationMessage && (
-                            <div class="cdx-member-deprecated">
-                                {p.deprecationMessage}
-                            </div>
+                            <div class="cdx-member-deprecated">{p.deprecationMessage}</div>
                         )}
                         {p.description && (
                             <div class="cdx-io-member-desc">
@@ -95,7 +93,9 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                             </div>
                         )}
                         {!isUndefined(p.defaultValue) && (
-                            <pre class="cdx-derived-body"><code>{String(p.defaultValue)}</code></pre>
+                            <pre class="cdx-derived-body">
+                                <code>{String(p.defaultValue)}</code>
+                            </pre>
                         )}
                         {p.line && isTabEnabled(props.navTabs, 'source') && (
                             <div class="cdx-io-member-source">

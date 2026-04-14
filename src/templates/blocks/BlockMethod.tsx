@@ -24,7 +24,12 @@ export const BlockMethod = (props: BlockMethodProps): string => {
         <section data-compodoc="block-methods">
             <h3 id={props.title ? props.title.toLowerCase() : 'methods'}>
                 {props.title ?? t('methods')}
-                <a class="cdx-member-permalink" href={`#${props.title ? props.title.toLowerCase() : 'methods'}`}>#</a>
+                <a
+                    class="cdx-member-permalink"
+                    href={`#${props.title ? props.title.toLowerCase() : 'methods'}`}
+                >
+                    #
+                </a>
             </h3>
             {props.methods.map((m: any) => {
                 const cls = ['cdx-io-member', 'cdx-io-member--method'];
@@ -38,31 +43,27 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                                 class={`cdx-io-member-name${m.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {m.name}
-                                <a class="cdx-member-permalink" href={`#${m.name}`}>#</a>
+                                <a class="cdx-member-permalink" href={`#${m.name}`}>
+                                    #
+                                </a>
                             </span>
                             {m.returnType && (
-                                <span class="cdx-io-member-type">
-                                    {linkTypeHtml(m.returnType)}
-                                </span>
+                                <span class="cdx-io-member-type">{linkTypeHtml(m.returnType)}</span>
                             )}
                         </div>
                         <div class="cdx-io-member-badges">
                             {(m.modifierKind ?? []).map((k: number) => (
-                                <span class="cdx-member-modifier">
-                                    {modifKind(k)}
-                                </span>
+                                <span class="cdx-member-modifier">{modifKind(k)}</span>
                             ))}
-                            {m.optional && (
-                                <span class="cdx-member-modifier">{t('optional')}</span>
-                            )}
+                            {m.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
                         </div>
                         {m.deprecated && m.deprecationMessage && (
-                            <div class="cdx-member-deprecated">
-                                {m.deprecationMessage}
-                            </div>
+                            <div class="cdx-member-deprecated">{m.deprecationMessage}</div>
                         )}
                         {m.args?.length > 0 && (
-                            <pre class="cdx-derived-body"><code>{functionSignature(m)}</code></pre>
+                            <pre class="cdx-derived-body">
+                                <code>{functionSignature(m)}</code>
+                            </pre>
                         )}
                         {m.description && (
                             <div class="cdx-io-member-desc">
@@ -80,9 +81,7 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                             </div>
                         )}
                         {m.returnType && m.jsdoctags && (
-                            <div class="cdx-io-member-desc">
-                                {jsdocReturnsComment(m.jsdoctags)}
-                            </div>
+                            <div class="cdx-io-member-desc">{jsdocReturnsComment(m.jsdoctags)}</div>
                         )}
                         {m.line && isTabEnabled(props.navTabs, 'source') && (
                             <div class="cdx-io-member-source">

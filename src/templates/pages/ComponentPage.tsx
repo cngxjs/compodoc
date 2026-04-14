@@ -62,15 +62,22 @@ const breakComma = (text: string): string => {
 
 /** Standalone section for host configuration (hostStructured) as grouped table. */
 const HostSection = (entries: any[]): string => {
-    if (!entries?.length) return '';
+    if (!entries?.length) {
+        return '';
+    }
     // Filter bare class-only
     const meaningful = entries.filter(
         (e: any) => !(e.kind === 'static' && e.key === 'class' && entries.length === 1)
     );
-    if (meaningful.length === 0) return '';
+    if (meaningful.length === 0) {
+        return '';
+    }
 
     const esc = (s: string) =>
-        s.replace(/[&<>]/g, (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string);
+        s.replace(
+            /[&<>]/g,
+            (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string
+        );
 
     // Group by category
     const staticClass = meaningful.filter((e: any) => e.kind === 'static' && e.key === 'class');
@@ -87,16 +94,24 @@ const HostSection = (entries: any[]): string => {
         // [class.is-dirty] → is-dirty
         // [attr.aria-label] → keep as-is (stays in static attrs)
         // (document:keydown.escape) → document:keydown.escape
-        if (key.startsWith('(') && key.endsWith(')')) return key.slice(1, -1);
-        if (key.startsWith('[class.') && key.endsWith(']')) return key.slice(7, -1);
-        if (key.startsWith('[style.') && key.endsWith(']')) return key.slice(7, -1);
+        if (key.startsWith('(') && key.endsWith(')')) {
+            return key.slice(1, -1);
+        }
+        if (key.startsWith('[class.') && key.endsWith(']')) {
+            return key.slice(7, -1);
+        }
+        if (key.startsWith('[style.') && key.endsWith(']')) {
+            return key.slice(7, -1);
+        }
         return key;
     };
 
     // Link to member identifier, strip ($event) etc from display
     const linkedRef = (value: string): string => {
         const m = /^(this\.)?([a-zA-Z_$][a-zA-Z0-9_$]*)(\(.*\))?$/.exec(value);
-        if (!m) return `<code>${esc(value)}</code>`;
+        if (!m) {
+            return `<code>${esc(value)}</code>`;
+        }
         const id = m[2];
         return `<a href="#${id}">${esc(id)}</a>`;
     };
@@ -118,7 +133,8 @@ const HostSection = (entries: any[]): string => {
     const allStaticAttrs = [...staticAttrs, ...boundAttrs];
     if (allStaticAttrs.length > 0) {
         const pairs = allStaticAttrs.map(
-            (e: any) => `<div class="cdx-host-attr-pair"><code>${esc(e.key)}</code><span class="cdx-host-val">${esc(e.value)}</span></div>`
+            (e: any) =>
+                `<div class="cdx-host-attr-pair"><code>${esc(e.key)}</code><span class="cdx-host-val">${esc(e.value)}</span></div>`
         );
         addRow('Static attributes', `<div class="cdx-host-attr-grid">${pairs.join('')}</div>`);
     }
@@ -135,11 +151,18 @@ const HostSection = (entries: any[]): string => {
         addRow('Listeners', chips.join(' '));
     }
 
-    if (rows.length === 0) return '';
+    if (rows.length === 0) {
+        return '';
+    }
 
     return (
         <section class="cdx-content-section" data-compodoc="block-host">
-            <h3 class="cdx-section-heading" id="host">{t('host')}<a class="cdx-member-permalink" href="#host">#</a></h3>
+            <h3 class="cdx-section-heading" id="host">
+                {t('host')}
+                <a class="cdx-member-permalink" href="#host">
+                    #
+                </a>
+            </h3>
             <dl class="cdx-metadata-card">{rows.join('')}</dl>
         </section>
     ) as string;
@@ -147,10 +170,15 @@ const HostSection = (entries: any[]): string => {
 
 /** Standalone section for providers or viewProviders as 2-column grid table. */
 const ProvidersSection = (props: { title: string; entries: any[] }): string => {
-    if (!props.entries?.length) return '';
+    if (!props.entries?.length) {
+        return '';
+    }
 
     const esc = (s: string) =>
-        s.replace(/[&<>]/g, (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string);
+        s.replace(
+            /[&<>]/g,
+            (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string
+        );
 
     const nameLink = (name: string): string => {
         const resolved = linkTypeHtml(name);
@@ -164,19 +192,29 @@ const ProvidersSection = (props: { title: string; entries: any[] }): string => {
         if (entry.kind === 'class') {
             parts.push('<span class="cdx-provider-strategy">useClass</span>');
         } else if (entry.kind === 'useClass' && entry.useClass) {
-            parts.push(`<span class="cdx-provider-strategy">useClass</span> ${nameLink(entry.useClass)}`);
+            parts.push(
+                `<span class="cdx-provider-strategy">useClass</span> ${nameLink(entry.useClass)}`
+            );
         } else if (entry.kind === 'useValue') {
             const val = entry.useValue ?? '';
-            parts.push(`<span class="cdx-provider-strategy">useValue</span> <code>${esc(val)}</code>`);
+            parts.push(
+                `<span class="cdx-provider-strategy">useValue</span> <code>${esc(val)}</code>`
+            );
         } else if (entry.kind === 'useFactory') {
             if (entry.factory) {
-                parts.push(`<span class="cdx-provider-strategy">useFactory</span> ${nameLink(entry.factory)}`);
+                parts.push(
+                    `<span class="cdx-provider-strategy">useFactory</span> ${nameLink(entry.factory)}`
+                );
             }
             if (entry.deps?.length) {
-                parts.push(`<span class="cdx-host-dir-chip">deps: ${entry.deps.map((d: string) => nameLink(d)).join(', ')}</span>`);
+                parts.push(
+                    `<span class="cdx-host-dir-chip">deps: ${entry.deps.map((d: string) => nameLink(d)).join(', ')}</span>`
+                );
             }
         } else if (entry.kind === 'useExisting' && entry.useExisting) {
-            parts.push(`<span class="cdx-provider-strategy">useExisting</span> ${nameLink(entry.useExisting)}`);
+            parts.push(
+                `<span class="cdx-provider-strategy">useExisting</span> ${nameLink(entry.useExisting)}`
+            );
         }
 
         if (entry.multi) {
@@ -190,7 +228,12 @@ const ProvidersSection = (props: { title: string; entries: any[] }): string => {
     const headingId = props.title.toLowerCase().replace(/\s+/g, '-');
     return (
         <section class="cdx-content-section" data-compodoc="block-providers">
-            <h3 class="cdx-section-heading" id={headingId}>{props.title}<a class="cdx-member-permalink" href={`#${headingId}`}>#</a></h3>
+            <h3 class="cdx-section-heading" id={headingId}>
+                {props.title}
+                <a class="cdx-member-permalink" href={`#${headingId}`}>
+                    #
+                </a>
+            </h3>
             <dl class="cdx-provider-table">{rows.join('')}</dl>
         </section>
     ) as string;
@@ -202,19 +245,26 @@ const ProvidersSection = (props: { title: string; entries: any[] }): string => {
  */
 const parseInjectModifiers = (defaultValue: string): string[] => {
     const mods: string[] = [];
-    if (!defaultValue) return mods;
-    if (/optional\s*:\s*true/.test(defaultValue)) mods.push('optional');
-    if (/skipSelf\s*:\s*true/.test(defaultValue)) mods.push('skipSelf');
-    if (/self\s*:\s*true/.test(defaultValue)) mods.push('self');
-    if (/host\s*:\s*true/.test(defaultValue)) mods.push('host');
+    if (!defaultValue) {
+        return mods;
+    }
+    if (/optional\s*:\s*true/.test(defaultValue)) {
+        mods.push('optional');
+    }
+    if (/skipSelf\s*:\s*true/.test(defaultValue)) {
+        mods.push('skipSelf');
+    }
+    if (/self\s*:\s*true/.test(defaultValue)) {
+        mods.push('self');
+    }
+    if (/host\s*:\s*true/.test(defaultValue)) {
+        mods.push('host');
+    }
     return mods;
 };
 
 /** Dependencies section merging inject() properties and constructor params. */
-const DependenciesSection = (props: {
-    injectProps: any[];
-    constructorArgs: any[];
-}): string => {
+const DependenciesSection = (props: { injectProps: any[]; constructorArgs: any[] }): string => {
     const items: Array<{
         name: string;
         type: string;
@@ -240,21 +290,28 @@ const DependenciesSection = (props: {
         });
     }
 
-    if (items.length === 0) return '';
+    if (items.length === 0) {
+        return '';
+    }
 
     return (
         <section class="cdx-content-section" data-compodoc="block-dependencies">
-            <h3 class="cdx-section-heading" id="section-dependencies">{t('dependencies')}<a class="cdx-member-permalink" href="#section-dependencies">#</a></h3>
+            <h3 class="cdx-section-heading" id="section-dependencies">
+                {t('dependencies')}
+                <a class="cdx-member-permalink" href="#section-dependencies">
+                    #
+                </a>
+            </h3>
             <div class="cdx-deps-list">
                 {items.map(item => (
                     <div class="cdx-deps-item">
                         <span class="cdx-deps-name">
-                            {item.type
-                                ? linkTypeHtml(item.type)
-                                : item.name}
+                            {item.type ? linkTypeHtml(item.type) : item.name}
                         </span>
                         <span class="cdx-deps-badges">
-                            <span class={`cdx-badge cdx-badge--${item.source === 'inject' ? 'inject' : 'constructor-di'}`}>
+                            <span
+                                class={`cdx-badge cdx-badge--${item.source === 'inject' ? 'inject' : 'constructor-di'}`}
+                            >
                                 {item.source === 'inject' ? 'inject()' : 'constructor'}
                             </span>
                             {item.modifiers.map(mod => (
@@ -357,12 +414,13 @@ const InfoContent = (data: any): string => {
 
     return (
         <>
-            {isInfoSection('import') && (() => {
-                const importPath = resolveImportPath(c.file);
-                return importPath
-                    ? `<section class="cdx-content-section"><h3 class="cdx-section-heading" id="import">${t('import')}<a class="cdx-member-permalink" href="#import">#</a></h3><p class="cdx-import-line"><span class="cdx-import-kw">import</span> { <span class="cdx-import-name">${c.name}</span> } <span class="cdx-import-kw">from</span> <span class="cdx-import-str">'${importPath}'</span></p></section>`
-                    : '';
-            })()}
+            {isInfoSection('import') &&
+                (() => {
+                    const importPath = resolveImportPath(c.file);
+                    return importPath
+                        ? `<section class="cdx-content-section"><h3 class="cdx-section-heading" id="import">${t('import')}<a class="cdx-member-permalink" href="#import">#</a></h3><p class="cdx-import-line"><span class="cdx-import-kw">import</span> { <span class="cdx-import-name">${c.name}</span> } <span class="cdx-import-kw">from</span> <span class="cdx-import-str">'${importPath}'</span></p></section>`
+                        : '';
+                })()}
 
             {isInfoSection('deprecated') && c.deprecated && (
                 <div class="cdx-deprecation-banner" role="alert">
@@ -375,7 +433,12 @@ const InfoContent = (data: any): string => {
 
             {isInfoSection('description') && c.description && (
                 <section class="cdx-content-section">
-                    <h3 class="cdx-section-heading" id="description">{t('description')}<a class="cdx-member-permalink" href="#description">#</a></h3>
+                    <h3 class="cdx-section-heading" id="description">
+                        {t('description')}
+                        <a class="cdx-member-permalink" href="#description">
+                            #
+                        </a>
+                    </h3>
                     <div class="cdx-prose">{parseDescription(c.description, depth)}</div>
                 </section>
             )}
@@ -388,7 +451,12 @@ const InfoContent = (data: any): string => {
 
             {isInfoSection('metadata') && c.slots?.length > 0 && (
                 <section class="cdx-content-section">
-                    <h3 class="cdx-section-heading" id="content-slots">Content Slots<a class="cdx-member-permalink" href="#content-slots">#</a></h3>
+                    <h3 class="cdx-section-heading" id="content-slots">
+                        Content Slots
+                        <a class="cdx-member-permalink" href="#content-slots">
+                            #
+                        </a>
+                    </h3>
                     <dl class="cdx-metadata-card">
                         {c.slots.map((slot: any) => (
                             <>
@@ -402,9 +470,7 @@ const InfoContent = (data: any): string => {
                 </section>
             )}
 
-            {isInfoSection('host') &&
-                c.hostStructured?.length > 0 &&
-                HostSection(c.hostStructured)}
+            {isInfoSection('host') && c.hostStructured?.length > 0 && HostSection(c.hostStructured)}
 
             {isInfoSection('providers') &&
                 c.providers?.length > 0 &&
@@ -414,15 +480,16 @@ const InfoContent = (data: any): string => {
                 c.viewProviders?.length > 0 &&
                 ProvidersSection({ title: t('view-providers'), entries: c.viewProviders })}
 
-            {isInfoSection('dependencies') && (() => {
-                const injectProps = (c.propertiesClass ?? []).filter(
-                    (p: any) => p.signalKind === 'inject'
-                );
-                const ctorArgs = c.constructorObj?.args ?? [];
-                return (injectProps.length > 0 || ctorArgs.length > 0)
-                    ? DependenciesSection({ injectProps, constructorArgs: ctorArgs })
-                    : '';
-            })()}
+            {isInfoSection('dependencies') &&
+                (() => {
+                    const injectProps = (c.propertiesClass ?? []).filter(
+                        (p: any) => p.signalKind === 'inject'
+                    );
+                    const ctorArgs = c.constructorObj?.args ?? [];
+                    return injectProps.length > 0 || ctorArgs.length > 0
+                        ? DependenciesSection({ injectProps, constructorArgs: ctorArgs })
+                        : '';
+                })()}
 
             {isInfoSection('relationships') &&
                 data.relationships &&

@@ -18,7 +18,12 @@ export const BlockHostListeners = (props: BlockHostListenersProps): string => {
 
     return (
         <section data-compodoc="block-host-listeners">
-            <h3 id="hostlisteners">{t('hostlisteners')}<a class="cdx-member-permalink" href="#hostlisteners">#</a></h3>
+            <h3 id="hostlisteners">
+                {t('hostlisteners')}
+                <a class="cdx-member-permalink" href="#hostlisteners">
+                    #
+                </a>
+            </h3>
             <table class="cdx-table cdx-host-table">
                 <thead>
                     <tr>

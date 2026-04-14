@@ -11,7 +11,8 @@ export const TRANSLATION_IT_IT = {
     components: 'Componenti',
     constructor: 'Costruttore',
     coverage: 'Copertura',
-    'coverage-empty-description': 'Esegui compodocx con entità documentate per vedere la copertura.',
+    'coverage-empty-description':
+        'Esegui compodocx con entità documentate per vedere la copertura.',
     'coverage-overview': 'Copertura documentazione',
     'coverage-page-title': 'Copertura codice',
     declarations: 'Dichiarazioni',
@@ -129,7 +130,8 @@ export const TRANSLATION_IT_IT = {
     'no-documentation-coverage-data': 'Nessun dato di copertura della documentazione',
     'no-graph': 'Grafico non disponibile.',
     'no-overview': 'Nessuna panoramica disponibile',
-    'no-overview-desc': 'Aggiungi una descrizione o metadati a questa entità per vedere una panoramica qui.',
+    'no-overview-desc':
+        'Aggiungi una descrizione o metadati a questa entità per vedere una panoramica qui.',
     'no-iframe': 'Il tuo browser non supporta iframe.',
     'no-matching-entities': 'Nessuna entità corrispondente',
     'no-result-matching': 'Nessun risultato corrispondente',

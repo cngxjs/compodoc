@@ -30,16 +30,10 @@ describe('ClassHelper > signalDeps extraction', () => {
     });
 
     function extractProperty(code: string, propName: string) {
-        const sf = project.createSourceFile(
-            `test-${Date.now()}.ts`,
-            `class TestClass { ${code} }`
-        );
+        const sf = project.createSourceFile(`test-${Date.now()}.ts`, `class TestClass { ${code} }`);
         const classDec = sf.getClasses()[0];
         const prop = classDec.getProperty(propName)!;
-        return (classHelper as any).visitProperty(
-            prop.compilerNode,
-            sf.compilerNode
-        );
+        return (classHelper as any).visitProperty(prop.compilerNode, sf.compilerNode);
     }
 
     it('should extract this.x() calls from a computed body', () => {
@@ -87,20 +81,14 @@ describe('ClassHelper > signalDeps extraction', () => {
     });
 
     it('should not extract deps from plain signal()', () => {
-        const result = extractProperty(
-            `readonly count = signal(0);`,
-            'count'
-        );
+        const result = extractProperty(`readonly count = signal(0);`, 'count');
 
         expect(result.signalKind).toBe('signal');
         expect(result.signalDeps).toBeUndefined();
     });
 
     it('should not extract deps from input()', () => {
-        const result = extractProperty(
-            `readonly user = input<string>();`,
-            'user'
-        );
+        const result = extractProperty(`readonly user = input<string>();`, 'user');
 
         expect(result.signalKind).toBe('input-signal');
         expect(result.signalDeps).toBeUndefined();
@@ -121,10 +109,7 @@ describe('ClassHelper > signalDeps extraction', () => {
     });
 
     it('should handle computed with no this-calls', () => {
-        const result = extractProperty(
-            `readonly val = computed(() => 42);`,
-            'val'
-        );
+        const result = extractProperty(`readonly val = computed(() => 42);`, 'val');
 
         expect(result.signalKind).toBe('computed');
         expect(result.signalDeps).toBeUndefined();
