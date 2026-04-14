@@ -9,7 +9,6 @@
     },
     "scripts": {
         "start": "npm run test:watch",
-        "copy-libs": "node tools/copy-libs.js",
         "*********BUILD********": "*******************",
         "prebuild": "rimraf dist",
         "build": "rollup -c rollup/rollup.config.mjs --bundleConfigAsCjs && npm run build-schematics && npm run build:client && npm run build:css",
@@ -46,7 +45,7 @@
         "test:standalone-doc": "node ./bin/index-cli.js -p ./test/fixtures/standalone-app/src/tsconfig.json -d /tmp/compodoc-standalone -s --port 4002 --disableSearch",
         "test-e2e-playwright": "npx playwright test",
         "*********PUBLISH********": "*******************",
-        "prepublishOnly": "npm run build && npm run backup-package-json && npm run copy-libs",
+        "prepublishOnly": "npm run build && npm run backup-package-json",
         "postpublish": "npm run restore-package-json",
         "*********QUALITY********": "*******************",
         "lint": "biome check",
@@ -113,7 +112,6 @@
         "semver": "^7.7.3",
         "shiki": "^4.0.2",
         "sirv": "^3.0.2",
-        "tablesort": "^5.7.0",
         "ts-morph": "^27.0.2",
         "uuid": "11.1.0"
     },

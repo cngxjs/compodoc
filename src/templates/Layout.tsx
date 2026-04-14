@@ -273,7 +273,6 @@ export const Layout = (props: LayoutProps): string => {
                     .menu .collapse.in { display: block !important; visibility: visible !important; }
                     .menu .collapse:not(.in) { display: none !important; }
                 `}</style>
-                <link rel="stylesheet" href={r('styles/style.css')} />
                 <link rel="stylesheet" href={r('styles/compodocx.css')} />
                 <link
                     id="cdx-theme-link"
