@@ -145,7 +145,7 @@ export const TRANSLATION_EN_US = {
     prefix: 'Prefix',
     'project-health': 'Project Health',
     'project-overview': 'Project Overview',
-    properties: 'Properties',
+    properties: 'Instance Properties',
     providers: 'Providers',
     pure: 'Pure',
     readme: 'README',

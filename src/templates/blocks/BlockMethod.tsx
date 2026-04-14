@@ -1,16 +1,14 @@
 import Html from '@kitajs/html';
 import {
-    codeWrap,
     functionSignature,
     hasJsdocParams,
+    isTabEnabled,
     jsdocReturnsComment,
     linkTypeHtml,
-    modifKind, modifSlug,
+    modifKind,
     parseDescription,
     t
 } from '../helpers';
-import { DefinedInRow } from './DefinedInRow';
-import { MemberCard } from './MemberCard';
 import { ParamsTable } from './ParamsTable';
 
 type BlockMethodProps = {
@@ -27,86 +25,50 @@ export const BlockMethod = (props: BlockMethodProps): string => {
             <h3 id={props.title ? props.title.toLowerCase() : 'methods'}>
                 {props.title ?? t('methods')}
             </h3>
-            {props.methods.map(m => {
-                const header = (
-                    <header class="cdx-member-header">
-                        <span class="cdx-member-name">
-                            {(m.modifierKind ?? []).map((k: number) => (
-                                <span class={`cdx-member-modifier cdx-member-modifier--${modifSlug(k)}`}>{modifKind(k)}</span>
-                            ))}
-                            {m.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
+            {props.methods.map((m: any) => {
+                const cls = ['cdx-io-member', 'cdx-io-member--method'];
+                if (m.deprecated) {
+                    cls.push('cdx-io-member--deprecated');
+                }
+                return (
+                    <div class={cls.join(' ')} id={m.name}>
+                        <div class="cdx-io-member-title">
                             <span
-                                class={`cdx-member-name-text${m.deprecated ? ' cdx-member-name--deprecated' : ''}`}
+                                class={`cdx-io-member-name${m.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {m.name}
                             </span>
-                            <a
-                                href={`#${m.name}`}
-                                class="cdx-member-permalink"
-                                aria-label={`Link to ${m.name}`}
-                            >
-                                #
-                            </a>
-                        </span>
-                        <span class="cdx-member-type">
-                            {m.returnType && linkTypeHtml(m.returnType)}
-                        </span>
-                    </header>
-                ) as string;
-
-                const body = (
-                    <>
-                        {m.deprecated && (
+                            {m.returnType && (
+                                <span class="cdx-io-member-type">
+                                    {linkTypeHtml(m.returnType)}
+                                </span>
+                            )}
+                        </div>
+                        <div class="cdx-io-member-badges">
+                            {(m.modifierKind ?? []).map((k: number) => (
+                                <span class="cdx-member-modifier">
+                                    {modifKind(k)}
+                                </span>
+                            ))}
+                            {m.optional && (
+                                <span class="cdx-member-modifier">{t('optional')}</span>
+                            )}
+                        </div>
+                        {m.deprecated && m.deprecationMessage && (
                             <div class="cdx-member-deprecated">
-                                {m.deprecationMessage || t('deprecated')}
+                                {m.deprecationMessage}
                             </div>
                         )}
                         {m.args?.length > 0 && (
-                            <div class="cdx-member-signature">
-                                {codeWrap(functionSignature(m))}
-                            </div>
-                        )}
-                        {m.argsDecorator && (
-                            <div class="cdx-member-row">
-                                <i>{t('arguments')} : </i>
-                                {codeWrap(m.argsDecorator.map((a: string) => `'${a}' `).join(''))}
-                            </div>
-                        )}
-                        {m.decorators && (
-                            <div class="cdx-member-row">
-                                <b>{t('decorators')} : </b>
-                                {codeWrap(m.decorators
-                                    .map((d: any) =>
-                                        d.stringifiedArguments
-                                            ? `@${d.name}(${d.stringifiedArguments})`
-                                            : `@${d.name}()`
-                                    )
-                                    .join(', '))}
-                            </div>
-                        )}
-                        {DefinedInRow({
-                            line: m.line,
-                            file: props.file,
-                            inheritance: m.inheritance,
-                            navTabs: props.navTabs
-                        })}
-                        {m.typeParameters?.length > 0 && (
-                            <div class="cdx-member-row">
-                                <b>{t('type-parameters')} :</b>
-                                <ul class="type-parameters">
-                                    {m.typeParameters.map((tp: string) => (
-                                        <li>{tp}</li>
-                                    ))}
-                                </ul>
-                            </div>
+                            <pre class="cdx-derived-body"><code>{functionSignature(m)}</code></pre>
                         )}
                         {m.description && (
-                            <div class="cdx-member-description">
+                            <div class="cdx-io-member-desc">
                                 {parseDescription(m.description, props.depth ?? 0)}
                             </div>
                         )}
                         {m.jsdoctags && hasJsdocParams(m.jsdoctags) && (
-                            <div class="cdx-member-description">
+                            <div class="cdx-io-member-desc">
                                 {ParamsTable({
                                     jsdocTags: m.jsdoctags,
                                     depth: props.depth ?? 0,
@@ -115,26 +77,21 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                                 })}
                             </div>
                         )}
-                        {m.returnType && (
-                            <div class="cdx-member-returns">
-                                <b>{t('returns')} : </b>
-                                {linkTypeHtml(m.returnType)}
-                            </div>
-                        )}
                         {m.returnType && m.jsdoctags && (
-                            <div class="cdx-member-description">
+                            <div class="cdx-io-member-desc">
                                 {jsdocReturnsComment(m.jsdoctags)}
                             </div>
                         )}
-                    </>
-                ) as string;
-
-                return MemberCard({
-                    id: m.name,
-                    deprecated: m.deprecated,
-                    header,
-                    children: body
-                });
+                        {m.line && isTabEnabled(props.navTabs, 'source') && (
+                            <div class="cdx-io-member-source">
+                                {/* biome-ignore lint/a11y/useValidAnchor: href rewritten by client JS via data-cdx-line */}
+                                <a href="#" data-cdx-line={String(m.line)}>
+                                    {props.file}:{m.line}
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                );
             })}
         </section>
     ) as string;

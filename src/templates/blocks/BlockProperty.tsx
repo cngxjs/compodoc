@@ -1,16 +1,13 @@
 import Html from '@kitajs/html';
 import {
-    codeWrap,
-    hasJsdocParams,
+    isTabEnabled,
     linkTypeHtml,
-    modifKind, modifSlug,
+    modifKind,
     parseDescription,
     signalKindLabel,
     t
 } from '../helpers';
-import { DefinedInRow } from './DefinedInRow';
 import { JsdocExamplesBlock } from './JsdocExamplesBlock';
-import { MemberCard } from './MemberCard';
 import { ParamsTable } from './ParamsTable';
 
 type BlockPropertyProps = {
@@ -21,83 +18,67 @@ type BlockPropertyProps = {
     readonly navTabs?: any[];
 };
 
+const isUndefined = (v: unknown): boolean =>
+    v === undefined || v === 'undefined' || v === '';
+
 export const BlockProperty = (props: BlockPropertyProps): string => {
     return (
         <section data-compodoc="block-properties">
             <h3 id={props.title ? props.title.toLowerCase() : 'properties'}>
                 {props.title ?? t('properties')}
             </h3>
-            {props.properties.map(p => {
-                const header = (
-                    <header class="cdx-member-header">
-                        <span class="cdx-member-name">
-                            {(p.modifierKind ?? []).map((k: number) => (
-                                <span class={`cdx-member-modifier cdx-member-modifier--${modifSlug(k)}`}>{modifKind(k)}</span>
-                            ))}
-                            {p.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
+            {props.properties.map((p: any) => {
+                const cls = ['cdx-io-member', 'cdx-io-member--property'];
+                if (p.signalKind) {
+                    cls.push(`cdx-io-member--${p.signalKind}`);
+                }
+                if (p.deprecated) {
+                    cls.push('cdx-io-member--deprecated');
+                }
+                return (
+                    <div class={cls.join(' ')} id={p.name}>
+                        <div class="cdx-io-member-title">
                             <span
-                                class={`cdx-member-name-text${p.deprecated ? ' cdx-member-name--deprecated' : ''}`}
+                                class={`cdx-io-member-name${p.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {p.name}
                             </span>
+                            {p.type && (
+                                <span class="cdx-io-member-type">
+                                    {linkTypeHtml(p.type)}
+                                </span>
+                            )}
+                        </div>
+                        <div class="cdx-io-member-badges">
                             {p.signalKind && (
                                 <span class={`cdx-badge cdx-badge--${p.signalKind}`}>
                                     {signalKindLabel(p.signalKind)}
                                 </span>
                             )}
+                            {(p.modifierKind ?? []).map((k: number) => (
+                                <span class="cdx-member-modifier">
+                                    {modifKind(k)}
+                                </span>
+                            ))}
+                            {p.optional && (
+                                <span class="cdx-member-modifier">{t('optional')}</span>
+                            )}
                             {p.required && (
                                 <span class="cdx-badge cdx-badge--factory">Required</span>
                             )}
-                            <a
-                                href={`#${p.name}`}
-                                class="cdx-member-permalink"
-                                aria-label={`Link to ${p.name}`}
-                            >
-                                #
-                            </a>
-                        </span>
-                        {p.type && <span class="cdx-member-type">{linkTypeHtml(p.type)}</span>}
-                    </header>
-                ) as string;
-
-                const body = (
-                    <>
-                        {p.deprecated && (
+                        </div>
+                        {p.deprecated && p.deprecationMessage && (
                             <div class="cdx-member-deprecated">
-                                {p.deprecationMessage || t('deprecated')}
+                                {p.deprecationMessage}
                             </div>
                         )}
-                        {p.defaultValue && (
-                            <div class="cdx-member-row">
-                                <i>{t('default-value')} : </i>
-                                {codeWrap(p.defaultValue)}
-                            </div>
-                        )}
-                        {p.decorators && (
-                            <div class="cdx-member-row">
-                                <b>{t('decorators')} : </b>
-                                {codeWrap(p.decorators
-                                    .map((d: any) =>
-                                        d.stringifiedArguments
-                                            ? `@${d.name}(${d.stringifiedArguments})`
-                                            : `@${d.name}()`
-                                    )
-                                    .join(', '))}
-                            </div>
-                        )}
-                        {DefinedInRow({
-                            line: p.line,
-                            file: props.file,
-                            inheritance: p.inheritance,
-                            navTabs: props.navTabs
-                        })}
                         {p.description && (
-                            <div class="cdx-member-description">
+                            <div class="cdx-io-member-desc">
                                 {parseDescription(p.description, props.depth ?? 0)}
                             </div>
                         )}
-                        {p.jsdoctags && hasJsdocParams(p.jsdoctags) && (
-                            <div class="cdx-member-description">
+                        {p.jsdoctags?.length > 0 && (
+                            <div class="cdx-io-member-desc">
                                 {ParamsTable({
                                     jsdocTags: p.jsdoctags,
                                     depth: props.depth ?? 0,
@@ -111,10 +92,19 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                                 })}
                             </div>
                         )}
-                    </>
-                ) as string;
-
-                return MemberCard({ id: p.name, deprecated: p.deprecated, header, children: body });
+                        {!isUndefined(p.defaultValue) && (
+                            <pre class="cdx-derived-body"><code>{String(p.defaultValue)}</code></pre>
+                        )}
+                        {p.line && isTabEnabled(props.navTabs, 'source') && (
+                            <div class="cdx-io-member-source">
+                                {/* biome-ignore lint/a11y/useValidAnchor: href rewritten by client JS via data-cdx-line */}
+                                <a href="#" data-cdx-line={String(p.line)}>
+                                    {props.file}:{p.line}
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                );
             })}
         </section>
     ) as string;
