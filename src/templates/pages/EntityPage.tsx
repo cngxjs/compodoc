@@ -1,7 +1,6 @@
 import Html from '@kitajs/html';
 import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
-import { resolveImportPath } from '../helpers/import-resolver';
 import { BlockDerivedState } from '../blocks/BlockDerivedState';
 import { BlockHostBindings } from '../blocks/BlockHostBindings';
 import { BlockHostListener } from '../blocks/BlockHostListener';
@@ -33,6 +32,7 @@ import {
     IconPipe
 } from '../components/Icons';
 import { isApiSection, isInfoSection, linkTypeHtml, parseDescription, t } from '../helpers';
+import { resolveImportPath } from '../helpers/import-resolver';
 
 /** Parse inject() modifiers from the defaultValue string. */
 const parseInjectModifiers = (defaultValue: string): string[] => {

@@ -3,7 +3,6 @@ import decache from 'decache';
 import * as fs from 'fs-extra';
 import { markedAcl } from '../../utils/marked.acl';
 import FileEngine from './file.engine';
-import I18nEngine from './i18n.engine';
 import { highlightCode } from './syntax-highlight.engine';
 
 export interface markdownReadedDatas {

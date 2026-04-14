@@ -14,7 +14,9 @@ const THEME_LEGACY_KEY = 'compodoc-theme';
 const migrateKey = (key: string, legacy: string): string | null => {
     try {
         const value = localStorage.getItem(key);
-        if (value !== null) return value;
+        if (value !== null) {
+            return value;
+        }
         const old = localStorage.getItem(legacy);
         if (old !== null) {
             localStorage.setItem(key, old);

@@ -1,7 +1,6 @@
 import Html from '@kitajs/html';
 import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
-import { resolveImportPath } from '../helpers/import-resolver';
 import { BlockDerivedState } from '../blocks/BlockDerivedState';
 import { BlockHostBindings } from '../blocks/BlockHostBindings';
 import { BlockHostListeners } from '../blocks/BlockHostListeners';
@@ -43,6 +42,7 @@ import {
     relativeUrl,
     t
 } from '../helpers';
+import { resolveImportPath } from '../helpers/import-resolver';
 
 const escapeSimpleQuote = (text: string): string => {
     if (!text) {

@@ -12,7 +12,9 @@ const ANIMATION_MS = 200;
 const migrateStorageKey = (): string | null => {
     try {
         const value = localStorage.getItem(STORAGE_KEY);
-        if (value) return value;
+        if (value) {
+            return value;
+        }
         const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
         if (legacy) {
             localStorage.setItem(STORAGE_KEY, legacy);

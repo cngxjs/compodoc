@@ -1,4 +1,4 @@
-import { Project, SyntaxKind, ts } from 'ts-morph';
+import { Project, ts } from 'ts-morph';
 import { ClassHelper } from '../../../../../../../src/app/compiler/angular/deps/helpers/class-helper';
 import * as nodeUtil from '../../../../../../../src/utils/node.util';
 

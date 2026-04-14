@@ -35,7 +35,9 @@ export const isInternalMember = (modifierKind?: number[]): boolean =>
 /** Wrap content in `<code>` (single-line) or `<pre>` (multi-line). */
 export const codeWrap = (html: unknown): string => {
     const str = String(html ?? '');
-    if (!str) return '';
+    if (!str) {
+        return '';
+    }
     const tag = str.includes('\n') || str.length > 80 ? 'pre' : 'code';
     return `<${tag}>${str}</${tag}>`;
 };

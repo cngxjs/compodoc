@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import Configuration from '../../../../src/app/configuration';
 import { resolveImportPath } from '../../../../src/templates/helpers/import-resolver';
 
