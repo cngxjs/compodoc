@@ -20,7 +20,7 @@ type BlockAccessorsProps = {
 export const BlockAccessors = (props: BlockAccessorsProps): string => {
     return (
         <section data-compodoc="block-accessors">
-            <h3 id="accessors">{t('accessors')}</h3>
+            <h3 id="accessors">{t('accessors')}<a class="cdx-member-permalink" href="#accessors">#</a></h3>
             {Object.entries(props.accessors).map(([key, acc]) => {
                 const isDeprecated = !!(
                     acc.getSignature?.deprecated || acc.setSignature?.deprecated
@@ -38,6 +38,7 @@ export const BlockAccessors = (props: BlockAccessorsProps): string => {
                                 class={`cdx-io-member-name${isDeprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {key}
+                                <a class="cdx-member-permalink" href={`#${key}`}>#</a>
                             </span>
                             {returnType && (
                                 <span class="cdx-io-member-type">

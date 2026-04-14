@@ -95,6 +95,7 @@ export const BlockIndex = (props: BlockIndexProps): string => {
         <section class="cdx-content-section" data-compodoc="block-index">
             <h3 class="cdx-section-heading" id="index">
                 {t('index')}
+                <a class="cdx-member-permalink" href="#index">#</a>
             </h3>
             <div class="cdx-index">
                 {IndexGroup({

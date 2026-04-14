@@ -7,7 +7,8 @@ test.describe('Empty States', () => {
             await page.locator('[role="tab"]', { hasText: 'Info' }).click();
 
             const info = page.locator('#info');
-            const emptyState = info.locator('.cdx-empty-state--page');
+            // Entity tab panels use the 'full' variant (page variant is for overview/coverage pages)
+            const emptyState = info.locator('.cdx-empty-state--full');
             await expect(emptyState).toBeVisible();
 
             await expect(emptyState.locator('.cdx-empty-state-title')).toHaveText(
@@ -91,11 +92,13 @@ test.describe('Empty States', () => {
             await page.locator('[role="tab"]', { hasText: 'API' }).click();
 
             const api = page.locator('#api');
-            const inputsHeading = api.locator('h3', { hasText: /^Inputs$/ });
+            // h3 includes a permalink anchor so text is "Inputs#" — use contains match
+            const inputsHeading = api.locator('[data-compodoc="block-inputs"] h3');
             await expect(inputsHeading).toBeVisible();
 
-            const memberCards = api.locator('[data-compodoc="block-inputs"] .cdx-member-card');
-            await expect(memberCards).not.toHaveCount(0);
+            // Flat layout uses cdx-io-member rows (not cdx-member-card)
+            const memberRows = api.locator('[data-compodoc="block-inputs"] .cdx-io-member[id]');
+            await expect(memberRows).not.toHaveCount(0);
         });
     });
 

@@ -14,7 +14,7 @@ const isUndefined = (v: unknown): boolean =>
 export const BlockInput = (props: BlockInputProps): string => {
     return (
         <section data-compodoc="block-inputs">
-            <h3 id="inputs">{t('inputs')}</h3>
+            <h3 id="inputs">{t('inputs')}<a class="cdx-member-permalink" href="#inputs">#</a></h3>
             {(props.element.inputsClass ?? []).map((inp: any) => {
                 const cls = ['cdx-io-member'];
                 if (inp.signalKind) cls.push(`cdx-io-member--${inp.signalKind}`);
@@ -26,6 +26,7 @@ export const BlockInput = (props: BlockInputProps): string => {
                             class={`cdx-io-member-name${inp.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                         >
                             {inp.name}
+                            <a class="cdx-member-permalink" href={`#${inp.name}`}>#</a>
                         </span>
                         {inp.type && (
                             <span class="cdx-io-member-type">{linkTypeHtml(inp.type)}</span>

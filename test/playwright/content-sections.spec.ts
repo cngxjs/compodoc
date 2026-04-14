@@ -183,12 +183,13 @@ test.describe('Content Sections', () => {
             expect(href).toMatch(/^#/);
         });
 
-        test('index uses multi-column grid', async ({ page }) => {
+        test('index uses flex column layout', async ({ page }) => {
             await page.goto('/injectables/TodoStore.html');
 
             const entries = page.locator('.cdx-index-entries').first();
             const display = await entries.evaluate(el => getComputedStyle(el).display);
-            expect(display).toBe('grid');
+            // Index entries use flex (column), not grid
+            expect(display).toBe('flex');
         });
 
         test('deprecated members have line-through in index', async ({ page }) => {
@@ -269,8 +270,8 @@ test.describe('Content Sections', () => {
 
             const indicator = page.locator('.cdx-index-indicator').first();
             const width = await indicator.evaluate(el => el.getBoundingClientRect().width);
-            // Indicator should be exactly 18px (flex-shrink: 0)
-            expect(width).toBeCloseTo(18, 0);
+            // Indicator should be exactly 20px (flex-shrink: 0)
+            expect(width).toBeCloseTo(20, 0);
         });
     });
 

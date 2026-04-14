@@ -23,15 +23,14 @@ describe('MetadataRow — structured renderers', () => {
                 { name: 'HighlightDirective', inputs: ['color', 'hoverColor'], outputs: [] }
             ]);
 
-            expect(html).to.include('cdx-host-dir-list');
-            expect(html).to.include('cdx-host-dir-object');
-            expect(html).to.include('>directive:<');
+            expect(html).to.include('cdx-host-dir-flat');
+            expect(html).to.include('cdx-host-dir-entry');
             expect(html).to.include('HighlightDirective');
-            expect(html).to.include('>inputs:<');
+            expect(html).to.include('cdx-host-dir-label');
             expect(html).to.include('>color<');
             expect(html).to.include('>hoverColor<');
-            // Empty outputs array should not render an outputs: line
-            expect(html).to.not.include('>outputs:<');
+            // Empty outputs array should not render
+            expect(html).to.not.include('>outputs<');
         });
 
         it('renders a bare directive without inputs or outputs', () => {

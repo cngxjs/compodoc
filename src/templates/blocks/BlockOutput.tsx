@@ -11,7 +11,7 @@ type BlockOutputProps = {
 export const BlockOutput = (props: BlockOutputProps): string => {
     return (
         <section data-compodoc="block-outputs">
-            <h3 id="outputs">{t('outputs')}</h3>
+            <h3 id="outputs">{t('outputs')}<a class="cdx-member-permalink" href="#outputs">#</a></h3>
             {(props.element.outputsClass ?? []).map((out: any) => {
                 const cls = ['cdx-io-member'];
                 if (out.signalKind) cls.push(`cdx-io-member--${out.signalKind}`);
@@ -23,6 +23,7 @@ export const BlockOutput = (props: BlockOutputProps): string => {
                             class={`cdx-io-member-name${out.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                         >
                             {out.name}
+                            <a class="cdx-member-permalink" href={`#${out.name}`}>#</a>
                         </span>
                         {out.type && (
                             <span class="cdx-io-member-type">{linkTypeHtml(out.type)}</span>

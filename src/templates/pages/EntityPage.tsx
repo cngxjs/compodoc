@@ -2,7 +2,6 @@ import Html from '@kitajs/html';
 import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { resolveImportPath } from '../helpers/import-resolver';
-import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockDerivedState } from '../blocks/BlockDerivedState';
 import { BlockHostBindings } from '../blocks/BlockHostBindings';
 import { BlockHostListener } from '../blocks/BlockHostListener';
@@ -34,6 +33,78 @@ import {
     IconPipe
 } from '../components/Icons';
 import { isApiSection, isInfoSection, linkTypeHtml, parseDescription, t } from '../helpers';
+
+/** Parse inject() modifiers from the defaultValue string. */
+const parseInjectModifiers = (defaultValue: string): string[] => {
+    const mods: string[] = [];
+    if (!defaultValue) return mods;
+    if (/optional\s*:\s*true/.test(defaultValue)) mods.push('optional');
+    if (/skipSelf\s*:\s*true/.test(defaultValue)) mods.push('skipSelf');
+    if (/self\s*:\s*true/.test(defaultValue)) mods.push('self');
+    if (/host\s*:\s*true/.test(defaultValue)) mods.push('host');
+    return mods;
+};
+
+/** Dependencies section merging inject() properties and constructor params. */
+const DependenciesSection = (props: {
+    injectProps: any[];
+    constructorArgs: any[];
+}): string => {
+    const items: Array<{
+        name: string;
+        type: string;
+        source: 'inject' | 'constructor';
+        modifiers: string[];
+    }> = [];
+
+    for (const p of props.injectProps) {
+        items.push({
+            name: p.name,
+            type: p.type ?? '',
+            source: 'inject',
+            modifiers: parseInjectModifiers(p.defaultValue ?? '')
+        });
+    }
+
+    for (const arg of props.constructorArgs) {
+        items.push({
+            name: arg.name,
+            type: arg.type ?? '',
+            source: 'constructor',
+            modifiers: arg.optional ? ['optional'] : []
+        });
+    }
+
+    if (items.length === 0) return '';
+
+    return (
+        <section class="cdx-content-section" data-compodoc="block-dependencies">
+            <h3 class="cdx-section-heading" id="dependencies">{t('dependencies')}<a class="cdx-member-permalink" href="#dependencies">#</a></h3>
+            <div class="cdx-deps-list">
+                {items.map(item => (
+                    <div class="cdx-deps-item">
+                        <span class="cdx-deps-name">
+                            {item.type
+                                ? linkTypeHtml(item.type)
+                                : item.name}
+                        </span>
+                        <span class="cdx-deps-badges">
+                            <span class={`cdx-badge cdx-badge--${item.source === 'inject' ? 'inject' : 'constructor-di'}`}>
+                                {item.source === 'inject' ? 'inject()' : 'constructor'}
+                            </span>
+                            {item.modifiers.map(mod => (
+                                <span class="cdx-member-modifier">{mod}</span>
+                            ))}
+                        </span>
+                        {item.source === 'inject' && item.name && (
+                            <span class="cdx-deps-alias">{item.name}</span>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </section>
+    ) as string;
+};
 
 /** Map entity key to CSS color variable, badge class, and watermark icon */
 const entityMeta: Record<
@@ -176,6 +247,7 @@ const hasInfoContent = (e: any, props: EntityInfoProps): boolean =>
         (e.jsdoctags?.length) ||
         props.metadataHtml ||
         e.constructorObj ||
+        (e.propertiesClass ?? e.properties ?? []).some((p: any) => p.signalKind === 'inject') ||
         e.extends?.length ||
         e.implements?.length ||
         props.relationships?.incoming?.length ||
@@ -192,7 +264,7 @@ const ExtendsMetadataCard = (e: any): string => {
 
     return (
         <section class="cdx-content-section" data-compodoc="block-metadata">
-            <h3 class="cdx-section-heading">{t('metadata')}</h3>
+            <h3 class="cdx-section-heading" id="metadata">{t('metadata')}<a class="cdx-member-permalink" href="#metadata">#</a></h3>
             <dl class="cdx-metadata-card">
                 {hasExtends && (
                     <div class="cdx-metadata-row">
@@ -250,7 +322,7 @@ const InfoContent = (props: EntityInfoProps): string => {
             {isInfoSection('import') && (() => {
                 const importPath = resolveImportPath(e.file);
                 return importPath
-                    ? `<section class="cdx-content-section"><h3 class="cdx-section-heading">${t('import')}</h3><pre class="cdx-import-statement"><code>import { ${e.name} } from "${importPath}";</code></pre></section>`
+                    ? `<section class="cdx-content-section"><h3 class="cdx-section-heading" id="import">${t('import')}<a class="cdx-member-permalink" href="#import">#</a></h3><p class="cdx-import-line"><span class="cdx-import-kw">import</span> { <span class="cdx-import-name">${e.name}</span> } <span class="cdx-import-kw">from</span> <span class="cdx-import-str">'${importPath}'</span></p></section>`
                     : '';
             })()}
 
@@ -268,7 +340,7 @@ const InfoContent = (props: EntityInfoProps): string => {
             {/* 3. Description */}
             {isInfoSection('description') && e.description && (
                 <section class="cdx-content-section">
-                    <h3 class="cdx-section-heading">{t('description')}</h3>
+                    <h3 class="cdx-section-heading" id="description">{t('description')}<a class="cdx-member-permalink" href="#description">#</a></h3>
                     <div class="cdx-prose">{parseDescription(e.description, props.depth)}</div>
                 </section>
             )}
@@ -286,16 +358,16 @@ const InfoContent = (props: EntityInfoProps): string => {
                       ? ExtendsMetadataCard(e)
                       : '')}
 
-            {/* 4b. Constructor */}
-            {isInfoSection('constructor') &&
-                props.showConstructor !== false &&
-                e.constructorObj &&
-                BlockConstructor({
-                    constructor: e.constructorObj,
-                    file: e.file,
-                    depth: props.depth,
-                    navTabs: props.navTabs
-                })}
+            {/* 4b. Dependencies (inject() + constructor merged) */}
+            {isInfoSection('dependencies') && (() => {
+                const allProps = e.propertiesClass ?? e.properties ?? [];
+                const injectProps = allProps.filter(
+                    (p: any) => p.signalKind === 'inject'
+                );
+                const ctorArgs = e.constructorObj?.args ?? [];
+                if (injectProps.length === 0 && ctorArgs.length === 0) return '';
+                return DependenciesSection({ injectProps, constructorArgs: ctorArgs });
+            })()}
 
             {/* 4.5 Relationships (cross-linking) */}
             {isInfoSection('relationships') &&
@@ -328,7 +400,10 @@ const ApiContent = (props: EntityInfoProps): string => {
         (p: any) => p.signalKind === 'computed' || p.signalKind === 'linked-signal'
     );
     const regularProps = allProps.filter(
-        (p: any) => p.signalKind !== 'computed' && p.signalKind !== 'linked-signal'
+        (p: any) =>
+            p.signalKind !== 'computed' &&
+            p.signalKind !== 'linked-signal' &&
+            p.signalKind !== 'inject'
     );
 
     return (

@@ -26,6 +26,7 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
         <section data-compodoc="block-properties">
             <h3 id={props.title ? props.title.toLowerCase() : 'properties'}>
                 {props.title ?? t('properties')}
+                <a class="cdx-member-permalink" href={`#${props.title ? props.title.toLowerCase() : 'properties'}`}>#</a>
             </h3>
             {props.properties.map((p: any) => {
                 const cls = ['cdx-io-member', 'cdx-io-member--property'];
@@ -42,6 +43,7 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                                 class={`cdx-io-member-name${p.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {p.name}
+                                <a class="cdx-member-permalink" href={`#${p.name}`}>#</a>
                             </span>
                             {p.type && (
                                 <span class="cdx-io-member-type">

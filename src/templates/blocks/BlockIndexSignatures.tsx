@@ -12,7 +12,7 @@ type BlockIndexSignaturesProps = {
 export const BlockIndexSignatures = (props: BlockIndexSignaturesProps): string =>
     (
         <section data-compodoc="block-indexables">
-            <h3 id="indexables">{props.title ?? t('indexable')}</h3>
+            <h3 id="indexables">{props.title ?? t('indexable')}<a class="cdx-member-permalink" href="#indexables">#</a></h3>
             {props.indexables.map((idx: any) => (
                 <div class="cdx-io-member" id={idx.name ?? ''}>
                     <pre class="cdx-derived-body"><code>{indexableSignature(idx)}: {linkTypeHtml(idx.returnType)}</code></pre>

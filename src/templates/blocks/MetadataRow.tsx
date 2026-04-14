@@ -159,31 +159,17 @@ const escapeHtml = (s: string): string =>
     s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string);
 
 /**
- * Renders a metadata row for Angular host directives as code-style object
- * literals that mirror the original `@Component({ hostDirectives: [...] })`
- * source. Developers immediately recognise the shape because it's literally
- * what they wrote.
- *
- * Output looks like:
- *
- *     {
- *       directive: HighlightDirective,
- *       inputs: [color, hoverColor, enabled]
- *     }
- *     {
- *       directive: TooltipDirective
- *     }
+ * Renders a metadata row for Angular host directives as flat rows.
+ * Each directive gets its own line with the name linked, followed by
+ * `inputs` / `outputs` labels with chip tokens.
  */
 export function MetadataHostDirectivesRow(hostDirectives: HostDirective[]): string {
     if (!hostDirectives?.length) {
         return '';
     }
 
-    const punct = (s: string) => `<span class="cdx-host-dir-punct">${s}</span>`;
-    const key = (k: string) => `<span class="cdx-host-dir-key">${k}</span>`;
-    const token = (t: string) => `<span class="cdx-host-dir-token">${escapeHtml(t)}</span>`;
-
-    const renderNames = (names: string[]): string => names.map(n => token(n)).join(punct(', '));
+    const chip = (name: string) =>
+        `<span class="cdx-host-dir-chip">${escapeHtml(name)}</span>`;
 
     const items = hostDirectives.map(hd => {
         const resolved = resolveType(hd.name);
@@ -191,20 +177,18 @@ export function MetadataHostDirectivesRow(hostDirectives: HostDirective[]): stri
             ? `<a class="cdx-host-dir-name" href="${resolved.href}" target="${resolved.target}">${hd.name}</a>`
             : `<span class="cdx-host-dir-name">${hd.name}</span>`;
 
-        const lines: string[] = [];
-        lines.push(`  ${key('directive:')} ${nameHtml}`);
+        let html = `<div class="cdx-host-dir-entry-name">${nameHtml}</div>`;
         if (hd.inputs?.length) {
-            lines.push(`  ${key('inputs:')} ${punct('[')}${renderNames(hd.inputs)}${punct(']')}`);
+            html += `<div class="cdx-host-dir-entry-io"><span class="cdx-host-dir-label">inputs</span> ${hd.inputs.map(n => chip(n)).join(' ')}</div>`;
         }
         if (hd.outputs?.length) {
-            lines.push(`  ${key('outputs:')} ${punct('[')}${renderNames(hd.outputs)}${punct(']')}`);
+            html += `<div class="cdx-host-dir-entry-io"><span class="cdx-host-dir-label">outputs</span> ${hd.outputs.map(n => chip(n)).join(' ')}</div>`;
         }
 
-        const body = lines.join(`${punct(',')}\n`);
-        return `<div class="cdx-host-dir-object">${punct('{')}\n${body}\n${punct('}')}</div>`;
+        return `<div class="cdx-host-dir-entry">${html}</div>`;
     });
 
-    return MetadataRow('hostDirectives', `<div class="cdx-host-dir-list">${items.join('')}</div>`);
+    return MetadataRow('hostDirectives', `<div class="cdx-host-dir-flat">${items.join('')}</div>`);
 }
 
 /**
@@ -314,7 +298,12 @@ type ProviderEntry = {
  * (quotes included) as a muted token rather than a linkable name, so they
  * visually read as strings in the rendered block.
  */
-export function MetadataProvidersRow(label: string, entries: ProviderEntry[]): string {
+/**
+ * Renders provider entries as code-object literal blocks. Used both by
+ * `MetadataProvidersRow` (inside metadata card) and `ProvidersListHtml`
+ * (standalone section).
+ */
+export function renderProvidersListHtml(entries: ProviderEntry[]): string {
     if (!entries?.length) {
         return '';
     }
@@ -343,9 +332,6 @@ export function MetadataProvidersRow(label: string, entries: ProviderEntry[]): s
         `${punct('[')}${deps.map(d => nameToken(d)).join(punct(', '))}${punct(']')}`;
 
     const items = entries.map(entry => {
-        // Bare class / InjectionToken — render as a single clickable token
-        // on its own line, wrapped in a card-like block so the visual weight
-        // matches the object-literal entries below it.
         if (entry.kind === 'class') {
             return `<div class="cdx-host-dir-object">${nameToken(entry.name)}</div>`;
         }
@@ -380,7 +366,15 @@ export function MetadataProvidersRow(label: string, entries: ProviderEntry[]): s
         return `<div class="cdx-host-dir-object">${punct('{')}\n${body}\n${punct('}')}</div>`;
     });
 
-    return MetadataRow(label, `<div class="cdx-host-dir-list">${items.join('')}</div>`);
+    return `<div class="cdx-host-dir-list">${items.join('')}</div>`;
+}
+
+export function MetadataProvidersRow(label: string, entries: ProviderEntry[]): string {
+    const html = renderProvidersListHtml(entries);
+    if (!html) {
+        return '';
+    }
+    return MetadataRow(label, html);
 }
 
 export function MetadataChipsRow(label: string, names: Array<string | { name: string }>): string {
@@ -413,7 +407,7 @@ export function MetadataSection(props: {
     }
     return (
         <section class="cdx-content-section" data-compodoc="block-metadata">
-            <h3 class="cdx-section-heading">{props.title ?? t('metadata')}</h3>
+            <h3 class="cdx-section-heading" id="metadata">{props.title ?? t('metadata')}<a class="cdx-member-permalink" href="#metadata">#</a></h3>
             <dl class="cdx-metadata-card">{rows.join('')}</dl>
         </section>
     ) as string;

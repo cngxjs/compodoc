@@ -66,7 +66,7 @@
     word-break: break-word;
 }
 
-.cdx-member-name a.cdx-member-permalink {
+a.cdx-member-permalink {
     color: var(--color-cdx-text-muted);
     text-decoration: none;
     margin-left: 0.25rem;
@@ -74,11 +74,14 @@
     transition: opacity 150ms ease;
 }
 
-.cdx-member-card:hover .cdx-member-name a.cdx-member-permalink {
+.cdx-member-card:hover a.cdx-member-permalink,
+.cdx-io-member:hover a.cdx-member-permalink,
+h3:hover > a.cdx-member-permalink,
+.cdx-section-heading:hover > a.cdx-member-permalink {
     opacity: 1;
 }
 
-.cdx-member-name a.cdx-member-permalink:hover {
+a.cdx-member-permalink:hover {
     color: var(--color-cdx-primary);
     text-decoration: underline;
 }

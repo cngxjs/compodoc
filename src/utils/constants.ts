@@ -88,7 +88,10 @@ export const DEFAULT_INFO_SECTIONS: ReadonlyArray<string> = [
     'examples',
     'metadata',
     'extends',
-    'constructor',
+    'host',
+    'dependencies',
+    'providers',
+    'viewProviders',
     'relationships'
 ];
 

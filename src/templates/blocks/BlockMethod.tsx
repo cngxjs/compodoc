@@ -24,6 +24,7 @@ export const BlockMethod = (props: BlockMethodProps): string => {
         <section data-compodoc="block-methods">
             <h3 id={props.title ? props.title.toLowerCase() : 'methods'}>
                 {props.title ?? t('methods')}
+                <a class="cdx-member-permalink" href={`#${props.title ? props.title.toLowerCase() : 'methods'}`}>#</a>
             </h3>
             {props.methods.map((m: any) => {
                 const cls = ['cdx-io-member', 'cdx-io-member--method'];
@@ -37,6 +38,7 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                                 class={`cdx-io-member-name${m.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {m.name}
+                                <a class="cdx-member-permalink" href={`#${m.name}`}>#</a>
                             </span>
                             {m.returnType && (
                                 <span class="cdx-io-member-type">

@@ -75,9 +75,10 @@ const createDialog = (): HTMLDialogElement => {
 
 /** j/k member card navigation */
 const navigateMember = (direction: 1 | -1) => {
-    const cards = document.querySelectorAll<HTMLElement>(
-        '.cdx-tab-panel.active .cdx-member-card, .cdx-tab-panel:first-child .cdx-member-card'
-    );
+    const selector =
+        '.cdx-tab-panel.active .cdx-member-card, .cdx-tab-panel:first-child .cdx-member-card,' +
+        ' .cdx-tab-panel.active .cdx-io-member[id], .cdx-tab-panel:first-child .cdx-io-member[id]';
+    const cards = document.querySelectorAll<HTMLElement>(selector);
     if (!cards.length) {
         return;
     }

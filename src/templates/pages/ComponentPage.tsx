@@ -2,7 +2,6 @@ import Html from '@kitajs/html';
 import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { resolveImportPath } from '../helpers/import-resolver';
-import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockDerivedState } from '../blocks/BlockDerivedState';
 import { BlockHostBindings } from '../blocks/BlockHostBindings';
 import { BlockHostListeners } from '../blocks/BlockHostListeners';
@@ -19,8 +18,6 @@ import {
     MetadataChipsRow,
     MetadataCodeRow,
     MetadataHostDirectivesRow,
-    MetadataHostRow,
-    MetadataProvidersRow,
     MetadataSection
 } from '../blocks/MetadataRow';
 import { RouteChip } from '../blocks/RouteChip';
@@ -63,6 +60,214 @@ const breakComma = (text: string): string => {
     return escaped.replaceAll(',', ',<br>');
 };
 
+/** Standalone section for host configuration (hostStructured) as grouped table. */
+const HostSection = (entries: any[]): string => {
+    if (!entries?.length) return '';
+    // Filter bare class-only
+    const meaningful = entries.filter(
+        (e: any) => !(e.kind === 'static' && e.key === 'class' && entries.length === 1)
+    );
+    if (meaningful.length === 0) return '';
+
+    const esc = (s: string) =>
+        s.replace(/[&<>]/g, (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string);
+
+    // Group by category
+    const staticClass = meaningful.filter((e: any) => e.kind === 'static' && e.key === 'class');
+    const staticAttrs = meaningful.filter((e: any) => e.kind === 'static' && e.key !== 'class');
+    const boundAttrs = meaningful.filter(
+        (e: any) => e.kind === 'attr-binding' || e.kind === 'property-binding'
+    );
+    const boundClasses = meaningful.filter((e: any) => e.kind === 'class-binding');
+    const boundStyles = meaningful.filter((e: any) => e.kind === 'style-binding');
+    const events = meaningful.filter((e: any) => e.kind === 'event');
+
+    // Strip decorator brackets/parens from keys
+    const stripKey = (key: string): string => {
+        // [class.is-dirty] → is-dirty
+        // [attr.aria-label] → keep as-is (stays in static attrs)
+        // (document:keydown.escape) → document:keydown.escape
+        if (key.startsWith('(') && key.endsWith(')')) return key.slice(1, -1);
+        if (key.startsWith('[class.') && key.endsWith(']')) return key.slice(7, -1);
+        if (key.startsWith('[style.') && key.endsWith(']')) return key.slice(7, -1);
+        return key;
+    };
+
+    // Link to member identifier, strip ($event) etc from display
+    const linkedRef = (value: string): string => {
+        const m = /^(this\.)?([a-zA-Z_$][a-zA-Z0-9_$]*)(\(.*\))?$/.exec(value);
+        if (!m) return `<code>${esc(value)}</code>`;
+        const id = m[2];
+        return `<a href="#${id}">${esc(id)}</a>`;
+    };
+
+    const renderChip = (key: string, arrow: string, value: string): string =>
+        `<span class="cdx-host-chip">${esc(stripKey(key))} ${arrow} ${linkedRef(value)}</span>`;
+
+    const rows: string[] = [];
+    const addRow = (label: string, content: string) => {
+        rows.push(
+            `<div class="cdx-metadata-row"><dt class="cdx-metadata-label">${label}</dt><dd class="cdx-metadata-value">${content}</dd></div>`
+        );
+    };
+
+    if (staticClass.length > 0) {
+        addRow('Class', `<code>${esc(staticClass[0].value)}</code>`);
+    }
+    // Merge static attrs + bound attrs into one "Static attributes" group
+    const allStaticAttrs = [...staticAttrs, ...boundAttrs];
+    if (allStaticAttrs.length > 0) {
+        const pairs = allStaticAttrs.map(
+            (e: any) => `<div class="cdx-host-attr-pair"><code>${esc(e.key)}</code><span class="cdx-host-val">${esc(e.value)}</span></div>`
+        );
+        addRow('Static attributes', `<div class="cdx-host-attr-grid">${pairs.join('')}</div>`);
+    }
+    if (boundClasses.length > 0) {
+        const chips = boundClasses.map((e: any) => renderChip(e.key, '\u2190', e.value));
+        addRow('Bound classes', chips.join(' '));
+    }
+    if (boundStyles.length > 0) {
+        const chips = boundStyles.map((e: any) => renderChip(e.key, '\u2190', e.value));
+        addRow('Bound styles', chips.join(' '));
+    }
+    if (events.length > 0) {
+        const chips = events.map((e: any) => renderChip(e.key, '\u2192', e.value));
+        addRow('Listeners', chips.join(' '));
+    }
+
+    if (rows.length === 0) return '';
+
+    return (
+        <section class="cdx-content-section" data-compodoc="block-host">
+            <h3 class="cdx-section-heading" id="host">{t('host')}<a class="cdx-member-permalink" href="#host">#</a></h3>
+            <dl class="cdx-metadata-card">{rows.join('')}</dl>
+        </section>
+    ) as string;
+};
+
+/** Standalone section for providers or viewProviders as 2-column grid table. */
+const ProvidersSection = (props: { title: string; entries: any[] }): string => {
+    if (!props.entries?.length) return '';
+
+    const esc = (s: string) =>
+        s.replace(/[&<>]/g, (c: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string);
+
+    const nameLink = (name: string): string => {
+        const resolved = linkTypeHtml(name);
+        return resolved || esc(name);
+    };
+
+    const rows = props.entries.map((entry: any) => {
+        const nameHtml = nameLink(entry.name);
+        const parts: string[] = [];
+
+        if (entry.kind === 'class') {
+            parts.push('<span class="cdx-provider-strategy">useClass</span>');
+        } else if (entry.kind === 'useClass' && entry.useClass) {
+            parts.push(`<span class="cdx-provider-strategy">useClass</span> ${nameLink(entry.useClass)}`);
+        } else if (entry.kind === 'useValue') {
+            const val = entry.useValue ?? '';
+            parts.push(`<span class="cdx-provider-strategy">useValue</span> <code>${esc(val)}</code>`);
+        } else if (entry.kind === 'useFactory') {
+            if (entry.factory) {
+                parts.push(`<span class="cdx-provider-strategy">useFactory</span> ${nameLink(entry.factory)}`);
+            }
+            if (entry.deps?.length) {
+                parts.push(`<span class="cdx-host-dir-chip">deps: ${entry.deps.map((d: string) => nameLink(d)).join(', ')}</span>`);
+            }
+        } else if (entry.kind === 'useExisting' && entry.useExisting) {
+            parts.push(`<span class="cdx-provider-strategy">useExisting</span> ${nameLink(entry.useExisting)}`);
+        }
+
+        if (entry.multi) {
+            parts.push('<span class="cdx-host-dir-chip">multi</span>');
+        }
+
+        const valueHtml = parts.length > 0 ? parts.join(' ') : '';
+        return `<div class="cdx-provider-row"><dt class="cdx-provider-name">${nameHtml}</dt><dd class="cdx-provider-value">${valueHtml}</dd></div>`;
+    });
+
+    const headingId = props.title.toLowerCase().replace(/\s+/g, '-');
+    return (
+        <section class="cdx-content-section" data-compodoc="block-providers">
+            <h3 class="cdx-section-heading" id={headingId}>{props.title}<a class="cdx-member-permalink" href={`#${headingId}`}>#</a></h3>
+            <dl class="cdx-provider-table">{rows.join('')}</dl>
+        </section>
+    ) as string;
+};
+
+/**
+ * Parse inject() modifiers from the defaultValue string.
+ * e.g. `inject(Token, { optional: true, skipSelf: true })` -> ['optional', 'skipSelf']
+ */
+const parseInjectModifiers = (defaultValue: string): string[] => {
+    const mods: string[] = [];
+    if (!defaultValue) return mods;
+    if (/optional\s*:\s*true/.test(defaultValue)) mods.push('optional');
+    if (/skipSelf\s*:\s*true/.test(defaultValue)) mods.push('skipSelf');
+    if (/self\s*:\s*true/.test(defaultValue)) mods.push('self');
+    if (/host\s*:\s*true/.test(defaultValue)) mods.push('host');
+    return mods;
+};
+
+/** Dependencies section merging inject() properties and constructor params. */
+const DependenciesSection = (props: {
+    injectProps: any[];
+    constructorArgs: any[];
+}): string => {
+    const items: Array<{
+        name: string;
+        type: string;
+        source: 'inject' | 'constructor';
+        modifiers: string[];
+    }> = [];
+
+    for (const p of props.injectProps) {
+        items.push({
+            name: p.name,
+            type: p.type ?? '',
+            source: 'inject',
+            modifiers: parseInjectModifiers(p.defaultValue ?? '')
+        });
+    }
+
+    for (const arg of props.constructorArgs) {
+        items.push({
+            name: arg.name,
+            type: arg.type ?? '',
+            source: 'constructor',
+            modifiers: arg.optional ? ['optional'] : []
+        });
+    }
+
+    if (items.length === 0) return '';
+
+    return (
+        <section class="cdx-content-section" data-compodoc="block-dependencies">
+            <h3 class="cdx-section-heading" id="section-dependencies">{t('dependencies')}<a class="cdx-member-permalink" href="#section-dependencies">#</a></h3>
+            <div class="cdx-deps-list">
+                {items.map(item => (
+                    <div class="cdx-deps-item">
+                        <span class="cdx-deps-name">
+                            {item.type
+                                ? linkTypeHtml(item.type)
+                                : item.name}
+                        </span>
+                        <span class="cdx-deps-badges">
+                            <span class={`cdx-badge cdx-badge--${item.source === 'inject' ? 'inject' : 'constructor-di'}`}>
+                                {item.source === 'inject' ? 'inject()' : 'constructor'}
+                            </span>
+                            {item.modifiers.map(mod => (
+                                <span class="cdx-member-modifier">{mod}</span>
+                            ))}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </section>
+    ) as string;
+};
+
 const ComponentMetadata = (c: any): string => {
     if (!isInfoSection('metadata')) {
         return '';
@@ -96,22 +301,15 @@ const ComponentMetadata = (c: any): string => {
     codeField('assetsDir', c.assetsDir);
     codeField('assetsDirs', c.assetsDirs);
 
-    // Array values → chip rows
-    rows.push(MetadataChipsRow('imports', c.imports ?? []));
-    rows.push(MetadataProvidersRow('providers', c.providers ?? []));
-    rows.push(MetadataProvidersRow('viewProviders', c.viewProviders ?? []));
-    rows.push(MetadataChipsRow('entryComponents', c.entryComponents ?? []));
+    // Array values → chip rows (implements before imports to match design)
     rows.push(MetadataChipsRow('extends', (c.extends as string[]) ?? []));
     rows.push(MetadataChipsRow('implements', (c.implements as string[]) ?? []));
+    rows.push(MetadataChipsRow('imports', c.imports ?? []));
+    rows.push(MetadataChipsRow('entryComponents', c.entryComponents ?? []));
 
-    // Host directives get their own stacked sub-cards
+    // Host directives stay in core metadata (they're component config, not runtime host bindings)
     if (c.hostDirectives?.length > 0) {
         rows.push(MetadataHostDirectivesRow(c.hostDirectives));
-    }
-
-    // Host literal renders as a code-object-literal sub-card (Phase 2b).
-    if (c.hostStructured?.length > 0) {
-        rows.push(MetadataHostRow(c.hostStructured));
     }
 
     return MetadataSection({ rows });
@@ -137,6 +335,7 @@ const hasComponentInfoContent = (data: any): boolean => {
         c.viewProviders?.length ||
         c.hostDirectives?.length ||
         c.hostStructured?.length ||
+        c.propertiesClass?.some((p: any) => p.signalKind === 'inject') ||
         c.slots?.length ||
         data.relationships?.incoming?.length ||
         data.relationships?.outgoing?.length
@@ -161,7 +360,7 @@ const InfoContent = (data: any): string => {
             {isInfoSection('import') && (() => {
                 const importPath = resolveImportPath(c.file);
                 return importPath
-                    ? `<section class="cdx-content-section"><h3 class="cdx-section-heading">${t('import')}</h3><pre class="cdx-import-statement"><code>import { ${c.name} } from "${importPath}";</code></pre></section>`
+                    ? `<section class="cdx-content-section"><h3 class="cdx-section-heading" id="import">${t('import')}<a class="cdx-member-permalink" href="#import">#</a></h3><p class="cdx-import-line"><span class="cdx-import-kw">import</span> { <span class="cdx-import-name">${c.name}</span> } <span class="cdx-import-kw">from</span> <span class="cdx-import-str">'${importPath}'</span></p></section>`
                     : '';
             })()}
 
@@ -176,7 +375,7 @@ const InfoContent = (data: any): string => {
 
             {isInfoSection('description') && c.description && (
                 <section class="cdx-content-section">
-                    <h3 class="cdx-section-heading">{t('description')}</h3>
+                    <h3 class="cdx-section-heading" id="description">{t('description')}<a class="cdx-member-permalink" href="#description">#</a></h3>
                     <div class="cdx-prose">{parseDescription(c.description, depth)}</div>
                 </section>
             )}
@@ -189,7 +388,7 @@ const InfoContent = (data: any): string => {
 
             {isInfoSection('metadata') && c.slots?.length > 0 && (
                 <section class="cdx-content-section">
-                    <h3 class="cdx-section-heading">Content Slots</h3>
+                    <h3 class="cdx-section-heading" id="content-slots">Content Slots<a class="cdx-member-permalink" href="#content-slots">#</a></h3>
                     <dl class="cdx-metadata-card">
                         {c.slots.map((slot: any) => (
                             <>
@@ -203,14 +402,27 @@ const InfoContent = (data: any): string => {
                 </section>
             )}
 
-            {isInfoSection('constructor') &&
-                c.constructorObj &&
-                BlockConstructor({
-                    constructor: c.constructorObj,
-                    file: c.file,
-                    depth,
-                    navTabs: data.navTabs
-                })}
+            {isInfoSection('host') &&
+                c.hostStructured?.length > 0 &&
+                HostSection(c.hostStructured)}
+
+            {isInfoSection('providers') &&
+                c.providers?.length > 0 &&
+                ProvidersSection({ title: t('providers'), entries: c.providers })}
+
+            {isInfoSection('viewProviders') &&
+                c.viewProviders?.length > 0 &&
+                ProvidersSection({ title: t('view-providers'), entries: c.viewProviders })}
+
+            {isInfoSection('dependencies') && (() => {
+                const injectProps = (c.propertiesClass ?? []).filter(
+                    (p: any) => p.signalKind === 'inject'
+                );
+                const ctorArgs = c.constructorObj?.args ?? [];
+                return (injectProps.length > 0 || ctorArgs.length > 0)
+                    ? DependenciesSection({ injectProps, constructorArgs: ctorArgs })
+                    : '';
+            })()}
 
             {isInfoSection('relationships') &&
                 data.relationships &&
@@ -240,7 +452,10 @@ const ApiContent = (data: any): string => {
         (p: any) => p.signalKind === 'computed' || p.signalKind === 'linked-signal'
     );
     const regularProps = allProps.filter(
-        (p: any) => p.signalKind !== 'computed' && p.signalKind !== 'linked-signal'
+        (p: any) =>
+            p.signalKind !== 'computed' &&
+            p.signalKind !== 'linked-signal' &&
+            p.signalKind !== 'inject'
     );
 
     return (

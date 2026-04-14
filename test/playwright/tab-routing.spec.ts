@@ -31,7 +31,7 @@ test.describe('Full-page load deep-linking', () => {
         // ngOnInit lives inside the API panel
         const apiTab = page.locator('a#api-tab');
         await expect(apiTab).toHaveAttribute('aria-selected', 'true');
-        const memberCard = page.locator('#ngOnInit.cdx-member-card');
+        const memberCard = page.locator('#ngOnInit.cdx-io-member');
         await expect(memberCard).toBeVisible();
         await expect(memberCard).toBeInViewport();
     });
@@ -100,7 +100,7 @@ test.describe('Cross-panel hash-only links (original bug)', () => {
 
         const apiTab = page.locator('a#api-tab');
         await expect(apiTab).toHaveAttribute('aria-selected', 'true');
-        const memberCard = page.locator('#ngOnInit.cdx-member-card');
+        const memberCard = page.locator('#ngOnInit.cdx-io-member');
         await expect(memberCard).toBeVisible();
     });
 
@@ -121,7 +121,7 @@ test.describe('Cross-panel hash-only links (original bug)', () => {
             });
 
             await expect(page.locator('a#api-tab')).toHaveAttribute('aria-selected', 'true');
-            await expect(page.locator('#ngOnInit.cdx-member-card')).toBeVisible();
+            await expect(page.locator('#ngOnInit.cdx-io-member')).toBeVisible();
         }
     });
 });
