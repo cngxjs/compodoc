@@ -97,12 +97,12 @@ export const DEFAULT_API_SECTIONS: ReadonlyArray<string> = [
     'inputs',
     'outputs',
     'derivedState',
-    'hostBindings',
-    'hostListeners',
-    'methods',
     'properties',
+    'methods',
     'accessors',
-    'indexSignatures'
+    'indexSignatures',
+    'hostBindings',
+    'hostListeners'
 ];
 
 /**

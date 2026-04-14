@@ -4,7 +4,9 @@ import { BlockAccessors } from '../blocks/BlockAccessors';
 import { resolveImportPath } from '../helpers/import-resolver';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockDerivedState } from '../blocks/BlockDerivedState';
+import { BlockHostBindings } from '../blocks/BlockHostBindings';
 import { BlockHostListener } from '../blocks/BlockHostListener';
+import { BlockHostListeners } from '../blocks/BlockHostListeners';
 import { BlockIndex } from '../blocks/BlockIndex';
 import { BlockIndexSignatures } from '../blocks/BlockIndexSignatures';
 import { BlockInput } from '../blocks/BlockInput';
@@ -379,47 +381,23 @@ const ApiContent = (props: EntityInfoProps): string => {
                     navTabs: props.navTabs
                 })}
 
-            {/* 9. Host Bindings */}
-            {isApiSection('hostBindings') &&
-                props.showHostBindings !== false &&
-                e.hostBindings?.length > 0 &&
-                BlockProperty({
-                    properties: e.hostBindings,
-                    file: e.file,
-                    title: 'HostBindings',
-                    depth: props.depth,
-                    navTabs: props.navTabs
-                })}
-
-            {/* 10. Host Listeners */}
-            {isApiSection('hostListeners') &&
-                props.showHostListeners !== false &&
-                e.hostListeners?.length > 0 &&
-                BlockHostListener({
-                    methods: e.hostListeners,
-                    file: e.file,
-                    title: 'HostListeners',
-                    depth: props.depth,
-                    navTabs: props.navTabs
-                })}
-
-            {/* 11. Methods */}
-            {isApiSection('methods') &&
-                props.showMethods !== false &&
-                (e.methodsClass ?? e.methods)?.length > 0 &&
-                BlockMethod({
-                    methods: e.methodsClass ?? e.methods,
-                    file: e.file,
-                    depth: props.depth,
-                    navTabs: props.navTabs
-                })}
-
-            {/* 12. Properties */}
+            {/* 9. Properties */}
             {isApiSection('properties') &&
                 props.showProperties !== false &&
                 regularProps.length > 0 &&
                 BlockProperty({
                     properties: regularProps,
+                    file: e.file,
+                    depth: props.depth,
+                    navTabs: props.navTabs
+                })}
+
+            {/* 10. Methods */}
+            {isApiSection('methods') &&
+                props.showMethods !== false &&
+                (e.methodsClass ?? e.methods)?.length > 0 &&
+                BlockMethod({
+                    methods: e.methodsClass ?? e.methods,
                     file: e.file,
                     depth: props.depth,
                     navTabs: props.navTabs
@@ -447,6 +425,18 @@ const ApiContent = (props: EntityInfoProps): string => {
                     depth: props.depth,
                     navTabs: props.navTabs
                 })}
+
+            {/* 15. Host Bindings */}
+            {isApiSection('hostBindings') &&
+                props.showHostBindings !== false &&
+                e.hostBindings?.length > 0 &&
+                BlockHostBindings({ bindings: e.hostBindings })}
+
+            {/* 16. Host Listeners */}
+            {isApiSection('hostListeners') &&
+                props.showHostListeners !== false &&
+                e.hostListeners?.length > 0 &&
+                BlockHostListeners({ listeners: e.hostListeners })}
         </>
     ) as string;
 };

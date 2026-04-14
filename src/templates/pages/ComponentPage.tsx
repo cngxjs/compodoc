@@ -4,6 +4,8 @@ import { BlockAccessors } from '../blocks/BlockAccessors';
 import { resolveImportPath } from '../helpers/import-resolver';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockDerivedState } from '../blocks/BlockDerivedState';
+import { BlockHostBindings } from '../blocks/BlockHostBindings';
+import { BlockHostListeners } from '../blocks/BlockHostListeners';
 import { BlockIndex } from '../blocks/BlockIndex';
 import { BlockInput } from '../blocks/BlockInput';
 import { BlockMethod } from '../blocks/BlockMethod';
@@ -270,21 +272,11 @@ const ApiContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
-            {isApiSection('hostBindings') &&
-                c.hostBindings?.length > 0 &&
+            {isApiSection('properties') &&
+                regularProps.length > 0 &&
                 BlockProperty({
-                    properties: c.hostBindings,
+                    properties: regularProps,
                     file: c.file,
-                    title: 'HostBindings',
-                    depth,
-                    navTabs: data.navTabs
-                })}
-            {isApiSection('hostListeners') &&
-                c.hostListeners?.length > 0 &&
-                BlockMethod({
-                    methods: c.hostListeners,
-                    file: c.file,
-                    title: 'HostListeners',
                     depth,
                     navTabs: data.navTabs
                 })}
@@ -292,14 +284,6 @@ const ApiContent = (data: any): string => {
                 c.methodsClass?.length > 0 &&
                 BlockMethod({
                     methods: c.methodsClass,
-                    file: c.file,
-                    depth,
-                    navTabs: data.navTabs
-                })}
-            {isApiSection('properties') &&
-                regularProps.length > 0 &&
-                BlockProperty({
-                    properties: regularProps,
                     file: c.file,
                     depth,
                     navTabs: data.navTabs
@@ -313,6 +297,12 @@ const ApiContent = (data: any): string => {
                     depth,
                     navTabs: data.navTabs
                 })}
+            {isApiSection('hostBindings') &&
+                c.hostBindings?.length > 0 &&
+                BlockHostBindings({ bindings: c.hostBindings })}
+            {isApiSection('hostListeners') &&
+                c.hostListeners?.length > 0 &&
+                BlockHostListeners({ listeners: c.hostListeners })}
         </>
     ) as string;
 };

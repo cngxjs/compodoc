@@ -216,6 +216,41 @@ export class AdminPanelComponent implements HasUnsavedChanges {
      */
     readonly dirty = signal(false);
 
+    /** Internal label cache for the active panel. */
+    private _panelLabel = '';
+
+    /**
+     * Display label for the currently active settings panel.
+     * Falls back to `'General'` when no explicit label has been set.
+     */
+    get panelLabel(): string {
+        return this._panelLabel || 'General';
+    }
+
+    /**
+     * Updates the active panel label and marks the form as dirty.
+     * @param value New label string.
+     */
+    set panelLabel(value: string) {
+        this._panelLabel = value;
+        this.dirty.set(true);
+    }
+
+    /**
+     * Whether the panel is currently in read-only mode.
+     * Derived from the theme's lock state.
+     */
+    get isReadonly(): boolean {
+        return this.theme.isLocked;
+    }
+
+    /**
+     * Look up a setting by its string key.
+     * @param key The setting identifier.
+     * @returns The setting value or `undefined`.
+     */
+    [key: string]: any;
+
     /**
      * Check for unsaved changes.
      */
