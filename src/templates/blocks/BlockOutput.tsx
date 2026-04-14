@@ -1,7 +1,5 @@
 import Html from '@kitajs/html';
-import { linkTypeHtml, parseDescription, t } from '../helpers';
-import { DefinedInRow } from './DefinedInRow';
-import { MemberCard } from './MemberCard';
+import { isTabEnabled, linkTypeHtml, parseDescription, signalKindLabel, t } from '../helpers';
 
 type BlockOutputProps = {
     readonly element: any;
@@ -13,50 +11,60 @@ type BlockOutputProps = {
 export const BlockOutput = (props: BlockOutputProps): string => {
     return (
         <section data-compodoc="block-outputs">
-            <h3 id="outputs">{t('outputs')}</h3>
+            <h3 id="outputs">
+                {t('outputs')}
+                <a class="cdx-member-permalink" href="#outputs">
+                    #
+                </a>
+            </h3>
             {(props.element.outputsClass ?? []).map((out: any) => {
-                const header = (
-                    <header class="cdx-member-header">
-                        <span class="cdx-member-name">
+                const cls = ['cdx-io-member'];
+                if (out.signalKind) {
+                    cls.push(`cdx-io-member--${out.signalKind}`);
+                }
+                if (out.deprecated) {
+                    cls.push('cdx-io-member--deprecated');
+                }
+                return (
+                    <div class={cls.join(' ')} id={out.name}>
+                        <div class="cdx-io-member-title">
                             <span
-                                class={`cdx-member-name-text${out.deprecated ? ' cdx-member-name--deprecated' : ''}`}
+                                class={`cdx-io-member-name${out.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {out.name}
+                                <a class="cdx-member-permalink" href={`#${out.name}`}>
+                                    #
+                                </a>
                             </span>
+                            {out.type && (
+                                <span class="cdx-io-member-type">{linkTypeHtml(out.type)}</span>
+                            )}
+                        </div>
+                        <div class="cdx-io-member-badges">
                             {out.signalKind && (
                                 <span class={`cdx-badge cdx-badge--${out.signalKind}`}>
-                                    {out.signalKind === 'output-signal' ? 'Signal' : ''}
+                                    {signalKindLabel(out.signalKind)}
                                 </span>
                             )}
-                            <a
-                                href={`#${out.name}`}
-                                class="cdx-member-permalink"
-                                aria-label={`Link to ${out.name}`}
-                            >
-                                #
-                            </a>
-                        </span>
-                        {out.type && <span class="cdx-member-type">{linkTypeHtml(out.type)}</span>}
-                    </header>
-                ) as string;
-
-                const body = (
-                    <>
-                        {DefinedInRow({
-                            line: out.line,
-                            file: props.element.file,
-                            inheritance: out.inheritance,
-                            navTabs: props.navTabs
-                        })}
+                            {out.alias && (
+                                <span class="cdx-member-modifier">alias: {out.alias}</span>
+                            )}
+                        </div>
                         {out.description && (
-                            <div class="cdx-member-description">
+                            <div class="cdx-io-member-desc">
                                 {parseDescription(out.description, props.depth ?? 0)}
                             </div>
                         )}
-                    </>
-                ) as string;
-
-                return MemberCard({ id: out.name, header, children: body });
+                        {out.line && isTabEnabled(props.navTabs, 'source') && (
+                            <div class="cdx-io-member-source">
+                                {/* biome-ignore lint/a11y/useValidAnchor: href rewritten by client JS via data-cdx-line */}
+                                <a href="#" data-cdx-line={String(out.line)}>
+                                    {props.element.file}:{out.line}
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                );
             })}
         </section>
     ) as string;

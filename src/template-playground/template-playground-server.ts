@@ -559,21 +559,21 @@ export class TemplatePlaygroundServer {
 
         // Serve Compodoc resources at root level for relative path compatibility
         // Try dist/resources first (production), then src/resources (development/testing)
-        const compodocResourcesPathDist = path.join(process.cwd(), 'dist/resources');
-        const compodocResourcesPathSrc = path.join(process.cwd(), 'src/resources');
+        const compodocxResourcesPathDist = path.join(process.cwd(), 'dist/resources');
+        const compodocxResourcesPathSrc = path.join(process.cwd(), 'src/resources');
         
-        const compodocResourcesPath = fs.existsSync(compodocResourcesPathDist) ? compodocResourcesPathDist : compodocResourcesPathSrc;
-        logger.info(`📁 Setting up root-level static files from: ${compodocResourcesPath}`);
-        logger.info(`📁 Compodoc resources path exists: ${fs.existsSync(compodocResourcesPath)}`);
+        const compodocxResourcesPath = fs.existsSync(compodocxResourcesPathDist) ? compodocxResourcesPathDist : compodocxResourcesPathSrc;
+        logger.info(`📁 Setting up root-level static files from: ${compodocxResourcesPath}`);
+        logger.info(`📁 Compodoc resources path exists: ${fs.existsSync(compodocxResourcesPath)}`);
 
         // Serve styles, js, images, and other resources at root level using sirv
-        this.app.use('/styles', sirv(path.join(compodocResourcesPath, 'styles'), { dev: true }));
-        this.app.use('/js', sirv(path.join(compodocResourcesPath, 'js'), { dev: true }));
-        this.app.use('/images', sirv(path.join(compodocResourcesPath, 'images'), { dev: true }));
-        this.app.use('/fonts', sirv(path.join(compodocResourcesPath, 'fonts'), { dev: true }));
+        this.app.use('/styles', sirv(path.join(compodocxResourcesPath, 'styles'), { dev: true }));
+        this.app.use('/js', sirv(path.join(compodocxResourcesPath, 'js'), { dev: true }));
+        this.app.use('/images', sirv(path.join(compodocxResourcesPath, 'images'), { dev: true }));
+        this.app.use('/fonts', sirv(path.join(compodocxResourcesPath, 'fonts'), { dev: true }));
 
         // Serve Compodoc resources under /resources path as well (for backward compatibility)
-        this.app.use('/resources', sirv(compodocResourcesPath, { dev: true }));
+        this.app.use('/resources', sirv(compodocxResourcesPath, { dev: true }));
 
         // Serve static files from template playground directory (index.html, app.js)
         // Try dist/resources first (production), then src/resources (development/testing)
@@ -921,7 +921,7 @@ export class TemplatePlaygroundServer {
             // Blocking script to avoid flickering dark mode
             var useDark = window.matchMedia('(prefers-color-scheme: dark)');
             var darkModeState = useDark.matches;
-            var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+            var darkModeStateLocal = localStorage.getItem('compodocx_darkmode-state');
             if (darkModeStateLocal) {
                 darkModeState = darkModeStateLocal === 'true';
             }
@@ -1198,7 +1198,7 @@ export class TemplatePlaygroundServer {
                 </p>
             {{/if}}
 
-            <section data-compodoc="block-metadata">
+            <section data-compodocx="block-metadata">
                 <h3>{{t "metadata"}}</h3>
                 <table class="table table-sm table-hover metadata">
                     <tbody>
@@ -1225,7 +1225,7 @@ export class TemplatePlaygroundServer {
             </section>
 
             {{#orLength component.properties component.methods component.inputs component.outputs}}
-                <section data-compodoc="block-index">
+                <section data-compodocx="block-index">
                     <h3 id="index">{{t "index"}}</h3>
                     <table class="table table-sm table-bordered index-table">
                         <tbody>
@@ -1267,7 +1267,7 @@ export class TemplatePlaygroundServer {
             {{/orLength}}
 
             {{#if component.methods}}
-                <section data-compodoc="block-methods">
+                <section data-compodocx="block-methods">
                     <h3 id="methods">{{t "methods"}}</h3>
                     {{#each component.methods}}
                     <table class="table table-sm table-bordered">
@@ -1364,7 +1364,7 @@ export class TemplatePlaygroundServer {
         </p>
         ` : ''}
 
-        <section data-compodoc="block-metadata">
+        <section data-compodocx="block-metadata">
             <h3>Metadata</h3>
             <table class="table table-sm table-hover metadata">
                 <tbody>
@@ -1388,7 +1388,7 @@ export class TemplatePlaygroundServer {
         </section>
 
         ${component.methods && component.methods.length > 0 ? `
-        <section data-compodoc="block-index">
+        <section data-compodocx="block-index">
             <h3 id="index">Index</h3>
             <table class="table table-sm table-bordered index-table">
                 <tbody>
@@ -1408,7 +1408,7 @@ export class TemplatePlaygroundServer {
             </table>
         </section>
 
-        <section data-compodoc="block-methods">
+        <section data-compodocx="block-methods">
             <h3 id="methods">Methods</h3>
             ${component.methods.map(method => `
             <table class="table table-sm table-bordered">
@@ -1490,11 +1490,11 @@ This package contains your customized Compodoc template for: **${templateType}**
 
 ## How to Use
 
-### Option 1: Replace in existing Compodoc installation
+### Option 1: Replace in existing compodocx installation
 
-1. Backup your original template file (usually in \`node_modules/@compodoc/compodoc/dist/templates/partials/${templateType}.hbs\`)
+1. Backup your original template file (usually in \`node_modules/@cngx/compodocx/dist/templates/partials/${templateType}.hbs\`)
 2. Replace it with the provided \`${templateType}.hbs\` file
-3. Regenerate your documentation with Compodoc
+3. Regenerate your documentation with compodocx
 
 ### Option 2: Use with custom template directory
 
@@ -1510,7 +1510,7 @@ This package contains your customized Compodoc template for: **${templateType}**
 
 3. Run Compodoc with the custom template directory:
    \`\`\`
-   compodoc -p tsconfig.json -d documentation --customTemplate custom-templates
+   compodocx -p tsconfig.json -d documentation --customTemplate custom-templates
    \`\`\`
 
 ## Template Variables
@@ -1548,7 +1548,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
 
             send(res, 200, {
                 success: true,
-                filename: `compodoc-${templateType}-template.zip`,
+                filename: `compodocx-${templateType}-template.zip`,
                 files: zipStructure
             });
 
@@ -1581,7 +1581,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
 
             // Extract template name from path
             const templateName = path.basename(templatePath, '.hbs');
-            const fileName = `compodoc-${templateName}-template.zip`;
+            const fileName = `compodocx-${templateName}-template.zip`;
 
             // Set response headers for file download
             res.setHeader('Content-Type', 'application/zip');
@@ -1623,11 +1623,11 @@ This package contains your customized Compodoc template for: **${templateName}**
 
 ## How to Use
 
-### Option 1: Replace in existing Compodoc installation
+### Option 1: Replace in existing compodocx installation
 
-1. Backup your original template file (usually in \`node_modules/@compodoc/compodoc/dist/templates/partials/${templateName}.hbs\`)
+1. Backup your original template file (usually in \`node_modules/@cngx/compodocx/dist/templates/partials/${templateName}.hbs\`)
 2. Replace it with the provided \`${templateName}.hbs\` file
-3. Regenerate your documentation with Compodoc
+3. Regenerate your documentation with compodocx
 
 ### Option 2: Use with custom template directory
 
@@ -1643,7 +1643,7 @@ This package contains your customized Compodoc template for: **${templateName}**
 
 3. Run Compodoc with the custom template directory:
    \`\`\`
-   compodoc -p tsconfig.json -d documentation --customTemplate custom-templates
+   compodocx -p tsconfig.json -d documentation --customTemplate custom-templates
    \`\`\`
 
 ## Template Variables
@@ -1716,7 +1716,7 @@ Generated by Compodoc Template Playground on ${new Date().toLocaleString()}
 
             this.updateSessionActivity(sessionId);
 
-            const fileName = `compodoc-templates-${sessionId}.zip`;
+            const fileName = `compodocx-templates-${sessionId}.zip`;
 
             // Create ZIP archive in memory for supertest compatibility
             const zipBuffer = await new Promise<Buffer>((resolve, reject) => {
@@ -1766,16 +1766,16 @@ This template package has the same structure as Compodoc's default templates:
 
 ### Option 1: Replace entire template directory
 
-1. Backup your original templates directory (usually in \`node_modules/@compodoc/compodoc/dist/templates/\`)
+1. Backup your original templates directory (usually in \`node_modules/@cngx/compodocx/dist/templates/\`)
 2. Replace it with the contents of this ZIP file
-3. Regenerate your documentation with Compodoc
+3. Regenerate your documentation with compodocx
 
 ### Option 2: Use with custom template directory
 
 1. Extract this ZIP to a directory in your project (e.g., \`custom-templates/\`)
 2. Run Compodoc with the custom template directory:
    \`\`\`
-   compodoc -p tsconfig.json -d documentation --customTemplate custom-templates
+   compodocx -p tsconfig.json -d documentation --customTemplate custom-templates
    \`\`\`
 
 ### Option 3: Use specific templates only

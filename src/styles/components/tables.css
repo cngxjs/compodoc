@@ -40,3 +40,50 @@
 .dark .cdx-table td {
     border-color: var(--color-cdx-border);
 }
+
+/* Host bindings/listeners: borderless table with row separators */
+.cdx-host-table {
+    border: none;
+    border-radius: 0;
+}
+
+.cdx-host-table thead {
+    background: none;
+    color: color-mix(in srgb, var(--color-cdx-text-muted) 60%, transparent);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.cdx-host-table th,
+.cdx-host-table td {
+    border: none;
+    border-bottom: 1px solid var(--color-cdx-border);
+    padding: var(--spacing-cdx-md) 0;
+    padding-right: var(--spacing-cdx-xl);
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    vertical-align: top;
+}
+
+.cdx-host-table th {
+    font-family: var(--font-sans);
+    padding-bottom: var(--spacing-cdx-sm);
+}
+
+.cdx-host-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.cdx-host-table tbody tr:hover {
+    background: transparent;
+}
+
+.cdx-host-table code {
+    background: transparent;
+    padding: 0;
+    border: none;
+    font-size: inherit;
+    color: var(--color-cdx-text);
+}

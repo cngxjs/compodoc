@@ -3,7 +3,6 @@ import decache from 'decache';
 import * as fs from 'fs-extra';
 import { markedAcl } from '../../utils/marked.acl';
 import FileEngine from './file.engine';
-import I18nEngine from './i18n.engine';
 import { highlightCode } from './syntax-highlight.engine';
 
 export interface markdownReadedDatas {
@@ -36,9 +35,7 @@ export class MarkdownEngine {
             } catch {
                 highlighted = `<pre class="shiki"><code>${this.escape(code)}</code></pre>`;
             }
-            return `<b>${I18nEngine.translate(
-                'example'
-            )} :</b><div class="cdx-code-snippet">${highlighted}</div>`;
+            return `<div class="cdx-code-snippet">${highlighted}</div>`;
         };
 
         renderer.table = (header, body) => {
@@ -52,6 +49,17 @@ export class MarkdownEngine {
                 '</tbody>\n' +
                 '</table>\n'
             );
+        };
+
+        renderer.heading = (text: string, level: number) => {
+            const slug = text
+                .toLowerCase()
+                .replace(/<[^>]+>/g, '')
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim();
+            return `<h${level} id="${slug}">${text}<a href="#${slug}" class="cdx-member-permalink" aria-hidden="true">#</a></h${level}>`;
         };
 
         renderer.image = (href: string, title: string, text: string) => {

@@ -1,7 +1,10 @@
 import Html from '@kitajs/html';
+import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
-import { BlockConstructor } from '../blocks/BlockConstructor';
+import { BlockDerivedState } from '../blocks/BlockDerivedState';
+import { BlockHostBindings } from '../blocks/BlockHostBindings';
 import { BlockHostListener } from '../blocks/BlockHostListener';
+import { BlockHostListeners } from '../blocks/BlockHostListeners';
 import { BlockIndex } from '../blocks/BlockIndex';
 import { BlockIndexSignatures } from '../blocks/BlockIndexSignatures';
 import { BlockInput } from '../blocks/BlockInput';
@@ -29,6 +32,93 @@ import {
     IconPipe
 } from '../components/Icons';
 import { isApiSection, isInfoSection, linkTypeHtml, parseDescription, t } from '../helpers';
+import { resolveImportPath } from '../helpers/import-resolver';
+
+/** Parse inject() modifiers from the defaultValue string. */
+const parseInjectModifiers = (defaultValue: string): string[] => {
+    const mods: string[] = [];
+    if (!defaultValue) {
+        return mods;
+    }
+    if (/optional\s*:\s*true/.test(defaultValue)) {
+        mods.push('optional');
+    }
+    if (/skipSelf\s*:\s*true/.test(defaultValue)) {
+        mods.push('skipSelf');
+    }
+    if (/self\s*:\s*true/.test(defaultValue)) {
+        mods.push('self');
+    }
+    if (/host\s*:\s*true/.test(defaultValue)) {
+        mods.push('host');
+    }
+    return mods;
+};
+
+/** Dependencies section merging inject() properties and constructor params. */
+const DependenciesSection = (props: { injectProps: any[]; constructorArgs: any[] }): string => {
+    const items: Array<{
+        name: string;
+        type: string;
+        source: 'inject' | 'constructor';
+        modifiers: string[];
+    }> = [];
+
+    for (const p of props.injectProps) {
+        items.push({
+            name: p.name,
+            type: p.type ?? '',
+            source: 'inject',
+            modifiers: parseInjectModifiers(p.defaultValue ?? '')
+        });
+    }
+
+    for (const arg of props.constructorArgs) {
+        items.push({
+            name: arg.name,
+            type: arg.type ?? '',
+            source: 'constructor',
+            modifiers: arg.optional ? ['optional'] : []
+        });
+    }
+
+    if (items.length === 0) {
+        return '';
+    }
+
+    return (
+        <section class="cdx-content-section" data-compodoc="block-dependencies">
+            <h3 class="cdx-section-heading" id="dependencies">
+                {t('dependencies')}
+                <a class="cdx-member-permalink" href="#dependencies">
+                    #
+                </a>
+            </h3>
+            <div class="cdx-deps-list">
+                {items.map(item => (
+                    <div class="cdx-deps-item">
+                        <span class="cdx-deps-name">
+                            {item.type ? linkTypeHtml(item.type) : item.name}
+                        </span>
+                        <span class="cdx-deps-badges">
+                            <span
+                                class={`cdx-badge cdx-badge--${item.source === 'inject' ? 'inject' : 'constructor-di'}`}
+                            >
+                                {item.source === 'inject' ? 'inject()' : 'constructor'}
+                            </span>
+                            {item.modifiers.map(mod => (
+                                <span class="cdx-member-modifier">{mod}</span>
+                            ))}
+                        </span>
+                        {item.source === 'inject' && item.name && (
+                            <span class="cdx-deps-alias">{item.name}</span>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </section>
+    ) as string;
+};
 
 /** Map entity key to CSS color variable, badge class, and watermark icon */
 const entityMeta: Record<
@@ -162,6 +252,22 @@ const hasMembers = (e: any): boolean =>
         e.implements?.length
     );
 
+/** True when the Info tab has visible content (description, metadata, or relationships). */
+const hasInfoContent = (e: any, props: EntityInfoProps): boolean =>
+    !!(
+        e.deprecated ||
+        e.route ||
+        e.description ||
+        e.jsdoctags?.length ||
+        props.metadataHtml ||
+        e.constructorObj ||
+        (e.propertiesClass ?? e.properties ?? []).some((p: any) => p.signalKind === 'inject') ||
+        e.extends?.length ||
+        e.implements?.length ||
+        props.relationships?.incoming?.length ||
+        props.relationships?.outgoing?.length
+    );
+
 /** Render extends/implements as metadata card rows for entities without decorator metadata */
 const ExtendsMetadataCard = (e: any): string => {
     const hasExtends = e.extends?.length > 0;
@@ -172,7 +278,12 @@ const ExtendsMetadataCard = (e: any): string => {
 
     return (
         <section class="cdx-content-section" data-compodoc="block-metadata">
-            <h3 class="cdx-section-heading">{t('metadata')}</h3>
+            <h3 class="cdx-section-heading" id="metadata">
+                {t('metadata')}
+                <a class="cdx-member-permalink" href="#metadata">
+                    #
+                </a>
+            </h3>
             <dl class="cdx-metadata-card">
                 {hasExtends && (
                     <div class="cdx-metadata-row">
@@ -211,12 +322,30 @@ const InfoContent = (props: EntityInfoProps): string => {
             icon: EmptyIconDocument(),
             title: t('empty-entity-title'),
             description: t('empty-entity-desc', { entityType: t(props.entityKey) }),
-            variant: 'page'
+            variant: 'full'
+        }) as string;
+    }
+
+    if (!hasInfoContent(e, props)) {
+        return EmptyState({
+            icon: EmptyIconDocument(),
+            title: t('no-overview'),
+            description: t('no-overview-desc'),
+            variant: 'full'
         }) as string;
     }
 
     return (
         <>
+            {/* 0. Import statement */}
+            {isInfoSection('import') &&
+                (() => {
+                    const importPath = resolveImportPath(e.file);
+                    return importPath
+                        ? `<section class="cdx-content-section"><h3 class="cdx-section-heading" id="import">${t('import')}<a class="cdx-member-permalink" href="#import">#</a></h3><p class="cdx-import-line"><span class="cdx-import-kw">import</span> { <span class="cdx-import-name">${e.name}</span> } <span class="cdx-import-kw">from</span> <span class="cdx-import-str">'${importPath}'</span></p></section>`
+                        : '';
+                })()}
+
             {/* 1. Deprecation banner */}
             {isInfoSection('deprecated') && e.deprecated && (
                 <div class="cdx-deprecation-banner" role="alert">
@@ -231,7 +360,12 @@ const InfoContent = (props: EntityInfoProps): string => {
             {/* 3. Description */}
             {isInfoSection('description') && e.description && (
                 <section class="cdx-content-section">
-                    <h3 class="cdx-section-heading">{t('description')}</h3>
+                    <h3 class="cdx-section-heading" id="description">
+                        {t('description')}
+                        <a class="cdx-member-permalink" href="#description">
+                            #
+                        </a>
+                    </h3>
                     <div class="cdx-prose">{parseDescription(e.description, props.depth)}</div>
                 </section>
             )}
@@ -248,6 +382,18 @@ const InfoContent = (props: EntityInfoProps): string => {
                     : isInfoSection('extends') && props.showExtends !== false
                       ? ExtendsMetadataCard(e)
                       : '')}
+
+            {/* 4b. Dependencies (inject() + constructor merged) */}
+            {isInfoSection('dependencies') &&
+                (() => {
+                    const allProps = e.propertiesClass ?? e.properties ?? [];
+                    const injectProps = allProps.filter((p: any) => p.signalKind === 'inject');
+                    const ctorArgs = e.constructorObj?.args ?? [];
+                    if (injectProps.length === 0 && ctorArgs.length === 0) {
+                        return '';
+                    }
+                    return DependenciesSection({ injectProps, constructorArgs: ctorArgs });
+                })()}
 
             {/* 4.5 Relationships (cross-linking) */}
             {isInfoSection('relationships') &&
@@ -270,6 +416,21 @@ const InfoContent = (props: EntityInfoProps): string => {
  */
 const ApiContent = (props: EntityInfoProps): string => {
     const e = props.entity;
+    const allProps: any[] = e.propertiesClass ?? e.properties ?? [];
+    const allSignalProps: any[] = [
+        ...(e.inputsClass ?? []),
+        ...(e.outputsClass ?? []),
+        ...allProps
+    ];
+    const derivedProps = allProps.filter(
+        (p: any) => p.signalKind === 'computed' || p.signalKind === 'linked-signal'
+    );
+    const regularProps = allProps.filter(
+        (p: any) =>
+            p.signalKind !== 'computed' &&
+            p.signalKind !== 'linked-signal' &&
+            p.signalKind !== 'inject'
+    );
 
     return (
         <>
@@ -277,25 +438,15 @@ const ApiContent = (props: EntityInfoProps): string => {
             {isApiSection('index') &&
                 props.showIndex !== false &&
                 BlockIndex({
-                    properties: e.propertiesClass ?? e.properties,
+                    properties: regularProps,
                     methods: e.methodsClass ?? e.methods,
                     inputs: e.inputsClass,
                     outputs: e.outputsClass,
+                    derivedState: derivedProps,
                     hostBindings: e.hostBindings,
                     hostListeners: e.hostListeners,
                     accessors: e.accessors,
                     indexSignatures: e.indexSignatures
-                })}
-
-            {/* 6. Constructor */}
-            {isApiSection('constructor') &&
-                props.showConstructor !== false &&
-                e.constructorObj &&
-                BlockConstructor({
-                    constructor: e.constructorObj,
-                    file: e.file,
-                    depth: props.depth,
-                    navTabs: props.navTabs
                 })}
 
             {/* 7. Inputs */}
@@ -320,47 +471,34 @@ const ApiContent = (props: EntityInfoProps): string => {
                     navTabs: props.navTabs
                 })}
 
-            {/* 9. Host Bindings */}
-            {isApiSection('hostBindings') &&
-                props.showHostBindings !== false &&
-                e.hostBindings?.length > 0 &&
+            {/* 8b. Derived State */}
+            {isApiSection('derivedState') &&
+                derivedProps.length > 0 &&
+                BlockDerivedState({
+                    properties: derivedProps,
+                    allSignalProps,
+                    file: e.file,
+                    depth: props.depth,
+                    navTabs: props.navTabs
+                })}
+
+            {/* 9. Properties */}
+            {isApiSection('properties') &&
+                props.showProperties !== false &&
+                regularProps.length > 0 &&
                 BlockProperty({
-                    properties: e.hostBindings,
+                    properties: regularProps,
                     file: e.file,
-                    title: 'HostBindings',
                     depth: props.depth,
                     navTabs: props.navTabs
                 })}
 
-            {/* 10. Host Listeners */}
-            {isApiSection('hostListeners') &&
-                props.showHostListeners !== false &&
-                e.hostListeners?.length > 0 &&
-                BlockHostListener({
-                    methods: e.hostListeners,
-                    file: e.file,
-                    title: 'HostListeners',
-                    depth: props.depth,
-                    navTabs: props.navTabs
-                })}
-
-            {/* 11. Methods */}
+            {/* 10. Methods */}
             {isApiSection('methods') &&
                 props.showMethods !== false &&
                 (e.methodsClass ?? e.methods)?.length > 0 &&
                 BlockMethod({
                     methods: e.methodsClass ?? e.methods,
-                    file: e.file,
-                    depth: props.depth,
-                    navTabs: props.navTabs
-                })}
-
-            {/* 12. Properties */}
-            {isApiSection('properties') &&
-                props.showProperties !== false &&
-                (e.propertiesClass ?? e.properties)?.length > 0 &&
-                BlockProperty({
-                    properties: e.propertiesClass ?? e.properties,
                     file: e.file,
                     depth: props.depth,
                     navTabs: props.navTabs
@@ -388,6 +526,18 @@ const ApiContent = (props: EntityInfoProps): string => {
                     depth: props.depth,
                     navTabs: props.navTabs
                 })}
+
+            {/* 15. Host Bindings */}
+            {isApiSection('hostBindings') &&
+                props.showHostBindings !== false &&
+                e.hostBindings?.length > 0 &&
+                BlockHostBindings({ bindings: e.hostBindings })}
+
+            {/* 16. Host Listeners */}
+            {isApiSection('hostListeners') &&
+                props.showHostListeners !== false &&
+                e.hostListeners?.length > 0 &&
+                BlockHostListeners({ listeners: e.hostListeners })}
         </>
     ) as string;
 };
@@ -414,7 +564,9 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 </h1>
                 <div class="cdx-entity-hero-badges">
                     <span class={`cdx-badge ${meta.badge}`}>{meta.label}</span>
-                    {props.showStandaloneBadge && e.standalone ? (
+                    {props.showStandaloneBadge &&
+                    e.standalone &&
+                    Configuration.mainData.hasNgModules ? (
                         <span class="cdx-badge cdx-badge--standalone">Standalone</span>
                     ) : (
                         ''

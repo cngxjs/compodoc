@@ -1,7 +1,5 @@
 import Html from '@kitajs/html';
-import { indexableSignature, linkTypeHtml, parseDescription, t } from '../helpers';
-import { DefinedInRow } from './DefinedInRow';
-import { MemberCard } from './MemberCard';
+import { indexableSignature, isTabEnabled, linkTypeHtml, parseDescription, t } from '../helpers';
 
 type BlockIndexSignaturesProps = {
     readonly indexables: any[];
@@ -14,30 +12,33 @@ type BlockIndexSignaturesProps = {
 export const BlockIndexSignatures = (props: BlockIndexSignaturesProps): string =>
     (
         <section data-compodoc="block-indexables">
-            <h3 id="indexables">{props.title ?? t('indexable')}</h3>
-            {props.indexables.map(idx => {
-                const header = (
-                    <header class="cdx-member-header">
-                        <span class="cdx-member-name">
-                            <code>
-                                {indexableSignature(idx)}:{linkTypeHtml(idx.returnType)}
-                            </code>
-                        </span>
-                    </header>
-                ) as string;
-
-                const body = (
-                    <>
-                        {DefinedInRow({ line: idx.line, file: props.file, navTabs: props.navTabs })}
-                        {idx.description && (
-                            <div class="cdx-member-description">
-                                {parseDescription(idx.description, props.depth ?? 0)}
-                            </div>
-                        )}
-                    </>
-                ) as string;
-
-                return MemberCard({ id: idx.name ?? '', header, children: body });
-            })}
+            <h3 id="indexables">
+                {props.title ?? t('indexable')}
+                <a class="cdx-member-permalink" href="#indexables">
+                    #
+                </a>
+            </h3>
+            {props.indexables.map((idx: any) => (
+                <div class="cdx-io-member" id={idx.name ?? ''}>
+                    <pre class="cdx-derived-body">
+                        <code>
+                            {indexableSignature(idx)}: {linkTypeHtml(idx.returnType)}
+                        </code>
+                    </pre>
+                    {idx.description && (
+                        <div class="cdx-io-member-desc">
+                            {parseDescription(idx.description, props.depth ?? 0)}
+                        </div>
+                    )}
+                    {idx.line && isTabEnabled(props.navTabs, 'source') && (
+                        <div class="cdx-io-member-source">
+                            {/* biome-ignore lint/a11y/useValidAnchor: href rewritten by client JS via data-cdx-line */}
+                            <a href="#" data-cdx-line={String(idx.line)}>
+                                {props.file}:{idx.line}
+                            </a>
+                        </div>
+                    )}
+                </div>
+            ))}
         </section>
     ) as string;

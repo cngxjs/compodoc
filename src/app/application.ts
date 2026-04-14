@@ -64,7 +64,7 @@ export class Application {
     public isWatching: boolean = false;
 
     /**
-     * Create a new compodoc application instance.
+     * Create a new compodocx application instance.
      *
      * @param options An object containing the options that should be used.
      */
@@ -85,7 +85,7 @@ export class Application {
     }
 
     /**
-     * Start compodoc process
+     * Start compodocx process
      */
     protected generate(): Promise<{}> {
         process.on('unhandledRejection', this.unhandledRejectionListener);
@@ -117,7 +117,7 @@ export class Application {
     private unhandledRejectionListener(err, p) {
         console.log('Unhandled Rejection at:', p, 'reason:', err);
         logger.error(
-            'Sorry, but there was a problem during parsing or generation of the documentation. Please fill an issue on github. (https://github.com/compodoc/compodoc/issues/new)'
+            'Sorry, but there was a problem during parsing or generation of the documentation. Please fill an issue on github. (https://github.com/cngxjs/compodocx/issues/new)'
         ); // tslint:disable-line
         process.exit(1);
     }
@@ -125,13 +125,13 @@ export class Application {
     private uncaughtExceptionListener(err) {
         logger.error(err);
         logger.error(
-            'Sorry, but there was a problem during parsing or generation of the documentation. Please fill an issue on github. (https://github.com/compodoc/compodoc/issues/new)'
+            'Sorry, but there was a problem during parsing or generation of the documentation. Please fill an issue on github. (https://github.com/cngxjs/compodocx/issues/new)'
         ); // tslint:disable-line
         process.exit(1);
     }
 
     /**
-     * Start compodoc documentation coverage
+     * Start compodocx documentation coverage
      */
     protected testCoverage() {
         this.getDependenciesData();
@@ -490,6 +490,7 @@ export class Application {
         // Auto-detect groupBy if not explicitly set by user
         if (!Configuration.mainData.groupBy) {
             const hasModules = dependenciesData.modules && dependenciesData.modules.length > 0;
+            Configuration.mainData.hasNgModules = hasModules;
             Configuration.mainData.groupBy = hasModules ? 'none' : 'folder';
         }
 
@@ -918,7 +919,7 @@ export class Application {
 
         return new Promise((resolve, _reject) => {
             Configuration.mainData.modules = _modules.map(ngModule => {
-                ngModule.compodocLinks = {
+                ngModule.compodocxLinks = {
                     components: [],
                     directives: [],
                     injectables: [],
@@ -939,9 +940,9 @@ export class Application {
                                     }
                                     if (
                                         selectedDirective &&
-                                        !ngModule.compodocLinks.directives.includes(directive)
+                                        !ngModule.compodocxLinks.directives.includes(directive)
                                     ) {
-                                        ngModule.compodocLinks.directives.push(directive);
+                                        ngModule.compodocxLinks.directives.push(directive);
                                     }
                                     return selectedDirective;
                                 });
@@ -959,10 +960,10 @@ export class Application {
                                         }
                                         if (
                                             selectedComponent &&
-                                            !ngModule.compodocLinks.components.includes(component)
+                                            !ngModule.compodocxLinks.components.includes(component)
                                         ) {
                                             if (!component.standalone) {
-                                                ngModule.compodocLinks.components.push(component);
+                                                ngModule.compodocxLinks.components.push(component);
                                             }
                                         }
                                         return selectedComponent;
@@ -984,9 +985,9 @@ export class Application {
                                     }
                                     if (
                                         selectedPipe &&
-                                        !ngModule.compodocLinks.pipes.includes(pipe)
+                                        !ngModule.compodocxLinks.pipes.includes(pipe)
                                     ) {
-                                        ngModule.compodocLinks.pipes.push(pipe);
+                                        ngModule.compodocxLinks.pipes.push(pipe);
                                     }
                                     return selectedPipe;
                                 });
@@ -1002,9 +1003,9 @@ export class Application {
                             const selectedInjectable = (injectable as any).name === provider.name;
                             if (
                                 selectedInjectable &&
-                                !ngModule.compodocLinks.injectables.includes(injectable)
+                                !ngModule.compodocxLinks.injectables.includes(injectable)
                             ) {
-                                ngModule.compodocLinks.injectables.push(injectable);
+                                ngModule.compodocxLinks.injectables.push(injectable);
                             }
                             return selectedInjectable;
                         }) ||
@@ -1031,16 +1032,16 @@ export class Application {
                     }
                 });
                 // Order things
-                ngModule.compodocLinks.components = [...ngModule.compodocLinks.components].sort(
+                ngModule.compodocxLinks.components = [...ngModule.compodocxLinks.components].sort(
                     (a, b) => a.name.localeCompare(b.name)
                 );
-                ngModule.compodocLinks.directives = [...ngModule.compodocLinks.directives].sort(
+                ngModule.compodocxLinks.directives = [...ngModule.compodocxLinks.directives].sort(
                     (a, b) => a.name.localeCompare(b.name)
                 );
-                ngModule.compodocLinks.injectables = [...ngModule.compodocLinks.injectables].sort(
+                ngModule.compodocxLinks.injectables = [...ngModule.compodocxLinks.injectables].sort(
                     (a, b) => a.name.localeCompare(b.name)
                 );
-                ngModule.compodocLinks.pipes = [...ngModule.compodocLinks.pipes].sort((a, b) =>
+                ngModule.compodocxLinks.pipes = [...ngModule.compodocxLinks.pipes].sort((a, b) =>
                     a.name.localeCompare(b.name)
                 );
 

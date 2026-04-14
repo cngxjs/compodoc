@@ -68,4 +68,7 @@ export class ThemeService {
     toggle(): void {
         this.currentTheme.update((t) => (t === 'dark' ? 'light' : 'dark'));
     }
+
+    /** Whether the theme is locked by an admin policy. */
+    readonly isLocked = false;
 }

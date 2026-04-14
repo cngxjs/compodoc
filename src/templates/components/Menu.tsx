@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import Configuration from '../../app/configuration';
 import { buildGroupTree, type GroupNode } from '../../app/engines/dependencies.engine';
 import { t } from '../helpers';
 import { getAloneElements, isToggled } from '../helpers/menu-helpers';
@@ -91,7 +92,9 @@ const EntityLink = (props: {
             >
                 {props.name}
                 {props.deprecated ? Badge({ label: 'D', cssClass: 'cdx-badge--deprecated' }) : ''}
-                {props.standalone ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' }) : ''}
+                {props.standalone && Configuration.mainData.hasNgModules
+                    ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' })
+                    : ''}
                 {props.isToken ? Badge({ label: 'T', cssClass: 'cdx-badge--token' }) : ''}
                 {props.beta ? Badge({ label: 'B', cssClass: 'cdx-badge--beta' }) : ''}
                 {props.factoryKind
@@ -509,7 +512,7 @@ export const Menu = (props: MenuProps): string => {
                                             : ''}
                                     </a>
                                     {ModuleSubSection({
-                                        items: mod.compodocLinks?.components,
+                                        items: mod.compodocxLinks?.components,
                                         type: 'components',
                                         iconHtml: IconComponent(),
                                         labelKey: 'components',
@@ -517,7 +520,7 @@ export const Menu = (props: MenuProps): string => {
                                         moduleId: mod.id
                                     })}
                                     {ModuleSubSection({
-                                        items: mod.compodocLinks?.directives,
+                                        items: mod.compodocxLinks?.directives,
                                         type: 'directives',
                                         iconHtml: IconDirective(),
                                         labelKey: 'directives',
@@ -525,7 +528,7 @@ export const Menu = (props: MenuProps): string => {
                                         moduleId: mod.id
                                     })}
                                     {ModuleSubSection({
-                                        items: mod.compodocLinks?.injectables,
+                                        items: mod.compodocxLinks?.injectables,
                                         type: 'injectables',
                                         iconHtml: IconInjectable(),
                                         labelKey: 'injectables',
@@ -533,7 +536,7 @@ export const Menu = (props: MenuProps): string => {
                                         moduleId: mod.id
                                     })}
                                     {ModuleSubSection({
-                                        items: mod.compodocLinks?.pipes,
+                                        items: mod.compodocxLinks?.pipes,
                                         type: 'pipes',
                                         iconHtml: IconPipe(),
                                         labelKey: 'pipes',

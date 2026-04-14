@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { parseDescription, t } from '../helpers';
+import { codeWrap, parseDescription, t } from '../helpers';
 import { MemberCard } from './MemberCard';
 
 type EnumChild = {
@@ -79,7 +79,7 @@ export const BlockEnum = (props: BlockEnumProps): string =>
                                 {child.value && (
                                     <div class="cdx-member-row">
                                         <i>{t('value')} : </i>
-                                        <code>{child.value}</code>
+                                        {codeWrap(child.value)}
                                     </div>
                                 )}
                             </>

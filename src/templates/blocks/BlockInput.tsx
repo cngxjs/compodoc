@@ -1,7 +1,5 @@
 import Html from '@kitajs/html';
-import { linkTypeHtml, parseDescription, t } from '../helpers';
-import { DefinedInRow } from './DefinedInRow';
-import { MemberCard } from './MemberCard';
+import { isTabEnabled, linkTypeHtml, parseDescription, signalKindLabel, t } from '../helpers';
 
 type BlockInputProps = {
     readonly element: any;
@@ -10,72 +8,74 @@ type BlockInputProps = {
     readonly navTabs?: any[];
 };
 
+const isUndefined = (v: unknown): boolean => v === undefined || v === 'undefined' || v === '';
+
 export const BlockInput = (props: BlockInputProps): string => {
     return (
         <section data-compodoc="block-inputs">
-            <h3 id="inputs">{t('inputs')}</h3>
+            <h3 id="inputs">
+                {t('inputs')}
+                <a class="cdx-member-permalink" href="#inputs">
+                    #
+                </a>
+            </h3>
             {(props.element.inputsClass ?? []).map((inp: any) => {
-                const header = (
-                    <header class="cdx-member-header">
-                        <span class="cdx-member-name">
+                const cls = ['cdx-io-member'];
+                if (inp.signalKind) {
+                    cls.push(`cdx-io-member--${inp.signalKind}`);
+                }
+                if (inp.deprecated) {
+                    cls.push('cdx-io-member--deprecated');
+                }
+                return (
+                    <div class={cls.join(' ')} id={inp.name}>
+                        <div class="cdx-io-member-title">
                             <span
-                                class={`cdx-member-name-text${inp.deprecated ? ' cdx-member-name--deprecated' : ''}`}
+                                class={`cdx-io-member-name${inp.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {inp.name}
+                                <a class="cdx-member-permalink" href={`#${inp.name}`}>
+                                    #
+                                </a>
                             </span>
+                            {inp.type && (
+                                <span class="cdx-io-member-type">{linkTypeHtml(inp.type)}</span>
+                            )}
+                        </div>
+                        <div class="cdx-io-member-badges">
                             {inp.signalKind && (
                                 <span class={`cdx-badge cdx-badge--${inp.signalKind}`}>
-                                    {inp.signalKind === 'input-signal'
-                                        ? 'Signal'
-                                        : inp.signalKind === 'model'
-                                          ? 'Model'
-                                          : ''}
+                                    {signalKindLabel(inp.signalKind)}
                                 </span>
+                            )}
+                            {inp.alias && (
+                                <span class="cdx-member-modifier">alias: {inp.alias}</span>
                             )}
                             {inp.required && (
                                 <span class="cdx-badge cdx-badge--factory">Required</span>
                             )}
-                            <a
-                                href={`#${inp.name}`}
-                                class="cdx-member-permalink"
-                                aria-label={`Link to ${inp.name}`}
-                            >
-                                #
-                            </a>
-                        </span>
-                        {inp.type && <span class="cdx-member-type">{linkTypeHtml(inp.type)}</span>}
-                    </header>
-                ) as string;
-
-                const body = (
-                    <>
-                        {inp.required && (
-                            <div class="cdx-member-row">
-                                <i>{t('required')} : </i>
-                                <b>{String(inp.required)}</b>
-                            </div>
-                        )}
-                        {inp.defaultValue && (
-                            <div class="cdx-member-row">
-                                <i>{t('default-value')} : </i>
-                                <code>{inp.defaultValue}</code>
-                            </div>
-                        )}
-                        {DefinedInRow({
-                            line: inp.line,
-                            file: props.element.file,
-                            inheritance: inp.inheritance,
-                            navTabs: props.navTabs
-                        })}
+                        </div>
                         {inp.description && (
-                            <div class="cdx-member-description">
+                            <div class="cdx-io-member-desc">
                                 {parseDescription(inp.description, props.depth ?? 0)}
                             </div>
                         )}
-                    </>
-                ) as string;
-
-                return MemberCard({ id: inp.name, header, children: body });
+                        {!isUndefined(inp.defaultValue) && (
+                            <div class="cdx-io-member-default">
+                                <span class="cdx-io-member-default-label">default</span>{' '}
+                                {String(inp.defaultValue)}
+                            </div>
+                        )}
+                        {inp.line && isTabEnabled(props.navTabs, 'source') && (
+                            <div class="cdx-io-member-source">
+                                {/* biome-ignore lint/a11y/useValidAnchor: href rewritten by client JS via data-cdx-line */}
+                                <a href="#" data-cdx-line={String(inp.line)}>
+                                    {props.element.file}:{inp.line}
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                );
             })}
         </section>
     ) as string;

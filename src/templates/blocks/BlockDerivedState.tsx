@@ -1,45 +1,39 @@
 import Html from '@kitajs/html';
-import {
-    isTabEnabled,
-    linkTypeHtml,
-    modifKind,
-    parseDescription,
-    signalKindLabel,
-    t
-} from '../helpers';
-import { JsdocExamplesBlock } from './JsdocExamplesBlock';
-import { ParamsTable } from './ParamsTable';
+import { isTabEnabled, linkTypeHtml, parseDescription, signalKindLabel, t } from '../helpers';
 
-type BlockPropertyProps = {
+type BlockDerivedStateProps = {
     readonly properties: any[];
+    readonly allSignalProps: any[];
     readonly file: string;
-    readonly title?: string;
     readonly depth?: number;
     readonly navTabs?: any[];
 };
 
-const isUndefined = (v: unknown): boolean => v === undefined || v === 'undefined' || v === '';
+export const BlockDerivedState = (props: BlockDerivedStateProps): string => {
+    const signalNames = new Set(
+        props.allSignalProps.filter((p: any) => p.signalKind).map((p: any) => p.name)
+    );
 
-export const BlockProperty = (props: BlockPropertyProps): string => {
     return (
-        <section data-compodoc="block-properties">
-            <h3 id={props.title ? props.title.toLowerCase() : 'properties'}>
-                {props.title ?? t('properties')}
-                <a
-                    class="cdx-member-permalink"
-                    href={`#${props.title ? props.title.toLowerCase() : 'properties'}`}
-                >
+        <section data-compodoc="block-derived-state">
+            <h3 id="derived-state">
+                {t('derived-state')}
+                <a class="cdx-member-permalink" href="#derived-state">
                     #
                 </a>
             </h3>
             {props.properties.map((p: any) => {
-                const cls = ['cdx-io-member', 'cdx-io-member--property'];
+                const cls = ['cdx-io-member'];
                 if (p.signalKind) {
                     cls.push(`cdx-io-member--${p.signalKind}`);
                 }
                 if (p.deprecated) {
                     cls.push('cdx-io-member--deprecated');
                 }
+
+                // Filter signalDeps to only include known signal properties
+                const deps = (p.signalDeps ?? []).filter((d: string) => signalNames.has(d));
+
                 return (
                     <div class={cls.join(' ')} id={p.name}>
                         <div class="cdx-io-member-title">
@@ -61,40 +55,30 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                                     {signalKindLabel(p.signalKind)}
                                 </span>
                             )}
-                            {(p.modifierKind ?? []).map((k: number) => (
-                                <span class="cdx-member-modifier">{modifKind(k)}</span>
-                            ))}
-                            {p.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
-                            {p.required && (
-                                <span class="cdx-badge cdx-badge--factory">Required</span>
-                            )}
                         </div>
-                        {p.deprecated && p.deprecationMessage && (
-                            <div class="cdx-member-deprecated">{p.deprecationMessage}</div>
+                        {deps.length > 0 && (
+                            <div class="cdx-derived-chain">
+                                {deps.map((dep: string, i: number) => (
+                                    <>
+                                        {i > 0 && <span class="cdx-derived-sep">{'\u00B7'}</span>}
+                                        <a href={`#${dep}`} class="cdx-derived-dep">
+                                            {dep}
+                                        </a>
+                                    </>
+                                ))}
+                                <span class="cdx-derived-arrow">{'\u2192'}</span>
+                                <span class="cdx-derived-self">{p.name}</span>
+                            </div>
                         )}
                         {p.description && (
                             <div class="cdx-io-member-desc">
                                 {parseDescription(p.description, props.depth ?? 0)}
                             </div>
                         )}
-                        {p.jsdoctags?.length > 0 && (
-                            <div class="cdx-io-member-desc">
-                                {ParamsTable({
-                                    jsdocTags: p.jsdoctags,
-                                    depth: props.depth ?? 0,
-                                    showOptional: false,
-                                    showDefaultValue: false
-                                })}
-                                {JsdocExamplesBlock({
-                                    tags: p.jsdoctags,
-                                    variant: 'text',
-                                    cssClass: 'jsdoc-example-ul'
-                                })}
-                            </div>
-                        )}
-                        {!isUndefined(p.defaultValue) && (
+                        {/* biome-ignore lint/style/useSelfClosingElements: pre must not have whitespace */}
+                        {p.defaultValue && (
                             <pre class="cdx-derived-body">
-                                <code>{String(p.defaultValue)}</code>
+                                <code>{p.defaultValue}</code>
                             </pre>
                         )}
                         {p.line && isTabEnabled(props.navTabs, 'source') && (

@@ -29,12 +29,21 @@
 }
 
 [data-compodoc^='block-'] > h3 {
-    margin-top: 2rem;
-    margin-bottom: 1rem;
+    font-family: var(--font-sans);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-cdx-text);
+    margin-top: 3rem;
+    margin-bottom: 1.25rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-cdx-border);
+    letter-spacing: -0.01em;
 }
 
 [data-compodoc^='block-']:first-child > h3 {
     margin-top: 0;
+    padding-top: 0;
+    border-top: none;
 }
 
 .cdx-member-header {
@@ -57,7 +66,7 @@
     word-break: break-word;
 }
 
-.cdx-member-name a.cdx-member-permalink {
+a.cdx-member-permalink {
     color: var(--color-cdx-text-muted);
     text-decoration: none;
     margin-left: 0.25rem;
@@ -65,11 +74,14 @@
     transition: opacity 150ms ease;
 }
 
-.cdx-member-card:hover .cdx-member-name a.cdx-member-permalink {
+.cdx-member-card:hover a.cdx-member-permalink,
+.cdx-io-member:hover a.cdx-member-permalink,
+h3:hover > a.cdx-member-permalink,
+.cdx-section-heading:hover > a.cdx-member-permalink {
     opacity: 1;
 }
 
-.cdx-member-name a.cdx-member-permalink:hover {
+a.cdx-member-permalink:hover {
     color: var(--color-cdx-primary);
     text-decoration: underline;
 }
@@ -85,10 +97,49 @@
     display: inline-block;
     font-family: var(--font-code);
     font-size: 0.7rem;
-    font-weight: 600;
+    font-weight: 500;
     padding: 1px 5px;
     border-radius: var(--radius-cdx-sm);
     margin-right: var(--spacing-cdx-sm);
+    color: hsl(220 10% 45%);
+    background: hsl(220 10% 95%);
+    border: 1px solid hsl(220 10% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--private {
+    color: hsl(0 50% 40%);
+    background: hsl(0 40% 95%);
+    border-color: hsl(0 35% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--protected {
+    color: hsl(35 60% 35%);
+    background: hsl(35 50% 95%);
+    border-color: hsl(35 40% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--readonly {
+    color: hsl(210 50% 40%);
+    background: hsl(210 40% 95%);
+    border-color: hsl(210 35% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--static {
+    color: hsl(270 40% 42%);
+    background: hsl(270 30% 95%);
+    border-color: hsl(270 25% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--async {
+    color: hsl(170 45% 32%);
+    background: hsl(170 35% 95%);
+    border-color: hsl(170 30% 85%);
+}
+
+.cdx-member-card .cdx-member-modifier--abstract {
+    color: hsl(300 35% 40%);
+    background: hsl(300 25% 95%);
+    border-color: hsl(300 20% 85%);
     background: var(--color-cdx-bg-alt);
     color: var(--color-cdx-text-secondary);
     border: 1px solid var(--color-cdx-border);
@@ -132,9 +183,31 @@
     font-style: normal;
 }
 
-.cdx-member-row code {
+.cdx-member-row pre,
+.cdx-member-row > code {
     font-family: var(--font-code);
     font-size: 0.8rem;
+    line-height: 1.5;
+    margin: 0;
+    background: var(--color-cdx-bg-alt);
+    color: var(--color-cdx-text);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
+    padding: 0.375rem 0.625rem;
+}
+
+/* Inside cdx-member-signature the outer wrapper already has border/bg —
+   strip the inner code/pre chrome to avoid double borders. */
+.cdx-member-signature > code,
+.cdx-member-signature > pre {
+    font-family: var(--font-code);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
 }
 .cdx-params {
     margin: 0.5rem 0 0.75rem;
@@ -399,6 +472,42 @@
     padding: 0;
 }
 
+.dark .cdx-io-member--input-signal {
+    --cdx-io-color: hsl(145 45% 65%);
+}
+.dark .cdx-io-member--output-signal {
+    --cdx-io-color: hsl(350 50% 70%);
+}
+.dark .cdx-io-member--model {
+    --cdx-io-color: hsl(260 45% 70%);
+}
+.dark .cdx-io-member--method {
+    --cdx-io-color: hsl(230 50% 72%);
+}
+.dark .cdx-io-member--signal {
+    --cdx-io-color: hsl(210 60% 70%);
+}
+.dark .cdx-io-member--effect,
+.dark .cdx-io-member--after-render,
+.dark .cdx-io-member--after-next-render,
+.dark .cdx-io-member--after-every-render,
+.dark .cdx-io-member--after-render-effect {
+    --cdx-io-color: hsl(45 65% 65%);
+}
+.dark .cdx-io-member--resource,
+.dark .cdx-io-member--rx-resource {
+    --cdx-io-color: hsl(190 50% 65%);
+}
+.dark .cdx-io-member--view-child,
+.dark .cdx-io-member--view-children,
+.dark .cdx-io-member--content-child,
+.dark .cdx-io-member--content-children {
+    --cdx-io-color: hsl(30 55% 65%);
+}
+.dark .cdx-io-member--inject {
+    --cdx-io-color: hsl(320 45% 70%);
+}
+
 .dark .cdx-member-card:hover {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
@@ -428,5 +537,244 @@
     .cdx-member-signature {
         word-break: break-word;
         white-space: pre-wrap;
+    }
+}
+
+/* ----------------------------------------------------------------
+   Input/Output flat member layout
+   ---------------------------------------------------------------- */
+
+.cdx-io-member {
+    padding: var(--spacing-cdx-xl) 0;
+}
+
+
+.cdx-io-member--method {
+    --cdx-io-color: hsl(230 45% 45%);
+}
+
+.cdx-io-member--input-signal {
+    --cdx-io-color: hsl(145 50% 28%);
+}
+.cdx-io-member--output-signal {
+    --cdx-io-color: hsl(350 50% 35%);
+}
+.cdx-io-member--model {
+    --cdx-io-color: hsl(260 45% 40%);
+}
+.cdx-io-member--signal {
+    --cdx-io-color: hsl(210 60% 35%);
+}
+.cdx-io-member--effect {
+    --cdx-io-color: hsl(45 70% 35%);
+}
+.cdx-io-member--resource,
+.cdx-io-member--rx-resource {
+    --cdx-io-color: hsl(190 55% 30%);
+}
+.cdx-io-member--view-child,
+.cdx-io-member--view-children,
+.cdx-io-member--content-child,
+.cdx-io-member--content-children {
+    --cdx-io-color: hsl(30 60% 35%);
+}
+.cdx-io-member--inject {
+    --cdx-io-color: hsl(320 45% 40%);
+}
+.cdx-io-member--after-render,
+.cdx-io-member--after-next-render,
+.cdx-io-member--after-every-render,
+.cdx-io-member--after-render-effect {
+    --cdx-io-color: hsl(45 70% 35%);
+}
+
+.cdx-io-member--deprecated {
+    opacity: 0.85;
+}
+
+.cdx-io-member-title {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-cdx-sm);
+    flex-wrap: wrap;
+}
+
+.cdx-io-member-name {
+    font-family: var(--font-code);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--cdx-io-color, var(--color-cdx-text));
+}
+
+.cdx-io-member-type,
+.cdx-io-member-type a {
+    font-family: var(--font-code);
+    font-size: 0.85rem;
+    color: var(--color-cdx-text-muted);
+    text-decoration: none;
+}
+
+.cdx-io-member-type a:hover {
+    color: var(--color-cdx-text-secondary);
+    text-decoration: underline;
+}
+
+.cdx-io-member-badges {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-sm);
+    margin-top: var(--spacing-cdx-xs);
+    flex-wrap: wrap;
+}
+
+.cdx-io-member-badges:empty {
+    display: none;
+}
+
+.cdx-io-member-badges > .cdx-member-modifier {
+    display: inline-block;
+    font-family: var(--font-code);
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 1px 5px;
+    border-radius: var(--radius-cdx-sm);
+    color: var(--color-cdx-text-muted);
+    background: var(--color-cdx-bg-alt);
+    border: 1px solid var(--color-cdx-border);
+}
+
+.cdx-io-member-badges > .cdx-badge {
+    margin-left: 0;
+}
+
+.cdx-io-member-desc {
+    margin-top: var(--spacing-cdx-md);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--color-cdx-text-secondary);
+}
+
+.cdx-io-member-desc code {
+    font-family: var(--font-code);
+    font-size: 0.8rem;
+    background: var(--color-cdx-bg-alt);
+    padding: 1px 5px;
+    border-radius: var(--radius-cdx-sm);
+}
+
+.cdx-io-member-default {
+    margin-top: var(--spacing-cdx-sm);
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    color: var(--color-cdx-text-secondary);
+}
+
+.cdx-io-member-default-label {
+    color: var(--color-cdx-text-muted);
+}
+
+.cdx-io-member-source {
+    margin-top: 0;
+}
+
+.cdx-io-member-source a {
+    font-family: var(--font-code);
+    font-size: 0.6875rem;
+    color: color-mix(in srgb, var(--color-cdx-text-muted) 60%, transparent);
+    text-decoration: none;
+}
+
+.cdx-io-member-source a:hover {
+    color: var(--color-cdx-text-muted);
+    text-decoration: underline;
+}
+
+/* ----------------------------------------------------------------
+   Derived state (computed / linkedSignal)
+   ---------------------------------------------------------------- */
+
+.cdx-io-member--computed {
+    --cdx-io-color: hsl(270 50% 40%);
+}
+.cdx-io-member--linked-signal {
+    --cdx-io-color: hsl(210 60% 35%);
+}
+
+.cdx-derived-chain {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-sm);
+    margin-top: var(--spacing-cdx-sm);
+    flex-wrap: wrap;
+}
+
+.cdx-derived-dep {
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    color: var(--color-cdx-text-secondary);
+    background: var(--color-cdx-bg-alt);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
+    padding: 2px 8px;
+    text-decoration: none;
+    transition: border-color 150ms ease;
+}
+
+.cdx-derived-dep:hover {
+    border-color: var(--color-cdx-text-muted);
+    text-decoration: none;
+}
+
+.cdx-derived-sep {
+    color: var(--color-cdx-text-muted);
+    margin: 0;
+    font-size: 0.75rem;
+}
+
+.cdx-derived-arrow {
+    color: var(--color-cdx-text-muted);
+    font-size: 0.75rem;
+}
+
+.cdx-derived-self {
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--cdx-io-color, var(--color-cdx-text));
+    background: color-mix(in srgb, var(--cdx-io-color, var(--color-cdx-text)) 7%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cdx-io-color, var(--color-cdx-text)) 22%, transparent);
+    border-radius: var(--radius-cdx-sm);
+    padding: 2px 8px;
+}
+
+.cdx-derived-body {
+    background: var(--color-cdx-bg-alt);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+    padding: var(--spacing-cdx-md) var(--spacing-cdx-lg);
+    margin-top: var(--spacing-cdx-sm);
+    overflow-x: auto;
+}
+
+.cdx-derived-body code {
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--color-cdx-text);
+    background: transparent;
+    padding: 0;
+    border: none;
+}
+
+.dark .cdx-io-member--computed {
+    --cdx-io-color: hsl(270 50% 70%);
+}
+.dark .cdx-io-member--linked-signal {
+    --cdx-io-color: hsl(210 60% 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-derived-dep {
+        transition: none;
     }
 }

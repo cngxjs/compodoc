@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { functionSignature, linkTypeHtml, parseDescription, t } from '../helpers';
+import { codeWrap, functionSignature, linkTypeHtml, parseDescription, t } from '../helpers';
 import { MemberCard } from './MemberCard';
 
 type TypealiasItem = {
@@ -55,11 +55,9 @@ export const BlockTypealias = (props: BlockTypealiasProps): string =>
                             </div>
                         )}
                         <div class="cdx-member-row">
-                            {ta.kind === 160 ? (
-                                <code>{functionSignature(ta)}</code>
-                            ) : (
-                                <code>{linkTypeHtml(ta.rawtype ?? '')}</code>
-                            )}
+                            {ta.kind === 160
+                                ? codeWrap(functionSignature(ta))
+                                : codeWrap(linkTypeHtml(ta.rawtype ?? ''))}
                         </div>
                     </>
                 ) as string;

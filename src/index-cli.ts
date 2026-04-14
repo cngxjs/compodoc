@@ -44,7 +44,7 @@ export class CliApplication extends Application {
             .usage('<src> [options]')
             .option(
                 '-c, --config [config]',
-                'A configuration file : .compodocrc, .compodocrc.json, .compodocrc.yaml, or compodoc/compodocx property in package.json'
+                'A configuration file : .compodocxrc, .compodocxrc.json, .compodocxrc.yaml (also supports .compodocrc variants), or compodocx/compodoc property in package.json'
             )
             .option('-p, --tsconfig [config]', 'A tsconfig.json file')
             .option(
@@ -928,6 +928,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                     logger.info('Using tsconfig file ', _file);
 
                     const tsConfigFile = readConfig(_file);
+
+                    // Store path aliases for import statement rendering
+                    Configuration.mainData.tsconfigPaths =
+                        tsConfigFile.compilerOptions?.paths ?? {};
+                    Configuration.mainData.tsconfigBaseUrl =
+                        tsConfigFile.compilerOptions?.baseUrl ?? '';
+
                     if (tsConfigFile.files) {
                         scannedFiles = tsConfigFile.files;
                         // Normalize path of these files

@@ -82,25 +82,30 @@ export const COMPODOC_CONSTANTS = {
  * user hasn't explicitly configured `infoTabSections` / `apiTabSections`.
  */
 export const DEFAULT_INFO_SECTIONS: ReadonlyArray<string> = [
+    'import',
     'deprecated',
     'description',
     'examples',
     'metadata',
     'extends',
+    'host',
+    'dependencies',
+    'providers',
+    'viewProviders',
     'relationships'
 ];
 
 export const DEFAULT_API_SECTIONS: ReadonlyArray<string> = [
     'index',
-    'constructor',
     'inputs',
     'outputs',
-    'hostBindings',
-    'hostListeners',
-    'methods',
+    'derivedState',
     'properties',
+    'methods',
     'accessors',
-    'indexSignatures'
+    'indexSignatures',
+    'hostBindings',
+    'hostListeners'
 ];
 
 /**

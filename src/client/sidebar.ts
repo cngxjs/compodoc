@@ -4,8 +4,28 @@
  * Default: all sections collapsed when no saved state exists.
  */
 
-const STORAGE_KEY = 'compodoc-sidebar-state';
+const STORAGE_KEY = 'compodocx-sidebar-state';
+const LEGACY_STORAGE_KEY = 'compodoc-sidebar-state';
 const ANIMATION_MS = 200;
+
+/** Read from new key, fall back to legacy, migrate if found. */
+const migrateStorageKey = (): string | null => {
+    try {
+        const value = localStorage.getItem(STORAGE_KEY);
+        if (value) {
+            return value;
+        }
+        const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (legacy) {
+            localStorage.setItem(STORAGE_KEY, legacy);
+            localStorage.removeItem(LEGACY_STORAGE_KEY);
+            return legacy;
+        }
+    } catch {
+        /* localStorage blocked */
+    }
+    return null;
+};
 
 const saveState = () => {
     try {
@@ -23,7 +43,7 @@ const saveState = () => {
 /** Apply saved state to all collapses. Without saved state, respect server-rendered state. */
 const restoreState = () => {
     try {
-        const saved = localStorage.getItem(STORAGE_KEY);
+        const saved = migrateStorageKey();
         const states: Record<string, boolean> = saved ? JSON.parse(saved) : {};
 
         document.querySelectorAll<HTMLElement>('.menu .collapse[id]').forEach(el => {

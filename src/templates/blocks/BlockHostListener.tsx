@@ -1,9 +1,11 @@
 import Html from '@kitajs/html';
 import {
+    codeWrap,
     hasJsdocParams,
     jsdocReturnsComment,
     linkTypeHtml,
     modifKind,
+    modifSlug,
     parseDescription,
     t
 } from '../helpers';
@@ -31,7 +33,11 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
                     <header class="cdx-member-header">
                         <span class="cdx-member-name">
                             {(m.modifierKind ?? []).map((k: number) => (
-                                <span class="cdx-member-modifier">{modifKind(k)}</span>
+                                <span
+                                    class={`cdx-member-modifier cdx-member-modifier--${modifSlug(k)}`}
+                                >
+                                    {modifKind(k)}
+                                </span>
                             ))}
                             {m.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
                             <span
@@ -63,23 +69,21 @@ export const BlockHostListener = (props: BlockHostListenerProps): string => {
                         {m.argsDecorator && (
                             <div class="cdx-member-row">
                                 <i>{t('arguments')} : </i>
-                                <code>
-                                    {m.argsDecorator.map((a: string) => `'${a}' `).join('')}
-                                </code>
+                                {codeWrap(m.argsDecorator.map((a: string) => `'${a}' `).join(''))}
                             </div>
                         )}
                         {m.decorators && (
                             <div class="cdx-member-row">
                                 <b>{t('decorators')} : </b>
-                                <code>
-                                    {m.decorators
+                                {codeWrap(
+                                    m.decorators
                                         .map((d: any) =>
                                             d.stringifiedArguments
                                                 ? `@${d.name}(${d.stringifiedArguments})`
                                                 : `@${d.name}()`
                                         )
-                                        .join(', ')}
-                                </code>
+                                        .join(', ')
+                                )}
                             </div>
                         )}
                         {DefinedInRow({

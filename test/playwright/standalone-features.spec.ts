@@ -9,11 +9,13 @@ test.describe('Sidebar', () => {
         expect(html).not.toContain('chapter modules');
     });
 
-    test('standalone badges on component links', async ({ page }) => {
+    test('entity type badges on component links', async ({ page }) => {
         await page.goto('/');
         const html = await page.content();
-        const matches = html.match(/cdx-badge--standalone/g) || [];
-        expect(matches.length).toBeGreaterThanOrEqual(3);
+        // Standalone-only apps do not show standalone badges (no NgModules = no mixed context)
+        // Sidebar shows count badges for folder groups
+        const countBadges = html.match(/cdx-badge--count/g) || [];
+        expect(countBadges.length).toBeGreaterThanOrEqual(3);
     });
 
     test('token badges on injectable links', async ({ page }) => {
@@ -160,11 +162,12 @@ test.describe('Navigation Grouping', () => {
 // ─── Component pages ─────────────────────────────────────
 
 test.describe('Component page', () => {
-    test('breadcrumb shows Standalone badge', async ({ page }) => {
+    test('breadcrumb shows entity type badge', async ({ page }) => {
         await page.goto('/components/AppComponent.html');
-        const badge = page.locator('.cdx-entity-hero-badges .cdx-badge--standalone');
+        // Standalone badge is only shown in mixed NgModule+standalone apps; this fixture is standalone-only
+        const badge = page.locator('.cdx-entity-hero-badges .cdx-badge--entity-component');
         expect(await badge.count()).toBe(1);
-        expect(await badge.textContent()).toBe('Standalone');
+        expect(await badge.textContent()).toBe('Component');
     });
 
     test('UserCardComponent: beta and since badges', async ({ page }) => {
@@ -260,20 +263,22 @@ test.describe('Component page', () => {
 // ─── Directive page ──────────────────────────────────────
 
 test.describe('Directive page', () => {
-    test('HighlightDirective: standalone badge', async ({ page }) => {
+    test('HighlightDirective: entity type badge', async ({ page }) => {
         await page.goto('/directives/HighlightDirective.html');
-        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--standalone').count()).toBe(
-            1
-        );
+        // Standalone badge is only shown in mixed NgModule+standalone apps; this fixture is standalone-only
+        expect(
+            await page.locator('.cdx-entity-hero-badges .cdx-badge--entity-directive').count()
+        ).toBe(1);
     });
 });
 
 // ─── Pipe page ───────────────────────────────────────────
 
 test.describe('Pipe page', () => {
-    test('GreetingPipe: standalone badge', async ({ page }) => {
+    test('GreetingPipe: entity type badge', async ({ page }) => {
         await page.goto('/pipes/GreetingPipe.html');
-        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--standalone').count()).toBe(
+        // Standalone badge is only shown in mixed NgModule+standalone apps; this fixture is standalone-only
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--entity-pipe').count()).toBe(
             1
         );
     });
@@ -649,24 +654,26 @@ test.describe('Entity preview panel', () => {
 });
 
 test.describe('Responsive member cards', () => {
-    test('member header stacks vertically at narrow viewport', async ({ page }) => {
+    test('member title row is visible at narrow viewport', async ({ page }) => {
         await page.setViewportSize({ width: 400, height: 800 });
         await page.goto('/injectables/UserService.html');
         await page.locator('[role="tab"]', { hasText: 'API' }).click();
-        const header = page.locator('.cdx-member-header').first();
-        await expect(header).toBeVisible();
-        const direction = await header.evaluate(el => getComputedStyle(el).flexDirection);
-        expect(direction).toBe('column');
+        // Flat IO member layout uses cdx-io-member-title (no directional flex-direction breakpoint)
+        const title = page.locator('.cdx-io-member-title').first();
+        await expect(title).toBeVisible();
+        const display = await title.evaluate(el => getComputedStyle(el).display);
+        expect(display).toBe('flex');
     });
 
-    test('member header is row layout at normal viewport', async ({ page }) => {
+    test('member title row is visible at normal viewport', async ({ page }) => {
         await page.setViewportSize({ width: 1200, height: 800 });
         await page.goto('/injectables/UserService.html');
         await page.locator('[role="tab"]', { hasText: 'API' }).click();
-        const header = page.locator('.cdx-member-header').first();
-        await expect(header).toBeVisible();
-        const direction = await header.evaluate(el => getComputedStyle(el).flexDirection);
-        expect(direction).toBe('row');
+        // Flat IO member layout uses cdx-io-member-title
+        const title = page.locator('.cdx-io-member-title').first();
+        await expect(title).toBeVisible();
+        const display = await title.evaluate(el => getComputedStyle(el).display);
+        expect(display).toBe('flex');
     });
 
     test('method signature wraps at narrow viewport', async ({ page }) => {
