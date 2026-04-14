@@ -24,7 +24,7 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
     return (
         <section data-compodoc="block-properties">
             <h3 id={props.title ? props.title.toLowerCase() : 'properties'}>
-                {props.title ?? t('properties')}
+                {props.title ?? t('instance-properties')}
                 <a
                     class="cdx-member-permalink"
                     href={`#${props.title ? props.title.toLowerCase() : 'properties'}`}

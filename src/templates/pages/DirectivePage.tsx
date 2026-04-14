@@ -2,8 +2,6 @@ import {
     MetadataChipsRow,
     MetadataCodeRow,
     MetadataHostDirectivesRow,
-    MetadataHostRow,
-    MetadataProvidersRow,
     MetadataSection
 } from '../blocks/MetadataRow';
 import { isInfoSection } from '../helpers';
@@ -14,11 +12,7 @@ const DirectiveMetadata = (directive: any): string => {
         return '';
     }
     const hasMetadata =
-        directive.selector ||
-        directive.providers?.length > 0 ||
-        directive.hostDirectives?.length > 0 ||
-        directive.hostStructured?.length > 0 ||
-        directive.exportAs;
+        directive.selector || directive.hostDirectives?.length > 0 || directive.exportAs;
     const hasExtends = directive.extends?.length > 0;
     const hasImplements = directive.implements?.length > 0;
     if (!hasMetadata && !hasExtends && !hasImplements) {
@@ -34,15 +28,8 @@ const DirectiveMetadata = (directive: any): string => {
         rows.push(MetadataCodeRow('exportAs', directive.exportAs));
     }
 
-    // Array values → providers get the structured object-literal renderer
-    rows.push(MetadataProvidersRow('providers', directive.providers ?? []));
-
     if (directive.hostDirectives?.length > 0) {
         rows.push(MetadataHostDirectivesRow(directive.hostDirectives));
-    }
-
-    if (directive.hostStructured?.length > 0) {
-        rows.push(MetadataHostRow(directive.hostStructured));
     }
 
     rows.push(MetadataChipsRow('extends', (directive.extends as string[]) ?? []));

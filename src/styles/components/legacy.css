@@ -46,10 +46,6 @@ a[href] {
     margin-top: 50px;
     margin-left: 15px;
 }
-.overview .card-text a {
-    text-decoration: underline;
-    color: var(--color-cdx-text);
-}
 .overview .col-sm-3 {
     width: 200px;
 }
