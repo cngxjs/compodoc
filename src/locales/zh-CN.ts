@@ -20,6 +20,7 @@ export const TRANSLATION_ZH_CN = {
     'default-value': '缺省值',
     'defined-in': '被定义在',
     dependencies: '依赖项',
+    'derived-state': 'Derived State',
     deprecated: '已弃用',
     description: '描述',
     directive: '指令',

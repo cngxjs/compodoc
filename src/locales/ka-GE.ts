@@ -21,6 +21,7 @@ export const TRANSLATION_KA_GE = {
     'default-value': 'ნაგულისხმევი მნიშვნელობა',
     'defined-in': 'აღწერილია',
     dependencies: 'დამოკიდებულებები',
+    'derived-state': 'Derived State',
     deprecated: 'მოძველებულია',
     description: 'აღწერა',
     directive: 'დირექტივა',

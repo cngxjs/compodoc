@@ -3,6 +3,7 @@ import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { resolveImportPath } from '../helpers/import-resolver';
 import { BlockConstructor } from '../blocks/BlockConstructor';
+import { BlockDerivedState } from '../blocks/BlockDerivedState';
 import { BlockIndex } from '../blocks/BlockIndex';
 import { BlockInput } from '../blocks/BlockInput';
 import { BlockMethod } from '../blocks/BlockMethod';
@@ -217,15 +218,28 @@ const InfoContent = (data: any): string => {
 const ApiContent = (data: any): string => {
     const c = data.component;
     const depth = data.depth;
+    const allProps: any[] = c.propertiesClass ?? [];
+    const allSignalProps: any[] = [
+        ...(c.inputsClass ?? []),
+        ...(c.outputsClass ?? []),
+        ...allProps
+    ];
+    const derivedProps = allProps.filter(
+        (p: any) => p.signalKind === 'computed' || p.signalKind === 'linked-signal'
+    );
+    const regularProps = allProps.filter(
+        (p: any) => p.signalKind !== 'computed' && p.signalKind !== 'linked-signal'
+    );
 
     return (
         <>
             {isApiSection('index') &&
                 BlockIndex({
-                    properties: c.propertiesClass,
+                    properties: regularProps,
                     methods: c.methodsClass,
                     inputs: c.inputsClass,
                     outputs: c.outputsClass,
+                    derivedState: derivedProps,
                     hostBindings: c.hostBindings,
                     hostListeners: c.hostListeners,
                     accessors: c.accessors
@@ -245,6 +259,15 @@ const ApiContent = (data: any): string => {
             {isApiSection('outputs') &&
                 c.outputsClass?.length > 0 &&
                 BlockOutput({ element: c, file: c.file, depth, navTabs: data.navTabs })}
+            {isApiSection('derivedState') &&
+                derivedProps.length > 0 &&
+                BlockDerivedState({
+                    properties: derivedProps,
+                    allSignalProps,
+                    file: c.file,
+                    depth,
+                    navTabs: data.navTabs
+                })}
             {isApiSection('hostBindings') &&
                 c.hostBindings?.length > 0 &&
                 BlockProperty({
@@ -272,9 +295,9 @@ const ApiContent = (data: any): string => {
                     navTabs: data.navTabs
                 })}
             {isApiSection('properties') &&
-                c.propertiesClass?.length > 0 &&
+                regularProps.length > 0 &&
                 BlockProperty({
-                    properties: c.propertiesClass,
+                    properties: regularProps,
                     file: c.file,
                     depth,
                     navTabs: data.navTabs

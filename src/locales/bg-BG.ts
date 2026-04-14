@@ -21,6 +21,7 @@ export const TRANSLATION_BG_BG = {
     'default-value': 'Стойност по подразбиране',
     'defined-in': 'Дефинирана в',
     dependencies: 'Зависимости',
+    'derived-state': 'Derived State',
     deprecated: 'Deprecated',
     description: 'Описание',
     directive: 'Директива',

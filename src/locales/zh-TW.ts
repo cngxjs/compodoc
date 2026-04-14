@@ -20,6 +20,7 @@ export const TRANSLATION_ZH_TW = {
     'default-value': '預設值',
     'defined-in': '被定義在',
     dependencies: '依賴項',
+    'derived-state': 'Derived State',
     deprecated: '已棄用',
     description: '描述',
     directive: '指令 (Directive)',

@@ -21,6 +21,7 @@ export const TRANSLATION_PL_PL = {
     'default-value': 'Domyślna wartość',
     'defined-in': 'Zdefiniowane w',
     dependencies: 'Biblioteki',
+    'derived-state': 'Derived State',
     deprecated: 'Przestarzałe',
     description: 'Opis',
     directive: 'Dyrektywa',

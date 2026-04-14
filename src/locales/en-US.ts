@@ -21,6 +21,7 @@ export const TRANSLATION_EN_US = {
     'default-value': 'Default value',
     'defined-in': 'Defined in',
     dependencies: 'Dependencies',
+    'derived-state': 'Derived State',
     deprecated: 'Deprecated',
     description: 'Description',
     directive: 'Directive',

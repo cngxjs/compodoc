@@ -1404,6 +1404,28 @@ export class ClassHelper {
             }
         }
 
+        // Extract signal dependency names for computed/linkedSignal
+        if (
+            initializer &&
+            (result.signalKind === 'computed' || result.signalKind === 'linked-signal')
+        ) {
+            const deps: string[] = [];
+            const walk = (node: any): void => {
+                if (
+                    node.kind === SyntaxKind.CallExpression &&
+                    node.expression?.kind === SyntaxKind.PropertyAccessExpression &&
+                    node.expression.expression?.kind === SyntaxKind.ThisKeyword
+                ) {
+                    deps.push(node.expression.name.text);
+                }
+                ts.forEachChild(node, walk);
+            };
+            ts.forEachChild(initializer, walk);
+            if (deps.length > 0) {
+                result.signalDeps = [...new Set(deps)];
+            }
+        }
+
         if (typeof result.name === 'undefined' && (property.name as any).expression) {
             result.name = (property.name as any).expression.text;
         }

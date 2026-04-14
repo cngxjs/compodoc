@@ -20,6 +20,7 @@ export const TRANSLATION_IT_IT = {
     'default-value': 'Valore predefinito',
     'defined-in': 'Definito in',
     dependencies: 'Dependencies',
+    'derived-state': 'Derived State',
     deprecated: 'Deprecata',
     description: 'Descrizione',
     directive: 'Direttiva',

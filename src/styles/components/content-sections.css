@@ -436,6 +436,9 @@ a.cdx-chip:hover {
 .cdx-index-indicator--output {
     --cdx-indicator-color: var(--color-cdx-entity-pipe);
 }
+.cdx-index-indicator--derived {
+    --cdx-indicator-color: var(--color-cdx-entity-typealias);
+}
 .cdx-index-indicator--accessor {
     --cdx-indicator-color: var(--color-cdx-entity-interface);
 }

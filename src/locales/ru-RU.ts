@@ -21,6 +21,7 @@ export const TRANSLATION_RU_RU = {
     'default-value': 'Значение по умолчанию',
     'defined-in': 'Определен в',
     dependencies: 'Зависимости',
+    'derived-state': 'Derived State',
     deprecated: 'Устаревшая',
     description: 'Описание',
     directive: 'Директива',

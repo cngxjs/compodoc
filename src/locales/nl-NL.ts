@@ -21,6 +21,7 @@ export const TRANSLATION_NL_NL = {
     'default-value': 'Default waarde',
     'defined-in': 'Gedefinieerd in',
     dependencies: 'Dependencies',
+    'derived-state': 'Derived State',
     deprecated: 'Verouderd',
     description: 'Omschrijving',
     directive: 'Directive',

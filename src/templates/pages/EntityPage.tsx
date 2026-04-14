@@ -3,6 +3,7 @@ import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { resolveImportPath } from '../helpers/import-resolver';
 import { BlockConstructor } from '../blocks/BlockConstructor';
+import { BlockDerivedState } from '../blocks/BlockDerivedState';
 import { BlockHostListener } from '../blocks/BlockHostListener';
 import { BlockIndex } from '../blocks/BlockIndex';
 import { BlockIndexSignatures } from '../blocks/BlockIndexSignatures';
@@ -303,6 +304,18 @@ const InfoContent = (props: EntityInfoProps): string => {
  */
 const ApiContent = (props: EntityInfoProps): string => {
     const e = props.entity;
+    const allProps: any[] = e.propertiesClass ?? e.properties ?? [];
+    const allSignalProps: any[] = [
+        ...(e.inputsClass ?? []),
+        ...(e.outputsClass ?? []),
+        ...allProps
+    ];
+    const derivedProps = allProps.filter(
+        (p: any) => p.signalKind === 'computed' || p.signalKind === 'linked-signal'
+    );
+    const regularProps = allProps.filter(
+        (p: any) => p.signalKind !== 'computed' && p.signalKind !== 'linked-signal'
+    );
 
     return (
         <>
@@ -310,10 +323,11 @@ const ApiContent = (props: EntityInfoProps): string => {
             {isApiSection('index') &&
                 props.showIndex !== false &&
                 BlockIndex({
-                    properties: e.propertiesClass ?? e.properties,
+                    properties: regularProps,
                     methods: e.methodsClass ?? e.methods,
                     inputs: e.inputsClass,
                     outputs: e.outputsClass,
+                    derivedState: derivedProps,
                     hostBindings: e.hostBindings,
                     hostListeners: e.hostListeners,
                     accessors: e.accessors,
@@ -348,6 +362,17 @@ const ApiContent = (props: EntityInfoProps): string => {
                 e.outputsClass?.length > 0 &&
                 BlockOutput({
                     element: e,
+                    file: e.file,
+                    depth: props.depth,
+                    navTabs: props.navTabs
+                })}
+
+            {/* 8b. Derived State */}
+            {isApiSection('derivedState') &&
+                derivedProps.length > 0 &&
+                BlockDerivedState({
+                    properties: derivedProps,
+                    allSignalProps,
                     file: e.file,
                     depth: props.depth,
                     navTabs: props.navTabs
@@ -391,9 +416,9 @@ const ApiContent = (props: EntityInfoProps): string => {
             {/* 12. Properties */}
             {isApiSection('properties') &&
                 props.showProperties !== false &&
-                (e.propertiesClass ?? e.properties)?.length > 0 &&
+                regularProps.length > 0 &&
                 BlockProperty({
-                    properties: e.propertiesClass ?? e.properties,
+                    properties: regularProps,
                     file: e.file,
                     depth: props.depth,
                     navTabs: props.navTabs

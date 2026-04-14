@@ -21,6 +21,7 @@ export const TRANSLATION_HU_HU = {
     'default-value': 'Alapértelmezett érték',
     'defined-in': 'Definíció helye:',
     dependencies: 'Függőségek',
+    'derived-state': 'Derived State',
     deprecated: 'Elavult',
     description: 'Leírás',
     directive: 'Direktíva',

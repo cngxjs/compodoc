@@ -96,6 +96,7 @@ export const DEFAULT_API_SECTIONS: ReadonlyArray<string> = [
     'constructor',
     'inputs',
     'outputs',
+    'derivedState',
     'hostBindings',
     'hostListeners',
     'methods',

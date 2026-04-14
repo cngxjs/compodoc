@@ -21,6 +21,7 @@ export const TRANSLATION_JA_JP = {
     'default-value': '初期値',
     'defined-in': 'Defined in',
     dependencies: '依存関係',
+    'derived-state': 'Derived State',
     deprecated: '非推奨',
     description: '説明',
     directive: 'ディレクティブ',
