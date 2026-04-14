@@ -58,9 +58,9 @@ export const DependenciesSection = (props: {
 
     return (
         <section class="cdx-content-section" data-compodoc="block-dependencies">
-            <h3 class="cdx-section-heading" id="dependencies">
+            <h3 class="cdx-section-heading" id="section-dependencies">
                 {t('dependencies')}
-                <a class="cdx-member-permalink" href="#dependencies">
+                <a class="cdx-member-permalink" href="#section-dependencies">
                     #
                 </a>
             </h3>
