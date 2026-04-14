@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output, signal, effect, viewChild, ElementRef } from '@angular/core';
+import { Component, computed, inject, input, output, signal, effect, viewChild, ElementRef, afterNextRender, afterEveryRender, afterRenderEffect } from '@angular/core';
 import { User } from '../user.service';
 import { HighlightDirective } from '../../shared/directives/highlight.directive';
 import { API_BASE_URL } from '../../core/tokens/api.token';
@@ -36,6 +36,31 @@ export class UserCardComponent {
     readonly cardElement = viewChild<ElementRef>('cardEl');
     private readonly logEffect = effect(() => {
         console.log('User changed:', this.user().name);
+    });
+
+    /** Measures card height once after first render. */
+    private readonly measureOnce = afterNextRender(() => {
+        const el = this.cardElement()?.nativeElement;
+        if (el) {
+            console.log('Card height:', el.offsetHeight);
+        }
+    });
+
+    /** Keeps card border in sync with theme on every render cycle. */
+    private readonly syncBorder = afterEveryRender(() => {
+        const el = this.cardElement()?.nativeElement;
+        if (el) {
+            el.style.borderColor = getComputedStyle(el).getPropertyValue('--card-border') || '#ddd';
+        }
+    });
+
+    /** Reactive render effect that updates the card shadow based on selection count. */
+    private readonly shadowEffect = afterRenderEffect(() => {
+        const count = this.selectionCount();
+        const el = this.cardElement()?.nativeElement;
+        if (el) {
+            el.style.boxShadow = count > 0 ? `0 0 ${count * 2}px rgba(0,0,0,0.15)` : 'none';
+        }
     });
 
     onSelect(): void {

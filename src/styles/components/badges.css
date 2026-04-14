@@ -84,6 +84,27 @@
     background: hsl(45 60% 94%);
 }
 
+.cdx-badge--after-render {
+    color: hsl(25 65% 35%);
+    border: 1px solid hsl(25 55% 50%);
+    background: hsl(25 55% 94%);
+}
+.cdx-badge--after-next-render {
+    color: hsl(15 65% 38%);
+    border: 1px solid hsl(15 55% 52%);
+    background: hsl(15 55% 94%);
+}
+.cdx-badge--after-every-render {
+    color: hsl(5 60% 38%);
+    border: 1px solid hsl(5 50% 52%);
+    background: hsl(5 50% 94%);
+}
+.cdx-badge--after-render-effect {
+    color: hsl(340 55% 38%);
+    border: 1px solid hsl(340 45% 52%);
+    background: hsl(340 45% 94%);
+}
+
 .cdx-badge--resource,
 .cdx-badge--rx-resource {
     color: hsl(190 55% 30%);
@@ -104,25 +125,30 @@
 }
 
 .cdx-badge--model {
-    color: hsl(260 45% 40%);
-    border: 1px solid hsl(260 35% 55%);
-    background: hsl(260 35% 94%);
+    color: hsl(240 45% 40%);
+    border: 1px solid hsl(240 35% 55%);
+    background: hsl(240 35% 94%);
 }
 
 .cdx-badge--view-child,
-.cdx-badge--view-children,
+.cdx-badge--view-children {
+    color: hsl(165 50% 28%);
+    border: 1px solid hsl(165 40% 45%);
+    background: hsl(165 40% 94%);
+}
+
 .cdx-badge--content-child,
 .cdx-badge--content-children {
-    color: hsl(30 60% 35%);
-    border: 1px solid hsl(30 50% 50%);
-    background: hsl(30 50% 94%);
+    color: hsl(55 60% 30%);
+    border: 1px solid hsl(55 50% 45%);
+    background: hsl(55 50% 94%);
 }
 
 .cdx-badge--host-binding,
 .cdx-badge--host-listener {
-    color: hsl(200 45% 35%);
-    border: 1px solid hsl(200 35% 55%);
-    background: hsl(200 35% 94%);
+    color: hsl(180 50% 30%);
+    border: 1px solid hsl(180 40% 45%);
+    background: hsl(180 40% 94%);
 }
 
 .cdx-badge--inject {
@@ -267,6 +293,26 @@
     border-color: hsl(45 40% 35%);
     background: hsl(45 30% 16%);
 }
+.dark .cdx-badge--after-render {
+    color: hsl(25 60% 65%);
+    border-color: hsl(25 40% 35%);
+    background: hsl(25 30% 16%);
+}
+.dark .cdx-badge--after-next-render {
+    color: hsl(15 60% 68%);
+    border-color: hsl(15 40% 35%);
+    background: hsl(15 30% 16%);
+}
+.dark .cdx-badge--after-every-render {
+    color: hsl(5 55% 68%);
+    border-color: hsl(5 35% 35%);
+    background: hsl(5 25% 16%);
+}
+.dark .cdx-badge--after-render-effect {
+    color: hsl(340 50% 70%);
+    border-color: hsl(340 30% 38%);
+    background: hsl(340 25% 16%);
+}
 .dark .cdx-badge--resource,
 .dark .cdx-badge--rx-resource {
     color: hsl(190 50% 65%);
@@ -284,23 +330,27 @@
     background: hsl(350 25% 16%);
 }
 .dark .cdx-badge--model {
-    color: hsl(260 45% 70%);
-    border-color: hsl(260 25% 40%);
-    background: hsl(260 25% 18%);
+    color: hsl(240 45% 70%);
+    border-color: hsl(240 25% 40%);
+    background: hsl(240 25% 18%);
 }
 .dark .cdx-badge--view-child,
-.dark .cdx-badge--view-children,
+.dark .cdx-badge--view-children {
+    color: hsl(165 45% 60%);
+    border-color: hsl(165 30% 35%);
+    background: hsl(165 25% 16%);
+}
 .dark .cdx-badge--content-child,
 .dark .cdx-badge--content-children {
-    color: hsl(30 55% 65%);
-    border-color: hsl(30 35% 35%);
-    background: hsl(30 25% 16%);
+    color: hsl(55 55% 60%);
+    border-color: hsl(55 35% 35%);
+    background: hsl(55 25% 16%);
 }
 .dark .cdx-badge--host-binding,
 .dark .cdx-badge--host-listener {
-    color: hsl(200 45% 65%);
-    border-color: hsl(200 25% 38%);
-    background: hsl(200 25% 16%);
+    color: hsl(180 45% 60%);
+    border-color: hsl(180 30% 35%);
+    background: hsl(180 25% 16%);
 }
 .dark .cdx-badge--inject {
     color: hsl(320 45% 70%);
