@@ -26,6 +26,7 @@ export const TRANSLATION_KO_KR = {
     directive: 'Directive',
     directives: 'Directives',
     'dom tree': '돔 트리',
+    effects: '이펙트',
     'empty-accessors': '접근자 없음',
     'empty-category-desc': '이 프로젝트에는 {{category}}이(가) 없습니다.',
     'empty-category-title': '{{category}} 없음',

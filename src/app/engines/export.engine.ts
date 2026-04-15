@@ -16,8 +16,6 @@ export class ExportEngine {
         switch (Configuration.mainData.exportFormat) {
             case 'json':
                 return ExportJsonEngine.export(outputFolder, data);
-            /*case 'pdf':
-                return ExportPdfEngine.export(outputFolder);*/
         }
     }
 }

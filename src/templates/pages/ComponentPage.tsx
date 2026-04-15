@@ -249,11 +249,14 @@ const ApiContent = (data: any): string => {
     const derivedProps = allProps.filter(
         (p: any) => p.signalKind === 'computed' || p.signalKind === 'linked-signal'
     );
+    const showEffects = Configuration.mainData.showEffects === true;
+    const effectProps = allProps.filter((p: any) => p.signalKind === 'effect');
     const regularProps = allProps.filter(
         (p: any) =>
             p.signalKind !== 'computed' &&
             p.signalKind !== 'linked-signal' &&
-            p.signalKind !== 'inject'
+            p.signalKind !== 'inject' &&
+            (showEffects ? p.signalKind !== 'effect' : true)
     );
 
     return (
@@ -265,6 +268,7 @@ const ApiContent = (data: any): string => {
                     inputs: c.inputsClass,
                     outputs: c.outputsClass,
                     derivedState: derivedProps,
+                    effects: showEffects ? effectProps : [],
                     hostBindings: c.hostBindings,
                     hostListeners: c.hostListeners,
                     accessors: c.accessors
@@ -292,6 +296,17 @@ const ApiContent = (data: any): string => {
                     file: c.file,
                     depth,
                     navTabs: data.navTabs
+                })}
+            {isApiSection('effects') &&
+                showEffects &&
+                effectProps.length > 0 &&
+                BlockProperty({
+                    properties: effectProps,
+                    file: c.file,
+                    depth,
+                    navTabs: data.navTabs,
+                    title: t('effects'),
+                    id: 'effects'
                 })}
             {isApiSection('methods') &&
                 c.methodsClass?.length > 0 &&
@@ -325,7 +340,8 @@ export const ComponentPage = (data: any): string => {
     const depth = data.depth;
     const base = relativeUrl(depth);
     const navTabs = data.navTabs;
-    const hasStandaloneImports = c.standalone && c.imports?.length > 0;
+    const hasStandaloneImports =
+        c.standalone && c.imports?.length > 0 && !Configuration.mainData.disableDependenciesTab;
 
     const componentDepGraph = hasStandaloneImports
         ? (() => {
@@ -617,6 +633,7 @@ export const ComponentPage = (data: any): string => {
                                     variant: 'full'
                                 })}
                         </div>
+                        {GraphZoomControls({ prefix: 'tree-' })}
                         {GraphLegend({
                             items: [
                                 {

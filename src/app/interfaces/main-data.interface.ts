@@ -60,9 +60,11 @@ export interface MainDataInterface {
     disableRoutesGraph: boolean;
     disableSearch: boolean;
     disableDependencies: boolean;
+    disableDependenciesTab: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
     disableOverview: boolean;
+    showEffects: boolean;
     watch: boolean;
     mainGraph: string;
     dependencyGraph: {
@@ -88,7 +90,6 @@ export interface MainDataInterface {
     packagePeerDependencies: Object[];
     packageProperties: any;
     gaID: string;
-    gaSite: string;
     angularProject: boolean;
     language: string;
     maxSearchResults: number;

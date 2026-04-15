@@ -27,6 +27,7 @@ export const TRANSLATION_PL_PL = {
     directive: 'Dyrektywa',
     directives: 'Dyrektywy',
     'dom tree': 'DOM drzewo',
+    effects: 'Efekty',
     'empty-accessors': 'Brak akcesorów',
     'empty-category-desc': 'Ten projekt nie zawiera żadnych elementów kategorii {{category}}.',
     'empty-category-title': 'Nie znaleziono {{category}}',

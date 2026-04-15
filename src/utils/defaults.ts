@@ -29,9 +29,11 @@ export const COMPODOC_DEFAULTS = {
     disableConstructors: false,
     disableRoutesGraph: false,
     disableDependencies: false,
+    disableDependenciesTab: false,
     disableProperties: false,
     disableFilePath: false,
     disableOverview: false,
+    showEffects: false,
     hideGenerator: false,
     hideDarkModeToggle: false,
     minimal: false,
@@ -42,7 +44,6 @@ export const COMPODOC_DEFAULTS = {
         ROOT: 'root',
         INTERNAL: 'internal'
     },
-    gaSite: 'auto',
     coverageTestShowOnlyFailed: false,
     language: 'en-US',
     maxSearchResults: 15

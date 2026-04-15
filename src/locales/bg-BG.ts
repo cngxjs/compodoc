@@ -27,6 +27,7 @@ export const TRANSLATION_BG_BG = {
     directive: 'Директива',
     directives: 'Директиви',
     'dom tree': 'DOM-дърво',
+    effects: 'Ефекти',
     'empty-accessors': 'Няма акцесори',
     'empty-category-desc': 'Този проект не съдържа елементи от тип {{category}}.',
     'empty-category-title': 'Не са намерени {{category}}',

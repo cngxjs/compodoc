@@ -48,32 +48,14 @@ describe('BlockDerivedState', () => {
         expect(html).to.include('cdx-io-member--linked-signal');
     });
 
-    it('renders code body in pre block', () => {
-        const html = BlockDerivedState({
-            ...baseProps,
-            properties: [
-                {
-                    name: 'x',
-                    signalKind: 'computed',
-                    defaultValue: 'computed(() => this.a() + this.b())'
-                }
-            ],
-            allSignalProps: []
-        });
-
-        expect(html).to.include('cdx-derived-body');
-        // kitajs/html escapes angle brackets in text content
-        expect(html).to.include('this.a() + this.b()');
-    });
-
-    it('renders dependency chain when signalDeps match known signal props', () => {
+    it('appends a Derives-from sentence when signal deps resolve to known signal props', () => {
         const html = BlockDerivedState({
             ...baseProps,
             properties: [
                 {
                     name: 'total',
                     signalKind: 'computed',
-                    signalDeps: ['count', 'price'],
+                    signalDeps: ['count()', 'price()'],
                     defaultValue: 'computed(() => this.count() * this.price())'
                 }
             ],
@@ -83,66 +65,104 @@ describe('BlockDerivedState', () => {
             ]
         });
 
-        expect(html).to.include('cdx-derived-chain');
-        expect(html).to.include('cdx-derived-dep');
-        expect(html).to.include('href="#count"');
-        expect(html).to.include('href="#price"');
-        expect(html).to.include('cdx-derived-self');
-        expect(html).to.include('>total<');
+        expect(html).to.include('Derives from');
+        expect(html).to.match(/<code[^>]*>count\(\)<\/code>/);
+        expect(html).to.match(/<code[^>]*>price\(\)<\/code>/);
+        expect(html).to.include('\u00B7');
     });
 
-    it('filters signalDeps to only known signal properties', () => {
+    it('filters call-style deps to only known signal properties', () => {
         const html = BlockDerivedState({
             ...baseProps,
             properties: [
                 {
                     name: 'label',
                     signalKind: 'computed',
-                    signalDeps: ['name', 'someService'],
+                    signalDeps: ['name()', 'someService()'],
                     defaultValue: 'computed(() => this.name() + this.someService())'
                 }
             ],
+            allSignalProps: [{ name: 'name', signalKind: 'signal' }]
+        });
+
+        expect(html).to.match(/<code[^>]*>name\(\)<\/code>/);
+        // someService() is a non-signal method call and must not appear in the Derives-from list
+        expect(html).to.not.match(/<code[^>]*>someService/);
+    });
+
+    it('always includes plain property access without a signal filter', () => {
+        const html = BlockDerivedState({
+            ...baseProps,
+            properties: [
+                {
+                    name: 'ready',
+                    signalKind: 'computed',
+                    signalDeps: ['rovingParent', 'interactive()'],
+                    defaultValue: 'computed(() => this.rovingParent && this.interactive())'
+                }
+            ],
+            allSignalProps: [{ name: 'interactive', signalKind: 'signal' }]
+        });
+
+        expect(html).to.match(/<code[^>]*>rovingParent<\/code>/);
+        expect(html).to.match(/<code[^>]*>interactive\(\)<\/code>/);
+    });
+
+    it('omits the sentence when no deps survive filtering', () => {
+        const html = BlockDerivedState({
+            ...baseProps,
+            properties: [
+                {
+                    name: 'val',
+                    signalKind: 'computed',
+                    signalDeps: ['unknownMethod()'],
+                    defaultValue: 'computed(() => 42)'
+                }
+            ],
+            allSignalProps: []
+        });
+
+        expect(html).to.not.include('Derives from');
+    });
+
+    it('omits the sentence when signalDeps is empty', () => {
+        const html = BlockDerivedState({
+            ...baseProps,
+            properties: [
+                {
+                    name: 'val',
+                    signalKind: 'computed',
+                    defaultValue: 'computed(() => 42)'
+                }
+            ],
+            allSignalProps: []
+        });
+
+        expect(html).to.not.include('Derives from');
+    });
+
+    it('does not render the legacy chain markup', () => {
+        const html = BlockDerivedState({
+            ...baseProps,
+            properties: [
+                {
+                    name: 'sum',
+                    signalKind: 'computed',
+                    signalDeps: ['a()', 'b()'],
+                    defaultValue: 'computed(() => this.a() + this.b())'
+                }
+            ],
             allSignalProps: [
-                { name: 'name', signalKind: 'signal' }
-                // someService is NOT a signal prop
+                { name: 'a', signalKind: 'signal' },
+                { name: 'b', signalKind: 'signal' }
             ]
         });
 
-        expect(html).to.include('href="#name"');
-        expect(html).to.not.include('href="#someService"');
-    });
-
-    it('omits dependency chain when no signalDeps match', () => {
-        const html = BlockDerivedState({
-            ...baseProps,
-            properties: [
-                {
-                    name: 'val',
-                    signalKind: 'computed',
-                    signalDeps: ['unknownMethod'],
-                    defaultValue: 'computed(() => 42)'
-                }
-            ],
-            allSignalProps: []
-        });
-
         expect(html).to.not.include('cdx-derived-chain');
-    });
-
-    it('omits dependency chain when signalDeps is empty', () => {
-        const html = BlockDerivedState({
-            ...baseProps,
-            properties: [
-                {
-                    name: 'val',
-                    signalKind: 'computed',
-                    defaultValue: 'computed(() => 42)'
-                }
-            ],
-            allSignalProps: []
-        });
-
-        expect(html).to.not.include('cdx-derived-chain');
+        expect(html).to.not.include('cdx-derived-dep');
+        expect(html).to.not.include('cdx-derived-sep');
+        expect(html).to.not.include('cdx-derived-arrow');
+        expect(html).to.not.include('cdx-derived-self');
     });
 
     it('renders source link with line number', () => {
@@ -163,32 +183,53 @@ describe('BlockDerivedState', () => {
         expect(html).to.include('src/app/test.component.ts:42');
     });
 
-    it('renders description when present', () => {
+    it('renders description and sentence together inside the same desc block', () => {
         const html = BlockDerivedState({
             ...baseProps,
             properties: [
                 {
                     name: 'x',
                     signalKind: 'computed',
-                    defaultValue: 'computed(() => 1)',
+                    signalDeps: ['count()'],
+                    defaultValue: 'computed(() => this.count())',
                     description: 'A computed value'
                 }
             ],
-            allSignalProps: []
+            allSignalProps: [{ name: 'count', signalKind: 'signal' }]
         });
 
         expect(html).to.include('cdx-io-member-desc');
         expect(html).to.include('A computed value');
+        expect(html).to.include('Derives from');
+        expect(html).to.match(/<code[^>]*>count\(\)<\/code>/);
     });
 
-    it('renders dot separator between multiple deps', () => {
+    it('renders the sentence alone when there is no description', () => {
+        const html = BlockDerivedState({
+            ...baseProps,
+            properties: [
+                {
+                    name: 'x',
+                    signalKind: 'computed',
+                    signalDeps: ['a()'],
+                    defaultValue: 'computed(() => this.a())'
+                }
+            ],
+            allSignalProps: [{ name: 'a', signalKind: 'signal' }]
+        });
+
+        expect(html).to.include('cdx-io-member-desc');
+        expect(html).to.include('Derives from');
+    });
+
+    it('inserts a middle-dot separator between multiple deps', () => {
         const html = BlockDerivedState({
             ...baseProps,
             properties: [
                 {
                     name: 'sum',
                     signalKind: 'computed',
-                    signalDeps: ['a', 'b'],
+                    signalDeps: ['a()', 'b()'],
                     defaultValue: 'computed(() => this.a() + this.b())'
                 }
             ],
@@ -198,23 +239,6 @@ describe('BlockDerivedState', () => {
             ]
         });
 
-        expect(html).to.include('cdx-derived-sep');
-    });
-
-    it('renders arrow before self chip', () => {
-        const html = BlockDerivedState({
-            ...baseProps,
-            properties: [
-                {
-                    name: 'x',
-                    signalKind: 'computed',
-                    signalDeps: ['a'],
-                    defaultValue: 'computed(() => this.a())'
-                }
-            ],
-            allSignalProps: [{ name: 'a', signalKind: 'signal' }]
-        });
-
-        expect(html).to.include('cdx-derived-arrow');
+        expect(html).to.match(/<code[^>]*>a\(\)<\/code>[^<]*\u00B7[^<]*<code[^>]*>b\(\)<\/code>/);
     });
 });

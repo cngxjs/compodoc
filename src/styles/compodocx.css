@@ -116,6 +116,27 @@
     --radius-lg: 12px;
     --radius-2xl: 12px;
 
+    /* --- Code blocks (snippet + source viewer) --- */
+    --color-cdx-snippet-bg: hsl(220 14% 96%);
+    --color-cdx-snippet-border: transparent;
+    --color-cdx-snippet-radius: var(--radius-cdx-md);
+    --color-cdx-code-inline: #c2185b;
+    --color-cdx-code-dark-surface: hsl(225 16% 14%);
+    --color-cdx-scrollbar: hsl(220 10% 50% / 0.4);
+    --color-cdx-line-number: hsl(220 10% 50% / 0.5);
+    --color-cdx-line-hover: hsl(220 20% 14% / 0.06);
+    --color-cdx-line-highlight: hsl(48 96% 53% / 0.25);
+    --color-cdx-line-highlight-flash: hsl(48 96% 53% / 0.3);
+    --color-cdx-copy-success: hsl(142 50% 40%);
+    --color-cdx-lang-chip: hsl(220 10% 60%);
+    --color-cdx-lang-chip-bg: hsl(220 10% 50% / 0.1);
+
+    /* --- Graphs (dependency graph, DOM tree) --- */
+    --color-cdx-graph-bg: var(--color-cdx-bg-alt);
+    --color-cdx-graph-border: transparent;
+    --color-cdx-graph-border-width: 0;
+    --color-cdx-graph-radius: var(--radius-cdx-md);
+
     /* --- Transitions --- */
     --cdx-transition-fast: 120ms ease;
     --cdx-transition-base: 200ms ease;
@@ -162,6 +183,19 @@
     --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
     --shadow-cdx-md: 0 4px 12px hsl(0 0% 0% / 0.3);
     --shadow-cdx-lg: 0 12px 32px hsl(0 0% 0% / 0.4);
+
+    --color-cdx-snippet-bg: hsl(225 16% 16%);
+    --color-cdx-snippet-border: transparent;
+    --color-cdx-code-inline: #e09393;
+    --color-cdx-code-dark-surface: hsl(225 16% 14%);
+    --color-cdx-scrollbar: hsl(220 10% 50% / 0.5);
+    --color-cdx-line-number: hsl(220 10% 50% / 0.4);
+    --color-cdx-line-hover: hsl(220 16% 90% / 0.06);
+    --color-cdx-line-highlight: hsl(48 90% 60% / 0.15);
+    --color-cdx-line-highlight-flash: hsl(48 90% 60% / 0.2);
+    --color-cdx-copy-success: hsl(142 50% 60%);
+    --color-cdx-lang-chip: hsl(220 10% 55%);
+    --color-cdx-lang-chip-bg: hsl(220 10% 50% / 0.15);
 }
 
 /* Global inline <code> + <a> fallback colours.
@@ -188,7 +222,7 @@ a:hover {
 }
 
 .dark code {
-    color: #e09393;
+    color: var(--color-cdx-code-inline);
 }
 .dark a {
     color: #7fc9ff;

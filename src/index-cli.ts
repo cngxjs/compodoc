@@ -215,6 +215,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 COMPODOC_DEFAULTS.disableDependencies
             )
             .option(
+                '--disableDependenciesTab',
+                'Do not add the per-component Dependencies tab (standalone import graph)',
+                COMPODOC_DEFAULTS.disableDependenciesTab
+            )
+            .option(
                 '--disableProperties',
                 'Do not add the properties list',
                 COMPODOC_DEFAULTS.disableProperties
@@ -230,6 +235,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 COMPODOC_DEFAULTS.disableOverview
             )
             .option(
+                '--showEffects',
+                'Show Angular effect() entries in a dedicated Effects block',
+                COMPODOC_DEFAULTS.showEffects
+            )
+            .option(
                 '--templatePlayground',
                 'Generate template playground page for customizing templates',
                 false
@@ -242,7 +252,6 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             .option('--customFavicon [path]', 'Use a custom favicon')
             .option('--customLogo [path]', 'Use a custom logo')
             .option('--gaID [id]', 'Google Analytics tracking ID')
-            .option('--gaSite [site]', 'Google Analytics site name', COMPODOC_DEFAULTS.gaSite)
             .option(
                 '--publicApiOnly [path]',
                 'Document only symbols exported from index.d.ts files in the specified dist folder'
@@ -654,6 +663,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             Configuration.mainData.disableDependencies = programOptions.disableDependencies;
         }
 
+        if (configFile.disableDependenciesTab) {
+            Configuration.mainData.disableDependenciesTab = configFile.disableDependenciesTab;
+        }
+        if (programOptions.disableDependenciesTab) {
+            Configuration.mainData.disableDependenciesTab = programOptions.disableDependenciesTab;
+        }
+
         if (configFile.disableProperties) {
             Configuration.mainData.disableProperties = configFile.disableProperties;
         }
@@ -673,6 +689,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.disableOverview) {
             Configuration.mainData.disableOverview = programOptions.disableOverview;
+        }
+
+        if (configFile.showEffects) {
+            Configuration.mainData.showEffects = configFile.showEffects;
+        }
+        if (programOptions.showEffects) {
+            Configuration.mainData.showEffects = programOptions.showEffects;
         }
 
         if (configFile.minimal) {
@@ -707,13 +730,6 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.gaID) {
             Configuration.mainData.gaID = programOptions.gaID;
-        }
-
-        if (configFile.gaSite) {
-            Configuration.mainData.gaSite = configFile.gaSite;
-        }
-        if (programOptions.gaSite && programOptions.gaSite !== COMPODOC_DEFAULTS.gaSite) {
-            Configuration.mainData.gaSite = programOptions.gaSite;
         }
 
         if (configFile.publicApiOnly) {

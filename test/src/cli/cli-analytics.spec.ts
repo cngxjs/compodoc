@@ -15,8 +15,6 @@ describe('CLI Analytics tracking', () => {
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--gaID',
                 'UA-XXXXX-Y',
-                '--gaSite',
-                'demo',
                 '-d',
                 distFolder
             ]);

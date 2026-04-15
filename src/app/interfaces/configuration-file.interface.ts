@@ -38,15 +38,16 @@ export interface ConfigurationFileInterface {
     disableRoutesGraph: boolean;
     disableSearch: boolean;
     disableDependencies: boolean;
+    disableDependenciesTab: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
     disableOverview: boolean;
+    showEffects: boolean;
     templatePlayground: boolean;
     minimal: boolean;
     customFavicon: string;
     customLogo: string;
     gaID: string;
-    gaSite: string;
     tsconfig: string;
     files;
     exclude;

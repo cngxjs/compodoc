@@ -27,6 +27,7 @@ export const TRANSLATION_RU_RU = {
     directive: 'Директива',
     directives: 'Директивы',
     'dom tree': 'DOM-дерево',
+    effects: 'Эффекты',
     'empty-accessors': 'Нет акцессоров',
     'empty-category-desc': 'В этом проекте нет элементов типа {{category}}.',
     'empty-category-title': 'Элементы {{category}} не найдены',

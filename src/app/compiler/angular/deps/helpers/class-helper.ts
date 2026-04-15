@@ -1404,23 +1404,27 @@ export class ClassHelper {
             }
         }
 
-        // Extract signal dependency names for computed/linkedSignal
+        // Extract signal dependency names for computed/linkedSignal.
+        // `this.xxx()` → recorded as 'xxx()'; `this.xxx` (plain access) → recorded as 'xxx'.
         if (
             initializer &&
             (result.signalKind === 'computed' || result.signalKind === 'linked-signal')
         ) {
             const deps: string[] = [];
-            const walk = (node: any): void => {
+            const walk = (node: any, parent: any): void => {
                 if (
-                    node.kind === SyntaxKind.CallExpression &&
-                    node.expression?.kind === SyntaxKind.PropertyAccessExpression &&
-                    node.expression.expression?.kind === SyntaxKind.ThisKeyword
+                    node.kind === SyntaxKind.PropertyAccessExpression &&
+                    node.expression?.kind === SyntaxKind.ThisKeyword
                 ) {
-                    deps.push(node.expression.name.text);
+                    const isCalled =
+                        parent &&
+                        parent.kind === SyntaxKind.CallExpression &&
+                        parent.expression === node;
+                    deps.push(isCalled ? `${node.name.text}()` : node.name.text);
                 }
-                ts.forEachChild(node, walk);
+                ts.forEachChild(node, child => walk(child, node));
             };
-            ts.forEachChild(initializer, walk);
+            ts.forEachChild(initializer, child => walk(child, initializer));
             if (deps.length > 0) {
                 result.signalDeps = [...new Set(deps)];
             }

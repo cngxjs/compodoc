@@ -26,6 +26,7 @@ export const TRANSLATION_ZH_TW = {
     directive: '指令 (Directive)',
     directives: '指令 (Directives)',
     'dom tree': 'DOM 樹',
+    effects: '效果',
     'empty-accessors': '無存取器',
     'empty-category-desc': '此專案不包含任何 {{category}}。',
     'empty-category-title': '找不到 {{category}}',

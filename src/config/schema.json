@@ -291,10 +291,24 @@
             "default": false,
             "examples": [false]
         },
+        "disableDependenciesTab": {
+            "$id": "/properties/disableDependenciesTab",
+            "type": "boolean",
+            "title": "Do not add the per-component Dependencies tab (standalone import graph)",
+            "default": false,
+            "examples": [false]
+        },
         "disableProperties": {
             "$id": "/properties/disableProperties",
             "type": "boolean",
             "title": "Do not add the properties list",
+            "default": false,
+            "examples": [false]
+        },
+        "showEffects": {
+            "$id": "/properties/showEffects",
+            "type": "boolean",
+            "title": "Show Angular effect() entries in a dedicated Effects block",
             "default": false,
             "examples": [false]
         },
@@ -340,12 +354,82 @@
             "default": "",
             "examples": [""]
         },
-        "gaSite": {
-            "$id": "/properties/gaSite",
+        "disableStyleTab": {
+            "$id": "/properties/disableStyleTab",
+            "type": "boolean",
+            "title": "Do not add style tab",
+            "default": false,
+            "examples": [false]
+        },
+        "disableMainGraph": {
+            "$id": "/properties/disableMainGraph",
+            "type": "boolean",
+            "title": "Do not add the main overview dependency graph",
+            "default": false,
+            "examples": [false]
+        },
+        "shikiTheme": {
+            "$id": "/properties/shikiTheme",
             "type": "string",
-            "title": "Google Analytics site name",
+            "title": "Shiki syntax highlighting theme pair (e.g. 'github-light:github-dark' or 'nord')",
+            "default": "",
+            "examples": ["github-light:github-dark", "nord"]
+        },
+        "host": {
+            "$id": "/properties/host",
+            "type": "string",
+            "title": "Change default host address for serving",
+            "default": "127.0.0.1",
+            "examples": ["0.0.0.0"]
+        },
+        "stackblitz": {
+            "$id": "/properties/stackblitz",
+            "type": "boolean",
+            "title": "Enable StackBlitz integration for examples",
+            "default": false,
+            "examples": [false]
+        },
+        "stackblitzTemplate": {
+            "$id": "/properties/stackblitzTemplate",
+            "type": "string",
+            "title": "StackBlitz project template ID for examples",
             "default": "",
             "examples": [""]
+        },
+        "groupBy": {
+            "$id": "/properties/groupBy",
+            "type": "string",
+            "title": "Sidebar grouping strategy: folder, category, none (default: auto-detect)",
+            "default": "",
+            "examples": ["folder", "category", "none"]
+        },
+        "groupDepth": {
+            "$id": "/properties/groupDepth",
+            "type": "integer",
+            "title": "Max folder depth for group names when using folder grouping",
+            "default": 2,
+            "examples": [2]
+        },
+        "publicApiOnly": {
+            "$id": "/properties/publicApiOnly",
+            "type": "string",
+            "title": "Document only symbols exported from index.d.ts files in the specified dist folder",
+            "default": "",
+            "examples": ["dist"]
+        },
+        "maxSearchResults": {
+            "$id": "/properties/maxSearchResults",
+            "type": "integer",
+            "title": "Max search results on the results page. Set to 0 for unlimited",
+            "default": 15,
+            "examples": [15]
+        },
+        "templatePlayground": {
+            "$id": "/properties/templatePlayground",
+            "type": "boolean",
+            "title": "Generate template playground page for customizing templates",
+            "default": false,
+            "examples": [false]
         }
     }
 }

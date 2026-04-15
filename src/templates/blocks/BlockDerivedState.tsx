@@ -1,5 +1,12 @@
 import Html from '@kitajs/html';
-import { isTabEnabled, linkTypeHtml, parseDescription, signalKindLabel, t } from '../helpers';
+import {
+    highlightedCodeWrap,
+    isTabEnabled,
+    linkTypeHtml,
+    parseDescription,
+    signalKindLabel,
+    t
+} from '../helpers';
 
 type BlockDerivedStateProps = {
     readonly properties: any[];
@@ -9,8 +16,22 @@ type BlockDerivedStateProps = {
     readonly navTabs?: any[];
 };
 
+/**
+ * Filter signalDeps per spec: plain property access is always kept; a call
+ * (name ending in `()`) is kept only when the callee resolves to a known
+ * signal property on the class.
+ */
+const filterDeps = (rawDeps: readonly string[], signalNames: ReadonlySet<string>): string[] => {
+    return rawDeps.filter(dep => {
+        if (dep.endsWith('()')) {
+            return signalNames.has(dep.slice(0, -2));
+        }
+        return true;
+    });
+};
+
 export const BlockDerivedState = (props: BlockDerivedStateProps): string => {
-    const signalNames = new Set(
+    const signalNames = new Set<string>(
         props.allSignalProps.filter((p: any) => p.signalKind).map((p: any) => p.name)
     );
 
@@ -31,8 +52,9 @@ export const BlockDerivedState = (props: BlockDerivedStateProps): string => {
                     cls.push('cdx-io-member--deprecated');
                 }
 
-                // Filter signalDeps to only include known signal properties
-                const deps = (p.signalDeps ?? []).filter((d: string) => signalNames.has(d));
+                const deps = filterDeps(p.signalDeps ?? [], signalNames);
+                const hasDesc = !!p.description;
+                const hasDeps = deps.length > 0;
 
                 return (
                     <div class={cls.join(' ')} id={p.name}>
@@ -56,31 +78,24 @@ export const BlockDerivedState = (props: BlockDerivedStateProps): string => {
                                 </span>
                             )}
                         </div>
-                        {deps.length > 0 && (
-                            <div class="cdx-derived-chain">
-                                {deps.map((dep: string, i: number) => (
-                                    <>
-                                        {i > 0 && <span class="cdx-derived-sep">{'\u00B7'}</span>}
-                                        <a href={`#${dep}`} class="cdx-derived-dep">
-                                            {dep}
-                                        </a>
-                                    </>
-                                ))}
-                                <span class="cdx-derived-arrow">{'\u2192'}</span>
-                                <span class="cdx-derived-self">{p.name}</span>
-                            </div>
-                        )}
-                        {p.description && (
+                        {(hasDesc || hasDeps) && (
                             <div class="cdx-io-member-desc">
-                                {parseDescription(p.description, props.depth ?? 0)}
+                                {hasDesc && parseDescription(p.description, props.depth ?? 0)}
+                                {hasDeps && (
+                                    <p>
+                                        {'Derives from '}
+                                        {deps.map((dep, i) => (
+                                            <>
+                                                {i > 0 && ' \u00B7 '}
+                                                <code>{dep}</code>
+                                            </>
+                                        ))}
+                                        {'.'}
+                                    </p>
+                                )}
                             </div>
                         )}
-                        {/* biome-ignore lint/style/useSelfClosingElements: pre must not have whitespace */}
-                        {p.defaultValue && (
-                            <pre class="cdx-derived-body">
-                                <code>{p.defaultValue}</code>
-                            </pre>
-                        )}
+                        {p.defaultValue && highlightedCodeWrap(p.defaultValue)}
                         {p.line && isTabEnabled(props.navTabs, 'source') && (
                             <div class="cdx-io-member-source">
                                 {/* biome-ignore lint/a11y/useValidAnchor: href rewritten by client JS via data-cdx-line */}

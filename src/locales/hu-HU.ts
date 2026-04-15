@@ -27,6 +27,7 @@ export const TRANSLATION_HU_HU = {
     directive: 'Direktíva',
     directives: 'Direktívák',
     'dom tree': 'DOM fa',
+    effects: 'Effektek',
     'empty-accessors': 'Nincsenek getter/setter metódusok',
     'empty-category-desc': 'Ez a projekt nem tartalmaz {{category}} elemeket.',
     'empty-category-title': 'Nem található {{category}}',

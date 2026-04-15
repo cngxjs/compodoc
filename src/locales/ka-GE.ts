@@ -27,6 +27,7 @@ export const TRANSLATION_KA_GE = {
     directive: 'დირექტივა',
     directives: 'დირექტივები',
     'dom tree': 'DOM ხე',
+    effects: 'ეფექტები',
     'empty-accessors': 'აქსესორები არ არის',
     'empty-category-desc': 'ამ პროექტში {{category}} არ არის.',
     'empty-category-title': '{{category}} ვერ მოიძებნა',

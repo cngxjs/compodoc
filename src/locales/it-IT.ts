@@ -27,6 +27,7 @@ export const TRANSLATION_IT_IT = {
     directive: 'Direttiva',
     directives: 'Direttive',
     'dom tree': 'Albero DOM',
+    effects: 'Effetti',
     'empty-accessors': 'Nessun accessore',
     'empty-category-desc': 'Questo progetto non contiene alcun {{category}}.',
     'empty-category-title': 'Nessun {{category}} trovato',

@@ -100,6 +100,7 @@ export const DEFAULT_API_SECTIONS: ReadonlyArray<string> = [
     'inputs',
     'outputs',
     'derivedState',
+    'effects',
     'properties',
     'methods',
     'accessors',

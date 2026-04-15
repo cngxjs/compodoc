@@ -468,9 +468,11 @@ const initDomTree = async () => {
             .attr('aria-label', 'Component DOM tree')
             .style('width', '100%')
             .style('height', '450px')
-            .style('border', '1px solid var(--color-cdx-border)')
-            .style('border-radius', 'var(--radius-cdx-lg, 12px)')
-            .style('background', 'var(--color-cdx-bg-alt)')
+            .style('border-width', 'var(--color-cdx-graph-border-width, 0)')
+            .style('border-style', 'solid')
+            .style('border-color', 'var(--color-cdx-graph-border, transparent)')
+            .style('border-radius', 'var(--color-cdx-graph-radius, var(--radius-cdx-lg, 12px))')
+            .style('background', 'var(--color-cdx-graph-bg, var(--color-cdx-bg-alt))')
             .style('cursor', 'grab');
 
         const g = svg.append('g').attr('transform', 'translate(50,30)');
@@ -577,6 +579,26 @@ const initDomTree = async () => {
             const tx = (svgWidth - bbox.width * scale) / 2 - bbox.x * scale;
             const ty = (svgHeight - bbox.height * scale) / 2 - bbox.y * scale;
             svg.call(zoomBehavior.transform, zoomIdentity.translate(tx, ty).scale(scale));
+
+            // Wire zoom buttons
+            const treeZoomIn = document.getElementById('tree-zoom-in');
+            const treeZoomOut = document.getElementById('tree-zoom-out');
+            const treeReset = document.getElementById('tree-reset');
+
+            treeZoomIn?.addEventListener('click', e => {
+                e.preventDefault();
+                svg.transition().duration(300).call(zoomBehavior.scaleBy, 1.3);
+            });
+            treeZoomOut?.addEventListener('click', e => {
+                e.preventDefault();
+                svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.7);
+            });
+            treeReset?.addEventListener('click', e => {
+                e.preventDefault();
+                svg.transition()
+                    .duration(300)
+                    .call(zoomBehavior.transform, zoomIdentity.translate(tx, ty).scale(scale));
+            });
         }
     };
 
@@ -664,9 +686,11 @@ const initDependencyGraph = async () => {
         .attr('aria-label', 'Standalone component dependency graph')
         .style('width', '100%')
         .style('height', `${height}px`)
-        .style('border', '1px solid var(--color-cdx-border)')
-        .style('border-radius', 'var(--radius-cdx-lg, 12px)')
-        .style('background', 'var(--color-cdx-bg-alt)')
+        .style('border-width', 'var(--color-cdx-graph-border-width, 0)')
+        .style('border-style', 'solid')
+        .style('border-color', 'var(--color-cdx-graph-border, transparent)')
+        .style('border-radius', 'var(--color-cdx-graph-radius, var(--radius-cdx-lg, 12px))')
+        .style('background', 'var(--color-cdx-graph-bg, var(--color-cdx-bg-alt))')
         .style('cursor', 'grab');
 
     const g = svg.append('g');

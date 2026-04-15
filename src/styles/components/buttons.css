@@ -35,16 +35,19 @@
     content: '';
     position: absolute;
     inset: 0;
+    border-radius: inherit;
     background: radial-gradient(circle, currentColor 10%, transparent 10.01%) no-repeat 50% 50%;
     transform: scale(0);
     opacity: 0;
     transition:
-        transform 400ms ease,
-        opacity 400ms ease;
+        transform 300ms ease-out,
+        opacity 300ms ease-out;
 }
 
 .cdx-btn:active::after {
-    transform: scale(2.5);
-    opacity: 0.15;
-    transition-duration: 0ms;
+    transform: scale(10);
+    opacity: 0.12;
+    transition:
+        transform 0ms,
+        opacity 0ms;
 }

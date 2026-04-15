@@ -16,7 +16,6 @@ export type PageData = {
     readonly hideDarkModeToggle?: boolean;
     readonly maxSearchResults?: number;
     readonly gaID?: string;
-    readonly gaSite?: string;
     readonly entityIndex?: Record<string, { href: string; kind: string }>;
 };
 
