@@ -321,53 +321,6 @@ describe('CLI Export', () => {
         });
     });
 
-    /*describe('when specified PDF', () => {
-        let stdoutString = undefined;
-
-        const title = 'Documentation in pdf';
-
-        beforeAll(() => {
-            tmp.create(distFolder);
-            let ls = shell('node', [
-                './bin/index-cli.js',
-                '-p',
-                './test/fixtures/todomvc-ng2/src/tsconfig.json',
-                '-d',
-                distFolder,
-                '-n',
-                title,
-                '-e',
-                'pdf'
-            ]);
-
-            if (hasStderrError(ls.stderr.toString())) {
-                console.error(`shell error: ${ls.stderr.toString()}`);
-                throw new Error('error');
-            }
-            stdoutString = ls.stdout.toString();
-        });
-        afterAll(() => tmp.clean(distFolder));
-
-        it('should display generated message', () => {
-            expect(stdoutString).to.contain('Documentation generated');
-        });
-
-        it('should create pdf file', () => {
-            let isFileExists = exists(`${distFolder}/documentation.pdf`);
-            expect(isFileExists).to.be.true;
-        });
-
-        it('pdf file should have some data', () => {
-            let pdfDataBuffer = fs.readFileSync(`${distFolder}/documentation.pdf`);
-            return readPDF(pdfDataBuffer).then(function (data) {
-                // console.log(data);
-                expect(data.text).to.contain(
-                    'AboutModule\nFilename : test/fixtures/todomvc-ng2/src/app/about/about.module.ts'
-                );
-            });
-        });
-    });*/
-
     describe('when specified not supported format', () => {
         let stdoutString;
 

@@ -1,5 +1,3 @@
-//import * as PDFJS from 'pdfjs-dist/legacy/build/pdf.mjs';
-
 import { readFileSync } from 'node:fs';
 import path, { resolve } from 'node:path';
 import fs from 'fs-extra';

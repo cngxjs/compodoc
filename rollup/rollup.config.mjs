@@ -47,7 +47,6 @@ export default {
         'minimist',
         'neotraverse/legacy',
         'os-name',
-        'pdfmake',
         'picocolors',
         'polka',
         'semver',
