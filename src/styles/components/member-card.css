@@ -96,7 +96,7 @@ a.cdx-member-permalink:hover {
 .cdx-member-card .cdx-member-modifier {
     display: inline-block;
     font-family: var(--font-code);
-    font-size: 0.7rem;
+    font-size: 10px;
     font-weight: 500;
     padding: 1px 5px;
     border-radius: var(--radius-cdx-sm);
@@ -652,13 +652,29 @@ a.cdx-member-permalink:hover {
 .cdx-io-member-badges > .cdx-member-modifier {
     display: inline-block;
     font-family: var(--font-code);
-    font-size: 0.7rem;
+    font-size: 10px;
     font-weight: 500;
     padding: 1px 5px;
     border-radius: var(--radius-cdx-sm);
     color: var(--color-cdx-text-muted);
     background: var(--color-cdx-bg-alt);
     border: 1px solid var(--color-cdx-border);
+}
+
+.cdx-io-member-badges > .cdx-member-modifier--private {
+    color: hsl(0 50% 40%);
+    background: hsl(0 40% 95%);
+    border-color: hsl(0 40% 88%);
+}
+.cdx-io-member-badges > .cdx-member-modifier--protected {
+    color: hsl(35 60% 35%);
+    background: hsl(35 50% 95%);
+    border-color: hsl(35 45% 85%);
+}
+.cdx-io-member-badges > .cdx-member-modifier--readonly {
+    color: hsl(210 50% 40%);
+    background: hsl(210 40% 95%);
+    border-color: hsl(210 35% 85%);
 }
 
 .cdx-io-member-badges > .cdx-badge {
