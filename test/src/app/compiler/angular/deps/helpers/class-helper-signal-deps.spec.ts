@@ -44,7 +44,7 @@ describe('ClassHelper > signalDeps extraction', () => {
         );
 
         expect(result.signalKind).toBe('computed');
-        expect(result.signalDeps).toEqual(['cardType']);
+        expect(result.signalDeps).toEqual(['cardType()']);
     });
 
     it('should extract multiple dependencies from a computed', () => {
@@ -56,7 +56,7 @@ describe('ClassHelper > signalDeps extraction', () => {
         );
 
         expect(result.signalKind).toBe('computed');
-        expect(result.signalDeps).toEqual(['count', 'limit']);
+        expect(result.signalDeps).toEqual(['count()', 'limit()']);
     });
 
     it('should deduplicate repeated dependency calls', () => {
@@ -66,7 +66,7 @@ describe('ClassHelper > signalDeps extraction', () => {
             'label'
         );
 
-        expect(result.signalDeps).toEqual(['name']);
+        expect(result.signalDeps).toEqual(['name()']);
     });
 
     it('should extract deps from linkedSignal', () => {
@@ -77,7 +77,7 @@ describe('ClassHelper > signalDeps extraction', () => {
         );
 
         expect(result.signalKind).toBe('linked-signal');
-        expect(result.signalDeps).toEqual(['source']);
+        expect(result.signalDeps).toEqual(['source()']);
     });
 
     it('should not extract deps from plain signal()', () => {
@@ -105,7 +105,7 @@ describe('ClassHelper > signalDeps extraction', () => {
         );
 
         // Only this.data() should be captured, not console.log
-        expect(result.signalDeps).toEqual(['data']);
+        expect(result.signalDeps).toEqual(['data()']);
     });
 
     it('should handle computed with no this-calls', () => {
@@ -113,6 +113,27 @@ describe('ClassHelper > signalDeps extraction', () => {
 
         expect(result.signalKind).toBe('computed');
         expect(result.signalDeps).toBeUndefined();
+    });
+
+    it('should extract plain property access without parens suffix', () => {
+        const result = extractProperty(
+            `rovingParent: any = null;
+             readonly hasParent = computed(() => this.rovingParent !== null);`,
+            'hasParent'
+        );
+
+        expect(result.signalDeps).toEqual(['rovingParent']);
+    });
+
+    it('should distinguish called vs plain access in the same computed', () => {
+        const result = extractProperty(
+            `rovingParent: any = null;
+             readonly interactive = signal(false);
+             readonly ready = computed(() => this.rovingParent && this.interactive());`,
+            'ready'
+        );
+
+        expect(result.signalDeps).toEqual(['rovingParent', 'interactive()']);
     });
 
     it('should extract deps from multi-line computed body', () => {
@@ -127,6 +148,6 @@ describe('ClassHelper > signalDeps extraction', () => {
             'sum'
         );
 
-        expect(result.signalDeps).toEqual(['a', 'b']);
+        expect(result.signalDeps).toEqual(['a()', 'b()']);
     });
 });

@@ -734,53 +734,6 @@ a.cdx-member-permalink:hover {
     --cdx-io-color: hsl(210 60% 35%);
 }
 
-.cdx-derived-chain {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-cdx-sm);
-    margin-top: var(--spacing-cdx-sm);
-    flex-wrap: wrap;
-}
-
-.cdx-derived-dep {
-    font-family: var(--font-code);
-    font-size: 0.75rem;
-    color: var(--color-cdx-text-secondary);
-    background: var(--color-cdx-bg-alt);
-    border: 1px solid var(--color-cdx-border);
-    border-radius: var(--radius-cdx-sm);
-    padding: 2px 8px;
-    text-decoration: none;
-    transition: border-color 150ms ease;
-}
-
-.cdx-derived-dep:hover {
-    border-color: var(--color-cdx-text-muted);
-    text-decoration: none;
-}
-
-.cdx-derived-sep {
-    color: var(--color-cdx-text-muted);
-    margin: 0;
-    font-size: 0.75rem;
-}
-
-.cdx-derived-arrow {
-    color: var(--color-cdx-text-muted);
-    font-size: 0.75rem;
-}
-
-.cdx-derived-self {
-    font-family: var(--font-code);
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--cdx-io-color, var(--color-cdx-text));
-    background: color-mix(in srgb, var(--cdx-io-color, var(--color-cdx-text)) 7%, transparent);
-    border: 1px solid color-mix(in srgb, var(--cdx-io-color, var(--color-cdx-text)) 22%, transparent);
-    border-radius: var(--radius-cdx-sm);
-    padding: 2px 8px;
-}
-
 .cdx-derived-body {
     background: var(--color-cdx-bg-alt);
     border: 1px solid var(--color-cdx-border);
@@ -807,8 +760,3 @@ a.cdx-member-permalink:hover {
     --cdx-io-color: hsl(210 60% 70%);
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .cdx-derived-dep {
-        transition: none;
-    }
-}
