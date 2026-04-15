@@ -131,6 +131,14 @@
     --color-cdx-lang-chip: hsl(220 10% 60%);
     --color-cdx-lang-chip-bg: hsl(220 10% 50% / 0.1);
 
+    /* --- Status (coverage, tests) --- */
+    --color-cdx-status-pass: #16a34a;
+    --color-cdx-status-fail: #ef4444;
+    --color-cdx-status-warning: #ca8a04;
+
+    /* --- Overlay --- */
+    --color-cdx-overlay: hsl(220 20% 14% / 0.4);
+
     /* --- Graphs (dependency graph, DOM tree) --- */
     --color-cdx-graph-bg: var(--color-cdx-bg-alt);
     --color-cdx-graph-border: transparent;
@@ -183,6 +191,11 @@
     --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
     --shadow-cdx-md: 0 4px 12px hsl(0 0% 0% / 0.3);
     --shadow-cdx-lg: 0 12px 32px hsl(0 0% 0% / 0.4);
+
+    --color-cdx-status-pass: #4ade80;
+    --color-cdx-status-fail: #f87171;
+    --color-cdx-status-warning: #facc15;
+    --color-cdx-overlay: hsl(220 16% 10% / 0.6);
 
     --color-cdx-snippet-bg: hsl(225 16% 16%);
     --color-cdx-snippet-border: transparent;

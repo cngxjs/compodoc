@@ -148,7 +148,7 @@
     position: fixed;
     inset: 0;
     z-index: 25;
-    background: hsl(220 20% 14% / 0.4);
+    background: var(--color-cdx-overlay);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     opacity: 0;

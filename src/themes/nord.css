@@ -1,0 +1,110 @@
+/* @theme Nord
+ * Arctic, muted, low-contrast — the beloved polar palette.
+ * Pairs well with: --shikiTheme nord:nord
+ */
+
+:root {
+    /* --- Surfaces (Snow Storm) --- */
+    --color-cdx-bg: #eceff4;
+    --color-cdx-bg-alt: #e5e9f0;
+    --color-cdx-bg-elevated: #fff;
+    --color-cdx-bg-code: #e5e9f0;
+    --color-cdx-bg-code-block: #2e3440;
+
+    /* --- Text (Polar Night) --- */
+    --color-cdx-text: #2e3440;
+    --color-cdx-text-secondary: #4c566a;
+    --color-cdx-text-muted: #616e88;
+    --color-cdx-text-inverse: #eceff4;
+
+    /* --- Primary (Frost blue) --- */
+    --color-cdx-primary: #5e81ac;
+    --color-cdx-primary-hover: #4c6a91;
+    --color-cdx-primary-subtle: #e8eef5;
+
+    /* --- Entity colors (Nord palette adapted) --- */
+    --color-cdx-entity-component: #8fbcbb;
+    --color-cdx-entity-service: #d08770;
+    --color-cdx-entity-directive: #b48ead;
+    --color-cdx-entity-pipe: #bf616a;
+    --color-cdx-entity-module: #5e81ac;
+    --color-cdx-entity-class: #a3be8c;
+    --color-cdx-entity-interface: #88c0d0;
+    --color-cdx-entity-guard: #bf616a;
+    --color-cdx-entity-interceptor: #b48ead;
+    --color-cdx-entity-function: #a3be8c;
+    --color-cdx-entity-variable: #4c566a;
+    --color-cdx-entity-typealias: #81a1c1;
+    --color-cdx-entity-enum: #d08770;
+
+    /* --- Feedback --- */
+    --color-cdx-deprecated: #d08770;
+    --color-cdx-danger: #bf616a;
+
+    /* --- Borders --- */
+    --color-cdx-border: #d8dee9;
+    --color-cdx-border-strong: #a0aabb;
+    --color-cdx-border-focus: #5e81ac;
+
+    /* --- Shadows (subtle, cool-tinted) --- */
+    --shadow-cdx-sm: 0 1px 2px hsl(220 16% 22% / 0.06);
+    --shadow-cdx-md: 0 4px 12px hsl(220 16% 22% / 0.08);
+    --shadow-cdx-lg: 0 12px 32px hsl(220 16% 22% / 0.1);
+
+    /* --- Density (comfortable) --- */
+    --spacing-cdx-xs: 5px;
+    --spacing-cdx-sm: 10px;
+    --spacing-cdx-md: 14px;
+    --spacing-cdx-lg: 18px;
+    --spacing-cdx-xl: 22px;
+    --spacing-cdx-2xl: 26px;
+}
+
+.dark {
+    /* --- Surfaces (Polar Night) --- */
+    --color-cdx-bg: #2e3440;
+    --color-cdx-bg-alt: #3b4252;
+    --color-cdx-bg-elevated: #434c5e;
+    --color-cdx-bg-code: #3b4252;
+    --color-cdx-bg-code-block: #242933;
+
+    /* --- Text (Snow Storm) --- */
+    --color-cdx-text: #eceff4;
+    --color-cdx-text-secondary: #d8dee9;
+    --color-cdx-text-muted: #8892a4;
+    --color-cdx-text-inverse: #2e3440;
+
+    /* --- Primary (Frost blue, lighter) --- */
+    --color-cdx-primary: #88c0d0;
+    --color-cdx-primary-hover: #8fbcbb;
+    --color-cdx-primary-subtle: #3b4555;
+
+    /* --- Entity colors (same, Nord is consistent) --- */
+    --color-cdx-entity-component: #8fbcbb;
+    --color-cdx-entity-service: #d08770;
+    --color-cdx-entity-directive: #b48ead;
+    --color-cdx-entity-pipe: #bf616a;
+    --color-cdx-entity-module: #81a1c1;
+    --color-cdx-entity-class: #a3be8c;
+    --color-cdx-entity-interface: #88c0d0;
+    --color-cdx-entity-guard: #bf616a;
+    --color-cdx-entity-interceptor: #b48ead;
+    --color-cdx-entity-function: #a3be8c;
+    --color-cdx-entity-variable: #d8dee9;
+    --color-cdx-entity-typealias: #81a1c1;
+    --color-cdx-entity-enum: #d08770;
+
+    /* --- Feedback --- */
+    --color-cdx-deprecated: #d08770;
+    --color-cdx-danger: #bf616a;
+
+    /* --- Borders --- */
+    --color-cdx-border: #4c566a;
+    --color-cdx-border-strong: #6a7589;
+    --color-cdx-border-focus: #88c0d0;
+
+    /* --- Shadows --- */
+    --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
+    --shadow-cdx-md: 0 4px 12px hsl(0 0% 0% / 0.25);
+    --shadow-cdx-lg: 0 12px 32px hsl(0 0% 0% / 0.3);
+}

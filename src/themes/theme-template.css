@@ -1,0 +1,180 @@
+/* @theme My Theme Name
+ *
+ * Custom theme for compodocx.
+ * Override any subset of tokens below -- unspecified tokens fall back to defaults.
+ * Both :root (light) and .dark blocks are supported.
+ * If .dark is omitted, :root values are used in both modes.
+ *
+ * Badge and modifier colors use a single base token per kind. Text, border,
+ * and background are derived automatically via color-mix(). Override just the
+ * base color to retheme an entire badge.
+ *
+ * IMPORTANT: For radii, fonts, and transitions you must also override the
+ * Tailwind alias tokens (marked with [TW]) so @apply-generated styles pick
+ * up your values. Color tokens don't need Tailwind aliases.
+ *
+ * Usage: compodocx --theme ./my-theme.css
+ *
+ * Pairs well with: --shikiTheme github-light:github-dark
+ */
+
+:root {
+  /* ── Surface hierarchy ───────────────────────────────────
+   * bg:           page background
+   * bg-alt:       sidebar, alternating rows, subtle sections
+   * bg-elevated:  cards, modals, popovers
+   * bg-code:      inline code background
+   * bg-code-block: fenced code block background (dark by default)
+   */
+  /* --color-cdx-bg:            hsl(220 16% 98%); */
+  /* --color-cdx-bg-alt:        hsl(220 16% 96%); */
+  /* --color-cdx-bg-elevated:   hsl(0 0% 100%); */
+  /* --color-cdx-bg-code:       hsl(220 16% 95%); */
+  /* --color-cdx-bg-code-block: hsl(225 16% 16%); */
+
+  /* ── Text hierarchy ──────────────────────────────────── */
+  /* --color-cdx-text:           hsl(220 20% 14%); */
+  /* --color-cdx-text-secondary: hsl(220 12% 44%); */
+  /* --color-cdx-text-muted:     hsl(220 10% 45%); */
+  /* --color-cdx-text-inverse:   hsl(220 16% 96%); */
+
+  /* ── Primary accent ──────────────────────────────────── */
+  /* --color-cdx-primary:        hsl(222 68% 52%); */
+  /* --color-cdx-primary-hover:  hsl(222 68% 44%); */
+  /* --color-cdx-primary-subtle: hsl(222 68% 96%); */
+
+  /* ── Entity type accents (13 types) ──────────────────── */
+  /* --color-cdx-entity-component:   #0e8578; */
+  /* --color-cdx-entity-service:     #a56a07; */
+  /* --color-cdx-entity-directive:   #7c3aed; */
+  /* --color-cdx-entity-pipe:        #e2177b; */
+  /* --color-cdx-entity-module:      #1e6ff5; */
+  /* --color-cdx-entity-class:       #05875f; */
+  /* --color-cdx-entity-interface:   #475569; */
+  /* --color-cdx-entity-guard:       #eb1515; */
+  /* --color-cdx-entity-interceptor: #ba25cd; */
+  /* --color-cdx-entity-function:    #52840b; */
+  /* --color-cdx-entity-variable:    #617087; */
+  /* --color-cdx-entity-typealias:   #6164f1; */
+  /* --color-cdx-entity-enum:        #c2410c; */
+
+  /* ── Badge base colors ───────────────────────────────────
+   * Each badge kind derives text, border, and background from a single
+   * base color via color-mix(). Override just the base to retheme.
+   */
+  /* --color-cdx-badge-standalone:        hsl(170 55% 38%); */
+  /* --color-cdx-badge-token:             hsl(260 50% 48%); */
+  /* --color-cdx-badge-beta:              hsl(35 75% 42%); */
+  /* --color-cdx-badge-factory:           hsl(200 50% 42%); */
+  /* --color-cdx-badge-zoneless:          hsl(280 45% 48%); */
+  /* --color-cdx-badge-breaking:          hsl(0 65% 45%); */
+  /* --color-cdx-badge-signal:            hsl(210 60% 42%); */
+  /* --color-cdx-badge-computed:          hsl(270 50% 45%); */
+  /* --color-cdx-badge-effect:            hsl(45 70% 40%); */
+  /* --color-cdx-badge-resource:          hsl(190 55% 38%); */
+  /* --color-cdx-badge-model:             hsl(240 45% 45%); */
+  /* --color-cdx-badge-after-render:      hsl(25 65% 40%); */
+  /* --color-cdx-badge-after-next-render: hsl(15 65% 42%); */
+  /* --color-cdx-badge-after-every-render: hsl(5 60% 42%); */
+  /* --color-cdx-badge-after-render-effect: hsl(340 55% 42%); */
+  /* --color-cdx-badge-input:             hsl(145 50% 35%); */
+  /* --color-cdx-badge-output:            hsl(350 50% 42%); */
+  /* --color-cdx-badge-view-child:        hsl(165 50% 35%); */
+  /* --color-cdx-badge-content-child:     hsl(55 60% 35%); */
+  /* --color-cdx-badge-inject:            hsl(320 45% 45%); */
+  /* --color-cdx-badge-host:              hsl(180 50% 35%); */
+
+  /* ── Modifier base colors ────────────────────────────────
+   * Same color-mix() derivation as badges. */
+  /* --color-cdx-mod-private:   hsl(0 50% 40%); */
+  /* --color-cdx-mod-protected: hsl(35 60% 35%); */
+  /* --color-cdx-mod-readonly:  hsl(210 50% 40%); */
+  /* --color-cdx-mod-static:    hsl(270 40% 42%); */
+  /* --color-cdx-mod-async:     hsl(170 45% 32%); */
+
+  /* ── Status colors (coverage, tests) ─────────────────── */
+  /* --color-cdx-status-pass:    #16a34a; */
+  /* --color-cdx-status-fail:    #ef4444; */
+  /* --color-cdx-status-warning: #ca8a04; */
+
+  /* ── Overlay ─────────────────────────────────────────── */
+  /* --color-cdx-overlay: hsl(220 20% 14% / 0.4); */
+
+  /* ── Feedback ────────────────────────────────────────── */
+  /* --color-cdx-deprecated: hsl(38 92% 32.5%); */
+  /* --color-cdx-danger:     hsl(0 72% 51%); */
+
+  /* ── Borders ─────────────────────────────────────────── */
+  /* --color-cdx-border:        hsl(220 14% 90%); */
+  /* --color-cdx-border-strong: hsl(220 14% 59%); */
+  /* --color-cdx-border-focus:  hsl(222 68% 52%); */
+
+  /* ── Shadows ─────────────────────────────────────────── */
+  /* --shadow-cdx-sm: 0 1px 2px hsl(220 20% 14% / 0.06); */
+  /* --shadow-cdx-md: 0 4px 12px hsl(220 20% 14% / 0.08); */
+  /* --shadow-cdx-lg: 0 12px 32px hsl(220 20% 14% / 0.12); */
+
+  /* ── Typography ──────────────────────────────────────── */
+  /* --font-heading: "Instrument Sans", system-ui, sans-serif; */
+  /* --font-body:    "Source Sans 3", system-ui, sans-serif; */
+  /* --font-code:    ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; */
+  /* --font-sans:    "Source Sans 3", system-ui, sans-serif;    [TW] */
+  /* --font-mono:    ui-monospace, "SF Mono", Menlo, monospace; [TW] */
+
+  /* ── Radii ───────────────────────────────────────────── */
+  /* --radius-cdx-sm: 4px; */
+  /* --radius-cdx-md: 8px; */
+  /* --radius-cdx-lg: 12px; */
+  /* --radius-sm: 4px;   [TW] */
+  /* --radius-md: 8px;   [TW] */
+  /* --radius-lg: 12px;  [TW] */
+  /* --radius-2xl: 12px; [TW] */
+
+  /* ── Spacing ─────────────────────────────────────────── */
+  /* --spacing-cdx-xs:  4px; */
+  /* --spacing-cdx-sm:  8px; */
+  /* --spacing-cdx-md:  12px; */
+  /* --spacing-cdx-lg:  16px; */
+  /* --spacing-cdx-xl:  20px; */
+  /* --spacing-cdx-2xl: 24px; */
+
+  /* ── Layout ──────────────────────────────────────────── */
+  /* --spacing-cdx-sidebar: 320px; */
+
+  /* ── Code blocks (snippets + source viewer) ──────────── */
+  /* --color-cdx-snippet-bg:           hsl(220 14% 96%); */
+  /* --color-cdx-snippet-border:       transparent; */
+  /* --color-cdx-snippet-radius:       var(--radius-cdx-md); */
+  /* --color-cdx-code-inline:          #c2185b; */
+  /* --color-cdx-code-dark-surface:    hsl(225 16% 14%); */
+  /* --color-cdx-scrollbar:            hsl(220 10% 50% / 0.4); */
+  /* --color-cdx-line-number:          hsl(220 10% 50% / 0.5); */
+  /* --color-cdx-line-hover:           hsl(220 20% 14% / 0.06); */
+  /* --color-cdx-line-highlight:       hsl(48 96% 53% / 0.25); */
+  /* --color-cdx-line-highlight-flash: hsl(48 96% 53% / 0.3); */
+  /* --color-cdx-copy-success:         hsl(142 50% 40%); */
+  /* --color-cdx-lang-chip:            hsl(220 10% 60%); */
+  /* --color-cdx-lang-chip-bg:         hsl(220 10% 50% / 0.1); */
+
+  /* ── Graphs (dependency graph, DOM tree) ─────────────── */
+  /* --color-cdx-graph-bg:           var(--color-cdx-bg-alt); */
+  /* --color-cdx-graph-border:       transparent; */
+  /* --color-cdx-graph-border-width: 0; */
+  /* --color-cdx-graph-radius:       var(--radius-cdx-md); */
+
+  /* ── Transitions ─────────────────────────────────────── */
+  /* --cdx-transition-fast: 120ms ease; */
+  /* --cdx-transition-base: 200ms ease; */
+}
+
+.dark {
+  /* Override the same tokens for dark mode.
+   * Omit this block to use :root values for both modes.
+   *
+   * Example:
+   * --color-cdx-bg: hsl(225 16% 10%);
+   * --color-cdx-text: hsl(220 16% 90%);
+   * --color-cdx-status-pass: #4ade80;
+   * --color-cdx-overlay: hsl(220 16% 10% / 0.6);
+   */
+}

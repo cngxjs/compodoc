@@ -44,11 +44,11 @@ a.cdx-overview-kpi {
 a.cdx-overview-kpi:hover {
     @apply no-underline;
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.1);
+    box-shadow: var(--shadow-cdx-lg);
 }
 
 :is(.dark) a.cdx-overview-kpi:hover {
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+    box-shadow: var(--shadow-cdx-lg);
 }
 
 .cdx-overview-kpi:focus-visible {
@@ -88,7 +88,7 @@ a.cdx-overview-kpi:hover {
 .cdx-overview-adoption-bar {
     @apply w-full h-1.5 rounded-full overflow-hidden mt-2;
     max-width: 100px;
-    background: rgb(128 128 128 / 0.15);
+    background: color-mix(in srgb, var(--color-cdx-text-muted) 15%, transparent);
 }
 
 .cdx-overview-adoption-fill {
