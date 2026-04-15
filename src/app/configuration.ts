@@ -67,6 +67,7 @@ export class Configuration implements ConfigurationInterface {
         disableRoutesGraph: COMPODOC_DEFAULTS.disableRoutesGraph,
         disableSearch: false,
         disableDependencies: COMPODOC_DEFAULTS.disableDependencies,
+        disableDependenciesTab: COMPODOC_DEFAULTS.disableDependenciesTab,
         disableProperties: COMPODOC_DEFAULTS.disableProperties,
         disableFilePath: COMPODOC_DEFAULTS.disableFilePath,
         disableOverview: COMPODOC_DEFAULTS.disableOverview,

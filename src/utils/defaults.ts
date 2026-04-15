@@ -29,6 +29,7 @@ export const COMPODOC_DEFAULTS = {
     disableConstructors: false,
     disableRoutesGraph: false,
     disableDependencies: false,
+    disableDependenciesTab: false,
     disableProperties: false,
     disableFilePath: false,
     disableOverview: false,

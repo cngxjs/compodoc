@@ -38,6 +38,7 @@ export interface ConfigurationFileInterface {
     disableRoutesGraph: boolean;
     disableSearch: boolean;
     disableDependencies: boolean;
+    disableDependenciesTab: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
     disableOverview: boolean;

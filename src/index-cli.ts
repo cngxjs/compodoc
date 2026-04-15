@@ -215,6 +215,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 COMPODOC_DEFAULTS.disableDependencies
             )
             .option(
+                '--disableDependenciesTab',
+                'Do not add the per-component Dependencies tab (standalone import graph)',
+                COMPODOC_DEFAULTS.disableDependenciesTab
+            )
+            .option(
                 '--disableProperties',
                 'Do not add the properties list',
                 COMPODOC_DEFAULTS.disableProperties
@@ -657,6 +662,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.disableDependencies) {
             Configuration.mainData.disableDependencies = programOptions.disableDependencies;
+        }
+
+        if (configFile.disableDependenciesTab) {
+            Configuration.mainData.disableDependenciesTab = configFile.disableDependenciesTab;
+        }
+        if (programOptions.disableDependenciesTab) {
+            Configuration.mainData.disableDependenciesTab = programOptions.disableDependenciesTab;
         }
 
         if (configFile.disableProperties) {

@@ -340,7 +340,8 @@ export const ComponentPage = (data: any): string => {
     const depth = data.depth;
     const base = relativeUrl(depth);
     const navTabs = data.navTabs;
-    const hasStandaloneImports = c.standalone && c.imports?.length > 0;
+    const hasStandaloneImports =
+        c.standalone && c.imports?.length > 0 && !Configuration.mainData.disableDependenciesTab;
 
     const componentDepGraph = hasStandaloneImports
         ? (() => {
