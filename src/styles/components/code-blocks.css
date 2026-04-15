@@ -17,36 +17,39 @@ pre.shiki {
     line-height: 1.6;
 
     scrollbar-width: thin;
-    scrollbar-color: hsl(220 10% 50% / 0.4) transparent;
+    scrollbar-color: var(--color-cdx-scrollbar) transparent;
 }
 
 /* Snippet Shiki blocks (everywhere except Source Viewer):
    lighter, borderless, more breathing room. */
 :not(.cdx-source-viewer-body) > pre.shiki {
-    border: none !important;
-    background-color: hsl(220 14% 96%) !important;
+    border: 1px solid var(--color-cdx-snippet-border) !important;
+    background-color: var(--color-cdx-snippet-bg) !important;
     padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
     margin: var(--spacing-cdx-lg) 0;
-    border-radius: var(--radius-cdx-md);
+    border-radius: var(--color-cdx-snippet-radius, var(--radius-cdx-md));
 }
 
 .dark :not(.cdx-source-viewer-body) > pre.shiki {
-    background-color: hsl(225 16% 16%) !important;
+    background-color: var(--color-cdx-snippet-bg) !important;
+    border-color: var(--color-cdx-snippet-border) !important;
 }
 
 code.cdx-shiki-inline {
     display: inline-block !important;
-    background: hsl(220 14% 96%) !important;
+    background: var(--color-cdx-snippet-bg) !important;
+    border: 1px solid var(--color-cdx-snippet-border);
     padding: var(--spacing-cdx-sm) var(--spacing-cdx-md) !important;
     margin: var(--spacing-cdx-lg) 0 !important;
-    border-radius: var(--radius-cdx-md);
+    border-radius: var(--color-cdx-snippet-radius, var(--radius-cdx-md));
     font-size: 0.8125rem;
     line-height: inherit;
     color: inherit;
 }
 
 .dark code.cdx-shiki-inline {
-    background: hsl(225 16% 16%) !important;
+    background: var(--color-cdx-snippet-bg) !important;
+    border-color: var(--color-cdx-snippet-border);
 }
 
 pre::-webkit-scrollbar {
@@ -54,7 +57,7 @@ pre::-webkit-scrollbar {
 }
 
 pre::-webkit-scrollbar-thumb {
-    background: hsl(220 10% 50% / 0.4);
+    background: var(--color-cdx-scrollbar);
     border-radius: var(--radius-cdx-sm);
 }
 
@@ -66,10 +69,7 @@ code {
        surrounding body text. <pre> code is reset below so Shiki keeps its
        own size. */
     font-size: 0.875em;
-    /* Match the pink family already used by .cdx-param-type / returns.
-       Dark counterpart is #e09393 in compodocx.css. Component-specific
-       rules override this fallback where a different colour is needed. */
-    color: #c2185b;
+    color: var(--color-cdx-code-inline);
 }
 
 pre code {
@@ -77,13 +77,6 @@ pre code {
     line-height: inherit;
     color: inherit;
 }
-
-/* pre.line-numbers {
-    background: var(--color-cdx-bg-code-block);
-    color: hsl(220 14% 80%);
-    border-radius: var(--radius-cdx-md);
-    overflow-x: auto;
-} */
 
 pre.line-numbers code {
     color: inherit;
@@ -100,12 +93,11 @@ pre.line-numbers code {
 
 .dark .shiki,
 .dark .shiki span {
-    /* color: var(--shiki-dark) !important; */
-    /* background-color: transparent !important; */
+    /* Global dark swap disabled — scoped rules below handle it per context */
 }
 
 /* Snippet dark-mode: swap Shiki light colors to dark variants.
-   Source Viewer handles this via its own Shiki multi-theme CSS. */
+   Source Viewer handles this via its own scoped rules below. */
 .dark :not(.cdx-source-viewer-body) > .shiki span {
     color: var(--shiki-dark) !important;
 }
@@ -114,16 +106,10 @@ pre.line-numbers code {
 }
 
 .dark .shiki {
-    /* background-color: var(--color-cdx-bg-code-block) !important; */
+    /* background handled per-context, not globally */
 }
 
-/* --- Source viewer (Type A) --- 
-
-.cdx-tab-panel--source {
-  padding: var(--spacing-cdx-md) 0;
-}
-*/
-/* ─── Source viewer (VS Code style editor panel) ─────────────────
+/* --- Source viewer (Type A) ---
  *
  * Rendered by src/templates/blocks/SourceViewer.tsx. Wraps every
  * Source / Template / Styles tab body in a cohesive "editor panel"
@@ -132,12 +118,12 @@ pre.line-numbers code {
  *
  * Structure:
  *   .cdx-source-viewer
- *     ├─ .cdx-source-viewer-header  (sticky tab-title bar)
- *     │   ├─ .cdx-source-viewer-icon   (file-type icon)
- *     │   ├─ .cdx-source-viewer-path   (file path, breadcrumb-like)
- *     │   ├─ .cdx-source-scope          (client-injected scope)
- *     │   └─ .cdx-source-viewer-copy    (integrated copy button)
- *     └─ .cdx-source-viewer-body   (<pre> Shiki output, scrollable)
+ *     +- .cdx-source-viewer-header  (sticky tab-title bar)
+ *     |   +- .cdx-source-viewer-icon   (file-type icon)
+ *     |   +- .cdx-source-viewer-path   (file path, breadcrumb-like)
+ *     |   +- .cdx-source-scope          (client-injected scope)
+ *     |   +- .cdx-source-viewer-copy    (integrated copy button)
+ *     +- .cdx-source-viewer-body   (<pre> Shiki output, scrollable)
  *
  * The viewer has its OWN scroll context — `max-height` + `overflow-y`
  * — so the sticky header pins to the TOP of the viewer panel,
@@ -149,42 +135,20 @@ pre.line-numbers code {
     border: 1px solid var(--color-cdx-border);
     border-radius: var(--radius-cdx-lg);
     box-shadow: var(--shadow-cdx-sm);
-    /* NO overflow:hidden — it would make `.cdx-source-viewer` a scroll
-       container and break sticky positioning on the child header and
-       the sticky scroll stack. Children carry matching corner radii
-       so backgrounds don't poke past the outer curve. */
 }
 
-/* Scroll-margin offset for `scrollIntoView` on any source-viewer line.
-   Covers the pinned header (~34px) + stack top offset (10px) + up to
-   3 sticky scroll stack lines (~22px each ≈ 66px) + a small breathing
-   gap. Without this, clicking a sticky stack chip scrolls the target
-   line behind the chrome. Applies to all `.line` elements so body
-   permalinks and hash jumps get the same treatment. */
 .cdx-source-viewer .line {
     scroll-margin-top: 120px;
 }
 
-/* 1px invisible sentinel inserted by the client just before the header.
-   IntersectionObserver toggles `.is-stuck` on the header based on
-   whether the sentinel is in view (see `initSourceScope`). Positioned
-   as a normal-flow block so its intersection state tracks outer page
-   scroll accurately. */
 .cdx-source-viewer-stick-sentinel {
     height: 1px;
     margin-top: -1px;
     pointer-events: none;
 }
 
-/* Tab-title bar — sticky with a negative top offset to cancel the
-   `.content { padding: 2rem }` inset on the outer page scroll
-   container. Without the offset, `top: 0` would pin the header 2rem
-   below the viewport top. */
 .cdx-source-viewer-header {
     @apply sticky z-20 flex items-center;
-    /* -33px compensates for the `.content { padding: 2rem }` = 32px
-       plus a 1px visual breathing gap so the header pins flush with
-       the viewport top when the outer page scrolls past the viewer. */
     top: -33px;
     gap: var(--spacing-cdx-sm);
     padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
@@ -200,17 +164,13 @@ pre.line-numbers code {
     transition: border-radius 150ms ease;
 }
 
-/* When a sentinel placed above the header scrolls out of view, the
-   client toggles `.is-stuck` so we can drop the top corner radii —
-   pinned at the viewport edge the rounded corners look orphaned
-   because the rest of the rounded container is scrolled below. */
 .cdx-source-viewer-header.is-stuck {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
 
 .dark .cdx-source-viewer-header {
-    background: hsl(225 16% 14%);
+    background: var(--color-cdx-code-dark-surface);
     border-bottom-color: hsl(225 16% 22%);
 }
 
@@ -249,9 +209,6 @@ pre.line-numbers code {
     flex-shrink: 0;
 }
 
-/* Client-injected scope indicator — takes over the remaining horizontal
-   space to the left of the copy button. Empty until initSourceScope
-   fills it, hidden by :not(:empty)::before trick below. */
 .cdx-source-scope {
     color: var(--color-cdx-text-muted);
     flex: 1 1 auto;
@@ -262,7 +219,7 @@ pre.line-numbers code {
 }
 
 .cdx-source-scope:not(:empty)::before {
-    content: "›";
+    content: "\203A";
     margin: 0 var(--spacing-cdx-sm);
     color: var(--color-cdx-text-muted);
     opacity: 0.5;
@@ -282,7 +239,6 @@ pre.line-numbers code {
     text-decoration: underline;
 }
 
-/* Push the copy button to the far right even when the scope is empty. */
 .cdx-source-scope:empty {
     flex: 1 1 auto;
 }
@@ -316,48 +272,25 @@ pre.line-numbers code {
     margin-right: 0;
 }
 
-/* Sticky scroll stack — VS Code style pinned decl lines.
- *
- * Empty at server render time. Client JS (`initSourceScope` in
- * code-blocks.ts) clones up to 3 currently-active member decl lines
- * (class → method → nested function) here as the user scrolls, each
- * one a cloned `.line` that preserves Shiki syntax highlighting.
- *
- * Sticky offset is the header height (34px) so the stack sits flush
- * below the pinned header. Cloned Shiki `.line` elements are wrapped
- * in a flex column with `display: block; white-space: pre` so the
- * clones stack vertically and keep their leading-indent whitespace
- * (by default they're inline <span>s that would collapse into a
- * single horizontal row outside their parent <pre>).
- */
+/* Sticky scroll stack */
 .cdx-source-viewer-sticky-stack {
     display: flex;
     flex-direction: column;
     position: sticky;
-    /* Offset from the pinned header gives a few pixels of breathing
-       room between header and stack so the two chrome layers read as
-       separate bands. */
     top: 10px;
     z-index: 19;
-    /* Match the header chrome — stack reads as a continuation of the
-       tab header, visually separated from the live Shiki code body. */
     background: var(--color-cdx-bg-alt);
     border-bottom: 1px solid var(--color-cdx-border);
     font-family: var(--font-code);
     font-size: 13px;
     line-height: 1.6;
-    /* Horizontal padding matches the global `pre { padding: md }` rule
-       so the stack's line numbers sit at the same x as the body's
-       line numbers when scrolled past. */
     padding: 4px var(--spacing-cdx-md);
 }
 
 .dark .cdx-source-viewer-sticky-stack {
-    background: hsl(225 16% 14%);
+    background: var(--color-cdx-code-dark-surface);
 }
 
-/* Lift the stack visually above the code body with a subtle drop
-   shadow so the transition is clear when scrolling. */
 .cdx-source-viewer-sticky-stack:not(:empty) {
     box-shadow: 0 4px 8px -4px hsl(0 0% 0% / 0.15);
 }
@@ -366,20 +299,10 @@ pre.line-numbers code {
     box-shadow: 0 4px 8px -4px hsl(0 0% 0% / 0.35);
 }
 
-/* Hide when empty (nothing to pin) so it takes no vertical space. */
 .cdx-source-viewer-sticky-stack:empty {
     display: none;
 }
 
-/* Each cloned Shiki `<span class="line">` is forced to block layout
-   with preserved whitespace so the line-number gutter, the leading
-   indentation, and the inline syntax highlighting all survive the
-   clone-out-of-pre operation. No explicit left padding or absolute
-   positioning — the stack container owns the 12px left gutter (via
-   `padding: 4px var(--spacing-cdx-md)` above), and Shiki's own
-   leading-whitespace tokens naturally shift nested methods 4 spaces
-   right. Result: line numbers and code columns in the stack align
-   1:1 with the body below when the user scrolls past a pinned decl. */
 .cdx-source-viewer-sticky-stack > .line {
     display: block;
     white-space: pre;
@@ -390,31 +313,24 @@ pre.line-numbers code {
 }
 
 .dark .cdx-source-viewer-sticky-stack > .line {
-    background: hsl(225 16% 14%);
+    background: var(--color-cdx-code-dark-surface);
 }
 
 .cdx-source-viewer-sticky-stack > .line:hover {
-    background: hsl(220 20% 14% / 0.06);
+    background: var(--color-cdx-line-hover);
 }
 
 .dark .cdx-source-viewer-sticky-stack > .line:hover {
-    background: hsl(220 16% 90% / 0.04);
+    background: var(--color-cdx-line-hover);
 }
 
-/* Body wraps the Shiki output. No explicit background — the Shiki
-   themes set their own bg on `<pre>` inline (light mode: white, dark
-   mode: #24292e via `--shiki-dark-bg`), so the body inherits the
-   theme-appropriate editor surface colour automatically. */
+/* Source viewer body */
 .cdx-source-viewer-body {
     overflow-x: auto;
     border-bottom-left-radius: var(--radius-cdx-lg);
     border-bottom-right-radius: var(--radius-cdx-lg);
 }
 
-/* Reset the global `pre { border, margin, border-radius }` rule from
-   the top of this file — inside the viewer the outer container owns
-   those. Background is deliberately left untouched so the Shiki
-   inline `background-color:...` drives the editor surface colour. */
 .cdx-source-viewer-body pre {
     border: none !important;
     margin: 0 !important;
@@ -437,7 +353,7 @@ pre.line-numbers code {
     width: 3.5ch;
     margin-right: 1ch;
     text-align: right;
-    color: hsl(220 10% 50% / 0.5);
+    color: var(--color-cdx-line-number);
     user-select: none;
     cursor: pointer;
     font-variant-numeric: tabular-nums;
@@ -449,21 +365,21 @@ pre.line-numbers code {
 }
 
 .cdx-source-viewer .line:hover {
-    background: hsl(220 20% 14% / 0.06);
+    background: var(--color-cdx-line-hover);
     transition: background 80ms ease;
 }
 
 .dark .cdx-source-viewer .line:hover {
-    background: hsl(220 16% 90% / 0.06);
+    background: var(--color-cdx-line-hover);
 }
 
 .cdx-line-highlight {
-    background: hsl(48 96% 53% / 0.25) !important;
+    background: var(--color-cdx-line-highlight) !important;
 }
 
 .dark .cdx-line-highlight {
-    background: hsl(48 90% 60% / 0.15) !important;
-    outline: 1px solid hsl(48 90% 60% / 0.3);
+    background: var(--color-cdx-line-highlight) !important;
+    outline: 1px solid color-mix(in srgb, var(--color-cdx-line-highlight) 200%, transparent);
 }
 
 .cdx-line-flash {
@@ -472,7 +388,7 @@ pre.line-numbers code {
 
 @keyframes cdx-line-pulse {
     0% {
-        background: hsl(48 96% 53% / 0.3);
+        background: var(--color-cdx-line-highlight-flash);
     }
     100% {
         background: transparent;
@@ -482,7 +398,7 @@ pre.line-numbers code {
 @media (prefers-reduced-motion: reduce) {
     .cdx-line-flash {
         animation: none;
-        background: hsl(48 96% 53% / 0.12);
+        background: color-mix(in srgb, var(--color-cdx-line-highlight) 50%, transparent);
     }
 }
 
@@ -497,7 +413,7 @@ pre.line-numbers code {
 .cdx-fold-summary {
     @apply cursor-pointer select-none;
     display: block;
-    padding: 2px 0 2px 4.5ch; /* align with code after line numbers */
+    padding: 2px 0 2px 4.5ch;
     font-size: 11px;
     font-style: italic;
     color: var(--color-cdx-text-muted);
@@ -511,7 +427,7 @@ pre.line-numbers code {
 }
 
 .cdx-fold-summary::before {
-    content: "\25B6"; /* right-pointing triangle */
+    content: "\25B6";
     display: inline-block;
     margin-right: 6px;
     font-size: 9px;
@@ -557,7 +473,7 @@ pre:hover .cdx-code-copy,
 }
 
 .cdx-code-copy.cdx-code-copy--copied {
-    color: hsl(142 50% 40%);
+    color: var(--color-cdx-copy-success);
     transform: scale(1);
     animation: cdx-copy-flash 300ms ease;
 }
@@ -590,8 +506,8 @@ pre:hover .cdx-code-copy,
     font-family: var(--font-code);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: hsl(220 10% 60%);
-    background: hsl(220 10% 50% / 0.1);
+    color: var(--color-cdx-lang-chip);
+    background: var(--color-cdx-lang-chip-bg);
     border-radius: 0 var(--radius-cdx-md) 0 var(--radius-cdx-sm);
     pointer-events: none;
     user-select: none;

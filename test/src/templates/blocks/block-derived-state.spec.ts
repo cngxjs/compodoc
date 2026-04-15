@@ -239,8 +239,6 @@ describe('BlockDerivedState', () => {
             ]
         });
 
-        expect(html).to.match(
-            /<code[^>]*>a\(\)<\/code>[^<]*\u00B7[^<]*<code[^>]*>b\(\)<\/code>/
-        );
+        expect(html).to.match(/<code[^>]*>a\(\)<\/code>[^<]*\u00B7[^<]*<code[^>]*>b\(\)<\/code>/);
     });
 });
