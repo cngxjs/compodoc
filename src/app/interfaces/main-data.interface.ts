@@ -90,7 +90,6 @@ export interface MainDataInterface {
     packagePeerDependencies: Object[];
     packageProperties: any;
     gaID: string;
-    gaSite: string;
     angularProject: boolean;
     language: string;
     maxSearchResults: number;

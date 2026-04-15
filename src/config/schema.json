@@ -354,13 +354,6 @@
             "default": "",
             "examples": [""]
         },
-        "gaSite": {
-            "$id": "/properties/gaSite",
-            "type": "string",
-            "title": "Google Analytics site name",
-            "default": "",
-            "examples": [""]
-        },
         "disableStyleTab": {
             "$id": "/properties/disableStyleTab",
             "type": "boolean",

@@ -252,7 +252,6 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             .option('--customFavicon [path]', 'Use a custom favicon')
             .option('--customLogo [path]', 'Use a custom logo')
             .option('--gaID [id]', 'Google Analytics tracking ID')
-            .option('--gaSite [site]', 'Google Analytics site name', COMPODOC_DEFAULTS.gaSite)
             .option(
                 '--publicApiOnly [path]',
                 'Document only symbols exported from index.d.ts files in the specified dist folder'
@@ -731,13 +730,6 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.gaID) {
             Configuration.mainData.gaID = programOptions.gaID;
-        }
-
-        if (configFile.gaSite) {
-            Configuration.mainData.gaSite = configFile.gaSite;
-        }
-        if (programOptions.gaSite && programOptions.gaSite !== COMPODOC_DEFAULTS.gaSite) {
-            Configuration.mainData.gaSite = programOptions.gaSite;
         }
 
         if (configFile.publicApiOnly) {

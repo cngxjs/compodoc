@@ -1285,7 +1285,7 @@ class TemplatePlayground {
             ];
             const valueFlags = [
                 'theme', 'language', 'base', 'customFavicon', 'customLogo', 'assetsFolder', 'extTheme', 'includes', 'includesName', 'output', 'port', 'hostname',
-                'exportFormat', 'coverageTestThreshold', 'coverageMinimumPerFile', 'unitTestCoverage', 'gaID', 'gaSite', 'maxSearchResults', 'toggleMenuItems', 'navTabConfig'
+                'exportFormat', 'coverageTestThreshold', 'coverageMinimumPerFile', 'unitTestCoverage', 'gaID', 'maxSearchResults', 'toggleMenuItems', 'navTabConfig'
             ];
             let cmd = ['npx compodoc'];
             for (const flag of booleanFlags) {

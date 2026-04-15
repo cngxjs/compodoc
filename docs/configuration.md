@@ -171,7 +171,6 @@ Integrate Google Analytics 4 (gtag.js) tracking into the generated documentation
 | Option | CLI | Type | Default | Description |
 |-|-|-|-|-|
 | gaID | `--gaID` | string | -- | Google Analytics 4 measurement ID (e.g. `G-XXXXXXXXXX`). When set, the gtag.js script is injected into every page |
-| gaSite | `--gaSite` | string | `'auto'` | Google Analytics site name passed to the tracker configuration |
 
 ## StackBlitz Integration
 

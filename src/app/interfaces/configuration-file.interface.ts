@@ -48,7 +48,6 @@ export interface ConfigurationFileInterface {
     customFavicon: string;
     customLogo: string;
     gaID: string;
-    gaSite: string;
     tsconfig: string;
     files;
     exclude;

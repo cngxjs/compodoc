@@ -96,7 +96,6 @@ export class Configuration implements ConfigurationInterface {
         packagePeerDependencies: [],
         packageProperties: {},
         gaID: '',
-        gaSite: '',
         angularProject: false,
         language: COMPODOC_DEFAULTS.language,
         maxSearchResults: 15,

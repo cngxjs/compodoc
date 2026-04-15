@@ -44,7 +44,6 @@ export const COMPODOC_DEFAULTS = {
         ROOT: 'root',
         INTERNAL: 'internal'
     },
-    gaSite: 'auto',
     coverageTestShowOnlyFailed: false,
     language: 'en-US',
     maxSearchResults: 15
