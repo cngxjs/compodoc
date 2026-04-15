@@ -256,7 +256,7 @@ const ApiContent = (data: any): string => {
             p.signalKind !== 'computed' &&
             p.signalKind !== 'linked-signal' &&
             p.signalKind !== 'inject' &&
-            p.signalKind !== 'effect'
+            (showEffects ? p.signalKind !== 'effect' : true)
     );
 
     return (

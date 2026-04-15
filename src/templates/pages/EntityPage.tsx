@@ -358,7 +358,7 @@ const ApiContent = (props: EntityInfoProps): string => {
             p.signalKind !== 'computed' &&
             p.signalKind !== 'linked-signal' &&
             p.signalKind !== 'inject' &&
-            p.signalKind !== 'effect'
+            (showEffects ? p.signalKind !== 'effect' : true)
     );
 
     return (
