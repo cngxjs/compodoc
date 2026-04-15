@@ -131,6 +131,12 @@
     --color-cdx-lang-chip: hsl(220 10% 60%);
     --color-cdx-lang-chip-bg: hsl(220 10% 50% / 0.1);
 
+    /* --- Graphs (dependency graph, DOM tree) --- */
+    --color-cdx-graph-bg: var(--color-cdx-bg-alt);
+    --color-cdx-graph-border: transparent;
+    --color-cdx-graph-border-width: 0;
+    --color-cdx-graph-radius: var(--radius-cdx-md);
+
     /* --- Transitions --- */
     --cdx-transition-fast: 120ms ease;
     --cdx-transition-base: 200ms ease;

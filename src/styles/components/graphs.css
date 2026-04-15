@@ -14,11 +14,11 @@
     /* Positioned ancestor for the absolutely-positioned fullscreen
        button so it sits top-right of the graph area, not of the page. */
     position: relative;
-    /* Match the Graphviz SVG fill for .graph > polygon so the viewport
-       edges blend into the graph canvas — no seam between the container
-       and the graph background. */
-    background: var(--color-cdx-bg-alt);
-    border-radius: var(--radius-cdx-md);
+    background: var(--color-cdx-graph-bg, var(--color-cdx-bg-alt));
+    border-width: var(--color-cdx-graph-border-width, 0);
+    border-style: solid;
+    border-color: var(--color-cdx-graph-border, transparent);
+    border-radius: var(--color-cdx-graph-radius, var(--radius-cdx-md));
 }
 
 .cdx-graph-container--compact .cdx-graph-viewport {
@@ -122,6 +122,14 @@
 #module-graph-svg .node text,
 #module-graph-svg text {
     fill: var(--color-cdx-text);
+}
+
+#tree-container {
+    background: var(--color-cdx-graph-bg, var(--color-cdx-bg-alt));
+    border-width: var(--color-cdx-graph-border-width, 0);
+    border-style: solid;
+    border-color: var(--color-cdx-graph-border, transparent);
+    border-radius: var(--color-cdx-graph-radius, var(--radius-cdx-md));
 }
 
 .tree-legend {
