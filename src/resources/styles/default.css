@@ -1,0 +1,138 @@
+/* @theme Default
+ * Clean, neutral blue-grey palette with warm accents.
+ * This is the built-in default -- loaded when no --theme is specified.
+ * Pairs well with: --shikiTheme github-light:github-dark
+ */
+
+:root {
+    /* --- Surfaces --- */
+    --color-cdx-bg: hsl(220 16% 98%);
+    --color-cdx-bg-alt: hsl(220 16% 96%);
+    --color-cdx-bg-elevated: hsl(0 0% 100%);
+    --color-cdx-bg-code: hsl(220 16% 95%);
+    --color-cdx-bg-code-block: hsl(225 16% 16%);
+
+    /* --- Text --- */
+    --color-cdx-text: hsl(220 20% 14%);
+    --color-cdx-text-secondary: hsl(220 12% 44%);
+    --color-cdx-text-muted: hsl(220 10% 45%);
+    --color-cdx-text-inverse: hsl(220 16% 96%);
+
+    /* --- Primary --- */
+    --color-cdx-primary: hsl(222 68% 52%);
+    --color-cdx-primary-hover: hsl(222 68% 44%);
+    --color-cdx-primary-subtle: hsl(222 68% 96%);
+
+    /* --- Entity colors (WCAG AA compliant on white) --- */
+    --color-cdx-entity-component: #0e8578;
+    --color-cdx-entity-service: #a56a07;
+    --color-cdx-entity-directive: #7c3aed;
+    --color-cdx-entity-pipe: #e2177b;
+    --color-cdx-entity-module: #1e6ff5;
+    --color-cdx-entity-class: #05875f;
+    --color-cdx-entity-interface: #475569;
+    --color-cdx-entity-guard: #eb1515;
+    --color-cdx-entity-interceptor: #ba25cd;
+    --color-cdx-entity-function: #52840b;
+    --color-cdx-entity-variable: #617087;
+    --color-cdx-entity-typealias: #6164f1;
+    --color-cdx-entity-enum: #c2410c;
+
+    /* --- Feedback --- */
+    --color-cdx-deprecated: hsl(38 92% 32.5%);
+    --color-cdx-danger: hsl(0 72% 51%);
+
+    /* --- Borders --- */
+    --color-cdx-border: hsl(220 14% 90%);
+    --color-cdx-border-strong: hsl(220 14% 59%);
+    --color-cdx-border-focus: hsl(222 68% 52%);
+
+    /* --- Shadows --- */
+    --shadow-cdx-sm: 0 1px 2px hsl(220 20% 14% / 0.06);
+    --shadow-cdx-md: 0 4px 12px hsl(220 20% 14% / 0.08);
+    --shadow-cdx-lg: 0 12px 32px hsl(220 20% 14% / 0.12);
+
+    /* --- Code blocks --- */
+    --color-cdx-snippet-bg: hsl(220 14% 96%);
+    --color-cdx-snippet-border: transparent;
+    --color-cdx-snippet-radius: var(--radius-cdx-md);
+    --color-cdx-code-inline: #c2185b;
+    --color-cdx-code-dark-surface: hsl(225 16% 14%);
+    --color-cdx-scrollbar: hsl(220 10% 50% / 0.4);
+    --color-cdx-line-number: hsl(220 10% 50% / 0.5);
+    --color-cdx-line-hover: hsl(220 20% 14% / 0.06);
+    --color-cdx-line-highlight: hsl(48 96% 53% / 0.25);
+    --color-cdx-line-highlight-flash: hsl(48 96% 53% / 0.3);
+    --color-cdx-copy-success: hsl(142 50% 40%);
+    --color-cdx-lang-chip: hsl(220 10% 60%);
+    --color-cdx-lang-chip-bg: hsl(220 10% 50% / 0.1);
+
+    /* --- Graphs --- */
+    --color-cdx-graph-bg: var(--color-cdx-bg-alt);
+    --color-cdx-graph-border: transparent;
+    --color-cdx-graph-border-width: 0;
+    --color-cdx-graph-radius: var(--radius-cdx-md);
+}
+
+.dark {
+    /* --- Surfaces --- */
+    --color-cdx-bg: hsl(225 16% 10%);
+    --color-cdx-bg-alt: hsl(225 16% 13%);
+    --color-cdx-bg-elevated: hsl(225 16% 17%);
+    --color-cdx-bg-code: hsl(225 16% 15%);
+    --color-cdx-bg-code-block: hsl(225 16% 8%);
+
+    /* --- Text --- */
+    --color-cdx-text: hsl(220 16% 90%);
+    --color-cdx-text-secondary: hsl(220 12% 64%);
+    --color-cdx-text-muted: hsl(220 10% 54%);
+    --color-cdx-text-inverse: hsl(220 20% 14%);
+
+    /* --- Primary --- */
+    --color-cdx-primary: hsl(222 50% 72%);
+    --color-cdx-primary-hover: hsl(222 50% 80%);
+    --color-cdx-primary-subtle: hsl(222 30% 18%);
+
+    /* --- Entity colors (lighter for dark backgrounds) --- */
+    --color-cdx-entity-component: #2dd4bf;
+    --color-cdx-entity-service: #fbbf24;
+    --color-cdx-entity-directive: #a78bfa;
+    --color-cdx-entity-pipe: #f472b6;
+    --color-cdx-entity-module: #60a5fa;
+    --color-cdx-entity-class: #34d399;
+    --color-cdx-entity-interface: #94a3b8;
+    --color-cdx-entity-guard: #f87171;
+    --color-cdx-entity-interceptor: #e879f9;
+    --color-cdx-entity-function: #84cc16;
+    --color-cdx-entity-variable: #94a3b8;
+    --color-cdx-entity-typealias: #818cf8;
+    --color-cdx-entity-enum: #fb923c;
+
+    /* --- Feedback --- */
+    --color-cdx-deprecated: hsl(38 80% 65%);
+    --color-cdx-danger: hsl(0 65% 65%);
+
+    /* --- Borders --- */
+    --color-cdx-border: hsl(225 14% 20%);
+    --color-cdx-border-strong: hsl(225 14% 42%);
+    --color-cdx-border-focus: hsl(222 50% 72%);
+
+    /* --- Shadows --- */
+    --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
+    --shadow-cdx-md: 0 4px 12px hsl(0 0% 0% / 0.3);
+    --shadow-cdx-lg: 0 12px 32px hsl(0 0% 0% / 0.4);
+
+    /* --- Code blocks --- */
+    --color-cdx-snippet-bg: hsl(225 16% 16%);
+    --color-cdx-snippet-border: transparent;
+    --color-cdx-code-inline: #e09393;
+    --color-cdx-code-dark-surface: hsl(225 16% 14%);
+    --color-cdx-scrollbar: hsl(220 10% 50% / 0.5);
+    --color-cdx-line-number: hsl(220 10% 50% / 0.4);
+    --color-cdx-line-hover: hsl(220 16% 90% / 0.06);
+    --color-cdx-line-highlight: hsl(48 90% 60% / 0.15);
+    --color-cdx-line-highlight-flash: hsl(48 90% 60% / 0.2);
+    --color-cdx-copy-success: hsl(142 50% 60%);
+    --color-cdx-lang-chip: hsl(220 10% 55%);
+    --color-cdx-lang-chip-bg: hsl(220 10% 50% / 0.15);
+}

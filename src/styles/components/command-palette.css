@@ -4,7 +4,7 @@
 }
 
 .cdx-cp::backdrop {
-    background: hsl(220 20% 14% / 0.4);
+    background: var(--color-cdx-overlay);
     backdrop-filter: blur(4px);
     animation: cdx-cp-backdrop 200ms ease;
 }
@@ -74,7 +74,7 @@
 
 .cdx-cp .cdx-cp-badge--component {
     background: var(--color-cdx-entity-component);
-    color: white;
+    color: var(--color-cdx-text-inverse, white);
 }
 .cdx-cp .cdx-cp-badge--other {
     background: var(--color-cdx-border);

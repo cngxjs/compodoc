@@ -1,0 +1,110 @@
+/* @theme Neon
+ * Cyberpunk aesthetic — electric neon accents on dark or light base.
+ * Pairs well with: --shikiTheme vitesse-light:synthwave-84
+ */
+
+:root {
+    /* --- Surfaces (dim mode — dark but lighter than .dark) --- */
+    --color-cdx-bg: hsl(245 18% 16%);
+    --color-cdx-bg-alt: hsl(245 18% 19%);
+    --color-cdx-bg-elevated: hsl(245 16% 22%);
+    --color-cdx-bg-code: hsl(245 18% 20%);
+    --color-cdx-bg-code-block: hsl(245 22% 8%);
+
+    /* --- Text --- */
+    --color-cdx-text: hsl(240 15% 88%);
+    --color-cdx-text-secondary: hsl(240 10% 65%);
+    --color-cdx-text-muted: hsl(240 8% 50%);
+    --color-cdx-text-inverse: hsl(245 18% 14%);
+
+    /* --- Primary (electric cyan) --- */
+    --color-cdx-primary: hsl(180 100% 50%);
+    --color-cdx-primary-hover: hsl(180 100% 60%);
+    --color-cdx-primary-subtle: hsl(180 50% 18%);
+
+    /* --- Entity colors (neon-bright on dim bg) --- */
+    --color-cdx-entity-component: #00e6b8;
+    --color-cdx-entity-service: #ff9f0a;
+    --color-cdx-entity-directive: #bf5af2;
+    --color-cdx-entity-pipe: #ff375f;
+    --color-cdx-entity-module: #0af;
+    --color-cdx-entity-class: #30d158;
+    --color-cdx-entity-interface: #5ac8fa;
+    --color-cdx-entity-guard: #ff453a;
+    --color-cdx-entity-interceptor: #da5aff;
+    --color-cdx-entity-function: #a8ff00;
+    --color-cdx-entity-variable: #98989d;
+    --color-cdx-entity-typealias: #7d7aff;
+    --color-cdx-entity-enum: #ff9500;
+
+    /* --- Feedback --- */
+    --color-cdx-deprecated: hsl(45 100% 55%);
+    --color-cdx-danger: hsl(0 100% 60%);
+
+    /* --- Borders --- */
+    --color-cdx-border: hsl(245 14% 26%);
+    --color-cdx-border-strong: hsl(245 10% 40%);
+    --color-cdx-border-focus: hsl(180 100% 50%);
+
+    /* --- Shadows (cyan glow) --- */
+    --shadow-cdx-sm: 0 1px 4px hsl(180 100% 50% / 0.08);
+    --shadow-cdx-md: 0 4px 16px hsl(180 100% 50% / 0.12);
+    --shadow-cdx-lg: 0 12px 40px hsl(180 100% 50% / 0.16);
+
+    /* --- Density (spacious) --- */
+    --spacing-cdx-xs: 6px;
+    --spacing-cdx-sm: 10px;
+    --spacing-cdx-md: 14px;
+    --spacing-cdx-lg: 20px;
+    --spacing-cdx-xl: 24px;
+    --spacing-cdx-2xl: 28px;
+}
+
+.dark {
+    /* --- Surfaces (deep dark) --- */
+    --color-cdx-bg: hsl(240 15% 10%);
+    --color-cdx-bg-alt: hsl(240 15% 13%);
+    --color-cdx-bg-elevated: hsl(240 15% 16%);
+    --color-cdx-bg-code: hsl(240 15% 14%);
+    --color-cdx-bg-code-block: hsl(240 18% 6%);
+
+    /* --- Text --- */
+    --color-cdx-text: hsl(240 10% 90%);
+    --color-cdx-text-secondary: hsl(240 8% 65%);
+    --color-cdx-text-muted: hsl(240 6% 50%);
+    --color-cdx-text-inverse: hsl(240 15% 8%);
+
+    /* --- Primary (full neon cyan) --- */
+    --color-cdx-primary: hsl(180 100% 50%);
+    --color-cdx-primary-hover: hsl(180 100% 60%);
+    --color-cdx-primary-subtle: hsl(180 50% 15%);
+
+    /* --- Entity colors (neon-bright) --- */
+    --color-cdx-entity-component: #00ffcc;
+    --color-cdx-entity-service: #ffaa00;
+    --color-cdx-entity-directive: #bf5af2;
+    --color-cdx-entity-pipe: #ff2d55;
+    --color-cdx-entity-module: #0af;
+    --color-cdx-entity-class: #30d158;
+    --color-cdx-entity-interface: #5ac8fa;
+    --color-cdx-entity-guard: #ff453a;
+    --color-cdx-entity-interceptor: #da5aff;
+    --color-cdx-entity-function: #a8ff00;
+    --color-cdx-entity-variable: #98989d;
+    --color-cdx-entity-typealias: #7d7aff;
+    --color-cdx-entity-enum: #ff9500;
+
+    /* --- Feedback --- */
+    --color-cdx-deprecated: hsl(45 100% 55%);
+    --color-cdx-danger: hsl(0 100% 60%);
+
+    /* --- Borders --- */
+    --color-cdx-border: hsl(240 12% 22%);
+    --color-cdx-border-strong: hsl(240 10% 38%);
+    --color-cdx-border-focus: hsl(180 100% 50%);
+
+    /* --- Shadows (cyan glow) --- */
+    --shadow-cdx-sm: 0 1px 4px hsl(180 100% 50% / 0.08);
+    --shadow-cdx-md: 0 4px 16px hsl(180 100% 50% / 0.12);
+    --shadow-cdx-lg: 0 12px 40px hsl(180 100% 50% / 0.16);
+}
