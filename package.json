@@ -14,7 +14,7 @@
         "build": "rollup -c rollup/rollup.config.mjs --bundleConfigAsCjs && npm run build-schematics && npm run build:client && npm run build:css && npm run build:themes",
         "build:client": "esbuild src/client/compodocx.ts --bundle --minify --splitting --format=esm --outdir=src/resources/js --target=es2020 --entry-names=[name] --chunk-names=chunks/[name]-[hash]",
         "build:css": "tailwindcss -i src/styles/compodocx.css -o src/resources/styles/compodocx.css --minify",
-        "build:themes": "find src/themes -maxdepth 1 -name '*.css' ! -name 'theme-template.css' -exec cp {} src/resources/styles/ \\;",
+        "build:themes": "node -e \"const fs=require('fs'),p=require('path');fs.readdirSync('src/themes').filter(f=>f.endsWith('.css')&&f!=='theme-template.css').forEach(f=>fs.copyFileSync(p.join('src/themes',f),p.join('src/resources/styles',f)))\"",
         "dev": "node scripts/dev-watch.mjs",
         "dev:standalone": "node scripts/dev-watch.mjs --fixture=kitchen-sink-standalone --port=8081",
         "dev:module": "node scripts/dev-watch.mjs --fixture=kitchen-sink-module --port=8080",
