@@ -28,6 +28,7 @@ export const TRANSLATION_EN_US = {
     directive: 'Directive',
     directives: 'Directives',
     'dom tree': 'DOM tree',
+    effects: 'Effects',
     'empty-accessors': 'No accessors',
     'empty-category-desc': "This project doesn't contain any {{category}}.",
     'empty-category-title': 'No {{category}} found',

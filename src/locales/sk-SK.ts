@@ -27,6 +27,7 @@ export const TRANSLATION_SK_SK = {
     directive: 'Direktíva',
     directives: 'Direktívy',
     'dom tree': 'DOM strom',
+    effects: 'Efekty',
     'empty-accessors': 'Žiadne accessory',
     'empty-category-desc': 'Tento projekt neobsahuje žiadne {{category}}.',
     'empty-category-title': 'Nenašli sa žiadne {{category}}',

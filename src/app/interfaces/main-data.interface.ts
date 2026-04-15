@@ -63,6 +63,7 @@ export interface MainDataInterface {
     disableProperties: boolean;
     disableFilePath: boolean;
     disableOverview: boolean;
+    showEffects: boolean;
     watch: boolean;
     mainGraph: string;
     dependencyGraph: {

@@ -27,6 +27,7 @@ export const TRANSLATION_NL_NL = {
     directive: 'Directive',
     directives: 'Directives',
     'dom tree': 'DOM boom',
+    effects: 'Effecten',
     'empty-accessors': 'Geen accessors',
     'empty-category-desc': 'Dit project bevat geen {{category}}.',
     'empty-category-title': 'Geen {{category}} gevonden',

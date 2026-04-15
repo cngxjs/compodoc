@@ -32,6 +32,7 @@ export const COMPODOC_DEFAULTS = {
     disableProperties: false,
     disableFilePath: false,
     disableOverview: false,
+    showEffects: false,
     hideGenerator: false,
     hideDarkModeToggle: false,
     minimal: false,

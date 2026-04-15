@@ -351,11 +351,14 @@ const ApiContent = (props: EntityInfoProps): string => {
     const derivedProps = allProps.filter(
         (p: any) => p.signalKind === 'computed' || p.signalKind === 'linked-signal'
     );
+    const showEffects = Configuration.mainData.showEffects === true;
+    const effectProps = allProps.filter((p: any) => p.signalKind === 'effect');
     const regularProps = allProps.filter(
         (p: any) =>
             p.signalKind !== 'computed' &&
             p.signalKind !== 'linked-signal' &&
-            p.signalKind !== 'inject'
+            p.signalKind !== 'inject' &&
+            p.signalKind !== 'effect'
     );
 
     return (
@@ -369,6 +372,7 @@ const ApiContent = (props: EntityInfoProps): string => {
                     inputs: e.inputsClass,
                     outputs: e.outputsClass,
                     derivedState: derivedProps,
+                    effects: showEffects ? effectProps : [],
                     hostBindings: e.hostBindings,
                     hostListeners: e.hostListeners,
                     accessors: e.accessors,
@@ -417,6 +421,19 @@ const ApiContent = (props: EntityInfoProps): string => {
                     file: e.file,
                     depth: props.depth,
                     navTabs: props.navTabs
+                })}
+
+            {/* 9b. Effects (opt-in via --showEffects) */}
+            {isApiSection('effects') &&
+                showEffects &&
+                effectProps.length > 0 &&
+                BlockProperty({
+                    properties: effectProps,
+                    file: e.file,
+                    depth: props.depth,
+                    navTabs: props.navTabs,
+                    title: t('effects'),
+                    id: 'effects'
                 })}
 
             {/* 10. Methods */}

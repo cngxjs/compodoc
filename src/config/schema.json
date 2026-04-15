@@ -298,6 +298,13 @@
             "default": false,
             "examples": [false]
         },
+        "showEffects": {
+            "$id": "/properties/showEffects",
+            "type": "boolean",
+            "title": "Show Angular effect() entries in a dedicated Effects block",
+            "default": false,
+            "examples": [false]
+        },
         "disableFilePath": {
             "$id": "/properties/disableFilePath",
             "type": "boolean",

@@ -249,11 +249,14 @@ const ApiContent = (data: any): string => {
     const derivedProps = allProps.filter(
         (p: any) => p.signalKind === 'computed' || p.signalKind === 'linked-signal'
     );
+    const showEffects = Configuration.mainData.showEffects === true;
+    const effectProps = allProps.filter((p: any) => p.signalKind === 'effect');
     const regularProps = allProps.filter(
         (p: any) =>
             p.signalKind !== 'computed' &&
             p.signalKind !== 'linked-signal' &&
-            p.signalKind !== 'inject'
+            p.signalKind !== 'inject' &&
+            p.signalKind !== 'effect'
     );
 
     return (
@@ -265,6 +268,7 @@ const ApiContent = (data: any): string => {
                     inputs: c.inputsClass,
                     outputs: c.outputsClass,
                     derivedState: derivedProps,
+                    effects: showEffects ? effectProps : [],
                     hostBindings: c.hostBindings,
                     hostListeners: c.hostListeners,
                     accessors: c.accessors
@@ -292,6 +296,17 @@ const ApiContent = (data: any): string => {
                     file: c.file,
                     depth,
                     navTabs: data.navTabs
+                })}
+            {isApiSection('effects') &&
+                showEffects &&
+                effectProps.length > 0 &&
+                BlockProperty({
+                    properties: effectProps,
+                    file: c.file,
+                    depth,
+                    navTabs: data.navTabs,
+                    title: t('effects'),
+                    id: 'effects'
                 })}
             {isApiSection('methods') &&
                 c.methodsClass?.length > 0 &&

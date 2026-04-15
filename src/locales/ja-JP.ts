@@ -27,6 +27,7 @@ export const TRANSLATION_JA_JP = {
     directive: 'ディレクティブ',
     directives: 'ディレクティブ',
     'dom tree': 'DOM ツリー',
+    effects: 'エフェクト',
     'empty-accessors': 'アクセサーなし',
     'empty-category-desc': 'このプロジェクトには {{category}} が含まれていません。',
     'empty-category-title': '{{category}} が見つかりません',

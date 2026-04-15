@@ -230,6 +230,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 COMPODOC_DEFAULTS.disableOverview
             )
             .option(
+                '--showEffects',
+                'Show Angular effect() entries in a dedicated Effects block',
+                COMPODOC_DEFAULTS.showEffects
+            )
+            .option(
                 '--templatePlayground',
                 'Generate template playground page for customizing templates',
                 false
@@ -673,6 +678,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.disableOverview) {
             Configuration.mainData.disableOverview = programOptions.disableOverview;
+        }
+
+        if (configFile.showEffects) {
+            Configuration.mainData.showEffects = configFile.showEffects;
+        }
+        if (programOptions.showEffects) {
+            Configuration.mainData.showEffects = programOptions.showEffects;
         }
 
         if (configFile.minimal) {

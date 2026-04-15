@@ -112,6 +112,9 @@ function computeAdoption(props: OverviewStatsProps) {
             ...(entity.outputsClass ?? [])
         ];
         for (const prop of properties) {
+            if (prop.signalKind === 'effect') {
+                continue;
+            }
             totalProps++;
             if (prop.signalKind) {
                 signalProps++;

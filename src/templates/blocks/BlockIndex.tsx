@@ -14,6 +14,7 @@ type BlockIndexProps = {
     readonly inputs?: IndexItem[];
     readonly outputs?: IndexItem[];
     readonly derivedState?: IndexItem[];
+    readonly effects?: IndexItem[];
     readonly hostBindings?: IndexItem[];
     readonly hostListeners?: IndexItem[];
     readonly accessors?: Record<string, any>;
@@ -26,6 +27,7 @@ type IndicatorKind =
     | 'input'
     | 'output'
     | 'derived'
+    | 'effect'
     | 'accessor'
     | 'constructor'
     | 'hostbinding'
@@ -38,6 +40,7 @@ const INDICATOR_LETTERS: Record<IndicatorKind, string> = {
     input: 'I',
     output: 'O',
     derived: 'D',
+    effect: 'E',
     accessor: 'A',
     constructor: 'C',
     hostbinding: 'H',
@@ -82,6 +85,7 @@ export const BlockIndex = (props: BlockIndexProps): string => {
         (props.inputs?.length ?? 0) > 0 ||
         (props.outputs?.length ?? 0) > 0 ||
         (props.derivedState?.length ?? 0) > 0 ||
+        (props.effects?.length ?? 0) > 0 ||
         (props.hostBindings?.length ?? 0) > 0 ||
         (props.hostListeners?.length ?? 0) > 0 ||
         accessorEntries.length > 0 ||
@@ -112,6 +116,11 @@ export const BlockIndex = (props: BlockIndexProps): string => {
                     title: 'derived-state',
                     items: props.derivedState ?? [],
                     kind: 'derived'
+                })}
+                {IndexGroup({
+                    title: 'effects',
+                    items: props.effects ?? [],
+                    kind: 'effect'
                 })}
                 {IndexGroup({
                     title: 'hostbindings',
