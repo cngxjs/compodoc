@@ -65,7 +65,7 @@
 }
 
 .cdx-tab-bar a:hover:not(.active) {
-    color: var(--color-cdx-text-secondary);
+    color: var(--color-cdx-primary);
     background: color-mix(
         in srgb,
         var(--color-cdx-bg-elevated) 50%,
@@ -93,7 +93,7 @@
 
 .dark .cdx-tab-bar a:hover:not(.active) {
     background: var(--color-cdx-bg-alt);
-    color: var(--color-cdx-text-secondary);
+    color: var(--color-cdx-primary);
 }
 
 @container content (max-width: 600px) {

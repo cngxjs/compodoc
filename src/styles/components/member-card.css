@@ -679,7 +679,7 @@ a.cdx-member-permalink:hover {
 }
 
 .cdx-io-member-source a:hover {
-    color: var(--color-cdx-text-muted);
+    color: var(--color-cdx-primary);
     text-decoration: underline;
 }
 

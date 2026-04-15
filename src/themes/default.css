@@ -89,9 +89,9 @@
     --color-cdx-text-inverse: hsl(220 20% 14%);
 
     /* --- Primary --- */
-    --color-cdx-primary: hsl(222 80% 68%);
-    --color-cdx-primary-hover: hsl(222 80% 76%);
-    --color-cdx-primary-subtle: hsl(222 40% 18%);
+    --color-cdx-primary: hsl(222 50% 72%);
+    --color-cdx-primary-hover: hsl(222 50% 80%);
+    --color-cdx-primary-subtle: hsl(222 30% 18%);
 
     /* --- Entity colors (lighter for dark backgrounds) --- */
     --color-cdx-entity-component: #2dd4bf;
@@ -115,7 +115,7 @@
     /* --- Borders --- */
     --color-cdx-border: hsl(225 14% 20%);
     --color-cdx-border-strong: hsl(225 14% 42%);
-    --color-cdx-border-focus: hsl(222 80% 68%);
+    --color-cdx-border-focus: hsl(222 50% 72%);
 
     /* --- Shadows --- */
     --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
