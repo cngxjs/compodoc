@@ -1,5 +1,12 @@
 import Html from '@kitajs/html';
-import { isTabEnabled, linkTypeHtml, parseDescription, signalKindLabel, t } from '../helpers';
+import {
+    highlightedCodeWrap,
+    isTabEnabled,
+    linkTypeHtml,
+    parseDescription,
+    signalKindLabel,
+    t
+} from '../helpers';
 
 type BlockInputProps = {
     readonly element: any;
@@ -63,7 +70,7 @@ export const BlockInput = (props: BlockInputProps): string => {
                         {!isUndefined(inp.defaultValue) && (
                             <div class="cdx-io-member-default">
                                 <span class="cdx-io-member-default-label">default</span>{' '}
-                                {String(inp.defaultValue)}
+                                {highlightedCodeWrap(inp.defaultValue)}
                             </div>
                         )}
                         {inp.line && isTabEnabled(props.navTabs, 'source') && (

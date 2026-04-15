@@ -1,5 +1,6 @@
 import Html from '@kitajs/html';
 import {
+    highlightedCodeWrap,
     isTabEnabled,
     linkTypeHtml,
     modifKind,
@@ -14,6 +15,7 @@ type BlockPropertyProps = {
     readonly properties: any[];
     readonly file: string;
     readonly title?: string;
+    readonly id?: string;
     readonly depth?: number;
     readonly navTabs?: any[];
 };
@@ -21,14 +23,12 @@ type BlockPropertyProps = {
 const isUndefined = (v: unknown): boolean => v === undefined || v === 'undefined' || v === '';
 
 export const BlockProperty = (props: BlockPropertyProps): string => {
+    const sectionId = props.id ?? (props.title ? props.title.toLowerCase() : 'properties');
     return (
         <section data-compodoc="block-properties">
-            <h3 id={props.title ? props.title.toLowerCase() : 'properties'}>
+            <h3 id={sectionId}>
                 {props.title ?? t('instance-properties')}
-                <a
-                    class="cdx-member-permalink"
-                    href={`#${props.title ? props.title.toLowerCase() : 'properties'}`}
-                >
+                <a class="cdx-member-permalink" href={`#${sectionId}`}>
                     #
                 </a>
             </h3>
@@ -92,11 +92,7 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                                 })}
                             </div>
                         )}
-                        {!isUndefined(p.defaultValue) && (
-                            <pre class="cdx-derived-body">
-                                <code>{String(p.defaultValue)}</code>
-                            </pre>
-                        )}
+                        {!isUndefined(p.defaultValue) && highlightedCodeWrap(p.defaultValue)}
                         {p.line && isTabEnabled(props.navTabs, 'source') && (
                             <div class="cdx-io-member-source">
                                 {/* biome-ignore lint/a11y/useValidAnchor: href rewritten by client JS via data-cdx-line */}

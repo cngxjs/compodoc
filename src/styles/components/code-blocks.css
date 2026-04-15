@@ -5,7 +5,8 @@
 
 /* --- Shared base: all pre/code elements --- */
 
-pre {
+pre,
+pre.shiki {
     @apply relative overflow-x-auto;
     padding: var(--spacing-cdx-md);
     border: 1px solid var(--color-cdx-border);
@@ -17,6 +18,35 @@ pre {
 
     scrollbar-width: thin;
     scrollbar-color: hsl(220 10% 50% / 0.4) transparent;
+}
+
+/* Snippet Shiki blocks (everywhere except Source Viewer):
+   lighter, borderless, more breathing room. */
+:not(.cdx-source-viewer-body) > pre.shiki {
+    border: none !important;
+    background-color: hsl(220 14% 96%) !important;
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
+    margin: var(--spacing-cdx-lg) 0;
+    border-radius: var(--radius-cdx-md);
+}
+
+.dark :not(.cdx-source-viewer-body) > pre.shiki {
+    background-color: hsl(225 16% 16%) !important;
+}
+
+code.cdx-shiki-inline {
+    display: inline-block !important;
+    background: hsl(220 14% 96%) !important;
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md) !important;
+    margin: var(--spacing-cdx-lg) 0 !important;
+    border-radius: var(--radius-cdx-md);
+    font-size: 0.8125rem;
+    line-height: inherit;
+    color: inherit;
+}
+
+.dark code.cdx-shiki-inline {
+    background: hsl(225 16% 16%) !important;
 }
 
 pre::-webkit-scrollbar {
@@ -48,12 +78,12 @@ pre code {
     color: inherit;
 }
 
-pre.line-numbers {
+/* pre.line-numbers {
     background: var(--color-cdx-bg-code-block);
     color: hsl(220 14% 80%);
     border-radius: var(--radius-cdx-md);
     overflow-x: auto;
-}
+} */
 
 pre.line-numbers code {
     color: inherit;
@@ -70,12 +100,21 @@ pre.line-numbers code {
 
 .dark .shiki,
 .dark .shiki span {
+    /* color: var(--shiki-dark) !important; */
+    /* background-color: transparent !important; */
+}
+
+/* Snippet dark-mode: swap Shiki light colors to dark variants.
+   Source Viewer handles this via its own Shiki multi-theme CSS. */
+.dark :not(.cdx-source-viewer-body) > .shiki span {
     color: var(--shiki-dark) !important;
-    background-color: transparent !important;
+}
+.dark code.cdx-shiki-inline span {
+    color: var(--shiki-dark) !important;
 }
 
 .dark .shiki {
-    background-color: var(--color-cdx-bg-code-block) !important;
+    /* background-color: var(--color-cdx-bg-code-block) !important; */
 }
 
 /* --- Source viewer (Type A) --- 
@@ -223,7 +262,7 @@ pre.line-numbers code {
 }
 
 .cdx-source-scope:not(:empty)::before {
-    content: '›';
+    content: "›";
     margin: 0 var(--spacing-cdx-sm);
     color: var(--color-cdx-text-muted);
     opacity: 0.5;
@@ -383,6 +422,14 @@ pre.line-numbers code {
     border-top-right-radius: 0 !important;
     border-bottom-left-radius: var(--radius-cdx-lg) !important;
     border-bottom-right-radius: var(--radius-cdx-lg) !important;
+}
+
+.dark .cdx-source-viewer-body pre {
+    background-color: var(--shiki-dark-bg) !important;
+    color: var(--shiki-dark) !important;
+}
+.dark .cdx-source-viewer-body pre span {
+    color: var(--shiki-dark) !important;
 }
 
 .cdx-line-number {

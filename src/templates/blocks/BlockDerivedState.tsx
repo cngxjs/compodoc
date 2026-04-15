@@ -1,5 +1,12 @@
 import Html from '@kitajs/html';
-import { isTabEnabled, linkTypeHtml, parseDescription, signalKindLabel, t } from '../helpers';
+import {
+    highlightedCodeWrap,
+    isTabEnabled,
+    linkTypeHtml,
+    parseDescription,
+    signalKindLabel,
+    t
+} from '../helpers';
 
 type BlockDerivedStateProps = {
     readonly properties: any[];
@@ -75,12 +82,7 @@ export const BlockDerivedState = (props: BlockDerivedStateProps): string => {
                                 {parseDescription(p.description, props.depth ?? 0)}
                             </div>
                         )}
-                        {/* biome-ignore lint/style/useSelfClosingElements: pre must not have whitespace */}
-                        {p.defaultValue && (
-                            <pre class="cdx-derived-body">
-                                <code>{p.defaultValue}</code>
-                            </pre>
-                        )}
+                        {p.defaultValue && highlightedCodeWrap(p.defaultValue)}
                         {p.line && isTabEnabled(props.navTabs, 'source') && (
                             <div class="cdx-io-member-source">
                                 {/* biome-ignore lint/a11y/useValidAnchor: href rewritten by client JS via data-cdx-line */}

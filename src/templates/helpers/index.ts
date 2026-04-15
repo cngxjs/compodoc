@@ -32,7 +32,7 @@ export {
 export const isInternalMember = (modifierKind?: number[]): boolean =>
     (modifierKind ?? []).some(k => k === 123 || k === 124);
 
-/** Wrap content in `<code>` (single-line) or `<pre>` (multi-line). */
+/** Wrap content in `<code>` (single-line) or `<pre>` (multi-line). Accepts pre-linked HTML. */
 export const codeWrap = (html: unknown): string => {
     const str = String(html ?? '');
     if (!str) {
@@ -41,6 +41,8 @@ export const codeWrap = (html: unknown): string => {
     const tag = str.includes('\n') || str.length > 80 ? 'pre' : 'code';
     return `<${tag}>${str}</${tag}>`;
 };
+
+export { highlightedCodeWrap } from './highlighted-code-wrap';
 
 /** A readme that is only a heading (no paragraphs, lists, code blocks) is treated as empty. */
 export const isReadmeEmpty = (readme: string | undefined): boolean => {
