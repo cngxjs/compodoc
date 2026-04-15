@@ -633,6 +633,7 @@ export const ComponentPage = (data: any): string => {
                                     variant: 'full'
                                 })}
                         </div>
+                        {GraphZoomControls({ prefix: 'tree-' })}
                         {GraphLegend({
                             items: [
                                 {
