@@ -11,7 +11,7 @@
 }
 
 /* ── Derived badge chrome (shared by all colored badges) ── */
-.cdx-badge[class*="cdx-badge--"]:not(.cdx-badge--entity-):not(.cdx-badge--count):not(.cdx-badge--trait):not(.cdx-badge--deprecated):not(.cdx-badge--since) {
+.cdx-badge[class*="cdx-badge--"]:not([class*="cdx-badge--entity-"]):not(.cdx-badge--count):not(.cdx-badge--trait):not(.cdx-badge--deprecated):not(.cdx-badge--since) {
     color: var(--cdx-badge-base);
     border: 1px solid color-mix(in srgb, var(--cdx-badge-base) 45%, transparent);
     background: color-mix(in srgb, var(--cdx-badge-base) 8%, var(--color-cdx-bg-elevated, white));
