@@ -3,7 +3,7 @@
     padding: var(--spacing-cdx-2xl) 32px var(--spacing-cdx-lg);
     overflow: hidden;
     border-radius: var(--radius-cdx-lg);
-    margin: var(--spacing-cdx-lg) 0 0;
+    margin: 0;
     background: var(--color-cdx-bg-alt);
 }
 .cdx-entity-hero::before {
