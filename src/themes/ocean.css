@@ -1,26 +1,26 @@
 /* @theme Ocean
- * Cool, calm, deep-teal-tinted — long reading sessions.
+ * Deep teal, rounded like water drops, with soft surface-tension borders.
  * Pairs well with: --shikiTheme github-light:github-dark
  */
 
 :root {
-    /* --- Surfaces --- */
-    --color-cdx-bg: hsl(200 20% 97%);
-    --color-cdx-bg-alt: hsl(200 18% 94%);
+    /* --- Surfaces (cool teal-tinted whites) --- */
+    --color-cdx-bg: hsl(195 28% 97%);
+    --color-cdx-bg-alt: hsl(195 26% 93%);
     --color-cdx-bg-elevated: hsl(0 0% 100%);
-    --color-cdx-bg-code: hsl(200 16% 94%);
-    --color-cdx-bg-code-block: hsl(200 20% 15%);
+    --color-cdx-bg-code: hsl(195 22% 93%);
+    --color-cdx-bg-code-block: hsl(200 32% 13%);
 
     /* --- Text --- */
-    --color-cdx-text: hsl(200 25% 12%);
-    --color-cdx-text-secondary: hsl(200 14% 40%);
+    --color-cdx-text: hsl(200 30% 11%);
+    --color-cdx-text-secondary: hsl(200 14% 38%);
     --color-cdx-text-muted: hsl(200 10% 42%);
-    --color-cdx-text-inverse: hsl(200 16% 96%);
+    --color-cdx-text-inverse: hsl(195 26% 96%);
 
-    /* --- Primary --- */
-    --color-cdx-primary: hsl(200 60% 38%);
-    --color-cdx-primary-hover: hsl(200 60% 34%);
-    --color-cdx-primary-subtle: hsl(200 40% 95%);
+    /* --- Primary (deeper, more saturated teal) --- */
+    --color-cdx-primary: hsl(195 78% 34%);
+    --color-cdx-primary-hover: hsl(195 80% 28%);
+    --color-cdx-primary-subtle: hsl(195 55% 94%);
 
     /* --- Entity colors (cool-shifted, WCAG AA compliant) --- */
     --color-cdx-entity-component: #0b7b70; /* teal-700 */
@@ -41,35 +41,60 @@
     --color-cdx-deprecated: hsl(38 80% 33.5%);
     --color-cdx-danger: hsl(0 65% 50%);
 
-    /* --- Borders --- */
-    --color-cdx-border: hsl(200 16% 88%);
-    --color-cdx-border-strong: hsl(200 14% 55.5%);
-    --color-cdx-border-focus: hsl(200 60% 42%);
+    /* --- Borders (teal-tinted) --- */
+    --color-cdx-border: hsl(195 26% 84%);
+    --color-cdx-border-strong: hsl(195 22% 52%);
+    --color-cdx-border-focus: hsl(195 80% 38%);
 
-    /* --- Shadows (blue-grey tint) --- */
-    --shadow-cdx-sm: 0 1px 2px hsl(200 20% 14% / 0.06);
-    --shadow-cdx-md: 0 4px 12px hsl(200 20% 14% / 0.08);
-    --shadow-cdx-lg: 0 12px 32px hsl(200 20% 14% / 0.12);
+    /* --- Shadows (deep water — teal tint, softer blur) --- */
+    --shadow-cdx-sm: 0 1px 3px hsl(200 40% 18% / 0.08);
+    --shadow-cdx-md: 0 6px 16px hsl(200 40% 18% / 0.1);
+    --shadow-cdx-lg: 0 16px 40px hsl(200 40% 18% / 0.14);
+
+    /* --- Radii (wave-rounded) --- */
+    --radius-cdx-sm: 8px;
+    --radius-cdx-md: 14px;
+    --radius-cdx-lg: 22px;
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+    --radius-2xl: 28px;
+
+    /* --- Code blocks (soft teal outline — surface tension) --- */
+    --color-cdx-snippet-bg: hsl(195 24% 95%);
+    --color-cdx-snippet-border: hsl(195 30% 82%);
+    --color-cdx-snippet-radius: var(--radius-cdx-md);
+    --color-cdx-line-highlight: hsl(195 80% 50% / 0.18);
+    --color-cdx-line-highlight-flash: hsl(195 80% 50% / 0.28);
+    --color-cdx-copy-success: hsl(172 60% 36%);
+    --color-cdx-lang-chip: hsl(200 18% 42%);
+    --color-cdx-lang-chip-bg: hsl(195 30% 82% / 0.6);
+
+    /* --- Graphs (visible teal frame, strong rounding) --- */
+    --color-cdx-graph-bg: hsl(195 30% 95%);
+    --color-cdx-graph-border: hsl(195 40% 72%);
+    --color-cdx-graph-border-width: 1px;
+    --color-cdx-graph-radius: var(--radius-cdx-lg);
 }
 
 .dark {
-    /* --- Surfaces --- */
-    --color-cdx-bg: hsl(200 20% 9%);
-    --color-cdx-bg-alt: hsl(200 18% 12%);
-    --color-cdx-bg-elevated: hsl(200 16% 16%);
-    --color-cdx-bg-code: hsl(200 18% 14%);
-    --color-cdx-bg-code-block: hsl(200 22% 7%);
+    /* --- Surfaces (abyssal teal) --- */
+    --color-cdx-bg: hsl(200 28% 8%);
+    --color-cdx-bg-alt: hsl(200 24% 11%);
+    --color-cdx-bg-elevated: hsl(200 20% 15%);
+    --color-cdx-bg-code: hsl(200 24% 13%);
+    --color-cdx-bg-code-block: hsl(200 32% 6%);
 
     /* --- Text --- */
-    --color-cdx-text: hsl(200 16% 88%);
-    --color-cdx-text-secondary: hsl(200 12% 62%);
-    --color-cdx-text-muted: hsl(200 10% 52%);
-    --color-cdx-text-inverse: hsl(200 25% 12%);
+    --color-cdx-text: hsl(195 22% 90%);
+    --color-cdx-text-secondary: hsl(195 14% 66%);
+    --color-cdx-text-muted: hsl(200 10% 54%);
+    --color-cdx-text-inverse: hsl(200 30% 11%);
 
-    /* --- Primary --- */
-    --color-cdx-primary: hsl(200 70% 62%);
-    --color-cdx-primary-hover: hsl(200 70% 70%);
-    --color-cdx-primary-subtle: hsl(200 30% 18%);
+    /* --- Primary (bright cyan-teal glow) --- */
+    --color-cdx-primary: hsl(188 72% 62%);
+    --color-cdx-primary-hover: hsl(188 80% 72%);
+    --color-cdx-primary-subtle: hsl(195 45% 18%);
 
     /* --- Entity colors (lighter for dark backgrounds) --- */
     --color-cdx-entity-component: #2dd4bf; /* teal-400 */
@@ -90,13 +115,27 @@
     --color-cdx-deprecated: hsl(38 75% 62%);
     --color-cdx-danger: hsl(0 60% 62%);
 
-    /* --- Borders --- */
-    --color-cdx-border: hsl(200 14% 20%);
-    --color-cdx-border-strong: hsl(200 14% 38.5%);
-    --color-cdx-border-focus: hsl(200 70% 62%);
+    /* --- Borders (lit teal edge) --- */
+    --color-cdx-border: hsl(200 22% 22%);
+    --color-cdx-border-strong: hsl(195 20% 44%);
+    --color-cdx-border-focus: hsl(188 72% 62%);
 
-    /* --- Shadows --- */
-    --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
-    --shadow-cdx-md: 0 4px 12px hsl(0 0% 0% / 0.3);
-    --shadow-cdx-lg: 0 12px 32px hsl(0 0% 0% / 0.4);
+    /* --- Shadows (deep water — darker, teal tint) --- */
+    --shadow-cdx-sm: 0 1px 3px hsl(200 60% 3% / 0.5);
+    --shadow-cdx-md: 0 6px 18px hsl(200 60% 3% / 0.55);
+    --shadow-cdx-lg: 0 18px 44px hsl(200 60% 3% / 0.6);
+
+    /* --- Code blocks (lit teal outline) --- */
+    --color-cdx-snippet-bg: hsl(200 24% 13%);
+    --color-cdx-snippet-border: hsl(200 28% 24%);
+    --color-cdx-line-highlight: hsl(188 72% 55% / 0.18);
+    --color-cdx-line-highlight-flash: hsl(188 72% 55% / 0.28);
+    --color-cdx-copy-success: hsl(172 60% 58%);
+    --color-cdx-lang-chip: hsl(195 14% 66%);
+    --color-cdx-lang-chip-bg: hsl(200 28% 24% / 0.8);
+
+    /* --- Graphs (glowing teal frame in the dark) --- */
+    --color-cdx-graph-bg: hsl(200 24% 10%);
+    --color-cdx-graph-border: hsl(195 32% 32%);
+    --color-cdx-graph-border-width: 1px;
 }
