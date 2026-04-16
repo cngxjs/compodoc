@@ -79,8 +79,8 @@
     --color-cdx-snippet-border: hsl(230 20% 22%);
     --color-cdx-snippet-radius: var(--radius-cdx-md);
     --color-cdx-code-inline: hsl(215 70% 80%);
-    --color-cdx-line-highlight: hsl(215 80% 80% / 0.14);
-    --color-cdx-line-highlight-flash: hsl(215 90% 88% / 0.28);
+    --color-cdx-line-highlight: hsl(215 80% 72% / 0.25);
+    --color-cdx-line-highlight-flash: hsl(215 90% 82% / 0.45);
     --color-cdx-copy-success: hsl(160 60% 55%);
     --color-cdx-lang-chip: hsl(220 14% 68%);
     --color-cdx-lang-chip-bg: hsl(230 26% 20% / 0.85);
@@ -144,8 +144,8 @@
     --color-cdx-snippet-bg: hsl(235 30% 7%);
     --color-cdx-snippet-border: hsl(235 22% 18%);
     --color-cdx-code-inline: hsl(215 75% 86%);
-    --color-cdx-line-highlight: hsl(215 85% 86% / 0.12);
-    --color-cdx-line-highlight-flash: hsl(215 90% 92% / 0.26);
+    --color-cdx-line-highlight: hsl(215 85% 72% / 0.28);
+    --color-cdx-line-highlight-flash: hsl(215 95% 82% / 0.48);
     --color-cdx-copy-success: hsl(160 65% 60%);
     --color-cdx-lang-chip: hsl(220 16% 74%);
     --color-cdx-lang-chip-bg: hsl(235 26% 14% / 0.9);
