@@ -1,5 +1,8 @@
 /* @theme Rose Pine
- * Warm rose accents, gentle on the eyes — the beloved cozy palette.
+ * Cozy afternoon — the canonical Rose Pine palette (Dawn for light,
+ * Moon for dark) wrapped in warmer geometry: rose-tinted graph frame,
+ * cream snippets with subtle rose outline, softer 10/14/22 radii,
+ * warm rose-tinted shadows. Gentle on the eyes for long sessions.
  * Pairs well with: --shikiTheme rose-pine-dawn:rose-pine
  */
 
@@ -22,7 +25,7 @@
     --color-cdx-primary-hover: #9e4f66;
     --color-cdx-primary-subtle: #f5e8ec;
 
-    /* --- Entity colors (all unique, warm rose palette) --- */
+    /* --- Entity colors (warm rose palette) --- */
     --color-cdx-entity-component: #3a8c7a;
     --color-cdx-entity-service: #c76d4e;
     --color-cdx-entity-directive: #7e5baa;
@@ -46,21 +49,49 @@
     --color-cdx-border-strong: #b4a8a0;
     --color-cdx-border-focus: #b4637a;
 
-    /* --- Shadows (warm rose tint) --- */
-    --shadow-cdx-sm: 0 1px 2px hsl(340 20% 30% / 0.06);
-    --shadow-cdx-md: 0 4px 12px hsl(340 20% 30% / 0.08);
-    --shadow-cdx-lg: 0 12px 32px hsl(340 20% 30% / 0.1);
+    /* --- Shadows (warm rose tint — cozy afternoon light) --- */
+    --shadow-cdx-sm: 0 1px 3px hsl(340 30% 30% / 0.08);
+    --shadow-cdx-md: 0 6px 18px hsl(340 30% 30% / 0.1);
+    --shadow-cdx-lg: 0 18px 44px hsl(340 30% 30% / 0.14);
+
+    /* --- Radii (softer than Nord — pillow-like) --- */
+    --radius-cdx-sm: 8px;
+    --radius-cdx-md: 12px;
+    --radius-cdx-lg: 20px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-2xl: 28px;
+
+    /* --- Density (comfortable — inherits default unless overridden) --- */
+
+    /* --- Code blocks (warm cream outline, rose highlight) --- */
+    --color-cdx-snippet-bg: #f2e9e1;
+    --color-cdx-snippet-border: #e8d5d5;
+    --color-cdx-snippet-radius: var(--radius-cdx-md);
+    --color-cdx-code-inline: #b4637a;
+    --color-cdx-line-highlight: hsl(350 70% 70% / 0.16);
+    --color-cdx-line-highlight-flash: hsl(350 80% 70% / 0.32);
+    --color-cdx-copy-success: #5c8a48;
+    --color-cdx-lang-chip: #6e6a86;
+    --color-cdx-lang-chip-bg: #eadfd7;
+
+    /* --- Graphs (rose-tinted 1px frame on warm bg) --- */
+    --color-cdx-graph-bg: #f7ede3;
+    --color-cdx-graph-border: #d9b5bc;
+    --color-cdx-graph-border-width: 1px;
+    --color-cdx-graph-radius: var(--radius-cdx-md);
 }
 
 .dark {
-    /* --- Surfaces (Moon — warm dark, NOT violet) --- */
+    /* --- Surfaces (Moon — warm dark) --- */
     --color-cdx-bg: #1f1d2e;
     --color-cdx-bg-alt: #26233a;
     --color-cdx-bg-elevated: #2a2740;
     --color-cdx-bg-code: #26233a;
     --color-cdx-bg-code-block: #191724;
 
-    /* --- Text (warm neutrals, not violet) --- */
+    /* --- Text (warm neutrals) --- */
     --color-cdx-text: #e0def4;
     --color-cdx-text-secondary: #bab6cc;
     --color-cdx-text-muted: #817c9c;
@@ -71,7 +102,7 @@
     --color-cdx-primary-hover: #f0b0ad;
     --color-cdx-primary-subtle: #3a2833;
 
-    /* --- Entity colors (all unique, warm for dark bg) --- */
+    /* --- Entity colors (warm for dark bg) --- */
     --color-cdx-entity-component: #7dd3c0;
     --color-cdx-entity-service: #eba07a;
     --color-cdx-entity-directive: #c4a0e7;
@@ -90,13 +121,39 @@
     --color-cdx-deprecated: #e8a87c;
     --color-cdx-danger: #eb6f92;
 
-    /* --- Borders (warm, not violet) --- */
+    /* --- Borders --- */
     --color-cdx-border: #3a3650;
     --color-cdx-border-strong: #575370;
     --color-cdx-border-focus: #ea9a97;
 
-    /* --- Shadows --- */
-    --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
-    --shadow-cdx-md: 0 4px 12px hsl(0 0% 0% / 0.3);
-    --shadow-cdx-lg: 0 12px 32px hsl(0 0% 0% / 0.35);
+    /* --- Shadows (deeper + subtle warm rose bloom) --- */
+    --shadow-cdx-sm: 0 1px 3px hsl(0 0% 0% / 0.25);
+    --shadow-cdx-md: 0 6px 20px hsl(0 0% 0% / 0.35), 0 0 32px hsl(350 60% 40% / 0.08);
+    --shadow-cdx-lg: 0 18px 44px hsl(0 0% 0% / 0.4), 0 0 64px hsl(350 60% 40% / 0.14);
+
+    /* --- Code blocks --- */
+    --color-cdx-snippet-bg: #26233a;
+    --color-cdx-snippet-border: #3a3650;
+    --color-cdx-code-inline: #ea9a97;
+    --color-cdx-line-highlight: hsl(350 75% 70% / 0.18);
+    --color-cdx-line-highlight-flash: hsl(350 85% 75% / 0.36);
+    --color-cdx-copy-success: #a3d48c;
+    --color-cdx-lang-chip: #bab6cc;
+    --color-cdx-lang-chip-bg: #3a3650;
+
+    /* --- Graphs (rose-tinted frame on Moon bg) --- */
+    --color-cdx-graph-bg: #1f1d2e;
+    --color-cdx-graph-border: #6b4858;
+    --color-cdx-graph-border-width: 1px;
+}
+
+/* Sticky scroll stack: Moon bg-code-block (#191724) is close to body.
+   Lift it with slightly different bg and a subtle rose underline. */
+.dark .cdx-source-viewer-sticky-stack,
+.dark .cdx-source-viewer-sticky-stack > .line {
+    background: #191724 !important;
+}
+.dark .cdx-source-viewer-sticky-stack:not(:empty) {
+    border-bottom: 1px solid #6b4858;
+    box-shadow: 0 4px 16px hsl(0 0% 0% / 0.45) !important;
 }
