@@ -227,7 +227,8 @@ export const ModulePage = (data: any): string => {
                 navTabs: data.navTabs,
                 infoContent,
                 readme: mod.readme,
-                sourceCode: mod.sourceCode
+                sourceCode: mod.sourceCode,
+                filePath: mod.file
             })}
         </>
     ) as string;

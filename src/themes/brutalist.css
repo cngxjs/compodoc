@@ -1,28 +1,30 @@
 /* @theme Brutalist
- * Sharp corners, no shadows, monospace everything, max contrast.
+ * Name is program. Pure black-and-white, hard borders on every edge,
+ * thick 3px graph frame, hard-offset shadows (no blur), zero radii,
+ * monospace everything, instant transitions, maxed contrast.
  * Pairs well with: --shikiTheme one-light:one-dark-pro
  */
 
 :root {
-    /* --- Surfaces --- */
+    /* --- Surfaces (neutral, no warm tint) --- */
     --color-cdx-bg: hsl(0 0% 100%);
-    --color-cdx-bg-alt: hsl(0 0% 95%);
+    --color-cdx-bg-alt: hsl(0 0% 92%);
     --color-cdx-bg-elevated: hsl(0 0% 100%);
-    --color-cdx-bg-code: hsl(60 10% 94%);
-    --color-cdx-bg-code-block: hsl(0 0% 6%);
+    --color-cdx-bg-code: hsl(0 0% 94%);
+    --color-cdx-bg-code-block: hsl(0 0% 0%);
 
-    /* --- Text --- */
+    /* --- Text (pure black, no soft grays for hierarchy) --- */
     --color-cdx-text: hsl(0 0% 0%);
-    --color-cdx-text-secondary: hsl(0 0% 30%);
-    --color-cdx-text-muted: hsl(0 0% 42%);
+    --color-cdx-text-secondary: hsl(0 0% 18%);
+    --color-cdx-text-muted: hsl(0 0% 28%);
     --color-cdx-text-inverse: hsl(0 0% 100%);
 
     /* --- Primary (black) --- */
     --color-cdx-primary: hsl(0 0% 0%);
-    --color-cdx-primary-hover: hsl(0 0% 20%);
-    --color-cdx-primary-subtle: hsl(0 0% 92%);
+    --color-cdx-primary-hover: hsl(0 0% 22%);
+    --color-cdx-primary-subtle: hsl(0 0% 88%);
 
-    /* --- Entity colors (high contrast) --- */
+    /* --- Entity colors (kept — already high contrast 700-level) --- */
     --color-cdx-entity-component: #007a6e;
     --color-cdx-entity-service: #a35200;
     --color-cdx-entity-directive: #6b21a8;
@@ -37,19 +39,19 @@
     --color-cdx-entity-typealias: #3730a3;
     --color-cdx-entity-enum: #9a3412;
 
-    /* --- Feedback --- */
+    /* --- Feedback (saturated, loud) --- */
     --color-cdx-deprecated: hsl(45 100% 28%);
-    --color-cdx-danger: hsl(0 80% 38%);
+    --color-cdx-danger: hsl(0 100% 35%);
 
-    /* --- Borders (hard, visible) --- */
-    --color-cdx-border: hsl(0 0% 75%);
-    --color-cdx-border-strong: hsl(0 0% 40%);
+    /* --- Borders (all pure black, no soft grays) --- */
+    --color-cdx-border: hsl(0 0% 0%);
+    --color-cdx-border-strong: hsl(0 0% 0%);
     --color-cdx-border-focus: hsl(0 0% 0%);
 
-    /* --- Shadows (none) --- */
-    --shadow-cdx-sm: none;
-    --shadow-cdx-md: none;
-    --shadow-cdx-lg: none;
+    /* --- Shadows (hard offset — the neobrutalist signature, zero blur) --- */
+    --shadow-cdx-sm: 2px 2px 0 hsl(0 0% 0%);
+    --shadow-cdx-md: 4px 4px 0 hsl(0 0% 0%);
+    --shadow-cdx-lg: 6px 6px 0 hsl(0 0% 0%);
 
     /* --- Typography (monospace everything) --- */
     --font-heading: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -58,7 +60,7 @@
     --font-sans: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
     --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-    /* --- Radii (zero) --- */
+    /* --- Radii (zero — sharp corners) --- */
     --radius-cdx-sm: 0px;
     --radius-cdx-md: 0px;
     --radius-cdx-lg: 0px;
@@ -75,27 +77,47 @@
     --spacing-cdx-xl: 16px;
     --spacing-cdx-2xl: 20px;
 
-    /* --- Transitions (instant) --- */
+    /* --- Transitions (instant — no easing) --- */
     --cdx-transition-fast: 0ms;
     --cdx-transition-base: 0ms;
+
+    /* --- Code blocks (hard black outline) --- */
+    --color-cdx-snippet-bg: hsl(0 0% 94%);
+    --color-cdx-snippet-border: hsl(0 0% 0%);
+    --color-cdx-snippet-radius: 0px;
+    --color-cdx-line-highlight: hsl(55 100% 55% / 0.5);
+    --color-cdx-line-highlight-flash: hsl(55 100% 55% / 0.75);
+    --color-cdx-copy-success: hsl(120 100% 25%);
+    --color-cdx-lang-chip: hsl(0 0% 0%);
+    --color-cdx-lang-chip-bg: hsl(0 0% 85%);
+
+    /* --- Graphs (thick 3px black frame — signature) --- */
+    --color-cdx-graph-bg: hsl(0 0% 100%);
+    --color-cdx-graph-border: hsl(0 0% 0%);
+    --color-cdx-graph-border-width: 3px;
+    --color-cdx-graph-radius: 0px;
 }
 
 .dark {
-    --color-cdx-bg: hsl(0 0% 5%);
-    --color-cdx-bg-alt: hsl(0 0% 10%);
-    --color-cdx-bg-elevated: hsl(0 0% 12%);
-    --color-cdx-bg-code: hsl(0 0% 10%);
-    --color-cdx-bg-code-block: hsl(0 0% 3%);
+    /* --- Surfaces (pure black base, layered by subtle gray steps) --- */
+    --color-cdx-bg: hsl(0 0% 0%);
+    --color-cdx-bg-alt: hsl(0 0% 8%);
+    --color-cdx-bg-elevated: hsl(0 0% 10%);
+    --color-cdx-bg-code: hsl(0 0% 8%);
+    --color-cdx-bg-code-block: hsl(0 0% 0%);
 
-    --color-cdx-text: hsl(0 0% 95%);
-    --color-cdx-text-secondary: hsl(0 0% 72%);
-    --color-cdx-text-muted: hsl(0 0% 55%);
-    --color-cdx-text-inverse: hsl(0 0% 5%);
+    /* --- Text (pure white, minimal hierarchy) --- */
+    --color-cdx-text: hsl(0 0% 100%);
+    --color-cdx-text-secondary: hsl(0 0% 82%);
+    --color-cdx-text-muted: hsl(0 0% 72%);
+    --color-cdx-text-inverse: hsl(0 0% 0%);
 
-    --color-cdx-primary: hsl(0 0% 95%);
-    --color-cdx-primary-hover: hsl(0 0% 80%);
-    --color-cdx-primary-subtle: hsl(0 0% 15%);
+    /* --- Primary (white) --- */
+    --color-cdx-primary: hsl(0 0% 100%);
+    --color-cdx-primary-hover: hsl(0 0% 78%);
+    --color-cdx-primary-subtle: hsl(0 0% 18%);
 
+    /* --- Entity colors (300-level — loud on black) --- */
     --color-cdx-entity-component: #5eead4;
     --color-cdx-entity-service: #fbbf24;
     --color-cdx-entity-directive: #c084fc;
@@ -110,14 +132,31 @@
     --color-cdx-entity-typealias: #a5b4fc;
     --color-cdx-entity-enum: #fdba74;
 
-    --color-cdx-deprecated: hsl(45 90% 60%);
-    --color-cdx-danger: hsl(0 70% 65%);
+    /* --- Feedback --- */
+    --color-cdx-deprecated: hsl(45 100% 58%);
+    --color-cdx-danger: hsl(0 100% 65%);
 
-    --color-cdx-border: hsl(0 0% 25%);
-    --color-cdx-border-strong: hsl(0 0% 50%);
-    --color-cdx-border-focus: hsl(0 0% 95%);
+    /* --- Borders (all pure white) --- */
+    --color-cdx-border: hsl(0 0% 100%);
+    --color-cdx-border-strong: hsl(0 0% 100%);
+    --color-cdx-border-focus: hsl(0 0% 100%);
 
-    --shadow-cdx-sm: none;
-    --shadow-cdx-md: none;
-    --shadow-cdx-lg: none;
+    /* --- Shadows (hard offset white — inverted brutalist) --- */
+    --shadow-cdx-sm: 2px 2px 0 hsl(0 0% 100%);
+    --shadow-cdx-md: 4px 4px 0 hsl(0 0% 100%);
+    --shadow-cdx-lg: 6px 6px 0 hsl(0 0% 100%);
+
+    /* --- Code blocks (white outline in the void) --- */
+    --color-cdx-snippet-bg: hsl(0 0% 8%);
+    --color-cdx-snippet-border: hsl(0 0% 100%);
+    --color-cdx-line-highlight: hsl(55 100% 55% / 0.35);
+    --color-cdx-line-highlight-flash: hsl(55 100% 55% / 0.6);
+    --color-cdx-copy-success: hsl(120 100% 62%);
+    --color-cdx-lang-chip: hsl(0 0% 100%);
+    --color-cdx-lang-chip-bg: hsl(0 0% 14%);
+
+    /* --- Graphs (thick 3px white frame) --- */
+    --color-cdx-graph-bg: hsl(0 0% 0%);
+    --color-cdx-graph-border: hsl(0 0% 100%);
+    --color-cdx-graph-border-width: 3px;
 }
