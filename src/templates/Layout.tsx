@@ -142,7 +142,7 @@ const CommandPalette = () =>
 
 /** Built-in themes with display name and primary swatch color */
 const BUILTIN_THEMES: ReadonlyArray<{ id: string; name: string; swatch: string }> = [
-    { id: 'default', name: 'Default', swatch: 'hsl(222 68% 52%)' },
+    { id: 'default', name: 'Default', swatch: 'hsl(0 0% 15%)' },
     { id: 'ocean', name: 'Ocean', swatch: 'hsl(200 60% 42%)' },
     { id: 'ember', name: 'Ember', swatch: 'hsl(24 90% 52%)' },
     { id: 'midnight', name: 'Midnight', swatch: 'hsl(262 68% 58%)' },

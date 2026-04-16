@@ -32,23 +32,25 @@
 @source "../templates/**/*.tsx";
 
 @theme {
-    /* --- Surface hierarchy --- */
-    --color-cdx-bg: hsl(220 16% 98%);
-    --color-cdx-bg-alt: hsl(220 16% 96%);
+    /* --- Surface hierarchy (pure neutral greys — true "no opinion" default).
+     * bg/bg-alt/elevated are staggered 4pp apart so white cards stay
+     * visibly lifted against the body background. */
+    --color-cdx-bg: hsl(0 0% 96%);
+    --color-cdx-bg-alt: hsl(0 0% 93%);
     --color-cdx-bg-elevated: hsl(0 0% 100%);
-    --color-cdx-bg-code: hsl(220 16% 95%);
-    --color-cdx-bg-code-block: hsl(225 16% 16%);
+    --color-cdx-bg-code: hsl(0 0% 93%);
+    --color-cdx-bg-code-block: hsl(0 0% 14%);
 
     /* --- Text hierarchy --- */
-    --color-cdx-text: hsl(220 20% 14%);
-    --color-cdx-text-secondary: hsl(220 12% 44%);
-    --color-cdx-text-muted: hsl(220 10% 45%);
-    --color-cdx-text-inverse: hsl(220 16% 96%);
+    --color-cdx-text: hsl(0 0% 12%);
+    --color-cdx-text-secondary: hsl(0 0% 40%);
+    --color-cdx-text-muted: hsl(0 0% 48%);
+    --color-cdx-text-inverse: hsl(0 0% 96%);
 
-    /* --- Primary accent --- */
-    --color-cdx-primary: hsl(222 68% 52%);
-    --color-cdx-primary-hover: hsl(222 68% 44%);
-    --color-cdx-primary-subtle: hsl(222 68% 96%);
+    /* --- Primary (Slate Noir — deep ink, not a color accent) --- */
+    --color-cdx-primary: hsl(0 0% 15%);
+    --color-cdx-primary-hover: hsl(0 0% 30%);
+    --color-cdx-primary-subtle: hsl(0 0% 84%);
 
     /* --- Entity type accents --- */
     --color-cdx-entity-component: #0e8578; /* teal-700 */
@@ -69,10 +71,10 @@
     --color-cdx-deprecated: hsl(38 92% 32.5%);
     --color-cdx-danger: hsl(0 72% 51%);
 
-    /* --- Borders --- */
-    --color-cdx-border: hsl(220 14% 90%);
-    --color-cdx-border-strong: hsl(220 14% 59%);
-    --color-cdx-border-focus: hsl(222 68% 52%);
+    /* --- Borders (neutral greys — contrast tuned for bg at 96%) --- */
+    --color-cdx-border: hsl(0 0% 86%);
+    --color-cdx-border-strong: hsl(0 0% 60%);
+    --color-cdx-border-focus: hsl(0 0% 15%);
 
     /* --- Typography --- */
     --font-heading: "Instrument Sans", system-ui, sans-serif;
@@ -85,10 +87,11 @@
     --font-mono:
         ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
 
-    /* --- Shadows --- */
-    --shadow-cdx-sm: 0 1px 2px hsl(220 20% 14% / 0.06);
-    --shadow-cdx-md: 0 4px 12px hsl(220 20% 14% / 0.08);
-    --shadow-cdx-lg: 0 12px 32px hsl(220 20% 14% / 0.12);
+    /* --- Shadows (neutral, no blue tint — slightly stronger so cards
+     * lift against the subtly-dimmed body). */
+    --shadow-cdx-sm: 0 1px 3px hsl(0 0% 0% / 0.08);
+    --shadow-cdx-md: 0 4px 14px hsl(0 0% 0% / 0.1);
+    --shadow-cdx-lg: 0 16px 36px hsl(0 0% 0% / 0.14);
 
     /* --- Layout --- */
     --spacing-cdx-sidebar: 320px;
@@ -117,19 +120,19 @@
     --radius-2xl: 12px;
 
     /* --- Code blocks (snippet + source viewer) --- */
-    --color-cdx-snippet-bg: hsl(220 14% 96%);
+    --color-cdx-snippet-bg: hsl(0 0% 93%);
     --color-cdx-snippet-border: transparent;
     --color-cdx-snippet-radius: var(--radius-cdx-md);
     --color-cdx-code-inline: #c2185b;
-    --color-cdx-code-dark-surface: hsl(225 16% 14%);
-    --color-cdx-scrollbar: hsl(220 10% 50% / 0.4);
-    --color-cdx-line-number: hsl(220 10% 50% / 0.5);
-    --color-cdx-line-hover: hsl(220 20% 14% / 0.06);
+    --color-cdx-code-dark-surface: hsl(0 0% 14%);
+    --color-cdx-scrollbar: hsl(0 0% 50% / 0.4);
+    --color-cdx-line-number: hsl(0 0% 50% / 0.5);
+    --color-cdx-line-hover: hsl(0 0% 0% / 0.06);
     --color-cdx-line-highlight: hsl(48 96% 53% / 0.25);
     --color-cdx-line-highlight-flash: hsl(48 96% 53% / 0.3);
     --color-cdx-copy-success: hsl(142 50% 40%);
-    --color-cdx-lang-chip: hsl(220 10% 60%);
-    --color-cdx-lang-chip-bg: hsl(220 10% 50% / 0.1);
+    --color-cdx-lang-chip: hsl(0 0% 60%);
+    --color-cdx-lang-chip-bg: hsl(0 0% 50% / 0.1);
 
     /* --- Status (coverage, tests) --- */
     --color-cdx-status-pass: #16a34a;
@@ -137,7 +140,7 @@
     --color-cdx-status-warning: #ca8a04;
 
     /* --- Overlay --- */
-    --color-cdx-overlay: hsl(220 20% 14% / 0.4);
+    --color-cdx-overlay: hsl(0 0% 14% / 0.4);
 
     /* --- Graphs (dependency graph, DOM tree) --- */
     --color-cdx-graph-bg: var(--color-cdx-bg-alt);
@@ -150,22 +153,22 @@
     --cdx-transition-base: 200ms ease;
 }
 
-/* --- Dark theme token overrides --- */
+/* --- Dark theme token overrides (pure neutral greys) --- */
 .dark {
-    --color-cdx-bg: hsl(225 16% 10%);
-    --color-cdx-bg-alt: hsl(225 16% 13%);
-    --color-cdx-bg-elevated: hsl(225 16% 17%);
-    --color-cdx-bg-code: hsl(225 16% 15%);
-    --color-cdx-bg-code-block: hsl(225 16% 8%);
+    --color-cdx-bg: hsl(0 0% 11%);
+    --color-cdx-bg-alt: hsl(0 0% 14%);
+    --color-cdx-bg-elevated: hsl(0 0% 17%);
+    --color-cdx-bg-code: hsl(0 0% 15%);
+    --color-cdx-bg-code-block: hsl(0 0% 8%);
 
-    --color-cdx-text: hsl(220 16% 90%);
-    --color-cdx-text-secondary: hsl(220 12% 64%);
-    --color-cdx-text-muted: hsl(220 10% 54%);
-    --color-cdx-text-inverse: hsl(220 20% 14%);
+    --color-cdx-text: hsl(0 0% 92%);
+    --color-cdx-text-secondary: hsl(0 0% 64%);
+    --color-cdx-text-muted: hsl(0 0% 54%);
+    --color-cdx-text-inverse: hsl(0 0% 12%);
 
-    --color-cdx-primary: hsl(222 50% 72%);
-    --color-cdx-primary-hover: hsl(222 50% 80%);
-    --color-cdx-primary-subtle: hsl(222 30% 18%);
+    --color-cdx-primary: hsl(0 0% 90%);
+    --color-cdx-primary-hover: hsl(0 0% 100%);
+    --color-cdx-primary-subtle: hsl(0 0% 26%);
 
     --color-cdx-entity-component: #2dd4bf; /* teal light */
     --color-cdx-entity-service: #fbbf24; /* amber light */
@@ -184,9 +187,9 @@
     --color-cdx-deprecated: hsl(38 80% 65%);
     --color-cdx-danger: hsl(0 65% 65%);
 
-    --color-cdx-border: hsl(225 14% 20%);
-    --color-cdx-border-strong: hsl(225 14% 42%);
-    --color-cdx-border-focus: hsl(222 50% 72%);
+    --color-cdx-border: hsl(0 0% 22%);
+    --color-cdx-border-strong: hsl(0 0% 42%);
+    --color-cdx-border-focus: hsl(0 0% 90%);
 
     --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
     --shadow-cdx-md: 0 4px 12px hsl(0 0% 0% / 0.3);
@@ -195,20 +198,20 @@
     --color-cdx-status-pass: #4ade80;
     --color-cdx-status-fail: #f87171;
     --color-cdx-status-warning: #facc15;
-    --color-cdx-overlay: hsl(220 16% 10% / 0.6);
+    --color-cdx-overlay: hsl(0 0% 10% / 0.6);
 
-    --color-cdx-snippet-bg: hsl(225 16% 16%);
+    --color-cdx-snippet-bg: hsl(0 0% 16%);
     --color-cdx-snippet-border: transparent;
     --color-cdx-code-inline: #e09393;
-    --color-cdx-code-dark-surface: hsl(225 16% 14%);
-    --color-cdx-scrollbar: hsl(220 10% 50% / 0.5);
-    --color-cdx-line-number: hsl(220 10% 50% / 0.4);
-    --color-cdx-line-hover: hsl(220 16% 90% / 0.06);
+    --color-cdx-code-dark-surface: hsl(0 0% 14%);
+    --color-cdx-scrollbar: hsl(0 0% 50% / 0.5);
+    --color-cdx-line-number: hsl(0 0% 50% / 0.4);
+    --color-cdx-line-hover: hsl(0 0% 90% / 0.06);
     --color-cdx-line-highlight: hsl(48 90% 60% / 0.15);
     --color-cdx-line-highlight-flash: hsl(48 90% 60% / 0.2);
     --color-cdx-copy-success: hsl(142 50% 60%);
-    --color-cdx-lang-chip: hsl(220 10% 55%);
-    --color-cdx-lang-chip-bg: hsl(220 10% 50% / 0.15);
+    --color-cdx-lang-chip: hsl(0 0% 55%);
+    --color-cdx-lang-chip-bg: hsl(0 0% 50% / 0.15);
 }
 
 /* Global inline <code> + <a> fallback colours.
