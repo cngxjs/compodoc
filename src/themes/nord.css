@@ -1,6 +1,12 @@
 /* @theme Nord
- * Arctic, muted, low-contrast — the beloved polar palette.
- * Pairs well with: --shikiTheme nord:nord
+ * Arctic reading room — faithful to Arctic Ice Studios' Nord palette,
+ * refined with Scandinavian-minimal geometry: moderate radii, 1px
+ * Frost-blue graph frame, subtle Snow Storm surfaces. Quiet,
+ * calm, built for long reading sessions.
+ *
+ * Pairs with: --shikiTheme github-light:nord (dual-theme — the plain
+ * `nord` single-theme is designed for dark backgrounds only and renders
+ * pale on Nord's Snow Storm light surface).
  */
 
 :root {
@@ -46,18 +52,43 @@
     --color-cdx-border-strong: #a0aabb;
     --color-cdx-border-focus: #5e81ac;
 
-    /* --- Shadows (subtle, cool-tinted) --- */
+    /* --- Shadows (subtle cool-tinted — no glow, just gentle lift) --- */
     --shadow-cdx-sm: 0 1px 2px hsl(220 16% 22% / 0.06);
     --shadow-cdx-md: 0 4px 12px hsl(220 16% 22% / 0.08);
     --shadow-cdx-lg: 0 12px 32px hsl(220 16% 22% / 0.1);
 
-    /* --- Density (comfortable) --- */
+    /* --- Density (comfortable — Scandinavian breathing room) --- */
     --spacing-cdx-xs: 5px;
     --spacing-cdx-sm: 10px;
     --spacing-cdx-md: 14px;
     --spacing-cdx-lg: 18px;
     --spacing-cdx-xl: 22px;
     --spacing-cdx-2xl: 26px;
+
+    /* --- Radii (refined — Scandinavian minimalism, not flashy) --- */
+    --radius-cdx-sm: 6px;
+    --radius-cdx-md: 10px;
+    --radius-cdx-lg: 16px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-2xl: 22px;
+
+    /* --- Code blocks (Frost-hinted outline) --- */
+    --color-cdx-snippet-bg: #e5e9f0;
+    --color-cdx-snippet-border: #d0d7e2;
+    --color-cdx-snippet-radius: var(--radius-cdx-md);
+    --color-cdx-line-highlight: hsl(210 40% 60% / 0.14);
+    --color-cdx-line-highlight-flash: hsl(210 55% 60% / 0.28);
+    --color-cdx-copy-success: #7d9a6b;
+    --color-cdx-lang-chip: #616e88;
+    --color-cdx-lang-chip-bg: #d8dee9;
+
+    /* --- Graphs (Frost-blue 1px frame + Snow Storm bg) --- */
+    --color-cdx-graph-bg: #e8eef4;
+    --color-cdx-graph-border: #a0b4d0;
+    --color-cdx-graph-border-width: 1px;
+    --color-cdx-graph-radius: var(--radius-cdx-md);
 }
 
 .dark {
@@ -103,8 +134,35 @@
     --color-cdx-border-strong: #6a7589;
     --color-cdx-border-focus: #88c0d0;
 
-    /* --- Shadows --- */
+    /* --- Shadows (deeper but still no glow) --- */
     --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
     --shadow-cdx-md: 0 4px 12px hsl(0 0% 0% / 0.25);
     --shadow-cdx-lg: 0 12px 32px hsl(0 0% 0% / 0.3);
+
+    /* --- Code blocks --- */
+    --color-cdx-snippet-bg: #343b48;
+    --color-cdx-snippet-border: #4c566a;
+    --color-cdx-line-highlight: hsl(210 30% 70% / 0.1);
+    --color-cdx-line-highlight-flash: hsl(210 50% 75% / 0.24);
+    --color-cdx-copy-success: #a3be8c;
+    --color-cdx-lang-chip: #8892a4;
+    --color-cdx-lang-chip-bg: #3b4252;
+
+    /* --- Graphs (Frost-blue frame on Polar Night bg) --- */
+    --color-cdx-graph-bg: #2e3440;
+    --color-cdx-graph-border: #5e81ac;
+    --color-cdx-graph-border-width: 1px;
+}
+
+/* Sticky scroll stack needs clearer separation from the code body.
+   Default uses --color-cdx-code-dark-surface which is close to Nord's
+   Polar Night — visually indistinguishable. Override with darker Nord
+   bg-code-block (#242933) and a subtle Frost-blue underline. */
+.dark .cdx-source-viewer-sticky-stack,
+.dark .cdx-source-viewer-sticky-stack > .line {
+    background: #242933 !important;
+}
+.dark .cdx-source-viewer-sticky-stack:not(:empty) {
+    border-bottom: 1px solid #5e81ac;
+    box-shadow: 0 4px 16px hsl(220 20% 4% / 0.45) !important;
 }
