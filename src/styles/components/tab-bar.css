@@ -98,9 +98,15 @@
     transform: scaleX(1);
 }
 
+/* Focus uses an INSET box-shadow instead of outline because the
+ * container's overflow-x: auto implicitly clips overflow-y and
+ * eats any outline that extends outside the link box (especially
+ * on the first tab against the container's left edge). Inset
+ * shadow draws inside the link, so it can't be clipped or
+ * overlap the indicator below. */
 .cdx-tab-bar a:focus-visible {
-    outline: 2px solid var(--color-cdx-border-focus);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--color-cdx-border-focus);
     border-radius: var(--radius-cdx-sm);
 }
 
