@@ -30,7 +30,9 @@ import {
  * Naive `replace(/s$/, '')` produces `classe` for `classes`. Handle the
  * irregular case explicitly. */
 const singularizeType = (type: string): string => {
-    if (type === 'classes') return 'class';
+    if (type === 'classes') {
+        return 'class';
+    }
     return type.replace(/s$/, '');
 };
 
