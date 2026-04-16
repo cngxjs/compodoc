@@ -26,6 +26,14 @@ import {
     IconSettings
 } from './Icons';
 
+/** Menu types come in plural form (`components`, `directives`, `classes`).
+ * Naive `replace(/s$/, '')` produces `classe` for `classes`. Handle the
+ * irregular case explicitly. */
+const singularizeType = (type: string): string => {
+    if (type === 'classes') return 'class';
+    return type.replace(/s$/, '');
+};
+
 type MenuProps = {
     readonly data: any;
 };
@@ -161,7 +169,7 @@ const GroupTree = (props: {
                         isToken: item.isToken,
                         beta: item.beta,
                         factoryKind: item.factoryKind,
-                        entityType: props.type.replace(/s$/, ''),
+                        entityType: singularizeType(props.type),
                         selector: item.selector,
                         inputCount: item.inputsClass?.length,
                         outputCount: item.outputsClass?.length,
@@ -236,7 +244,7 @@ const EntitySection = (props: {
                                           isToken: item.isToken,
                                           beta: item.beta,
                                           factoryKind: item.factoryKind,
-                                          entityType: props.type.replace(/s$/, ''),
+                                          entityType: singularizeType(props.type),
                                           selector: item.selector,
                                           inputCount: item.inputsClass?.length,
                                           outputCount: item.outputsClass?.length,
@@ -255,7 +263,7 @@ const EntitySection = (props: {
                               isToken: item.isToken,
                               beta: item.beta,
                               factoryKind: item.factoryKind,
-                              entityType: props.type.replace(/s$/, ''),
+                              entityType: singularizeType(props.type),
                               selector: item.selector,
                               inputCount: item.inputsClass?.length,
                               outputCount: item.outputsClass?.length,
@@ -303,7 +311,7 @@ const ModuleSubSection = (props: {
                         deprecated: item.deprecated,
                         context: 'sub-entity',
                         contextId: 'modules',
-                        entityType: props.type.replace(/s$/, ''),
+                        entityType: singularizeType(props.type),
                         selector: item.selector,
                         inputCount: item.inputsClass?.length,
                         outputCount: item.outputsClass?.length,
