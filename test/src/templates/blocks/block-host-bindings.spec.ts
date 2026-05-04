@@ -30,7 +30,10 @@ describe('BlockHostBindings', () => {
             (data: any) => `<section id="custom-hb">${data.bindings?.length ?? 0}</section>`
         );
         const html = BlockHostBindings({
-            bindings: [{ name: 'class.a', defaultValue: 'x' }, { name: 'class.b', defaultValue: 'y' }]
+            bindings: [
+                { name: 'class.a', defaultValue: 'x' },
+                { name: 'class.b', defaultValue: 'y' }
+            ]
         });
         expect(html).to.equal('<section id="custom-hb">2</section>');
         expect(html).to.not.include('cdx-host-table');

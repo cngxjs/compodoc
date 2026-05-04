@@ -17,7 +17,9 @@ describe('BlockIndexSignatures', () => {
 
     it('renders the default block-indexables section with one row per indexable', () => {
         const html = BlockIndexSignatures({
-            indexables: [{ name: 'idx', returnType: 'string', args: [{ name: 'key', type: 'string' }] }],
+            indexables: [
+                { name: 'idx', returnType: 'string', args: [{ name: 'key', type: 'string' }] }
+            ],
             file: 'foo.ts'
         });
         expect(html).to.include('data-compodoc="block-indexables"');

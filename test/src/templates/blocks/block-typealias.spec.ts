@@ -29,7 +29,10 @@ describe('BlockTypealias', () => {
             (data: any) => `<section id="custom-ta">${data.typealias.length}</section>`
         );
         const html = BlockTypealias({
-            typealias: [{ name: 'A', rawtype: 'string' }, { name: 'B', rawtype: 'number' }]
+            typealias: [
+                { name: 'A', rawtype: 'string' },
+                { name: 'B', rawtype: 'number' }
+            ]
         });
         expect(html).to.equal('<section id="custom-ta">2</section>');
         expect(html).to.not.include('cdx-member-card');
