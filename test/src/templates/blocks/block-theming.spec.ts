@@ -254,10 +254,7 @@ describe('BlockTheming', () => {
     });
 
     describe('themingTabSections config', () => {
-        const twoTokens = [
-            makeToken({ name: '--cdx-a' }),
-            makeToken({ name: '--cdx-b' })
-        ];
+        const twoTokens = [makeToken({ name: '--cdx-a' }), makeToken({ name: '--cdx-b' })];
         const styleSources = [
             { file: '/p/btn.scss', content: '$x: 1;', language: 'scss' as const }
         ];

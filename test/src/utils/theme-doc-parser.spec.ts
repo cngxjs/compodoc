@@ -78,7 +78,7 @@ describe('Utils - theme-doc-parser', () => {
                 '$alert-padding: 12px 16px !default;'
             ].join('\n');
 
-            const { tokens } = parseScssTokens(source,'alert.scss');
+            const { tokens } = parseScssTokens(source, 'alert.scss');
             expect(tokens).to.have.lengthOf(1);
             expect(tokens[0]).to.include({
                 name: '$alert-padding',
@@ -94,7 +94,7 @@ describe('Utils - theme-doc-parser', () => {
 
         it('uses the literal value when @default is missing', () => {
             const source = ['/// Background', '$alert-bg: #fff;'].join('\n');
-            const { tokens } = parseScssTokens(source,'a.scss');
+            const { tokens } = parseScssTokens(source, 'a.scss');
             expect(tokens[0].defaultValue).to.equal('#fff');
             expect(tokens[0].type).to.equal('');
         });
@@ -105,11 +105,7 @@ describe('Utils - theme-doc-parser', () => {
         });
 
         it('skips a `///` block when an unrelated declaration interrupts the chain', () => {
-            const source = [
-                '/// Doc',
-                'body { color: red; }',
-                '$foo: 1px;'
-            ].join('\n');
+            const source = ['/// Doc', 'body { color: red; }', '$foo: 1px;'].join('\n');
             expect(parseScssTokens(source, 'x.scss').tokens).to.deep.equal([]);
         });
 
@@ -122,7 +118,7 @@ describe('Utils - theme-doc-parser', () => {
                 '/// @group misc',
                 '$b: 2 !default;'
             ].join('\n');
-            const { tokens } = parseScssTokens(source,'s.scss');
+            const { tokens } = parseScssTokens(source, 's.scss');
             expect(tokens.map(t => t.name)).to.deep.equal(['$a', '$b']);
             expect(tokens[1].group).to.equal('misc');
         });
@@ -136,7 +132,7 @@ describe('Utils - theme-doc-parser', () => {
                 '/// ```',
                 '$foo: 12px;'
             ].join('\n');
-            const { tokens } = parseScssTokens(source,'x.scss');
+            const { tokens } = parseScssTokens(source, 'x.scss');
             expect(tokens[0].examples).to.have.lengthOf(1);
             expect(tokens[0].examples[0]).to.include('$foo: 12px;');
         });
@@ -157,7 +153,7 @@ describe('Utils - theme-doc-parser', () => {
                 '}'
             ].join('\n');
 
-            const { tokens } = parseCssTokens(source,'alert.css');
+            const { tokens } = parseCssTokens(source, 'alert.css');
             expect(tokens).to.have.lengthOf(1);
             expect(tokens[0]).to.include({
                 name: '--cngx-alert-bg',
@@ -192,7 +188,7 @@ describe('Utils - theme-doc-parser', () => {
                 '    initial-value: 12px 16px;',
                 '}'
             ].join('\n');
-            const { tokens } = parseCssTokens(source,'alert.css');
+            const { tokens } = parseCssTokens(source, 'alert.css');
             expect(tokens).to.have.lengthOf(1);
             expect(tokens[0]).to.include({
                 name: '--cngx-alert-padding',
@@ -215,7 +211,7 @@ describe('Utils - theme-doc-parser', () => {
                 '    initial-value: red;',
                 '}'
             ].join('\n');
-            const { tokens } = parseCssTokens(source,'x.css');
+            const { tokens } = parseCssTokens(source, 'x.css');
             expect(tokens[0].type).to.equal('Length');
             expect(tokens[0].defaultValue).to.equal('16px');
         });
@@ -228,7 +224,7 @@ describe('Utils - theme-doc-parser', () => {
                 '    inherits: true;',
                 '}'
             ].join('\n');
-            const { tokens } = parseCssTokens(source,'bare.css');
+            const { tokens } = parseCssTokens(source, 'bare.css');
             expect(tokens).to.have.lengthOf(1);
             expect(tokens[0]).to.include({
                 name: '--bare',
@@ -246,7 +242,7 @@ describe('Utils - theme-doc-parser', () => {
                 ' */',
                 ':host { --legacy: 1; }'
             ].join('\n');
-            const { tokens } = parseCssTokens(source,'x.css');
+            const { tokens } = parseCssTokens(source, 'x.css');
             expect(tokens[0].deprecated).to.equal('Use --cdx-foo instead.');
         });
 
@@ -259,11 +255,8 @@ describe('Utils - theme-doc-parser', () => {
                 ' */',
                 ':host { --x: 1; }'
             ].join('\n');
-            const { tokens } = parseCssTokens(source,'x.css');
-            expect(tokens[0].see).to.deep.equal([
-                'https://example.com/spec',
-                '--other-token'
-            ]);
+            const { tokens } = parseCssTokens(source, 'x.css');
+            expect(tokens[0].see).to.deep.equal(['https://example.com/spec', '--other-token']);
             expect(tokens[0].description).to.contain('{@link OtherToken}');
         });
 
@@ -275,17 +268,12 @@ describe('Utils - theme-doc-parser', () => {
                 ' */',
                 ':host { --x: 1; }'
             ].join('\n');
-            const { tokens } = parseCssTokens(source,'x.css');
+            const { tokens } = parseCssTokens(source, 'x.css');
             expect(tokens[0].description).to.contain('@customField sentinel');
         });
 
         it('skips a JSDoc block that is followed by something other than a target', () => {
-            const source = [
-                '/**',
-                ' * @type Length',
-                ' */',
-                'body { color: red; }'
-            ].join('\n');
+            const source = ['/**', ' * @type Length', ' */', 'body { color: red; }'].join('\n');
             expect(parseCssTokens(source, 'x.css').tokens).to.deep.equal([]);
         });
     });
@@ -431,10 +419,7 @@ describe('Utils - theme-doc-parser', () => {
 
         it('reads styleUrls relative to the entity file', () => {
             const entity = writeFile('button/button.component.ts', '// stub');
-            writeFile(
-                'button/button.component.scss',
-                ['/// Padding', '$padding: 8px;'].join('\n')
-            );
+            writeFile('button/button.component.scss', ['/// Padding', '$padding: 8px;'].join('\n'));
 
             const result = collectThemeTokens({
                 entityFile: entity,
@@ -452,10 +437,7 @@ describe('Utils - theme-doc-parser', () => {
                 'btn/btn.component.scss',
                 ["@use './tokens';", '/// Local', '$local: 1px;'].join('\n')
             );
-            writeFile(
-                'btn/_tokens.scss',
-                ['/// Imported', '$imported: 4px;'].join('\n')
-            );
+            writeFile('btn/_tokens.scss', ['/// Imported', '$imported: 4px;'].join('\n'));
 
             const result = collectThemeTokens({
                 entityFile: entity,

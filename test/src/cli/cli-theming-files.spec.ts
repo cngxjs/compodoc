@@ -46,7 +46,7 @@ describe('CLI Theming tab generation', () => {
                     `    template: '<button></button>',\n` +
                     `    styleUrls: ['./button.component.scss'],\n` +
                     `    styles: [\n` +
-                    `        '/**\\n * Background fill of the button.\\n * @type <color>\\n * @default #ffffff\\n * @group container\\n */\\n@property --btn-bg {\\n    syntax: \"<color>\";\\n    inherits: true;\\n    initial-value: #ffffff;\\n}'\n` +
+                    `        '/**\\n * Background fill of the button.\\n * @type <color>\\n * @default #ffffff\\n * @group container\\n */\\n@property --btn-bg {\\n    syntax: "<color>";\\n    inherits: true;\\n    initial-value: #ffffff;\\n}'\n` +
                     `    ]\n` +
                     `})\n` +
                     `export class ButtonComponent {}\n`
@@ -168,9 +168,7 @@ describe('CLI Theming tab generation', () => {
 
         it('does not render a redundant <h3>Theming</h3> heading inside the panel', () => {
             // The tab header already says "Theming" — no duplicate inside the panel.
-            const overviewMatch = componentHtml.match(
-                /id="theming"[^>]*>([\s\S]*?)<\/div>/
-            );
+            const overviewMatch = componentHtml.match(/id="theming"[^>]*>([\s\S]*?)<\/div>/);
             const panelInner = overviewMatch?.[1] ?? '';
             expect(panelInner).to.not.match(/<h3[^>]*>\s*Theming\s*<a/);
         });

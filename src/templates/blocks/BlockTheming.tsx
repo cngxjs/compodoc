@@ -2,11 +2,7 @@ import Html from '@kitajs/html';
 import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { markedAcl } from '../../utils/marked.acl';
-import type {
-    StyleSource,
-    ThemeToken,
-    ThemeTokenGroup
-} from '../../utils/theme-doc-parser';
+import type { StyleSource, ThemeToken, ThemeTokenGroup } from '../../utils/theme-doc-parser';
 import { groupThemeTokens } from '../../utils/theme-doc-parser';
 import { isThemingSection, t } from '../helpers';
 
@@ -93,8 +89,7 @@ const renderTokenRow = (token: ThemeToken, depth?: number): string => {
         cls.push('cdx-io-member--deprecated');
     }
     const escapedName = Html.escapeHtml(token.name) as string;
-    const nameHtml =
-        token.deprecated !== null ? `<s>${escapedName}</s>` : escapedName;
+    const nameHtml = token.deprecated !== null ? `<s>${escapedName}</s>` : escapedName;
 
     const typeHtml = token.type
         ? `<span class="cdx-io-member-type"><code>${Html.escapeHtml(token.type) as string}</code></span>`
@@ -108,9 +103,9 @@ const renderTokenRow = (token: ThemeToken, depth?: number): string => {
         ? `<p class="cdx-theming-deprecated">${markedAcl(token.deprecated) as string}</p>`
         : '';
     const defaultHtml = token.defaultValue
-        ? `<div class="cdx-io-member-default"><span class="cdx-io-member-default-label">${
-              t('default-value')
-          }</span> <code>${Html.escapeHtml(token.defaultValue) as string}</code></div>`
+        ? `<div class="cdx-io-member-default"><span class="cdx-io-member-default-label">${t(
+              'default-value'
+          )}</span> <code>${Html.escapeHtml(token.defaultValue) as string}</code></div>`
         : '';
 
     return (

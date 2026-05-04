@@ -54,13 +54,6 @@ export interface StyleSource {
     language: 'scss' | 'css';
 }
 
-interface DocBlock {
-    /** Raw body with comment markers stripped */
-    body: string;
-    /** 1-based line of the line *after* the closing comment marker */
-    nextLine: number;
-}
-
 const TAG_LINE_RE = /^@([a-zA-Z][\w-]*)(?:[ \t]+([\s\S]*))?$/;
 
 /**
@@ -202,10 +195,8 @@ function buildToken(args: {
             default:
                 // Unknown tag — fold it back into the description as plain text
                 // so authors can layer their own conventions without breakage.
-                parsed.description = (
-                    parsed.description +
-                    `\n@${tag.name}${tag.value ? ` ${tag.value}` : ''}`
-                ).trim();
+                parsed.description =
+                    `${parsed.description}\n@${tag.name}${tag.value ? ` ${tag.value}` : ''}`.trim();
         }
     }
 
@@ -241,7 +232,7 @@ export function parseScssTokens(source: string, file: string): ParsedStyleResult
     let pendingStart = -1;
 
     const flushPending = () => {
-        if (pendingLines && pendingLines.length) {
+        if (pendingLines?.length) {
             const body = pendingLines.join('\n');
             const intro = extractOverview(body);
             if (intro !== null) {
@@ -314,12 +305,6 @@ export function parseScssTokens(source: string, file: string): ParsedStyleResult
 // ---------------------------------------------------------------------------
 // CSS scanner — `/** */` blocks above `--prop: value;` or `@property --prop`
 // ---------------------------------------------------------------------------
-
-interface ParsedBlock {
-    body: string;
-    /** 0-based line index of the first character after the closing comment marker. */
-    afterIndex: number;
-}
 
 // Strip a doc-comment block to its plain body, dropping leading-asterisk gutters.
 function stripJsdocBlock(raw: string): string {
@@ -600,7 +585,7 @@ export function collectStyleSources(args: {
     const sources: StyleSource[] = [];
     const seen = new Set<string>();
 
-    if (args.entityFile && args.styleUrls && args.styleUrls.length) {
+    if (args.entityFile && args.styleUrls?.length) {
         const dir = path.dirname(args.entityFile);
         for (const url of args.styleUrls) {
             const resolved = path.resolve(dir, url);
@@ -638,7 +623,7 @@ export function collectStyleSources(args: {
         }
     }
 
-    if (args.styles && args.styles.length) {
+    if (args.styles?.length) {
         args.styles.forEach((content, idx) => {
             sources.push({
                 file: `<inline-style-${idx}>`,

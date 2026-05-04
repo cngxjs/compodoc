@@ -56,12 +56,8 @@ test.describe('Theming tab — content', () => {
     });
 
     test('groups tokens under @group sub-headings (ring, overlay)', async ({ page }) => {
-        const ring = page.locator(
-            '#theming .cdx-section-heading#theme-group-ring'
-        );
-        const overlay = page.locator(
-            '#theming .cdx-section-heading#theme-group-overlay'
-        );
+        const ring = page.locator('#theming .cdx-section-heading#theme-group-ring');
+        const overlay = page.locator('#theming .cdx-section-heading#theme-group-overlay');
         await expect(ring).toContainText('ring');
         await expect(overlay).toContainText('overlay');
     });
