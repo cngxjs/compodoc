@@ -229,5 +229,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`
             expect(runHelp.stdout.toString()).to.contain('--customLogo [path]');
             expect(runHelp.stdout.toString()).to.contain('Use a custom logo');
         });
+
+        it(`--templates`, () => {
+            expect(runHelp.stdout.toString()).to.contain('--templates [folder]');
+            expect(runHelp.stdout.toString()).to.contain(
+                'Path to directory of JavaScript template overrides'
+            );
+            expect(runHelp.stdout.toString()).to.not.contain('Handlebars');
+        });
     });
 });
