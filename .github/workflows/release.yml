@@ -1,0 +1,78 @@
+name: Release
+
+# Triggers when a tag matching v* (e.g. v0.0.1, v0.1.0, v1.0.0-beta.2) is pushed.
+# Build → unit tests → npm publish to public registry under @cngxjs scope.
+#
+# Manual prerequisites (one-time):
+#   1. NPM_TOKEN secret in repo settings (Granular Access Token with read+write
+#      on @cngxjs scope from npmjs.com).
+#   2. The @cngxjs npm organization exists and the token has access to it.
+#
+# To release: bump package.json version, commit, tag, push tag.
+#   npm version 0.0.2          # writes package.json + creates v0.0.2 commit + tag
+#   git push origin develop --follow-tags
+# Or via release-it (see .release-it.json):
+#   npx release-it patch       # interactive bump + tag + push
+#
+# This workflow does NOT create the tag — it only reacts to tag pushes.
+
+on:
+    push:
+        tags:
+            - 'v*'
+
+# Provenance attestations require the workflow to write OIDC tokens.
+permissions:
+    contents: read
+    id-token: write
+
+jobs:
+    publish:
+        name: Build and publish to npm
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v5
+
+            - name: Use Node.js 22.x
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.x
+                  registry-url: 'https://registry.npmjs.org/'
+                  scope: '@cngxjs'
+
+            - name: Cache node modules
+              uses: actions/cache@v4
+              with:
+                  path: node_modules
+                  key: ${{ runner.OS }}-release-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.OS }}-release-
+                      ${{ runner.OS }}-build-
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Build
+              run: npm run build
+
+            - name: Unit tests
+              run: npm run test:unit
+
+            - name: Verify tag matches package.json version
+              run: |
+                  PKG_VERSION=$(node -p "require('./package.json').version")
+                  TAG_VERSION="${GITHUB_REF_NAME#v}"
+                  if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+                      echo "::error::Tag $GITHUB_REF_NAME (version $TAG_VERSION) does not match package.json version $PKG_VERSION"
+                      exit 1
+                  fi
+                  echo "Tag and package.json agree on $PKG_VERSION"
+
+            - name: Show what would be published
+              run: npm pack --dry-run
+
+            - name: Publish to npm
+              run: npm publish --access public --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

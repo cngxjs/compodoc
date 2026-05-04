@@ -23,8 +23,6 @@
         "changelog": "auto-changelog -o CH.md  --template tools/changelog-template.hbs -u",
         "angularexpo": "npm run pretest && node tools/tests-angularexpo.js",
         "download-api-list": "node tools/download-api-list.js",
-        "backup-package-json": "node tools/backup-package-json.js",
-        "restore-package-json": "node tools/restore-package-json.js",
         "madge": "./node_modules/.bin/madge --warning -i dist/madge.png src/index-cli.ts",
         "*********TEMPLATE PLAYGROUND********": "*******************",
         "build-template-playground": "node tools/build-template-playground.js",
@@ -45,9 +43,6 @@
         "test:todomvc-doc": "node ./bin/index-cli.js -p ./test/fixtures/todomvc-ng2/src/tsconfig.json -d /tmp/compodoc-todomvc -s --port 4001 --disableSearch",
         "test:standalone-doc": "node ./bin/index-cli.js -p ./test/fixtures/standalone-app/src/tsconfig.json -d /tmp/compodoc-standalone -s --port 4002 --disableSearch",
         "test-e2e-playwright": "npx playwright test",
-        "*********PUBLISH********": "*******************",
-        "prepublishOnly": "npm run build && npm run backup-package-json",
-        "postpublish": "npm run restore-package-json",
         "*********QUALITY********": "*******************",
         "lint": "biome check",
         "lint:fix": "biome check --fix",
@@ -95,6 +90,15 @@
     "engines": {
         "node": ">=20"
     },
+    "files": [
+        "dist/",
+        "bin/",
+        "src/resources/",
+        "README.md",
+        "LICENSE",
+        "CHANGELOG.md",
+        "MIGRATION.md"
+    ],
     "homepage": "https://github.com/cngxjs/compodocx#readme",
     "dependencies": {
         "@angular-devkit/schematics": "21.1.0",
@@ -151,6 +155,7 @@
         "npm-watch": "0.13.0",
         "pagefind": "^1.4.0",
         "pretty-quick": "4.2.2",
+        "release-it": "^19.2.4",
         "rimraf": "6.1.2",
         "rollup": "4.55.1",
         "supertest": "7.2.2",

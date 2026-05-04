@@ -1,0 +1,22 @@
+{
+    "$schema": "https://unpkg.com/release-it/schema/release-it.json",
+    "git": {
+        "commitMessage": "chore: release v${version}",
+        "tagName": "v${version}",
+        "tagAnnotation": "Release ${version}",
+        "requireCleanWorkingDir": true,
+        "requireUpstream": true,
+        "push": true,
+        "pushArgs": ["--follow-tags"]
+    },
+    "npm": {
+        "publish": false,
+        "publishArgs": ["--access", "public"]
+    },
+    "github": {
+        "release": false
+    },
+    "hooks": {
+        "before:init": ["npm run lint", "npm run test:unit"]
+    }
+}
