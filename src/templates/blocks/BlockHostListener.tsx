@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import {
     codeWrap,
     hasJsdocParams,
@@ -23,6 +24,10 @@ type BlockHostListenerProps = {
 };
 
 export const BlockHostListener = (props: BlockHostListenerProps): string => {
+    const custom = renderCustomTemplate('block-host-listener', props);
+    if (custom !== null) {
+        return custom;
+    }
     return (
         <section data-compodoc="block-host-listener">
             <h3 id={props.title ? props.title.toLowerCase() : 'methods'}>

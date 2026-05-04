@@ -1,6 +1,15 @@
+import { afterEach } from 'vitest';
+import {
+    clearCustomTemplates,
+    registerCustomTemplate
+} from '../../../../src/app/engines/custom-template.engine';
 import { BlockDerivedState } from '../../../../src/templates/blocks/BlockDerivedState';
 
 describe('BlockDerivedState', () => {
+    afterEach(() => {
+        clearCustomTemplates();
+    });
+
     const baseProps = {
         file: 'src/app/test.component.ts',
         depth: 0,
@@ -240,5 +249,19 @@ describe('BlockDerivedState', () => {
         });
 
         expect(html).to.match(/<code[^>]*>a\(\)<\/code>[^<]*\u00B7[^<]*<code[^>]*>b\(\)<\/code>/);
+    });
+
+    it('honours the `block-derived-state` custom-template override', () => {
+        registerCustomTemplate(
+            'block-derived-state',
+            (data: any) => `<section id="custom-derived">${data.properties.length}</section>`
+        );
+        const html = BlockDerivedState({
+            ...baseProps,
+            properties: [{ name: 'a', signalKind: 'computed' }],
+            allSignalProps: []
+        });
+        expect(html).to.equal('<section id="custom-derived">1</section>');
+        expect(html).to.not.include('cdx-io-member');
     });
 });

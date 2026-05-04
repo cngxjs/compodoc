@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { t } from '../helpers';
 
 type BlockHostBindingsProps = {
@@ -6,6 +7,10 @@ type BlockHostBindingsProps = {
 };
 
 export const BlockHostBindings = (props: BlockHostBindingsProps): string => {
+    const custom = renderCustomTemplate('block-host-bindings', props);
+    if (custom !== null) {
+        return custom;
+    }
     if (!props.bindings?.length) {
         return '';
     }
