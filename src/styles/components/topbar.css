@@ -8,6 +8,10 @@
     background: var(--color-cdx-bg-elevated);
     border-bottom: 1px solid var(--color-cdx-border);
     z-index: 20;
+    /* Grid-item shrink fix: as a grid child of body, default min-width: auto
+       resolves to min-content (the brand text width), forcing the body grid
+       track wider than the viewport at narrow widths. */
+    min-width: 0;
 }
 
 .cdx-topbar-brand {
@@ -19,6 +23,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    /* Flex-item shrink fix: without min-width: 0 the brand keeps its intrinsic
+       text width and pushes the actions off-canvas at narrow viewports — the
+       ellipsis never gets a chance to apply. */
+    min-width: 0;
 }
 
 .cdx-mobile-toggle {
