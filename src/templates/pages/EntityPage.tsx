@@ -561,8 +561,7 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 readme: e.readme,
                 sourceCode: e.sourceCode,
                 filePath: e.file,
-                exampleUrls: e.exampleUrls,
-                themeFiles: e.themeFiles
+                exampleUrls: e.exampleUrls
             })}
         </>
     ) as string;

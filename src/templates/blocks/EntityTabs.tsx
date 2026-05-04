@@ -1,9 +1,7 @@
 import Html from '@kitajs/html';
-import type { ThemeFile } from '../../utils/theme-file-scanner';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconBook, EmptyIconFile } from '../components/EmptyStateIcons';
 import { extractReadmeHeadings, isInitialTab, isReadmeEmpty, isTabEnabled, t } from '../helpers';
-import { BlockTheming } from './BlockTheming';
 import { SourceViewer } from './SourceViewer';
 
 type Tab = {
@@ -21,7 +19,6 @@ type EntityTabsProps = {
     readonly sourceCode?: string;
     readonly filePath?: string;
     readonly exampleUrls?: string[];
-    readonly themeFiles?: ThemeFile[];
 };
 
 /** Render the tab bar + tab panels for entity detail pages. */
@@ -115,19 +112,6 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                               })}
                     </div>
                 )}
-
-                {isTabEnabled(props.navTabs, 'theming') &&
-                    props.themeFiles &&
-                    props.themeFiles.length > 0 && (
-                        <div
-                            class={`cdx-tab-panel${isInitialTab(props.navTabs, 'theming') ? ' active' : ''}`}
-                            id="theming"
-                            role="tabpanel"
-                            aria-labelledby="theming-tab"
-                        >
-                            {BlockTheming({ themeFiles: props.themeFiles })}
-                        </div>
-                    )}
 
                 {isTabEnabled(props.navTabs, 'example') && props.exampleUrls && (
                     <div

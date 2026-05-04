@@ -21,7 +21,7 @@ describe('CLI Theming tab generation', () => {
         exclude: ['node_modules']
     };
 
-    describe('when theme files sit next to an entity source file', () => {
+    describe('when a component has documented theme tokens in its style file', () => {
         let stdoutString: string;
         let componentHtml: string;
         let plainComponentHtml: string;
@@ -35,19 +35,33 @@ describe('CLI Theming tab generation', () => {
 
             const themedFolder = path.join(srcFolder, 'themed');
             fs.mkdirSync(themedFolder, { recursive: true });
+
+            // Component with both an SCSS styleUrl (SassDoc) and an inline CSS
+            // block (JSDoc + @property merge) so we cover both parser paths.
             fs.writeFileSync(
                 path.join(themedFolder, 'button.component.ts'),
                 `import { Component } from '@angular/core';\n` +
-                    `@Component({ selector: 'app-button', template: '<button></button>' })\n` +
+                    `@Component({\n` +
+                    `    selector: 'app-button',\n` +
+                    `    template: '<button></button>',\n` +
+                    `    styleUrls: ['./button.component.scss'],\n` +
+                    `    styles: [\n` +
+                    `        '/**\\n * Background fill of the button.\\n * @type <color>\\n * @default #ffffff\\n * @group container\\n */\\n@property --btn-bg {\\n    syntax: \"<color>\";\\n    inherits: true;\\n    initial-value: #ffffff;\\n}'\n` +
+                    `    ]\n` +
+                    `})\n` +
                     `export class ButtonComponent {}\n`
             );
             fs.writeFileSync(
-                path.join(themedFolder, 'button-theme.scss'),
-                `$primary: #00ffcc;\n.btn { color: $primary; }\n`
-            );
-            fs.writeFileSync(
-                path.join(themedFolder, 'button.theme.md'),
-                `# Button theming\n\nUse \`--btn-color\` to override the primary shade.\n`
+                path.join(themedFolder, 'button.component.scss'),
+                `/// @overview\n` +
+                    `/// Theme tokens for the **button** component. Override these in\n` +
+                    `/// your global stylesheet to retheme the control.\n` +
+                    `\n` +
+                    `/// Padding inside the button.\n` +
+                    `/// @type Length\n` +
+                    `/// @default 8px 12px\n` +
+                    `/// @group container\n` +
+                    `$btn-padding: 8px 12px !default;\n`
             );
 
             const plainFolder = path.join(srcFolder, 'plain');
@@ -99,7 +113,7 @@ describe('CLI Theming tab generation', () => {
             expect(stdoutString).to.contain('Documentation generated');
         });
 
-        it('renders the theming panel for components with theme files', () => {
+        it('renders the theming panel for components with documented tokens', () => {
             expect(componentHtml).to.contain('id="theming"');
             expect(componentHtml).to.contain('data-compodoc="block-theming"');
         });
@@ -109,19 +123,49 @@ describe('CLI Theming tab generation', () => {
             expect(componentHtml).to.contain('#theming');
         });
 
-        it('renders the SCSS theme file content as a highlighted block', () => {
-            expect(componentHtml).to.contain('button-theme.scss');
-            expect(componentHtml).to.match(/class="[^"]*shiki/);
-            expect(componentHtml).to.contain('primary');
+        it('renders one row per documented token, grouped by @group', () => {
+            expect(componentHtml).to.contain('cdx-theming-tokens');
+            expect(componentHtml).to.contain('data-compodoc="block-theming-token"');
+            expect(componentHtml).to.contain('$btn-padding');
+            expect(componentHtml).to.contain('--btn-bg');
+            expect(componentHtml).to.contain('container');
         });
 
-        it('renders the Markdown theme file as prose', () => {
-            expect(componentHtml).to.contain('button.theme.md');
-            expect(componentHtml).to.contain('cdx-prose');
-            expect(componentHtml).to.contain('Button theming');
+        it('surfaces the resolved type and default value in dedicated cells', () => {
+            expect(componentHtml).to.contain('Length');
+            expect(componentHtml).to.contain('8px 12px');
+            // The @property merge contributes <color> + #ffffff
+            expect(componentHtml).to.contain('&lt;color>');
+            expect(componentHtml).to.contain('#ffffff');
         });
 
-        it('does NOT render the theming tab on components without theme files', () => {
+        it('renders the description for each documented token', () => {
+            expect(componentHtml).to.contain('Padding inside the button');
+            expect(componentHtml).to.contain('Background fill of the button');
+        });
+
+        it('renders the @overview block as the first paragraph above the tables', () => {
+            expect(componentHtml).to.contain('cdx-theming-overview');
+            expect(componentHtml).to.contain('Theme tokens for the');
+            // Markdown was rendered (bold tag from **button**)
+            expect(componentHtml).to.match(/cdx-theming-overview[\s\S]*?<strong>button<\/strong>/);
+        });
+
+        it('does not render a redundant <h3>Theming</h3> heading inside the panel', () => {
+            // The tab header already says "Theming" — no duplicate inside the panel.
+            const overviewMatch = componentHtml.match(
+                /id="theming"[^>]*>([\s\S]*?)<\/div>/
+            );
+            const panelInner = overviewMatch?.[1] ?? '';
+            expect(panelInner).to.not.match(/<h3[^>]*>\s*Theming\s*<a/);
+        });
+
+        it('exposes the original style file in the collapsible source panel', () => {
+            expect(componentHtml).to.contain('cdx-theming-source');
+            expect(componentHtml).to.contain('button.component.scss');
+        });
+
+        it('does NOT render the theming tab on components without theme tokens', () => {
             expect(exists(`${distFolder}/components/PlainComponent.html`)).to.be.true;
             expect(plainComponentHtml).to.not.contain('id="theming"');
             expect(plainComponentHtml).to.not.contain('data-compodoc="block-theming"');

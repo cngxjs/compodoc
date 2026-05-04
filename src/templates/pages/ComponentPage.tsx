@@ -618,16 +618,21 @@ export const ComponentPage = (data: any): string => {
                     </div>
                 )}
 
-                {isTabEnabled(navTabs, 'theming') && c.themeFiles?.length > 0 && (
-                    <div
-                        class={`cdx-tab-panel${isInitialTab(navTabs, 'theming') ? ' active' : ''}`}
-                        id="theming"
-                        role="tabpanel"
-                        aria-labelledby="theming-tab"
-                    >
-                        {BlockTheming({ themeFiles: c.themeFiles })}
-                    </div>
-                )}
+                {isTabEnabled(navTabs, 'theming') &&
+                    (c.themeTokens?.length > 0 || c.themeOverview) && (
+                        <div
+                            class={`cdx-tab-panel${isInitialTab(navTabs, 'theming') ? ' active' : ''}`}
+                            id="theming"
+                            role="tabpanel"
+                            aria-labelledby="theming-tab"
+                        >
+                            {BlockTheming({
+                                tokens: c.themeTokens,
+                                styleSources: c.themeStyleSources,
+                                overview: c.themeOverview
+                            })}
+                        </div>
+                    )}
 
                 {isTabEnabled(navTabs, 'tree') && (
                     <div

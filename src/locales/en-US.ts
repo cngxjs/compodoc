@@ -167,6 +167,7 @@ export const TRANSLATION_EN_US = {
     routes: 'Routes',
     schemas: 'Schemas',
     'search-placeholder': 'Type to search',
+    see: 'See',
     selector: 'Selector',
     signature: 'Signature',
     'signal-adoption': 'Signals',
