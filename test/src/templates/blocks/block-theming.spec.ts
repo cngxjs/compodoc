@@ -47,10 +47,10 @@ describe('BlockTheming', () => {
         expect(html).to.include('cdx-theming-overview');
         expect(html).to.include('cdx-prose');
         expect(html).to.include('canonical source of truth');
-        // Overview must appear before the tokens table
+        // Overview must appear before any token row
         const overviewIdx = html.indexOf('cdx-theming-overview');
-        const tableIdx = html.indexOf('cdx-theming-tokens');
-        expect(overviewIdx).to.be.lessThan(tableIdx);
+        const memberIdx = html.indexOf('cdx-io-member--theming');
+        expect(overviewIdx).to.be.lessThan(memberIdx);
     });
 
     it('renders markdown inside the @overview intro', () => {
@@ -67,7 +67,7 @@ describe('BlockTheming', () => {
         expect(html).to.not.include('cdx-theming-overview');
     });
 
-    it('emits one row per token with name/type/default/description cells', () => {
+    it('emits one cdx-io-member row per token with name/type/default/description', () => {
         const html = BlockTheming({
             tokens: [
                 makeToken({
@@ -78,10 +78,70 @@ describe('BlockTheming', () => {
             ]
         });
         expect(html).to.include('data-compodoc="block-theming-token"');
+        expect(html).to.include('cdx-io-member cdx-io-member--theming');
+        expect(html).to.include('cdx-io-member--theming-css-custom-property');
+        expect(html).to.include('cdx-io-member-name');
+        expect(html).to.include('cdx-io-member-type');
+        expect(html).to.include('cdx-io-member-default');
+        expect(html).to.include('cdx-io-member-desc');
         expect(html).to.include('--cdx-bg');
         expect(html).to.include('&lt;color>');
         expect(html).to.include('#fff');
         expect(html).to.include('Surface fill');
+    });
+
+    it('does NOT emit any table chrome (uses flat cdx-io-member rows like the API tab)', () => {
+        const html = BlockTheming({
+            tokens: [makeToken({ name: '--a' }), makeToken({ name: '--b' })]
+        });
+        expect(html).to.not.include('cdx-theming-tokens');
+        expect(html).to.not.include('<table');
+        expect(html).to.not.include('cdx-theming-name-cell');
+    });
+
+    it('renders a kind-specific row class for SCSS variables', () => {
+        const html = BlockTheming({
+            tokens: [makeToken({ name: '$padding', kind: 'scss-variable' })]
+        });
+        expect(html).to.include('cdx-io-member--theming-scss-variable');
+    });
+
+    it('renders a kind-specific row class for @property at-rules', () => {
+        const html = BlockTheming({
+            tokens: [makeToken({ name: '--at', kind: 'css-at-property' })]
+        });
+        expect(html).to.include('cdx-io-member--theming-css-at-property');
+    });
+
+    it('emits a permalink anchor on each token row title', () => {
+        const html = BlockTheming({ tokens: [makeToken({ name: '--cdx-bg' })] });
+        expect(html).to.include('id="theme-cdx-bg"');
+        expect(html).to.include('href="#theme-cdx-bg"');
+    });
+
+    it('renders an index of all tokens above the rows when there are 2+', () => {
+        const html = BlockTheming({
+            tokens: [
+                makeToken({ name: '--a', group: 'container' }),
+                makeToken({ name: '--b', group: 'container' }),
+                makeToken({ name: '--c', group: 'typography' })
+            ]
+        });
+        expect(html).to.include('data-compodoc="block-theming-index"');
+        expect(html).to.include('cdx-index-indicator--theming');
+        expect(html).to.include('id="theme-index"');
+        // Each token name listed exactly once in the index plus once on its row
+        const aMatches = html.match(/--a/g) ?? [];
+        expect(aMatches.length).to.be.greaterThanOrEqual(2);
+        // The index appears before the first member row
+        const indexIdx = html.indexOf('data-compodoc="block-theming-index"');
+        const memberIdx = html.indexOf('data-compodoc="block-theming-token"');
+        expect(indexIdx).to.be.lessThan(memberIdx);
+    });
+
+    it('omits the index when only a single token is present', () => {
+        const html = BlockTheming({ tokens: [makeToken()] });
+        expect(html).to.not.include('data-compodoc="block-theming-index"');
     });
 
     it('omits the group sub-heading for ungrouped tokens', () => {
@@ -174,15 +234,15 @@ describe('BlockTheming', () => {
     it('honours the `block-theming-token` custom-template override per row', () => {
         registerCustomTemplate(
             'block-theming-token',
-            (data: any) => `<tr data-stub="${data.token.name}"></tr>`
+            (data: any) => `<div data-stub="${data.token.name}"></div>`
         );
         const html = BlockTheming({
             tokens: [makeToken({ name: '--cdx-a' }), makeToken({ name: '--cdx-b' })]
         });
         expect(html).to.include('data-stub="--cdx-a"');
         expect(html).to.include('data-stub="--cdx-b"');
-        // Default cell wrappers should NOT appear when each row was overridden
-        expect(html).to.not.include('cdx-theming-name-cell');
+        // Default member-row chrome should NOT appear when each row was overridden
+        expect(html).to.not.include('cdx-io-member-name');
     });
 
     it('handles undefined tokens prop as empty list', () => {

@@ -123,15 +123,17 @@ describe('CLI Theming tab generation', () => {
             expect(componentHtml).to.contain('#theming');
         });
 
-        it('renders one row per documented token, grouped by @group', () => {
-            expect(componentHtml).to.contain('cdx-theming-tokens');
+        it('renders one cdx-io-member row per documented token, grouped by @group', () => {
+            expect(componentHtml).to.contain('cdx-io-member--theming');
             expect(componentHtml).to.contain('data-compodoc="block-theming-token"');
             expect(componentHtml).to.contain('$btn-padding');
             expect(componentHtml).to.contain('--btn-bg');
             expect(componentHtml).to.contain('container');
         });
 
-        it('surfaces the resolved type and default value in dedicated cells', () => {
+        it('surfaces the resolved type and default value inline on each row', () => {
+            expect(componentHtml).to.contain('cdx-io-member-type');
+            expect(componentHtml).to.contain('cdx-io-member-default');
             expect(componentHtml).to.contain('Length');
             expect(componentHtml).to.contain('8px 12px');
             // The @property merge contributes <color> + #ffffff
@@ -139,12 +141,25 @@ describe('CLI Theming tab generation', () => {
             expect(componentHtml).to.contain('#ffffff');
         });
 
+        it('emits a navigable index of all tokens above the rows', () => {
+            expect(componentHtml).to.contain('data-compodoc="block-theming-index"');
+            expect(componentHtml).to.contain('cdx-index-indicator--theming');
+            // Index appears before the first token row in the panel
+            const panelMatch = componentHtml.match(/id="theming"[\s\S]*$/);
+            const panel = panelMatch?.[0] ?? '';
+            const indexIdx = panel.indexOf('block-theming-index');
+            const memberIdx = panel.indexOf('block-theming-token');
+            expect(indexIdx).to.be.greaterThan(-1);
+            expect(memberIdx).to.be.greaterThan(-1);
+            expect(indexIdx).to.be.lessThan(memberIdx);
+        });
+
         it('renders the description for each documented token', () => {
             expect(componentHtml).to.contain('Padding inside the button');
             expect(componentHtml).to.contain('Background fill of the button');
         });
 
-        it('renders the @overview block as the first paragraph above the tables', () => {
+        it('renders the @overview block as the first paragraph above the rows', () => {
             expect(componentHtml).to.contain('cdx-theming-overview');
             expect(componentHtml).to.contain('Theme tokens for the');
             // Markdown was rendered (bold tag from **button**)

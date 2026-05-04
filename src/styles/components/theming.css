@@ -1,8 +1,7 @@
-/* Theming tab — structured token tables emitted by BlockTheming.tsx */
+/* Theming tab — flat cdx-io-member rows, mirrors the API tab visual language */
 
 [data-compodoc='block-theming'] {
     @apply flex flex-col;
-    gap: var(--spacing-cdx-xl);
 }
 
 .cdx-theming-overview {
@@ -14,56 +13,36 @@
     margin-bottom: 0;
 }
 
-.cdx-theming-group {
-    @apply flex flex-col;
-    gap: var(--spacing-cdx-md);
+/* All theming tokens share one accent colour (calm cyan-teal) so the kind
+   reads from the prefix in the name, not from a sea of colours. */
+.cdx-io-member--theming {
+    --cdx-io-color: hsl(195 60% 32%);
 }
 
-.cdx-theming-tokens {
-    table-layout: fixed;
+.dark .cdx-io-member--theming {
+    --cdx-io-color: hsl(195 55% 70%);
 }
 
-.cdx-theming-tokens thead th:nth-child(1),
-.cdx-theming-tokens tbody td:nth-child(1) {
-    width: 26%;
+/* Index indicator for the theming-tokens index group */
+.cdx-index-indicator--theming {
+    --cdx-indicator-color: hsl(195 60% 32%);
 }
 
-.cdx-theming-tokens thead th:nth-child(2),
-.cdx-theming-tokens tbody td:nth-child(2) {
-    width: 14%;
+.dark .cdx-index-indicator--theming {
+    --cdx-indicator-color: hsl(195 55% 70%);
 }
 
-.cdx-theming-tokens thead th:nth-child(3),
-.cdx-theming-tokens tbody td:nth-child(3) {
-    width: 18%;
+/* Group sub-headings between member rows behave like other section headings.
+   The default (empty) group has no heading and the rows flow directly. */
+.cdx-theming-group + .cdx-theming-group {
+    margin-top: var(--spacing-cdx-lg);
 }
 
-.cdx-theming-tokens tbody td {
-    vertical-align: top;
-    word-break: break-word;
-}
-
-.cdx-theming-name-cell {
-    @apply flex flex-col;
-    gap: var(--spacing-cdx-xs);
-}
-
-.cdx-theming-token-name {
-    font-weight: 600;
-}
-
-.cdx-theming-desc-cell .cdx-prose {
-    margin: 0;
-}
-
-.cdx-theming-desc-cell .cdx-prose p:last-child {
-    margin-bottom: 0;
-}
-
+/* Token-row extras that don't have a direct counterpart in the API blocks */
 .cdx-theming-deprecated {
+    margin-top: var(--spacing-cdx-xs);
     color: var(--color-cdx-text-muted);
     font-size: 0.8125rem;
-    margin-top: var(--spacing-cdx-xs);
 }
 
 .cdx-theming-example {
@@ -71,16 +50,18 @@
 }
 
 .cdx-theming-see {
+    margin-top: var(--spacing-cdx-sm);
     color: var(--color-cdx-text-muted);
     font-size: 0.8125rem;
-    margin-top: var(--spacing-cdx-sm);
 }
 
 .cdx-theming-see a {
     color: var(--color-cdx-primary);
 }
 
+/* Collapsible source panel below the rows */
 .cdx-theming-source {
+    margin-top: var(--spacing-cdx-xl);
     border: 1px solid var(--color-cdx-border);
     border-radius: var(--radius-cdx-md);
     padding: var(--spacing-cdx-md);
