@@ -173,6 +173,7 @@ export const TRANSLATION_FR_FR = {
     statements: 'Déclarations',
     styles: 'Styles',
     template: 'Template',
+    theming: 'Theming',
     'table-of-contents': 'Table des matières',
     total: 'Total',
     type: 'Type',

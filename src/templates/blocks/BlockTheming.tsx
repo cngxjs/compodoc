@@ -1,0 +1,245 @@
+import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
+import { highlightCode } from '../../app/engines/syntax-highlight.engine';
+import { markedAcl } from '../../utils/marked.acl';
+import type { StyleSource, ThemeToken, ThemeTokenGroup } from '../../utils/theme-doc-parser';
+import { groupThemeTokens } from '../../utils/theme-doc-parser';
+import { isThemingSection, t } from '../helpers';
+
+type BlockThemingProps = {
+    readonly tokens: ThemeToken[];
+    readonly styleSources?: StyleSource[];
+    /** Markdown intro harvested from `@overview` blocks; rendered above the index. */
+    readonly overview?: string;
+    readonly depth?: number;
+};
+
+const slugifyId = (raw: string): string =>
+    raw
+        .replace(/^[$-]+/, '')
+        .toLowerCase()
+        .replaceAll(/[^a-z0-9]+/g, '-')
+        .replaceAll(/^-+|-+$/g, '');
+
+const tokenAnchor = (token: ThemeToken): string => `theme-${slugifyId(token.name)}`;
+
+const renderBadges = (token: ThemeToken): string => {
+    const badges: string[] = [];
+    if (token.since) {
+        badges.push(
+            `<span class="cdx-badge cdx-badge--since">${
+                Html.escapeHtml(token.since) as string
+            }</span>`
+        );
+    }
+    if (token.deprecated !== null) {
+        const reason = token.deprecated
+            ? ` title="${Html.escapeHtml(token.deprecated) as string}"`
+            : '';
+        badges.push(
+            `<span class="cdx-badge cdx-badge--deprecated"${reason}>${
+                Html.escapeHtml(t('deprecated')) as string
+            }</span>`
+        );
+    }
+    return badges.join('');
+};
+
+const renderExamples = (token: ThemeToken): string =>
+    token.examples
+        .map(example => {
+            const fence = example.match(/^```(\w+)\n([\s\S]*?)\n```$/);
+            const lang = fence ? fence[1] : 'css';
+            const code = fence ? fence[2] : example;
+            return `<div class="cdx-theming-example">${highlightCode(code, {
+                lang,
+                mode: 'snippet'
+            })}</div>`;
+        })
+        .join('');
+
+const renderSeeLinks = (token: ThemeToken): string => {
+    if (token.see.length === 0) {
+        return '';
+    }
+    const items = token.see
+        .map(s => {
+            const escaped = Html.escapeHtml(s) as string;
+            if (/^https?:/i.test(s)) {
+                return `<a href="${escaped}" rel="noopener" target="_blank">${escaped}</a>`;
+            }
+            if (s.startsWith('--') || s.startsWith('$')) {
+                return `<a href="#theme-${slugifyId(s)}"><code>${escaped}</code></a>`;
+            }
+            return escaped;
+        })
+        .join(', ');
+    return `<p class="cdx-theming-see">${t('see')}: ${items}</p>`;
+};
+
+const renderTokenRow = (token: ThemeToken, depth?: number): string => {
+    const custom = renderCustomTemplate('block-theming-token', { token, depth });
+    if (custom !== null) {
+        return custom;
+    }
+
+    const id = tokenAnchor(token);
+    const cls = ['cdx-io-member', 'cdx-io-member--theming', `cdx-io-member--theming-${token.kind}`];
+    if (token.deprecated !== null) {
+        cls.push('cdx-io-member--deprecated');
+    }
+    const escapedName = Html.escapeHtml(token.name) as string;
+    const nameHtml = token.deprecated !== null ? `<s>${escapedName}</s>` : escapedName;
+
+    const typeHtml = token.type
+        ? `<span class="cdx-io-member-type"><code>${Html.escapeHtml(token.type) as string}</code></span>`
+        : '';
+
+    const badgesRow = renderBadges(token);
+    const descHtml = token.description
+        ? `<div class="cdx-io-member-desc cdx-prose">${markedAcl(token.description) as string}</div>`
+        : '';
+    const deprecatedReason = token.deprecated
+        ? `<p class="cdx-theming-deprecated">${markedAcl(token.deprecated) as string}</p>`
+        : '';
+    const defaultHtml = token.defaultValue
+        ? `<div class="cdx-io-member-default"><span class="cdx-io-member-default-label">${t(
+              'default-value'
+          )}</span> <code>${Html.escapeHtml(token.defaultValue) as string}</code></div>`
+        : '';
+
+    return (
+        `<div class="${cls.join(' ')}" id="${id}" data-compodoc="block-theming-token">` +
+        `<div class="cdx-io-member-title">` +
+        `<span class="cdx-io-member-name${
+            token.deprecated !== null ? ' cdx-member-name--deprecated' : ''
+        }">${nameHtml}<a class="cdx-member-permalink" href="#${id}">#</a></span>` +
+        typeHtml +
+        `</div>` +
+        (badgesRow ? `<div class="cdx-io-member-badges">${badgesRow}</div>` : '') +
+        defaultHtml +
+        descHtml +
+        deprecatedReason +
+        renderExamples(token) +
+        renderSeeLinks(token) +
+        `</div>`
+    );
+};
+
+const renderGroup = (group: ThemeTokenGroup, depth?: number): string => {
+    const heading = group.name
+        ? `<h4 class="cdx-section-heading" id="theme-group-${slugifyId(group.name)}">${
+              Html.escapeHtml(group.name) as string
+          }</h4>`
+        : '';
+    const members = group.tokens.map(token => renderTokenRow(token, depth)).join('');
+    return (
+        `<section class="cdx-theming-group" data-group="${
+            Html.escapeHtml(group.name) as string
+        }">` +
+        heading +
+        members +
+        `</section>`
+    );
+};
+
+const renderIndex = (groups: ThemeTokenGroup[]): string => {
+    const total = groups.reduce((acc, g) => acc + g.tokens.length, 0);
+    if (total < 2) {
+        return '';
+    }
+    const groupHtml = groups
+        .filter(g => g.tokens.length > 0)
+        .map(group => {
+            const label = group.name || t('theming');
+            const entries = group.tokens
+                .map(token => {
+                    const cls = ['cdx-index-entry'];
+                    if (token.deprecated !== null) {
+                        cls.push('cdx-index-entry--deprecated');
+                    }
+                    return (
+                        `<a href="#${tokenAnchor(token)}" class="${cls.join(' ')}">` +
+                        `<span class="cdx-index-indicator cdx-index-indicator--theming" aria-hidden="true">T</span>` +
+                        `<span class="cdx-index-name">${
+                            Html.escapeHtml(token.name) as string
+                        }</span>` +
+                        `</a>`
+                    );
+                })
+                .join('');
+            return (
+                `<div class="cdx-index-group">` +
+                `<h4 class="cdx-index-group-label">${Html.escapeHtml(label) as string}</h4>` +
+                `<div class="cdx-index-entries">${entries}</div>` +
+                `</div>`
+            );
+        })
+        .join('');
+    return (
+        `<section class="cdx-content-section" data-compodoc="block-theming-index">` +
+        `<h3 class="cdx-section-heading" id="theme-index">${t('index')}` +
+        `<a class="cdx-member-permalink" href="#theme-index">#</a></h3>` +
+        `<div class="cdx-index">${groupHtml}</div>` +
+        `</section>`
+    );
+};
+
+const renderSourcePanel = (sources: StyleSource[]): string => {
+    if (!sources || sources.length === 0) {
+        return '';
+    }
+    const items = sources
+        .map(src => {
+            const label = src.file.startsWith('<inline-style-')
+                ? src.file
+                : src.file.split('/').slice(-2).join('/');
+            return (
+                `<section class="cdx-theming-source-file">` +
+                `<h5 class="cdx-theming-source-file-name">${
+                    Html.escapeHtml(label) as string
+                }</h5>` +
+                highlightCode(src.content, { lang: src.language, mode: 'snippet' }) +
+                `</section>`
+            );
+        })
+        .join('');
+    return (
+        `<details class="cdx-theming-source">` +
+        `<summary>${t('source')}</summary>` +
+        items +
+        `</details>`
+    );
+};
+
+export const BlockTheming = (props: BlockThemingProps): string => {
+    const tokens = props.tokens ?? [];
+    const styleSources = props.styleSources ?? [];
+    const overview = (props.overview ?? '').trim();
+    const groups = groupThemeTokens(tokens);
+
+    const overrideArgs = { groups, styleSources, overview, depth: props.depth };
+    const custom = renderCustomTemplate('block-theming', overrideArgs);
+    if (custom !== null) {
+        return custom;
+    }
+
+    const overviewHtml =
+        isThemingSection('overview') && overview
+            ? `<div class="cdx-theming-overview cdx-prose">${markedAcl(overview) as string}</div>`
+            : '';
+    const indexHtml = isThemingSection('index') ? renderIndex(groups) : '';
+    const tokensHtml = isThemingSection('tokens')
+        ? groups.map(group => renderGroup(group, props.depth)).join('')
+        : '';
+    const sourceHtml = isThemingSection('source') ? renderSourcePanel(styleSources) : '';
+
+    return (
+        <section data-compodoc="block-theming">
+            {overviewHtml}
+            {indexHtml}
+            {tokensHtml}
+            {sourceHtml}
+        </section>
+    ) as string;
+};

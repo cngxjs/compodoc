@@ -15,6 +15,7 @@ import { logger } from '../utils/logger';
 import { markedAcl } from '../utils/marked.acl';
 import { promiseSequential } from '../utils/promise-sequential';
 import RouterParserUtil from '../utils/router-parser.util';
+import { collectThemeTokens } from '../utils/theme-doc-parser';
 import {
     cleanNameWithoutSpaceAndToLowerCase,
     cleanSourcesForWatch,
@@ -1417,6 +1418,13 @@ export class Application {
             ) {
                 return;
             }
+            if (
+                customTab.id === 'theming' &&
+                (!dependency.themeTokens || dependency.themeTokens.length === 0) &&
+                !dependency.themeOverview
+            ) {
+                return;
+            }
 
             // API tab: drop it in legacy single-tab mode, or when the
             // dependency has no member content to populate it.
@@ -1504,6 +1512,14 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         const readmeFile = MarkdownEngine.readNeighbourReadmeFile(component.file);
                         component.readme = markedAcl(readmeFile);
                     }
+                    const themeResult = collectThemeTokens({
+                        entityFile: component.file,
+                        styleUrls: component.styleUrls,
+                        styles: component.styles
+                    });
+                    component.themeTokens = themeResult.tokens;
+                    component.themeStyleSources = themeResult.sources;
+                    component.themeOverview = themeResult.overview;
                     const page = {
                         path: 'components',
                         name: component.name,

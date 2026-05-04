@@ -173,6 +173,7 @@ export const TRANSLATION_HU_HU = {
     statements: 'Utasítások',
     styles: 'Stílusok',
     template: 'Sablon',
+    theming: 'Témák',
     total: 'Összesen',
     type: 'Típus',
     'type-aliases': 'Típus álnév',

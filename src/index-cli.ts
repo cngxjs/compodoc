@@ -425,6 +425,10 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             Configuration.mainData.apiTabSections = configFile.apiTabSections;
         }
 
+        if (configFile.themingTabSections) {
+            Configuration.mainData.themingTabSections = configFile.themingTabSections;
+        }
+
         if (configFile.includes) {
             Configuration.mainData.includes = configFile.includes;
         }

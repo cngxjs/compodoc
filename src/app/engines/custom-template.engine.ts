@@ -88,6 +88,11 @@ export function hasCustomTemplates(): boolean {
     return Object.keys(customTemplates).length > 0;
 }
 
+/** Register an in-memory template (used in tests and programmatic setups). */
+export function registerCustomTemplate(name: string, fn: CustomTemplateFn): void {
+    customTemplates[name] = fn;
+}
+
 /** Reset loaded templates (for testing). */
 export function clearCustomTemplates(): void {
     for (const key of Object.keys(customTemplates)) {

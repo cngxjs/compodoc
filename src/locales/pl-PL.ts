@@ -173,6 +173,7 @@ export const TRANSLATION_PL_PL = {
     statements: 'Instrukcje',
     styles: 'Estilos',
     template: 'Modelo',
+    theming: 'Motywy',
     total: 'Suma',
     type: 'Typ',
     'type-aliases': 'Aliasy typów',

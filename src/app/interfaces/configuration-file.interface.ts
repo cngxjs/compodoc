@@ -55,6 +55,7 @@ export interface ConfigurationFileInterface {
     publicApiOnly: string;
     infoTabSections: string[];
     apiTabSections: string[];
+    themingTabSections: string[];
     stackblitz: boolean;
     stackblitzTemplate: string;
     groupBy: 'folder' | 'category' | 'none';

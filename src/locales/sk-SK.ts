@@ -172,6 +172,7 @@ export const TRANSLATION_SK_SK = {
     statements: 'Statements',
     styles: 'Štýly',
     template: 'Šablóna',
+    theming: 'Motívy',
     total: 'Celkom',
     type: 'Typ',
     'type-aliases': 'Type aliases',

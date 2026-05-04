@@ -97,6 +97,7 @@ export interface MainDataInterface {
     publicApiExports: Map<string, Set<string>>;
     infoTabSections: string[];
     apiTabSections: string[];
+    themingTabSections: string[];
     stackblitz: boolean;
     stackblitzTemplate: string;
     appConfig: any[];

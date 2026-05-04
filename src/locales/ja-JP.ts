@@ -173,6 +173,7 @@ export const TRANSLATION_JA_JP = {
     statements: '文',
     styles: 'スタイル',
     template: 'テンプレート',
+    theming: 'テーマ',
     total: '合計',
     type: '型',
     'type-aliases': 'タイプエイリアス',
