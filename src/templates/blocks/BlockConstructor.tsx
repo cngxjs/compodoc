@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import {
     codeWrap,
     functionSignature,
@@ -20,6 +21,10 @@ type BlockConstructorProps = {
 };
 
 export const BlockConstructor = (props: BlockConstructorProps): string => {
+    const custom = renderCustomTemplate('block-constructor', props);
+    if (custom !== null) {
+        return custom;
+    }
     const ctor = props.constructor;
     return (
         <section data-compodoc="block-constructor">

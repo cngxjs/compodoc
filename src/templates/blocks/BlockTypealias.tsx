@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { codeWrap, functionSignature, linkTypeHtml, parseDescription, t } from '../helpers';
 import { MemberCard } from './MemberCard';
 
@@ -19,8 +20,12 @@ type BlockTypealiasProps = {
     readonly depth?: number;
 };
 
-export const BlockTypealias = (props: BlockTypealiasProps): string =>
-    (
+export const BlockTypealias = (props: BlockTypealiasProps): string => {
+    const custom = renderCustomTemplate('block-typealias', props);
+    if (custom !== null) {
+        return custom;
+    }
+    return (
         <section data-compodoc="block-typealias">
             {props.typealias.map(ta => {
                 const header = (
@@ -71,3 +76,4 @@ export const BlockTypealias = (props: BlockTypealiasProps): string =>
             })}
         </section>
     ) as string;
+};

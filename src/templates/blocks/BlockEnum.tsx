@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { codeWrap, parseDescription, t } from '../helpers';
 import { MemberCard } from './MemberCard';
 
@@ -21,8 +22,12 @@ type BlockEnumProps = {
     readonly depth?: number;
 };
 
-export const BlockEnum = (props: BlockEnumProps): string =>
-    (
+export const BlockEnum = (props: BlockEnumProps): string => {
+    const custom = renderCustomTemplate('block-enum', props);
+    if (custom !== null) {
+        return custom;
+    }
+    return (
         <section data-compodoc="block-enums">
             {props.enums.map(e => {
                 const header = (
@@ -96,3 +101,4 @@ export const BlockEnum = (props: BlockEnumProps): string =>
             })}
         </section>
     ) as string;
+};

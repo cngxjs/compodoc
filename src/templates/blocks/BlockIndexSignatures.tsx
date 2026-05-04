@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { indexableSignature, isTabEnabled, linkTypeHtml, parseDescription, t } from '../helpers';
 
 type BlockIndexSignaturesProps = {
@@ -9,8 +10,12 @@ type BlockIndexSignaturesProps = {
     readonly navTabs?: any[];
 };
 
-export const BlockIndexSignatures = (props: BlockIndexSignaturesProps): string =>
-    (
+export const BlockIndexSignatures = (props: BlockIndexSignaturesProps): string => {
+    const custom = renderCustomTemplate('block-index-signatures', props);
+    if (custom !== null) {
+        return custom;
+    }
+    return (
         <section data-compodoc="block-indexables">
             <h3 id="indexables">
                 {props.title ?? t('indexable')}
@@ -42,3 +47,4 @@ export const BlockIndexSignatures = (props: BlockIndexSignaturesProps): string =
             ))}
         </section>
     ) as string;
+};

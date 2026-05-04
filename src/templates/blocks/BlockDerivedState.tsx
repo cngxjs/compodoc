@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import {
     highlightedCodeWrap,
     isTabEnabled,
@@ -31,6 +32,10 @@ const filterDeps = (rawDeps: readonly string[], signalNames: ReadonlySet<string>
 };
 
 export const BlockDerivedState = (props: BlockDerivedStateProps): string => {
+    const custom = renderCustomTemplate('block-derived-state', props);
+    if (custom !== null) {
+        return custom;
+    }
     const signalNames = new Set<string>(
         props.allSignalProps.filter((p: any) => p.signalKind).map((p: any) => p.name)
     );

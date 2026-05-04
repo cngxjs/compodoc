@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { t } from '../helpers';
 
 type IndexItem = {
@@ -77,6 +78,10 @@ const IndexGroup = (props: { title: string; items: IndexItem[]; kind: IndicatorK
 };
 
 export const BlockIndex = (props: BlockIndexProps): string => {
+    const custom = renderCustomTemplate('block-index', props);
+    if (custom !== null) {
+        return custom;
+    }
     const accessorEntries = props.accessors ? Object.entries(props.accessors) : [];
 
     const hasContent =

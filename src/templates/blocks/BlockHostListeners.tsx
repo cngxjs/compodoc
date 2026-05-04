@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { t } from '../helpers';
 
 type BlockHostListenersProps = {
@@ -6,6 +7,10 @@ type BlockHostListenersProps = {
 };
 
 export const BlockHostListeners = (props: BlockHostListenersProps): string => {
+    const custom = renderCustomTemplate('block-host-listeners', props);
+    if (custom !== null) {
+        return custom;
+    }
     if (!props.listeners?.length) {
         return '';
     }
