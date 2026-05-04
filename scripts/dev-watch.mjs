@@ -99,7 +99,11 @@ const generateFixture = () => {
     if (existsSync(outDir)) {
         rmSync(outDir, { recursive: true, force: true });
     }
-    return run('./bin/index-cli.js', ['-p', fixtureTsconfig, '-d', outDir, '--disableSearch'], 'docs', c.green);
+    const cliArgs = ['-p', fixtureTsconfig, '-d', outDir];
+    if (args.search !== true && args.search !== 'true') {
+        cliArgs.push('--disableSearch');
+    }
+    return run('./bin/index-cli.js', cliArgs, 'docs', c.green);
 };
 
 // ---------- Live Reload Server (SSE) ----------
@@ -229,6 +233,7 @@ const watch = (paths, exts, step, label) => {
 watch(['src/styles'], ['.css'], 'css', 'css');
 watch(['src/client'], ['.ts'], 'client', 'client');
 watch(['src/app', 'src/templates', 'src/utils', 'src/index.ts'], ['.ts', '.tsx'], 'rollup', 'rollup');
+watch([`test/fixtures/${fixture}`], ['.ts', '.tsx', '.md', '.scss', '.css', '.html', '.json'], 'docs', 'fixture');
 
 // ---------- Cleanup ----------
 const shutdown = () => {
