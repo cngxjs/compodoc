@@ -1,5 +1,5 @@
 {
-    "name": "@cngx/compodocx",
+    "name": "@cngxjs/compodocx",
     "version": "0.0.1",
     "description": "Modern documentation tool for Angular applications",
     "main": "dist/index.js",

@@ -105,14 +105,14 @@
         "theme": {
             "$id": "/properties/theme",
             "type": "string",
-            "title": "Choose a theme: 'light' (default), 'dark', 'material', or a path to a custom CSS file",
+            "title": "Choose a built-in theme ('default', 'ocean', 'midnight', 'nord', 'rose-pine', 'ember', 'neon', 'brutalist', 'gitbook') or a path to a custom CSS file",
             "default": "light",
             "examples": [""]
         },
         "hideGenerator": {
             "$id": "/properties/hideGenerator",
             "type": "boolean",
-            "title": "Do not print the Compodoc link at the bottom of the page",
+            "title": "Do not print the compodocx link at the bottom of the page",
             "default": false,
             "examples": [false]
         },
@@ -161,7 +161,7 @@
         "templates": {
             "$id": "/properties/templates",
             "type": "string",
-            "title": "Path to directory of Handlebars templates to override built-in templates",
+            "title": "Path to directory of JavaScript template overrides (see docs/custom-templates.md)",
             "default": "",
             "examples": [""]
         },

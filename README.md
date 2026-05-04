@@ -5,7 +5,7 @@ Modern documentation tool for Angular applications.
 Fork of [compodoc](https://github.com/compodoc/compodoc) by Vincent Ogloblinsky, rebuilt as an Angular-focused documentation tool under the [cngx](https://github.com/cngxjs) ecosystem.
 
 [![CI](https://github.com/cngxjs/compodocx/workflows/CI/badge.svg)](https://github.com/cngxjs/compodocx/actions)
-[![npm](https://img.shields.io/npm/v/@cngx/compodocx.svg)](https://www.npmjs.com/package/@cngx/compodocx)
+[![npm](https://img.shields.io/npm/v/@cngxjs/compodocx.svg)](https://www.npmjs.com/package/@cngxjs/compodocx)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
@@ -22,7 +22,7 @@ Fork of [compodoc](https://github.com/compodoc/compodoc) by Vincent Ogloblinsky,
 ## Installation
 
 ```bash
-npm install --save-dev @cngx/compodocx
+npm install --save-dev @cngxjs/compodocx
 ```
 
 ## Usage
@@ -58,7 +58,7 @@ Create a `.compodocrc.json` in your project root:
 
 ## Coming from compodoc?
 
-compodocx is backwards-compatible with compodoc's CLI flags and configuration. Replace `@compodoc/compodoc` with `@cngx/compodocx` and `compodoc` with `compodocx` in your scripts.
+compodocx is backwards-compatible with compodoc's CLI flags and configuration. Replace `@compodoc/compodoc` with `@cngxjs/compodocx` and `compodoc` with `compodocx` in your scripts.
 
 ## License
 

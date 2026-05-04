@@ -50,14 +50,14 @@ async function buildTemplatePlayground() {
       path.join(distDir, 'resources', 'images')
     );
 
-    // Copy templates for the playground (source HBS templates)
+    // Copy templates for the playground (legacy Handlebars sources — playground UI only)
     await fs.copy(
       path.join(srcDir, 'templates'),
       path.join(distDir, 'templates')
     );
 
     // Copy playground-demo for the playground (example TypeScript source files)
-    // This provides the source code that Compodoc analyzes to generate documentation examples
+    // This provides the source code that compodocx analyzes to generate documentation examples
     await fs.copy(
       playgroundDemoDir,
       path.join(distDir, 'resources', 'playground-demo')

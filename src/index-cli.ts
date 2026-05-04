@@ -126,7 +126,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             )
             .option(
                 '--templates [folder]',
-                'Path to directory of Handlebars templates to override built-in templates'
+                'Path to directory of JavaScript template overrides (see docs/custom-templates.md)'
             )
             .option('--includes [path]', 'Path of external markdown files to include')
             .option(
