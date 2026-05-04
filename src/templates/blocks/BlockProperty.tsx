@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import {
     highlightedCodeWrap,
     isTabEnabled,
@@ -23,6 +24,10 @@ type BlockPropertyProps = {
 const isUndefined = (v: unknown): boolean => v === undefined || v === 'undefined' || v === '';
 
 export const BlockProperty = (props: BlockPropertyProps): string => {
+    const custom = renderCustomTemplate('block-property', props);
+    if (custom !== null) {
+        return custom;
+    }
     const sectionId = props.id ?? (props.title ? props.title.toLowerCase() : 'properties');
     return (
         <section data-compodoc="block-properties">
