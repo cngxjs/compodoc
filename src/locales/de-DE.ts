@@ -174,6 +174,7 @@ export const TRANSLATION_DE_DE = {
     statements: 'Statements',
     styles: 'Stile',
     template: 'Vorlage',
+    theming: 'Theming',
     total: 'Gesamt',
     type: 'Typ',
     'type-aliases': 'Typ Aliase',

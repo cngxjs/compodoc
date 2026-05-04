@@ -171,6 +171,7 @@ export const TRANSLATION_ZH_TW = {
     statements: '陳述式',
     styles: '樣式',
     template: '範本',
+    theming: '主題',
     total: '總計',
     type: '型別',
     'type-aliases': '型別別名',

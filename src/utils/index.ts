@@ -10,4 +10,5 @@ export * from './jsdoc-parser.util';
 export * from './public-api-parser.util';
 export * from './router-parser.util';
 export * from './source-path-mapper.util';
+export * from './theme-file-scanner';
 export * from './utils';

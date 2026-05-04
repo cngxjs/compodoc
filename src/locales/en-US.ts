@@ -176,6 +176,7 @@ export const TRANSLATION_EN_US = {
     statements: 'Statements',
     styles: 'Styles',
     template: 'Template',
+    theming: 'Theming',
     total: 'Total',
     type: 'Type',
     'type-aliases': 'Type aliases',

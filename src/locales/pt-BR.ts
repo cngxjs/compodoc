@@ -173,6 +173,7 @@ export const TRANSLATION_PT_BR = {
     statements: 'Statements',
     styles: 'Estilos',
     template: 'Modelo',
+    theming: 'Theming',
     total: 'Total',
     type: 'Tipo',
     'type-aliases': 'Aliases de tipo',

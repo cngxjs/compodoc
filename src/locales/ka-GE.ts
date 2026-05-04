@@ -172,6 +172,7 @@ export const TRANSLATION_KA_GE = {
     statements: 'განცხადებები',
     styles: 'სტილები',
     template: 'შაბლონი',
+    theming: 'თემები',
     total: 'სულ',
     type: 'ტიპი',
     'type-aliases': 'მეტსახელის ტიპი',

@@ -10,6 +10,7 @@ import { BlockMethod } from '../blocks/BlockMethod';
 import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
+import { BlockTheming } from '../blocks/BlockTheming';
 import { DependenciesSection } from '../blocks/DependenciesSection';
 import { ExternalLinks } from '../blocks/ExternalLinks';
 import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
@@ -614,6 +615,17 @@ export const ComponentPage = (data: any): string => {
                                 description: t('empty-styles-desc'),
                                 variant: 'full'
                             })}
+                    </div>
+                )}
+
+                {isTabEnabled(navTabs, 'theming') && c.themeFiles?.length > 0 && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'theming') ? ' active' : ''}`}
+                        id="theming"
+                        role="tabpanel"
+                        aria-labelledby="theming-tab"
+                    >
+                        {BlockTheming({ themeFiles: c.themeFiles })}
                     </div>
                 )}
 

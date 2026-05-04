@@ -171,6 +171,7 @@ export const TRANSLATION_KO_KR = {
     statements: 'Statements',
     styles: '스타일',
     template: '주형',
+    theming: '테마',
     total: '합계',
     type: '타입',
     'type-aliases': '타입 별칭',

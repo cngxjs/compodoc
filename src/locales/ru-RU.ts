@@ -175,6 +175,7 @@ export const TRANSLATION_RU_RU = {
     statements: 'Утверждения',
     styles: 'Стили',
     template: 'Шаблон',
+    theming: 'Темы',
     total: 'Итого',
     type: 'Тип',
     'type-aliases': 'Псевдонимы типов',

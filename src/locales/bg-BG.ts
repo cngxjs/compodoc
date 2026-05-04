@@ -173,6 +173,7 @@ export const TRANSLATION_BG_BG = {
     statements: 'Statements',
     styles: 'Стилове',
     template: 'Шаблон',
+    theming: 'Теми',
     total: 'Общо',
     type: 'Тип',
     'type-aliases': 'Type aliases',

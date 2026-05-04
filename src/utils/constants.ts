@@ -54,6 +54,13 @@ export const COMPODOC_CONSTANTS = {
             depTypes: ['component']
         },
         {
+            id: 'theming',
+            href: '#theming',
+            'data-link': 'theming',
+            label: 'Theming',
+            depTypes: ['all']
+        },
+        {
             id: 'tree',
             href: '#tree',
             'data-link': 'dom-tree',

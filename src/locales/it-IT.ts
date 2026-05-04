@@ -173,6 +173,7 @@ export const TRANSLATION_IT_IT = {
     statements: 'Statements',
     styles: 'Stili',
     template: 'Modello',
+    theming: 'Theming',
     total: 'Totale',
     type: 'Tipo',
     'type-aliases': 'Type aliases',

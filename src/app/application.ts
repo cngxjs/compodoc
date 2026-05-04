@@ -15,6 +15,7 @@ import { logger } from '../utils/logger';
 import { markedAcl } from '../utils/marked.acl';
 import { promiseSequential } from '../utils/promise-sequential';
 import RouterParserUtil from '../utils/router-parser.util';
+import { collectThemeFiles } from '../utils/theme-file-scanner';
 import {
     cleanNameWithoutSpaceAndToLowerCase,
     cleanSourcesForWatch,
@@ -1123,6 +1124,7 @@ export class Application {
                         const readme = MarkdownEngine.readNeighbourReadmeFile(pipe.file);
                         pipe.readme = markedAcl(readme);
                     }
+                    pipe.themeFiles = collectThemeFiles(pipe.file);
                     const page = {
                         path: 'pipes',
                         name: pipe.name,
@@ -1164,6 +1166,7 @@ export class Application {
                         const readme = MarkdownEngine.readNeighbourReadmeFile(classe.file);
                         classe.readme = markedAcl(readme);
                     }
+                    classe.themeFiles = collectThemeFiles(classe.file);
                     const page = {
                         path: 'classes',
                         name: classe.name,
@@ -1205,6 +1208,7 @@ export class Application {
                         const readme = MarkdownEngine.readNeighbourReadmeFile(interf.file);
                         interf.readme = markedAcl(readme);
                     }
+                    interf.themeFiles = collectThemeFiles(interf.file);
                     const page = {
                         path: 'interfaces',
                         name: interf.name,
@@ -1417,6 +1421,12 @@ export class Application {
             ) {
                 return;
             }
+            if (
+                customTab.id === 'theming' &&
+                (!dependency.themeFiles || dependency.themeFiles.length === 0)
+            ) {
+                return;
+            }
 
             // API tab: drop it in legacy single-tab mode, or when the
             // dependency has no member content to populate it.
@@ -1504,6 +1514,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         const readmeFile = MarkdownEngine.readNeighbourReadmeFile(component.file);
                         component.readme = markedAcl(readmeFile);
                     }
+                    component.themeFiles = collectThemeFiles(component.file);
                     const page = {
                         path: 'components',
                         name: component.name,
@@ -1609,6 +1620,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         const readme = MarkdownEngine.readNeighbourReadmeFile(directive.file);
                         directive.readme = markedAcl(readme);
                     }
+                    directive.themeFiles = collectThemeFiles(directive.file);
                     const page = {
                         path: 'directives',
                         name: directive.name,
@@ -1651,6 +1663,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         const readme = MarkdownEngine.readNeighbourReadmeFile(injec.file);
                         injec.readme = markedAcl(readme);
                     }
+                    injec.themeFiles = collectThemeFiles(injec.file);
                     const page = {
                         path: 'injectables',
                         name: injec.name,
@@ -1693,6 +1706,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         const readme = MarkdownEngine.readNeighbourReadmeFile(interceptor.file);
                         interceptor.readme = markedAcl(readme);
                     }
+                    interceptor.themeFiles = collectThemeFiles(interceptor.file);
                     const page = {
                         path: 'interceptors',
                         name: interceptor.name,
@@ -1733,6 +1747,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         const readme = MarkdownEngine.readNeighbourReadmeFile(guard.file);
                         guard.readme = markedAcl(readme);
                     }
+                    guard.themeFiles = collectThemeFiles(guard.file);
                     const page = {
                         path: 'guards',
                         name: guard.name,
