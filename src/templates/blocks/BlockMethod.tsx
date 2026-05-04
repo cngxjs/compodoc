@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import {
     functionSignature,
     hasJsdocParams,
@@ -20,6 +21,10 @@ type BlockMethodProps = {
 };
 
 export const BlockMethod = (props: BlockMethodProps): string => {
+    const custom = renderCustomTemplate('block-method', props);
+    if (custom !== null) {
+        return custom;
+    }
     return (
         <section data-compodoc="block-methods">
             <h3 id={props.title ? props.title.toLowerCase() : 'methods'}>

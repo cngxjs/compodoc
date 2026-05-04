@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import {
     highlightedCodeWrap,
     isTabEnabled,
@@ -18,6 +19,10 @@ type BlockInputProps = {
 const isUndefined = (v: unknown): boolean => v === undefined || v === 'undefined' || v === '';
 
 export const BlockInput = (props: BlockInputProps): string => {
+    const custom = renderCustomTemplate('block-input', props);
+    if (custom !== null) {
+        return custom;
+    }
     return (
         <section data-compodoc="block-inputs">
             <h3 id="inputs">

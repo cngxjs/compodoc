@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { isTabEnabled, linkTypeHtml, parseDescription, signalKindLabel, t } from '../helpers';
 
 type BlockOutputProps = {
@@ -9,6 +10,10 @@ type BlockOutputProps = {
 };
 
 export const BlockOutput = (props: BlockOutputProps): string => {
+    const custom = renderCustomTemplate('block-output', props);
+    if (custom !== null) {
+        return custom;
+    }
     return (
         <section data-compodoc="block-outputs">
             <h3 id="outputs">

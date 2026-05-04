@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import {
     functionSignature,
     hasJsdocParams,
@@ -18,6 +19,10 @@ type BlockAccessorsProps = {
 };
 
 export const BlockAccessors = (props: BlockAccessorsProps): string => {
+    const custom = renderCustomTemplate('block-accessors', props);
+    if (custom !== null) {
+        return custom;
+    }
     return (
         <section data-compodoc="block-accessors">
             <h3 id="accessors">
