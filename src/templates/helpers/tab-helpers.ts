@@ -1,5 +1,9 @@
 import Configuration from '../../app/configuration';
-import { DEFAULT_API_SECTIONS, DEFAULT_INFO_SECTIONS } from '../../utils/constants';
+import {
+    DEFAULT_API_SECTIONS,
+    DEFAULT_INFO_SECTIONS,
+    DEFAULT_THEMING_SECTIONS
+} from '../../utils/constants';
 
 type Tab = { readonly id: string; [key: string]: unknown };
 
@@ -59,3 +63,12 @@ export const isApiSection = (sectionId: string): boolean => {
  * False in legacy single-tab mode (only `infoTabSections` configured).
  */
 export const hasAnyApiSections = (): boolean => !isLegacyOnlyInfo();
+
+/** Check if a section belongs to the **Theming** tab. */
+export const isThemingSection = (sectionId: string): boolean => {
+    const theming = Configuration.mainData.themingTabSections;
+    if (hasExplicit(theming)) {
+        return theming.includes(sectionId);
+    }
+    return DEFAULT_THEMING_SECTIONS.includes(sectionId);
+};

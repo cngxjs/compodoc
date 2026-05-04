@@ -117,6 +117,24 @@ export const DEFAULT_API_SECTIONS: ReadonlyArray<string> = [
 ];
 
 /**
+ * Default section buckets for the **Theming** tab. Each ID maps to a region
+ * inside `BlockTheming.tsx`:
+ * - `overview` → markdown intro harvested from `@overview` doc blocks
+ * - `index`    → navigable list of every documented token (mirror of API index)
+ * - `tokens`   → the actual `cdx-io-member` rows, grouped by `@group`
+ * - `source`   → collapsible `<details>` panel listing the raw style files
+ *
+ * Override with `themingTabSections` in the config file to drop or reorder
+ * regions per project.
+ */
+export const DEFAULT_THEMING_SECTIONS: ReadonlyArray<string> = [
+    'overview',
+    'index',
+    'tokens',
+    'source'
+];
+
+/**
  * Max length for the string of a file during Lunr search engine indexing.
  * Prevent stack size exceeded
  */

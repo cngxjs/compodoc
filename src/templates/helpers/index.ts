@@ -25,7 +25,8 @@ export {
     isApiSection,
     isInfoSection,
     isInitialTab,
-    isTabEnabled
+    isTabEnabled,
+    isThemingSection
 } from './tab-helpers';
 
 /** Check if a member has private or protected modifiers (SyntaxKind 123 = Private, 124 = Protected). */

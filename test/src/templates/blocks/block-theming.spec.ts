@@ -1,4 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import Configuration from '../../../../src/app/configuration';
 import {
     clearCustomTemplates,
     registerCustomTemplate
@@ -30,6 +31,7 @@ const makeToken = (overrides: Partial<ThemeToken> = {}): ThemeToken => ({
 describe('BlockTheming', () => {
     afterEach(() => {
         clearCustomTemplates();
+        Configuration.mainData.themingTabSections = [];
     });
 
     it('renders the root section with data-compodoc but without an inner h3 heading', () => {
@@ -249,5 +251,64 @@ describe('BlockTheming', () => {
         const html = BlockTheming({ tokens: undefined as any });
         expect(html).to.include('data-compodoc="block-theming"');
         expect(html).to.not.include('data-compodoc="block-theming-token"');
+    });
+
+    describe('themingTabSections config', () => {
+        const twoTokens = [
+            makeToken({ name: '--cdx-a' }),
+            makeToken({ name: '--cdx-b' })
+        ];
+        const styleSources = [
+            { file: '/p/btn.scss', content: '$x: 1;', language: 'scss' as const }
+        ];
+
+        it('drops the source panel when "source" is omitted from themingTabSections', () => {
+            Configuration.mainData.themingTabSections = ['overview', 'index', 'tokens'];
+            const html = BlockTheming({ tokens: twoTokens, styleSources });
+            expect(html).to.not.include('cdx-theming-source');
+            // tokens + index still render
+            expect(html).to.include('data-compodoc="block-theming-token"');
+            expect(html).to.include('data-compodoc="block-theming-index"');
+        });
+
+        it('drops the index when "index" is omitted from themingTabSections', () => {
+            Configuration.mainData.themingTabSections = ['overview', 'tokens', 'source'];
+            const html = BlockTheming({ tokens: twoTokens, styleSources });
+            expect(html).to.not.include('data-compodoc="block-theming-index"');
+            expect(html).to.include('data-compodoc="block-theming-token"');
+            expect(html).to.include('cdx-theming-source');
+        });
+
+        it('drops the overview when "overview" is omitted from themingTabSections', () => {
+            Configuration.mainData.themingTabSections = ['index', 'tokens', 'source'];
+            const html = BlockTheming({
+                tokens: twoTokens,
+                styleSources,
+                overview: 'should not render'
+            });
+            expect(html).to.not.include('cdx-theming-overview');
+            expect(html).to.not.include('should not render');
+        });
+
+        it('drops the token rows when "tokens" is omitted from themingTabSections', () => {
+            Configuration.mainData.themingTabSections = ['overview', 'index', 'source'];
+            const html = BlockTheming({ tokens: twoTokens, styleSources });
+            expect(html).to.not.include('data-compodoc="block-theming-token"');
+            // index still references the token names
+            expect(html).to.include('data-compodoc="block-theming-index"');
+        });
+
+        it('shows everything when themingTabSections is empty (defaults apply)', () => {
+            Configuration.mainData.themingTabSections = [];
+            const html = BlockTheming({
+                tokens: twoTokens,
+                styleSources,
+                overview: 'an intro'
+            });
+            expect(html).to.include('cdx-theming-overview');
+            expect(html).to.include('data-compodoc="block-theming-index"');
+            expect(html).to.include('data-compodoc="block-theming-token"');
+            expect(html).to.include('cdx-theming-source');
+        });
     });
 });

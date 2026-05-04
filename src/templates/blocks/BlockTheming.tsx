@@ -8,7 +8,7 @@ import type {
     ThemeTokenGroup
 } from '../../utils/theme-doc-parser';
 import { groupThemeTokens } from '../../utils/theme-doc-parser';
-import { t } from '../helpers';
+import { isThemingSection, t } from '../helpers';
 
 type BlockThemingProps = {
     readonly tokens: ThemeToken[];
@@ -229,16 +229,22 @@ export const BlockTheming = (props: BlockThemingProps): string => {
         return custom;
     }
 
-    const overviewHtml = overview
-        ? `<div class="cdx-theming-overview cdx-prose">${markedAcl(overview) as string}</div>`
+    const overviewHtml =
+        isThemingSection('overview') && overview
+            ? `<div class="cdx-theming-overview cdx-prose">${markedAcl(overview) as string}</div>`
+            : '';
+    const indexHtml = isThemingSection('index') ? renderIndex(groups) : '';
+    const tokensHtml = isThemingSection('tokens')
+        ? groups.map(group => renderGroup(group, props.depth)).join('')
         : '';
+    const sourceHtml = isThemingSection('source') ? renderSourcePanel(styleSources) : '';
 
     return (
         <section data-compodoc="block-theming">
             {overviewHtml}
-            {renderIndex(groups)}
-            {groups.map(group => renderGroup(group, props.depth))}
-            {renderSourcePanel(styleSources)}
+            {indexHtml}
+            {tokensHtml}
+            {sourceHtml}
         </section>
     ) as string;
 };

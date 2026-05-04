@@ -103,6 +103,7 @@ export class Configuration implements ConfigurationInterface {
         publicApiExports: new Map<string, Set<string>>(),
         infoTabSections: [],
         apiTabSections: [],
+        themingTabSections: [],
         stackblitz: false,
         stackblitzTemplate: '',
         appConfig: [],
