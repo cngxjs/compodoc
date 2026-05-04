@@ -207,6 +207,85 @@ Each documented entity (component, directive, service, class, etc.) gets a detai
 
 Additional tabs (Source, Template, Style, DOM Tree, README, Example) appear based on the entity type and available data. Tab visibility and order can be controlled via `navTabConfig`.
 
+The Info, API and Theming tabs accept config-file-only string arrays that opt regions in or out:
+
+| Option | Type | Default | Description |
+|-|-|-|-|
+| infoTabSections | string[] | `[]` | Override the section list for the Info tab. Empty means all defaults render. Available IDs: `import`, `deprecated`, `description`, `examples`, `metadata`, `extends`, `host`, `dependencies`, `providers`, `viewProviders`, `relationships` |
+| apiTabSections | string[] | `[]` | Override the section list for the API tab. Empty means all defaults render. Available IDs: `index`, `inputs`, `outputs`, `derivedState`, `effects`, `properties`, `methods`, `accessors`, `indexSignatures`, `hostBindings`, `hostListeners` |
+| themingTabSections | string[] | `[]` | Override the section list for the Theming tab. Empty means all defaults render. Available IDs: `overview`, `index`, `tokens`, `source` |
+
+These are config-file only (no CLI flag). An explicit non-empty list replaces the default in full -- list every region you want, in the order you want them.
+
+## Theming Tab
+
+Components grow a **Theming** tab when the parser finds documented theme tokens inside their `styleUrls` or inline `styles[]`. Tokens are described with a small inline-doc convention -- no separate manifest, no companion files. The same convention works for SCSS variables, CSS custom properties, and `@property` at-rules.
+
+### SCSS variables -- SassDoc `///` blocks
+
+```scss
+/// Padding inside the alert container.
+/// @type Length
+/// @default 12px 16px
+/// @group container
+$alert-padding: 12px 16px !default;
+```
+
+The `///` block must sit immediately above the `$variable: value [!default];` declaration. Any non-comment line in between cancels the association.
+
+### CSS custom properties -- JSDoc `/** */` blocks
+
+```css
+/**
+ * Background color of the alert container.
+ * @type <color>
+ * @default #f8fafc
+ * @group container
+ */
+:host {
+    --cngx-alert-bg: #f8fafc;
+}
+```
+
+The doc block can sit directly above the property OR above a wrapping selector that contains the property as its first declaration. Single-asterisk `/* */` blocks are ignored -- only `/**` opens a doc comment.
+
+### Native `@property` at-rules -- runtime-typed tokens
+
+```css
+/**
+ * Inner gap between icon, body, and dismiss button.
+ * @group container
+ */
+@property --cngx-alert-gap {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 12px;
+}
+```
+
+`@property` is the recommended pattern when you can target browsers that support it. The browser-native `syntax` populates the **Type** column and `initial-value` populates the **Default** column -- explicit `@type` / `@default` tags still win when both are set.
+
+### Tag set
+
+| Tag | Value | Effect |
+|-|-|-|
+| `@overview` | markdown body, may span multiple lines | File-level intro paragraph rendered above the index. Multiple `@overview` blocks across resolved style files are concatenated in source order |
+| `@type` | CSS type expression (`<length>`, `<color>`, `Number`, ...) | Renders in the Type cell next to the token name |
+| `@default` | string | Renders in the Default cell. Falls back to the literal declaration value when omitted |
+| `@group` | identifier | Groups tokens under a sub-heading on the Theming tab. Missing group means the token sits in the flat default bucket |
+| `@example` | fenced code block, multi-line, repeatable | Rendered as a Shiki-highlighted snippet below the description |
+| `@since` | version string | Adds a "since" pill next to the token name |
+| `@deprecated` | optional reason | Strikes through the token name and renders the reason as muted prose |
+| `@see` | URL or token name (`--other-token`, `$other-var`), repeatable | Cross-link footer. Token references resolve to in-page anchors |
+
+Unknown tags are preserved verbatim in the description -- the parser does not error on conventions you add yourself.
+
+### Source resolution
+
+For each component, compodocx reads the `@Component` decorator's `styleUrls` relative to the component file and parses each entry. Inline `styles[]` strings are parsed identically. SCSS files have their top-level `@import` and `@use` rules followed **one level deep**, so you can keep tokens in a partial like `_tokens.scss` and re-export from the component stylesheet. Deeper transitive resolution is intentionally out of scope.
+
+Components without documented tokens get no Theming tab. Other entity kinds (services, directives, classes, ...) never carry styling output and never produce a Theming tab.
+
 ## JSDoc Tags
 
 Compodocx recognizes these custom JSDoc tags on any entity or member:

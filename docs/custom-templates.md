@@ -67,6 +67,13 @@ These file names correspond to page contexts. Place them in `partials/` inside y
 | `miscellaneous-enumerations.js` | Miscellaneous enumerations |
 | `menu.js` | Sidebar navigation menu |
 
+Block-level overrides replace a region inside a page rather than the whole page:
+
+| File name | Overrides |
+|-|-|
+| `block-theming.js` | Whole Theming tab panel. Receives `{ groups, styleSources, overview, depth }` where `groups` is an array of `{ name, tokens }` buckets, `styleSources` is `{ file, content, language }[]`, and `overview` is the concatenated `@overview` markdown |
+| `block-theming-token.js` | Single token row inside the Theming tab. Receives `{ token, depth }` where `token` is a `ThemeToken` (`name`, `kind`, `type`, `defaultValue`, `description`, `group`, `examples`, `since`, `deprecated`, `see`, `file`, `line`). Replace this when you want custom row chrome but the rest of the panel can stay default |
+
 ## Available helpers
 
 The second argument passed to your template function contains all built-in helpers:
