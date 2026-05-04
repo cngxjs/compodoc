@@ -1,0 +1,30 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "../../dist/out-tsc",
+        "target": "ES2022",
+        "lib": [
+            "ES2022",
+            "DOM"
+        ],
+        "declaration": true,
+        "declarationMap": true,
+        "inlineSources": true,
+        "types": [
+            "@angular/localize/init",
+            "jest",
+            "node"
+        ],
+        "useDefineForClassFields": false,
+        "moduleResolution": "bundler"
+    },
+    "exclude": [
+        "**/*.test.ts",
+        "**/*.spec.ts",
+        "jest.config.ts",
+        "**/*.stories.ts"
+    ],
+    "include": [
+        "**/*.ts"
+    ]
+}

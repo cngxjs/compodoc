@@ -1,0 +1,91 @@
+import Html from '@kitajs/html';
+import { linkTypeHtml, t } from '../helpers';
+
+/** Parse inject() modifiers from the defaultValue string. */
+export const parseInjectModifiers = (defaultValue: string): string[] => {
+    const mods: string[] = [];
+    if (!defaultValue) {
+        return mods;
+    }
+    if (/optional\s*:\s*true/.test(defaultValue)) {
+        mods.push('optional');
+    }
+    if (/skipSelf\s*:\s*true/.test(defaultValue)) {
+        mods.push('skipSelf');
+    }
+    if (/self\s*:\s*true/.test(defaultValue)) {
+        mods.push('self');
+    }
+    if (/host\s*:\s*true/.test(defaultValue)) {
+        mods.push('host');
+    }
+    return mods;
+};
+
+/** Dependencies section merging inject() properties and constructor params. */
+export const DependenciesSection = (props: {
+    injectProps: any[];
+    constructorArgs: any[];
+}): string => {
+    const items: Array<{
+        name: string;
+        type: string;
+        source: 'inject' | 'constructor';
+        modifiers: string[];
+    }> = [];
+
+    for (const p of props.injectProps) {
+        items.push({
+            name: p.name,
+            type: p.type ?? '',
+            source: 'inject',
+            modifiers: parseInjectModifiers(p.defaultValue ?? '')
+        });
+    }
+
+    for (const arg of props.constructorArgs) {
+        items.push({
+            name: arg.name,
+            type: arg.type ?? '',
+            source: 'constructor',
+            modifiers: arg.optional ? ['optional'] : []
+        });
+    }
+
+    if (items.length === 0) {
+        return '';
+    }
+
+    return (
+        <section class="cdx-content-section" data-compodoc="block-dependencies">
+            <h3 class="cdx-section-heading" id="section-dependencies">
+                {t('dependencies')}
+                <a class="cdx-member-permalink" href="#section-dependencies">
+                    #
+                </a>
+            </h3>
+            <div class="cdx-deps-list">
+                {items.map(item => (
+                    <div class="cdx-deps-item">
+                        <span class="cdx-deps-name">
+                            {item.type ? linkTypeHtml(item.type) : item.name}
+                        </span>
+                        <span class="cdx-deps-badges">
+                            <span
+                                class={`cdx-badge cdx-badge--${item.source === 'inject' ? 'inject' : 'constructor-di'}`}
+                            >
+                                {item.source === 'inject' ? 'inject()' : 'constructor'}
+                            </span>
+                            {item.modifiers.map(mod => (
+                                <span class="cdx-member-modifier">{mod}</span>
+                            ))}
+                        </span>
+                        {item.source === 'inject' && item.name && (
+                            <span class="cdx-deps-alias">{item.name}</span>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </section>
+    ) as string;
+};

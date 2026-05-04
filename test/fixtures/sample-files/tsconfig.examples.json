@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+      "target": "es2015",
+      "module": "commonjs",
+      "lib": ["es2015"],
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+      "strict": false
+    },
+    "include": [
+      "test.directive.ts"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
+} 

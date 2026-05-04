@@ -1,0 +1,169 @@
+.cdx-graph-container {
+    /* Page-level graphs (Overview, ModulePage) sit directly below the
+       entity hero — breathe top. Reset below for graphs rendered inside
+       a tab panel (ComponentPage dependency tab) where the tab bar
+       already provides separation. */
+    margin-top: var(--spacing-cdx-xl);
+}
+
+.cdx-tab-panel .cdx-graph-container {
+    margin-top: 0;
+}
+
+.cdx-graph-viewport {
+    /* Positioned ancestor for the absolutely-positioned fullscreen
+       button so it sits top-right of the graph area, not of the page. */
+    position: relative;
+    background: var(--color-cdx-graph-bg, var(--color-cdx-bg-alt));
+    border-width: var(--color-cdx-graph-border-width, 0);
+    border-style: solid;
+    border-color: var(--color-cdx-graph-border, transparent);
+    border-radius: var(--color-cdx-graph-radius, var(--radius-cdx-md));
+}
+
+.cdx-graph-container--compact .cdx-graph-viewport {
+    max-height: 400px;
+}
+
+.cdx-graph-container svg {
+    cursor: grab;
+}
+.cdx-graph-container svg:active {
+    cursor: grabbing;
+}
+
+.cdx-graph-fullscreen-btn {
+    @apply absolute cursor-pointer inline-flex items-center justify-center;
+    top: var(--spacing-cdx-sm);
+    right: var(--spacing-cdx-sm);
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
+    padding: var(--spacing-cdx-xs);
+    color: var(--color-cdx-text-muted);
+}
+.cdx-graph-fullscreen-btn .cdx-icon {
+    /* Override the global .cdx-icon margin-right: 0.5rem — this button
+       has only the icon and no adjacent text, so the margin shifts the
+       SVG off-center inside its padding box. */
+    margin-right: 0;
+}
+.cdx-graph-fullscreen-btn:hover {
+    color: var(--color-cdx-text);
+    background: var(--color-cdx-bg-alt);
+}
+
+.cdx-graph-zoom-controls {
+    @apply flex;
+    gap: var(--spacing-cdx-xs);
+    margin-top: var(--spacing-cdx-sm);
+    align-content: space-around;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.cdx-graph-legend {
+    @apply flex flex-wrap gap-3 text-sm;
+    background: var(--color-cdx-bg-elevated);
+    border-radius: var(--radius-cdx-md);
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    margin-top: 1rem;
+}
+
+.cdx-graph-legend-item {
+    @apply inline-flex items-center gap-1.5;
+}
+
+.cdx-graph-legend-dot {
+    @apply inline-block rounded-full;
+    width: 10px;
+    height: 10px;
+    /* `--color-cdx-border-strong` adapts across themes — medium-dark
+       gray in light mode (visible on white bg-elevated), medium-light
+       gray in dark mode (visible on dark bg-elevated). This makes the
+       HTML-element legend dot (which uses bg-elevated as its fill)
+       actually visible instead of blending into the legend chrome. */
+    border: 1px solid var(--color-cdx-border-strong);
+}
+
+/* Module graph (Graphviz SVG) — override hardcoded colors */
+/* Graphviz generates <g class="graph"><polygon fill="white"> as background.
+   After initSvgPanZoom wraps content in .zoom-wrapper, the path becomes:
+   svg > g.zoom-wrapper > g.graph > polygon */
+#module-graph-svg .graph > polygon {
+    fill: var(--color-cdx-bg-alt);
+    stroke: none;
+}
+
+#module-graph-svg .node polygon {
+    fill: var(--color-cdx-entity-module);
+    fill-opacity: 0.12;
+    stroke: var(--color-cdx-entity-module);
+    stroke-opacity: 0.5;
+}
+
+#module-graph-svg .edge path {
+    stroke: var(--color-cdx-text-muted);
+}
+
+#module-graph-svg .edge polygon {
+    fill: var(--color-cdx-text-muted);
+    stroke: var(--color-cdx-text-muted);
+}
+
+#module-graph-svg .cluster > polygon,
+#module-graph-svg .cluster > path {
+    stroke: var(--color-cdx-text-secondary);
+    stroke-opacity: 0.6;
+}
+
+#module-graph-svg .node text,
+#module-graph-svg text {
+    fill: var(--color-cdx-text);
+}
+
+#tree-container {
+    background: var(--color-cdx-graph-bg, var(--color-cdx-bg-alt));
+    border-width: var(--color-cdx-graph-border-width, 0);
+    border-style: solid;
+    border-color: var(--color-cdx-graph-border, transparent);
+    border-radius: var(--color-cdx-graph-radius, var(--radius-cdx-md));
+}
+
+.tree-legend {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.tree-legend .title {
+    margin-bottom: 0.5rem;
+}
+
+.tree-legend .color {
+    width: 14px;
+    height: 10px;
+    display: inline-block;
+    margin-right: 0.375rem;
+    border-radius: var(--radius-cdx-sm);
+}
+
+.tree-legend .htmlelement {
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid var(--color-cdx-border);
+}
+
+.tree-legend .component {
+    background: var(--color-cdx-entity-component);
+}
+
+.tree-legend .directive {
+    background: var(--color-cdx-entity-directive);
+}

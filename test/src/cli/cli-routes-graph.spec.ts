@@ -1,0 +1,184 @@
+import { exists, hasStderrError, read, shell, temporaryDir } from '../helpers';
+
+const tmp = temporaryDir();
+
+describe('CLI Routes graph', () => {
+    const distFolder = `${tmp.name}-routes-graph`;
+
+    describe('disable it', () => {
+        beforeAll(() => {
+            tmp.create(distFolder);
+            const ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/todomvc-ng2-simple-routing/src/tsconfig.json',
+                '--disableRoutesGraph',
+                '-d',
+                distFolder
+            ]);
+
+            if (hasStderrError(ls.stderr.toString())) {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                throw new Error('error');
+            }
+        });
+        afterAll(() => tmp.clean(distFolder));
+
+        it('it should not exist routes_index.js file', () => {
+            const isFileExists = exists(`${distFolder}/js/routes/routes_index.js`);
+            expect(isFileExists).to.be.false;
+        });
+    });
+
+    describe('should support forRoot/forChild', () => {
+        beforeAll(() => {
+            tmp.create(distFolder);
+            const ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/todomvc-ng2-simple-routing/src/tsconfig.json',
+                '-d',
+                distFolder
+            ]);
+
+            if (hasStderrError(ls.stderr.toString())) {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                throw new Error('error');
+            }
+        });
+        afterAll(() => tmp.clean(distFolder));
+
+        it('should clean forRoot and forChild in modules imports', () => {
+            const file = read(`${distFolder}/modules/AppModule.html`);
+            expect(file).to.contain('<a href="../modules/HomeModule.html">HomeModule</a>');
+        });
+    });
+
+    describe('should support routing without routing module', () => {
+        beforeAll(() => {
+            tmp.create(distFolder);
+            const ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/routing-without-module/src/tsconfig.app.json',
+                '-d',
+                distFolder
+            ]);
+
+            if (hasStderrError(ls.stderr.toString())) {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                throw new Error('error');
+            }
+        });
+        afterAll(() => tmp.clean(distFolder));
+
+        it('should have a clean graph', () => {
+            const isFileExists = exists(`${distFolder}/js/routes/routes_index.js`);
+            expect(isFileExists).to.be.true;
+            const file = read(`${distFolder}/js/routes/routes_index.js`);
+            expect(file).to.contain('ExampleComponent');
+        });
+    });
+
+    describe('should support lazy-loaded modules with loadChildren syntax (containing possible trailing commas)', () => {
+        beforeAll(() => {
+            tmp.create(distFolder);
+            const ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/todomvc-ng2-simple-routing-standard/src/tsconfig.json',
+                '-d',
+                distFolder
+            ]);
+
+            if (hasStderrError(ls.stderr.toString())) {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                throw new Error('error');
+            }
+        });
+        afterAll(() => tmp.clean(distFolder));
+
+        it('should have a clean graph', () => {
+            const isFileExists = exists(`${distFolder}/js/routes/routes_index.js`);
+            expect(isFileExists).to.be.true;
+            const file = read(`${distFolder}/js/routes/routes_index.js`);
+            expect(file).to.contain('AboutComponent');
+        });
+    });
+
+    describe('should support lazy-loaded modules with new loadChildren syntax / async', () => {
+        beforeAll(() => {
+            tmp.create(distFolder);
+            const ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/todomvc-ng2-simple-routing-standard-async/src/tsconfig.json',
+                '-d',
+                distFolder
+            ]);
+
+            if (hasStderrError(ls.stderr.toString())) {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                throw new Error('error');
+            }
+        });
+        afterAll(() => tmp.clean(distFolder));
+
+        it('should have a clean graph', () => {
+            const isFileExists = exists(`${distFolder}/js/routes/routes_index.js`);
+            expect(isFileExists).to.be.true;
+            const file = read(`${distFolder}/js/routes/routes_index.js`);
+            expect(file).to.contain('AboutComponent');
+        });
+    });
+
+    describe('should support if statement for bootstrapModule', () => {
+        beforeAll(() => {
+            tmp.create(distFolder);
+            const ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/todomvc-ng2-simple-routing-with-if/src/tsconfig.json',
+                '-d',
+                distFolder
+            ]);
+
+            if (hasStderrError(ls.stderr.toString())) {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                throw new Error('error');
+            }
+        });
+        afterAll(() => tmp.clean(distFolder));
+
+        it('should have a clean graph', () => {
+            const isFileExists = exists(`${distFolder}/js/routes/routes_index.js`);
+            expect(isFileExists).to.be.true;
+            const file = read(`${distFolder}/js/routes/routes_index.js`);
+            expect(file).to.contain('HomeComponent');
+        });
+    });
+
+    describe('should support route in external file', () => {
+        beforeAll(() => {
+            tmp.create(distFolder);
+            const ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/todomvc-ng2-simple-routing/src/tsconfig.json',
+                '-d',
+                distFolder
+            ]);
+
+            if (hasStderrError(ls.stderr.toString())) {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                throw new Error('error');
+            }
+        });
+        afterAll(() => tmp.clean(distFolder));
+
+        it('should correctly read external file', () => {
+            const file = read(`${distFolder}/js/routes/routes_index.js`);
+            expect(file).to.contain('login');
+        });
+    });
+});

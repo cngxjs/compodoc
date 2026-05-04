@@ -1,0 +1,68 @@
+{
+    "total": {
+        "lines": { "total": 320, "covered": 198, "skipped": 0, "pct": 61.88 },
+        "statements": { "total": 380, "covered": 245, "skipped": 0, "pct": 64.47 },
+        "functions": { "total": 95, "covered": 52, "skipped": 0, "pct": 54.74 },
+        "branches": { "total": 48, "covered": 28, "skipped": 0, "pct": 58.33 }
+    },
+    "test/fixtures/kitchen-sink-standalone/src/app/app.component.ts": {
+        "lines": { "total": 15, "covered": 12, "skipped": 0, "pct": 80.0 },
+        "functions": { "total": 4, "covered": 3, "skipped": 0, "pct": 75.0 },
+        "statements": { "total": 18, "covered": 14, "skipped": 0, "pct": 77.78 },
+        "branches": { "total": 1, "covered": 1, "skipped": 0, "pct": 100.0 }
+    },
+    "test/fixtures/kitchen-sink-standalone/src/app/core/services/todo.store.ts": {
+        "lines": { "total": 50, "covered": 40, "skipped": 0, "pct": 80.0 },
+        "functions": { "total": 12, "covered": 10, "skipped": 0, "pct": 83.33 },
+        "statements": { "total": 58, "covered": 46, "skipped": 0, "pct": 79.31 },
+        "branches": { "total": 10, "covered": 7, "skipped": 0, "pct": 70.0 }
+    },
+    "test/fixtures/kitchen-sink-standalone/src/app/core/services/theme.service.ts": {
+        "lines": { "total": 12, "covered": 10, "skipped": 0, "pct": 83.33 },
+        "functions": { "total": 4, "covered": 4, "skipped": 0, "pct": 100.0 },
+        "statements": { "total": 14, "covered": 12, "skipped": 0, "pct": 85.71 },
+        "branches": { "total": 3, "covered": 2, "skipped": 0, "pct": 66.67 }
+    },
+    "test/fixtures/kitchen-sink-standalone/src/app/core/services/api.service.ts": {
+        "lines": { "total": 10, "covered": 8, "skipped": 0, "pct": 80.0 },
+        "functions": { "total": 4, "covered": 3, "skipped": 0, "pct": 75.0 },
+        "statements": { "total": 12, "covered": 10, "skipped": 0, "pct": 83.33 },
+        "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100.0 }
+    },
+    "test/fixtures/kitchen-sink-standalone/src/app/shared/components/signal-card.component.ts": {
+        "lines": { "total": 25, "covered": 15, "skipped": 0, "pct": 60.0 },
+        "functions": { "total": 6, "covered": 3, "skipped": 0, "pct": 50.0 },
+        "statements": { "total": 30, "covered": 18, "skipped": 0, "pct": 60.0 },
+        "branches": { "total": 4, "covered": 2, "skipped": 0, "pct": 50.0 }
+    },
+    "test/fixtures/kitchen-sink-standalone/src/app/shared/components/data-table.component.ts": {
+        "lines": { "total": 18, "covered": 5, "skipped": 0, "pct": 27.78 },
+        "functions": { "total": 4, "covered": 1, "skipped": 0, "pct": 25.0 },
+        "statements": { "total": 22, "covered": 6, "skipped": 0, "pct": 27.27 },
+        "branches": { "total": 2, "covered": 0, "skipped": 0, "pct": 0.0 }
+    },
+    "test/fixtures/kitchen-sink-standalone/src/app/shared/directives/highlight.directive.ts": {
+        "lines": { "total": 10, "covered": 10, "skipped": 0, "pct": 100.0 },
+        "functions": { "total": 3, "covered": 3, "skipped": 0, "pct": 100.0 },
+        "statements": { "total": 12, "covered": 12, "skipped": 0, "pct": 100.0 },
+        "branches": { "total": 2, "covered": 2, "skipped": 0, "pct": 100.0 }
+    },
+    "test/fixtures/kitchen-sink-standalone/src/app/features/dashboard/dashboard.component.ts": {
+        "lines": { "total": 12, "covered": 8, "skipped": 0, "pct": 66.67 },
+        "functions": { "total": 3, "covered": 2, "skipped": 0, "pct": 66.67 },
+        "statements": { "total": 15, "covered": 10, "skipped": 0, "pct": 66.67 },
+        "branches": { "total": 1, "covered": 1, "skipped": 0, "pct": 100.0 }
+    },
+    "test/fixtures/kitchen-sink-standalone/src/app/features/users/user-list.component.ts": {
+        "lines": { "total": 10, "covered": 0, "skipped": 0, "pct": 0.0 },
+        "functions": { "total": 2, "covered": 0, "skipped": 0, "pct": 0.0 },
+        "statements": { "total": 12, "covered": 0, "skipped": 0, "pct": 0.0 },
+        "branches": { "total": 1, "covered": 0, "skipped": 0, "pct": 0.0 }
+    },
+    "test/fixtures/kitchen-sink-standalone/src/app/features/admin/admin-panel.component.ts": {
+        "lines": { "total": 8, "covered": 0, "skipped": 0, "pct": 0.0 },
+        "functions": { "total": 2, "covered": 0, "skipped": 0, "pct": 0.0 },
+        "statements": { "total": 10, "covered": 0, "skipped": 0, "pct": 0.0 },
+        "branches": { "total": 0, "covered": 0, "skipped": 0, "pct": 100.0 }
+    }
+}

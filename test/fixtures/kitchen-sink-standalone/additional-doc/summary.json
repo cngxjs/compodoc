@@ -1,0 +1,34 @@
+[
+    {
+        "title": "Getting Started",
+        "file": "getting-started.md"
+    },
+    {
+        "title": "Guides",
+        "file": "guides/overview.md",
+        "children": [
+            {
+                "title": "Signals & Reactivity",
+                "file": "guides/signals.md"
+            },
+            {
+                "title": "Functional Providers",
+                "file": "guides/providers.md"
+            },
+            {
+                "title": "Advanced",
+                "file": "guides/advanced/overview.md",
+                "children": [
+                    {
+                        "title": "Migration from NgModules",
+                        "file": "guides/advanced/migration.md"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "title": "API Reference",
+        "file": "api/api-reference.md"
+    }
+]

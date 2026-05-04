@@ -1,0 +1,57 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+.DS_Store
+
+# Dependency directories
+node_modules
+
+#ide folders
+.idea/
+.vscode/
+
+# Internal design docs (local only)
+.internal/
+
+# Optional npm cache directory
+.npm
+
+# Test js files
+test/dist/
+documentation
+doc
+
+# Coverage directory used by tools like istanbul
+coverage
+.nyc_output
+coverage.*
+
+.dockerignore
+
+# Build-output
+dist/
+
+# Compiled TypeScript files in src/ (keep legitimate JS assets)
+src/**/*.js
+!src/resources/**/*.js
+!src/playground-demo/**/*.js
+
+# esbuild code-split chunks (build artifacts with hashed names)
+src/resources/js/chunks/
+
+# Miscellaneous
+tmp/
+.tmp/
+.tmp*
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+.angular/
+
+# Playwright MCP snapshots
+.playwright-mcp/
+/test/fixtures/cngx-library/
+/test/fixtures/rsg-module-library/

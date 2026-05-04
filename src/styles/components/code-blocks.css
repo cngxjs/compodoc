@@ -1,0 +1,554 @@
+/* ----------------------------------------------------------------
+   Code blocks — Source viewer (Type A) + Snippets (Type B)
+   See .internal/code-block-experience-design.md
+   ---------------------------------------------------------------- */
+
+/* --- Shared base: all pre/code elements --- */
+
+pre,
+pre.shiki {
+    @apply relative overflow-x-auto;
+    padding: var(--spacing-cdx-md);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+    background: var(--color-cdx-bg-code-block);
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-cdx-scrollbar) transparent;
+}
+
+/* Snippet Shiki blocks (everywhere except Source Viewer):
+   lighter, borderless, more breathing room. */
+:not(.cdx-source-viewer-body) > pre.shiki {
+    border: 1px solid var(--color-cdx-snippet-border) !important;
+    background-color: var(--color-cdx-snippet-bg) !important;
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
+    margin: var(--spacing-cdx-lg) 0;
+    border-radius: var(--color-cdx-snippet-radius, var(--radius-cdx-md));
+}
+
+.dark :not(.cdx-source-viewer-body) > pre.shiki {
+    background-color: var(--color-cdx-snippet-bg) !important;
+    border-color: var(--color-cdx-snippet-border) !important;
+}
+
+code.cdx-shiki-inline {
+    display: inline-block !important;
+    background: var(--color-cdx-snippet-bg) !important;
+    border: 1px solid var(--color-cdx-snippet-border);
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md) !important;
+    margin: var(--spacing-cdx-lg) 0 !important;
+    border-radius: var(--color-cdx-snippet-radius, var(--radius-cdx-md));
+    font-size: 0.8125rem;
+    line-height: inherit;
+    color: inherit;
+}
+
+.dark code.cdx-shiki-inline {
+    background: var(--color-cdx-snippet-bg) !important;
+    border-color: var(--color-cdx-snippet-border);
+}
+
+pre::-webkit-scrollbar {
+    height: 6px;
+}
+
+pre::-webkit-scrollbar-thumb {
+    background: var(--color-cdx-scrollbar);
+    border-radius: var(--radius-cdx-sm);
+}
+
+code {
+    @apply bg-transparent;
+    padding: 2px 0;
+    /* Monospace glyphs render visually larger than sans-serif at the same
+       em size — drop inline <code> to 0.875em so it sits flush with the
+       surrounding body text. <pre> code is reset below so Shiki keeps its
+       own size. */
+    font-size: 0.875em;
+    color: var(--color-cdx-code-inline);
+}
+
+pre code {
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+}
+
+pre.line-numbers code {
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* dark mode !important overrides Shiki's inline color/bg */
+.shiki span {
+    background-color: transparent;
+}
+
+.dark .shiki,
+.dark .shiki span {
+    /* Global dark swap disabled — scoped rules below handle it per context */
+}
+
+/* Snippet dark-mode: swap Shiki light colors to dark variants.
+   Source Viewer handles this via its own scoped rules below. */
+.dark :not(.cdx-source-viewer-body) > .shiki span {
+    color: var(--shiki-dark) !important;
+}
+.dark code.cdx-shiki-inline span {
+    color: var(--shiki-dark) !important;
+}
+
+.dark .shiki {
+    /* background handled per-context, not globally */
+}
+
+/* --- Source viewer (Type A) ---
+ *
+ * Rendered by src/templates/blocks/SourceViewer.tsx. Wraps every
+ * Source / Template / Styles tab body in a cohesive "editor panel"
+ * so the Source tabs look like a VS Code window rather than a
+ * stand-alone <pre>.
+ *
+ * Structure:
+ *   .cdx-source-viewer
+ *     +- .cdx-source-viewer-header  (sticky tab-title bar)
+ *     |   +- .cdx-source-viewer-icon   (file-type icon)
+ *     |   +- .cdx-source-viewer-path   (file path, breadcrumb-like)
+ *     |   +- .cdx-source-scope          (client-injected scope)
+ *     |   +- .cdx-source-viewer-copy    (integrated copy button)
+ *     +- .cdx-source-viewer-body   (<pre> Shiki output, scrollable)
+ *
+ * The viewer has its OWN scroll context — `max-height` + `overflow-y`
+ * — so the sticky header pins to the TOP of the viewer panel,
+ * independent of the outer .content scroll container.
+ */
+.cdx-source-viewer {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-lg);
+    box-shadow: var(--shadow-cdx-sm);
+}
+
+.cdx-source-viewer .line {
+    scroll-margin-top: 120px;
+}
+
+.cdx-source-viewer-stick-sentinel {
+    height: 1px;
+    margin-top: -1px;
+    pointer-events: none;
+}
+
+.cdx-source-viewer-header {
+    @apply sticky z-20 flex items-center;
+    top: -33px;
+    gap: var(--spacing-cdx-sm);
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
+    background: var(--color-cdx-bg-alt);
+    border-bottom: 1px solid var(--color-cdx-border);
+    border-top-left-radius: var(--radius-cdx-lg);
+    border-top-right-radius: var(--radius-cdx-lg);
+    font-family: var(--font-code);
+    font-size: 12px;
+    color: var(--color-cdx-text-secondary);
+    min-height: 34px;
+    flex-shrink: 0;
+    transition: border-radius 150ms ease;
+}
+
+.cdx-source-viewer-header.is-stuck {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.dark .cdx-source-viewer-header {
+    background: var(--color-cdx-code-dark-surface);
+    border-bottom-color: hsl(225 16% 22%);
+}
+
+.cdx-source-viewer-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--color-cdx-primary);
+}
+
+.cdx-source-viewer-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.cdx-source-viewer--typescript .cdx-source-viewer-icon {
+    color: hsl(211 60% 48%);
+}
+
+.cdx-source-viewer--html .cdx-source-viewer-icon {
+    color: hsl(14 78% 52%);
+}
+
+.cdx-source-viewer--scss .cdx-source-viewer-icon {
+    color: hsl(330 68% 54%);
+}
+
+.cdx-source-viewer-path {
+    color: var(--color-cdx-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+}
+
+.cdx-source-scope {
+    color: var(--color-cdx-text-muted);
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cdx-source-scope:not(:empty)::before {
+    content: "\203A";
+    margin: 0 var(--spacing-cdx-sm);
+    color: var(--color-cdx-text-muted);
+    opacity: 0.5;
+}
+
+.cdx-source-scope-sep {
+    margin: 0 var(--spacing-cdx-xs);
+    opacity: 0.4;
+}
+
+.cdx-source-scope-segment {
+    cursor: pointer;
+}
+
+.cdx-source-scope-segment:hover {
+    color: var(--color-cdx-primary);
+    text-decoration: underline;
+}
+
+.cdx-source-scope:empty {
+    flex: 1 1 auto;
+}
+
+.cdx-source-viewer-copy {
+    @apply inline-flex items-center justify-center cursor-pointer;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-cdx-sm);
+    background: transparent;
+    color: var(--color-cdx-text-muted);
+    flex-shrink: 0;
+    transition: var(--cdx-transition-fast);
+}
+
+.cdx-source-viewer-copy:hover {
+    background: var(--color-cdx-bg-elevated);
+    border-color: var(--color-cdx-border);
+    color: var(--color-cdx-text);
+}
+
+.cdx-source-viewer-copy--copied {
+    background: color-mix(in srgb, var(--color-cdx-primary) 12%, transparent);
+    border-color: color-mix(in srgb, var(--color-cdx-primary) 30%, transparent);
+    color: var(--color-cdx-primary);
+}
+
+.cdx-source-viewer-copy .cdx-icon {
+    margin-right: 0;
+}
+
+/* Sticky scroll stack */
+.cdx-source-viewer-sticky-stack {
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 10px;
+    z-index: 19;
+    background: var(--color-cdx-bg-alt);
+    border-bottom: 1px solid var(--color-cdx-border);
+    font-family: var(--font-code);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 4px var(--spacing-cdx-md);
+}
+
+.dark .cdx-source-viewer-sticky-stack {
+    background: var(--color-cdx-code-dark-surface);
+}
+
+.cdx-source-viewer-sticky-stack:not(:empty) {
+    box-shadow: 0 4px 8px -4px hsl(0 0% 0% / 0.15);
+}
+
+.dark .cdx-source-viewer-sticky-stack:not(:empty) {
+    box-shadow: 0 4px 8px -4px hsl(0 0% 0% / 0.35);
+}
+
+.cdx-source-viewer-sticky-stack:empty {
+    display: none;
+}
+
+.cdx-source-viewer-sticky-stack > .line {
+    display: block;
+    white-space: pre;
+    padding: 2px 8px 2px 0;
+    background: var(--color-cdx-bg-alt);
+    cursor: pointer;
+    transition: background-color 100ms ease;
+}
+
+.dark .cdx-source-viewer-sticky-stack > .line {
+    background: var(--color-cdx-code-dark-surface);
+}
+
+.cdx-source-viewer-sticky-stack > .line:hover {
+    background: var(--color-cdx-line-hover);
+}
+
+.dark .cdx-source-viewer-sticky-stack > .line:hover {
+    background: var(--color-cdx-line-hover);
+}
+
+/* Source viewer body */
+.cdx-source-viewer-body {
+    overflow-x: auto;
+    border-bottom-left-radius: var(--radius-cdx-lg);
+    border-bottom-right-radius: var(--radius-cdx-lg);
+}
+
+.cdx-source-viewer-body pre {
+    border: none !important;
+    margin: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-left-radius: var(--radius-cdx-lg) !important;
+    border-bottom-right-radius: var(--radius-cdx-lg) !important;
+}
+
+.dark .cdx-source-viewer-body pre {
+    background-color: var(--shiki-dark-bg) !important;
+    color: var(--shiki-dark) !important;
+}
+.dark .cdx-source-viewer-body pre span {
+    color: var(--shiki-dark) !important;
+}
+
+.cdx-line-number {
+    display: inline-block;
+    width: 3.5ch;
+    margin-right: 1ch;
+    text-align: right;
+    color: var(--color-cdx-line-number);
+    user-select: none;
+    cursor: pointer;
+    font-variant-numeric: tabular-nums;
+    transition: color var(--cdx-transition-fast);
+}
+
+.cdx-line-number:hover {
+    color: var(--color-cdx-text-secondary);
+}
+
+.cdx-source-viewer .line:hover {
+    background: var(--color-cdx-line-hover);
+    transition: background 80ms ease;
+}
+
+.dark .cdx-source-viewer .line:hover {
+    background: var(--color-cdx-line-hover);
+}
+
+.cdx-line-highlight {
+    background: var(--color-cdx-line-highlight) !important;
+}
+
+.dark .cdx-line-highlight {
+    background: var(--color-cdx-line-highlight) !important;
+    outline: 1px solid color-mix(in srgb, var(--color-cdx-line-highlight) 200%, transparent);
+}
+
+.cdx-line-flash {
+    animation: cdx-line-pulse 0.5s ease;
+}
+
+@keyframes cdx-line-pulse {
+    0% {
+        background: var(--color-cdx-line-highlight-flash);
+    }
+    100% {
+        background: transparent;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-line-flash {
+        animation: none;
+        background: color-mix(in srgb, var(--color-cdx-line-highlight) 50%, transparent);
+    }
+}
+
+/* --- Fold regions (collapsed imports / decorator metadata) --- */
+
+.cdx-fold-region {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.cdx-fold-summary {
+    @apply cursor-pointer select-none;
+    display: block;
+    padding: 2px 0 2px 4.5ch;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--color-cdx-text-muted);
+    opacity: 0.7;
+    list-style: none;
+    transition: opacity var(--cdx-transition-fast);
+}
+
+.cdx-fold-summary:hover {
+    opacity: 1;
+}
+
+.cdx-fold-summary::before {
+    content: "\25B6";
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 9px;
+    transition: transform var(--cdx-transition-fast);
+}
+
+.cdx-fold-region[open] > .cdx-fold-summary::before {
+    transform: rotate(90deg);
+}
+
+.cdx-fold-summary::-webkit-details-marker {
+    display: none;
+}
+
+/* --- Copy button --- */
+
+.cdx-code-copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: var(--spacing-cdx-xs) var(--spacing-cdx-sm);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
+    background: var(--color-cdx-bg-elevated);
+    color: var(--color-cdx-text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition:
+        opacity var(--cdx-transition-fast),
+        color var(--cdx-transition-fast),
+        background var(--cdx-transition-fast);
+}
+
+pre:hover .cdx-code-copy,
+.cdx-code-copy:focus-visible {
+    opacity: 1;
+}
+
+.cdx-code-copy:hover {
+    color: var(--color-cdx-text);
+    background: var(--color-cdx-bg-alt);
+}
+
+.cdx-code-copy.cdx-code-copy--copied {
+    color: var(--color-cdx-copy-success);
+    transform: scale(1);
+    animation: cdx-copy-flash 300ms ease;
+}
+
+@keyframes cdx-copy-flash {
+    from {
+        transform: scale(0.8);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+/* --- Snippet (Type B) --- */
+
+.cdx-code-snippet {
+    @apply relative;
+}
+
+.cdx-code-snippet pre {
+    padding: 0.75rem;
+}
+
+.cdx-code-lang-chip {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: var(--spacing-cdx-xs) var(--spacing-cdx-sm);
+    font-size: 10px;
+    font-family: var(--font-code);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-cdx-lang-chip);
+    background: var(--color-cdx-lang-chip-bg);
+    border-radius: 0 var(--radius-cdx-md) 0 var(--radius-cdx-sm);
+    pointer-events: none;
+    user-select: none;
+}
+
+pre:hover > .cdx-code-lang-chip {
+    opacity: 0;
+    transition: opacity var(--cdx-transition-fast);
+}
+
+.cdx-code-expandable {
+    @apply relative overflow-hidden;
+    max-height: 240px;
+}
+
+.cdx-code-expand-btn {
+    @apply absolute w-full text-center cursor-pointer;
+    bottom: 0;
+    left: 0;
+    padding: var(--spacing-cdx-sm);
+    font-size: 12px;
+    color: var(--color-cdx-primary);
+    background: transparent;
+    border: none;
+    z-index: 1;
+}
+
+.cdx-code-expand-btn:hover {
+    text-decoration: underline;
+}
+
+.cdx-code-expanded {
+    max-height: none;
+}
+
+.cdx-code-expanded .cdx-code-expand-btn {
+    display: none;
+}
+
+/* --- Selection color (entity-themed) --- */
+
+pre ::selection {
+    background: var(--color-cdx-primary-subtle, hsl(222 68% 52% / 0.2));
+}

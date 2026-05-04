@@ -1,0 +1,132 @@
+import Html from '@kitajs/html';
+import { EmptyState } from '../components/EmptyState';
+import { EmptyIconBook, EmptyIconFile } from '../components/EmptyStateIcons';
+import { extractReadmeHeadings, isInitialTab, isReadmeEmpty, isTabEnabled, t } from '../helpers';
+import { SourceViewer } from './SourceViewer';
+
+type Tab = {
+    readonly id: string;
+    readonly href: string;
+    readonly label: string;
+    readonly 'data-link'?: string;
+};
+
+type EntityTabsProps = {
+    readonly navTabs: Tab[];
+    readonly infoContent: string;
+    readonly apiContent?: string;
+    readonly readme?: string;
+    readonly sourceCode?: string;
+    readonly filePath?: string;
+    readonly exampleUrls?: string[];
+};
+
+/** Render the tab bar + tab panels for entity detail pages. */
+export const EntityTabs = (props: EntityTabsProps): string =>
+    (
+        <>
+            <ul class="cdx-tab-bar">
+                {props.navTabs.map((tab, i) => (
+                    <li role="presentation">
+                        <a
+                            href={tab.href}
+                            class={i === 0 ? 'active' : ''}
+                            role="tab"
+                            id={`${tab.id}-tab`}
+                            aria-selected={i === 0 ? 'true' : 'false'}
+                            aria-controls={tab.id}
+                            tabindex={i === 0 ? '0' : '-1'}
+                            data-cdx-toggle="tab"
+                            data-link={tab['data-link']}
+                        >
+                            {t(tab.label)}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+
+            <div>
+                {isTabEnabled(props.navTabs, 'info') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(props.navTabs, 'info') ? ' active' : ''}`}
+                        id="info"
+                        role="tabpanel"
+                        aria-labelledby="info-tab"
+                    >
+                        {props.infoContent}
+                    </div>
+                )}
+
+                {isTabEnabled(props.navTabs, 'api') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(props.navTabs, 'api') ? ' active' : ''}`}
+                        id="api"
+                        role="tabpanel"
+                        aria-labelledby="api-tab"
+                    >
+                        {props.apiContent ?? ''}
+                    </div>
+                )}
+
+                {isTabEnabled(props.navTabs, 'readme') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(props.navTabs, 'readme') ? ' active' : ''}`}
+                        id="readme"
+                        role="tabpanel"
+                        aria-labelledby="readme-tab"
+                    >
+                        {isReadmeEmpty(props.readme) ? (
+                            <>
+                                {extractReadmeHeadings(props.readme)}
+                                {EmptyState({
+                                    icon: EmptyIconBook(),
+                                    title: t('empty-readme-title'),
+                                    description: t('empty-readme-desc'),
+                                    variant: 'full'
+                                })}
+                            </>
+                        ) : (
+                            <div class="cdx-readme">{props.readme}</div>
+                        )}
+                    </div>
+                )}
+
+                {isTabEnabled(props.navTabs, 'source') && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(props.navTabs, 'source') ? ' active' : ''} cdx-tab-panel--source`}
+                        id="source"
+                        role="tabpanel"
+                        aria-labelledby="source-tab"
+                    >
+                        {props.sourceCode
+                            ? SourceViewer({
+                                  filePath: props.filePath,
+                                  sourceCode: props.sourceCode,
+                                  lang: 'typescript'
+                              })
+                            : EmptyState({
+                                  icon: EmptyIconFile(),
+                                  title: t('empty-source-title'),
+                                  description: t('empty-source-desc'),
+                                  variant: 'full'
+                              })}
+                    </div>
+                )}
+
+                {isTabEnabled(props.navTabs, 'example') && props.exampleUrls && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(props.navTabs, 'example') ? ' active' : ''}`}
+                        id="example"
+                        role="tabpanel"
+                        aria-labelledby="example-tab"
+                    >
+                        {props.exampleUrls.map(url => (
+                            <iframe class="cdx-example-container" src={url} title="Example preview">
+                                <p>{t('no-iframes')}</p>
+                            </iframe>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </>
+    ) as string;

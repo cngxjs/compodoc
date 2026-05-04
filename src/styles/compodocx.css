@@ -1,0 +1,246 @@
+@import "tailwindcss";
+@import "./components/layout.css";
+@import "./components/buttons.css";
+@import "./components/icons.css";
+@import "./components/breadcrumb.css";
+@import "./components/topbar.css";
+@import "./components/sidebar.css";
+@import "./components/toc.css";
+@import "./components/command-palette.css";
+@import "./components/badges.css";
+@import "./components/app-config.css";
+@import "./components/tab-bar.css";
+@import "./components/entity-hero.css";
+@import "./components/content-sections.css";
+@import "./components/member-card.css";
+@import "./components/code-blocks.css";
+@import "./components/empty-state.css";
+@import "./components/coverage.css";
+@import "./components/overview.css";
+@import "./components/modules.css";
+@import "./components/graphs.css";
+@import "./components/keyboard.css";
+@import "./components/tables.css";
+@import "./components/theming.css";
+@import "./components/unit-test.css";
+@import "./components/examples.css";
+@import "./components/external-links.css";
+@import "./components/relationships.css";
+@import "./components/readme.css";
+@import "./components/legacy.css";
+
+@source "../templates/**/*.hbs";
+@source "../templates/**/*.tsx";
+
+@theme {
+    /* --- Surface hierarchy (pure neutral greys — true "no opinion" default).
+     * bg/bg-alt/elevated are staggered 4pp apart so white cards stay
+     * visibly lifted against the body background. */
+    --color-cdx-bg: hsl(0 0% 96%);
+    --color-cdx-bg-alt: hsl(0 0% 93%);
+    --color-cdx-bg-elevated: hsl(0 0% 100%);
+    --color-cdx-bg-code: hsl(0 0% 93%);
+    --color-cdx-bg-code-block: hsl(0 0% 14%);
+
+    /* --- Text hierarchy --- */
+    --color-cdx-text: hsl(0 0% 12%);
+    --color-cdx-text-secondary: hsl(0 0% 40%);
+    --color-cdx-text-muted: hsl(0 0% 48%);
+    --color-cdx-text-inverse: hsl(0 0% 96%);
+
+    /* --- Primary (Slate Noir — deep ink, not a color accent) --- */
+    --color-cdx-primary: hsl(0 0% 15%);
+    --color-cdx-primary-hover: hsl(0 0% 30%);
+    --color-cdx-primary-subtle: hsl(0 0% 84%);
+
+    /* --- Entity type accents --- */
+    --color-cdx-entity-component: #0e8578; /* teal-700 */
+    --color-cdx-entity-service: #a56a07; /* amber-800 */
+    --color-cdx-entity-directive: #7c3aed; /* violet */
+    --color-cdx-entity-pipe: #e2177b; /* pink-700 */
+    --color-cdx-entity-module: #1e6ff5; /* blue-700 */
+    --color-cdx-entity-class: #05875f; /* emerald-700 */
+    --color-cdx-entity-interface: #475569; /* slate-600 — distinct from teal/emerald/cyan family */
+    --color-cdx-entity-guard: #eb1515; /* red-700 */
+    --color-cdx-entity-interceptor: #ba25cd; /* fuchsia */
+    --color-cdx-entity-function: #52840b; /* lime-800 */
+    --color-cdx-entity-variable: #617087; /* slate */
+    --color-cdx-entity-typealias: #6164f1; /* indigo */
+    --color-cdx-entity-enum: #c2410c; /* dark orange */
+
+    /* --- Feedback --- */
+    --color-cdx-deprecated: hsl(38 92% 32.5%);
+    --color-cdx-danger: hsl(0 72% 51%);
+
+    /* --- Borders (neutral greys — contrast tuned for bg at 96%) --- */
+    --color-cdx-border: hsl(0 0% 86%);
+    --color-cdx-border-strong: hsl(0 0% 60%);
+    --color-cdx-border-focus: hsl(0 0% 15%);
+
+    /* --- Typography --- */
+    --font-heading: "Instrument Sans", system-ui, sans-serif;
+    --font-body: "Source Sans 3", system-ui, sans-serif;
+    --font-code:
+        ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+
+    /* Tailwind built-in font aliases — override these in custom themes too */
+    --font-sans: "Source Sans 3", system-ui, sans-serif;
+    --font-mono:
+        ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+
+    /* --- Shadows (neutral, no blue tint — slightly stronger so cards
+     * lift against the subtly-dimmed body). */
+    --shadow-cdx-sm: 0 1px 3px hsl(0 0% 0% / 0.08);
+    --shadow-cdx-md: 0 4px 14px hsl(0 0% 0% / 0.1);
+    --shadow-cdx-lg: 0 16px 36px hsl(0 0% 0% / 0.14);
+
+    /* --- Layout --- */
+    --spacing-cdx-sidebar: 320px;
+
+    /* --- Density-aware spacing (override --cdx-density to scale) ---
+     * 1.0 = default, 0.75 = compact, 1.25 = spacious
+     * Themes override the computed values directly, not the multiplier.
+     */
+    --cdx-density: 1;
+    --spacing-cdx-xs: 4px;
+    --spacing-cdx-sm: 8px;
+    --spacing-cdx-md: 12px;
+    --spacing-cdx-lg: 16px;
+    --spacing-cdx-xl: 20px;
+    --spacing-cdx-2xl: 24px;
+
+    /* --- Radii --- */
+    --radius-cdx-sm: 4px;
+    --radius-cdx-md: 8px;
+    --radius-cdx-lg: 12px;
+
+    /* Tailwind built-in radius aliases — override these in custom themes too */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-2xl: 12px;
+
+    /* --- Code blocks (snippet + source viewer) --- */
+    --color-cdx-snippet-bg: hsl(0 0% 93%);
+    --color-cdx-snippet-border: transparent;
+    --color-cdx-snippet-radius: var(--radius-cdx-md);
+    --color-cdx-code-inline: #c2185b;
+    --color-cdx-code-dark-surface: hsl(0 0% 14%);
+    --color-cdx-scrollbar: hsl(0 0% 50% / 0.4);
+    --color-cdx-line-number: hsl(0 0% 50% / 0.5);
+    --color-cdx-line-hover: hsl(0 0% 0% / 0.06);
+    --color-cdx-line-highlight: hsl(48 96% 53% / 0.25);
+    --color-cdx-line-highlight-flash: hsl(48 96% 53% / 0.3);
+    --color-cdx-copy-success: hsl(142 50% 40%);
+    --color-cdx-lang-chip: hsl(0 0% 60%);
+    --color-cdx-lang-chip-bg: hsl(0 0% 50% / 0.1);
+
+    /* --- Status (coverage, tests) --- */
+    --color-cdx-status-pass: #16a34a;
+    --color-cdx-status-fail: #ef4444;
+    --color-cdx-status-warning: #ca8a04;
+
+    /* --- Overlay --- */
+    --color-cdx-overlay: hsl(0 0% 14% / 0.4);
+
+    /* --- Graphs (dependency graph, DOM tree) --- */
+    --color-cdx-graph-bg: var(--color-cdx-bg-alt);
+    --color-cdx-graph-border: transparent;
+    --color-cdx-graph-border-width: 0;
+    --color-cdx-graph-radius: var(--radius-cdx-md);
+
+    /* --- Transitions --- */
+    --cdx-transition-fast: 120ms ease;
+    --cdx-transition-base: 200ms ease;
+}
+
+/* --- Dark theme token overrides (pure neutral greys) --- */
+.dark {
+    --color-cdx-bg: hsl(0 0% 11%);
+    --color-cdx-bg-alt: hsl(0 0% 14%);
+    --color-cdx-bg-elevated: hsl(0 0% 17%);
+    --color-cdx-bg-code: hsl(0 0% 15%);
+    --color-cdx-bg-code-block: hsl(0 0% 8%);
+
+    --color-cdx-text: hsl(0 0% 92%);
+    --color-cdx-text-secondary: hsl(0 0% 64%);
+    --color-cdx-text-muted: hsl(0 0% 54%);
+    --color-cdx-text-inverse: hsl(0 0% 12%);
+
+    --color-cdx-primary: hsl(0 0% 90%);
+    --color-cdx-primary-hover: hsl(0 0% 100%);
+    --color-cdx-primary-subtle: hsl(0 0% 26%);
+
+    --color-cdx-entity-component: #2dd4bf; /* teal light */
+    --color-cdx-entity-service: #fbbf24; /* amber light */
+    --color-cdx-entity-directive: #a78bfa; /* violet light */
+    --color-cdx-entity-pipe: #f472b6; /* pink light */
+    --color-cdx-entity-module: #60a5fa; /* blue light */
+    --color-cdx-entity-class: #34d399; /* emerald light */
+    --color-cdx-entity-interface: #94a3b8; /* slate-400 — distinct in dark mode */
+    --color-cdx-entity-guard: #f87171; /* red light */
+    --color-cdx-entity-interceptor: #e879f9; /* fuchsia light */
+    --color-cdx-entity-function: #84cc16; /* lime light */
+    --color-cdx-entity-variable: #94a3b8; /* slate light */
+    --color-cdx-entity-typealias: #818cf8; /* indigo light */
+    --color-cdx-entity-enum: #fb923c; /* orange light */
+
+    --color-cdx-deprecated: hsl(38 80% 65%);
+    --color-cdx-danger: hsl(0 65% 65%);
+
+    --color-cdx-border: hsl(0 0% 22%);
+    --color-cdx-border-strong: hsl(0 0% 42%);
+    --color-cdx-border-focus: hsl(0 0% 90%);
+
+    --shadow-cdx-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
+    --shadow-cdx-md: 0 4px 12px hsl(0 0% 0% / 0.3);
+    --shadow-cdx-lg: 0 12px 32px hsl(0 0% 0% / 0.4);
+
+    --color-cdx-status-pass: #4ade80;
+    --color-cdx-status-fail: #f87171;
+    --color-cdx-status-warning: #facc15;
+    --color-cdx-overlay: hsl(0 0% 10% / 0.6);
+
+    --color-cdx-snippet-bg: hsl(0 0% 16%);
+    --color-cdx-snippet-border: transparent;
+    --color-cdx-code-inline: #e09393;
+    --color-cdx-code-dark-surface: hsl(0 0% 14%);
+    --color-cdx-scrollbar: hsl(0 0% 50% / 0.5);
+    --color-cdx-line-number: hsl(0 0% 50% / 0.4);
+    --color-cdx-line-hover: hsl(0 0% 90% / 0.06);
+    --color-cdx-line-highlight: hsl(48 90% 60% / 0.15);
+    --color-cdx-line-highlight-flash: hsl(48 90% 60% / 0.2);
+    --color-cdx-copy-success: hsl(142 50% 60%);
+    --color-cdx-lang-chip: hsl(0 0% 55%);
+    --color-cdx-lang-chip-bg: hsl(0 0% 50% / 0.15);
+}
+
+/* Global inline <code> + <a> fallback colours.
+   Component-specific rules (sidebar, topbar, menu, hero, badges, member
+   cards, etc.) have their own higher-specificity colour rules and override
+   these where needed. Scoped colour tokens instead of a global fallback
+   would duplicate the colour across every content component, so we take
+   the same approach as the existing .dark overrides and just give the
+   base elements a default that matches the design system. */
+a {
+    color: var(--color-cdx-primary);
+}
+
+/* Global hover underline for all anchors. Sidebar menu and tab bar
+   opt out below — their own hover treatment (color shift + bg tint)
+   replaces the underline. */
+a:hover {
+    text-decoration: underline;
+}
+
+.menu a:hover,
+.cdx-tab-bar a:hover {
+    text-decoration: none;
+}
+
+.dark code {
+    color: var(--color-cdx-code-inline);
+}
+.dark a {
+    color: var(--color-cdx-primary);
+}

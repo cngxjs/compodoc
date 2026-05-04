@@ -1,0 +1,711 @@
+.cdx-entity-hero-file {
+    @apply flex items-center gap-1.5;
+    font-family: var(--font-code);
+    font-size: 0.8rem;
+    color: var(--color-cdx-text-muted);
+    margin-top: var(--spacing-cdx-xs);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cdx-entity-hero-file--breadcrumb {
+    margin-bottom: 0.25rem;
+}
+
+.cdx-entity-hero-file svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    opacity: 0.6;
+}
+
+@container (max-width: 500px) {
+    .cdx-entity-hero-file {
+        display: none;
+    }
+}
+
+/* Legacy pre/code import — keep for older rendered output */
+.cdx-import-statement {
+    background: var(--color-cdx-bg-alt);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+    padding: 0.625rem 1rem;
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    margin: 0;
+    overflow-x: auto;
+}
+
+.cdx-import-statement code {
+    color: var(--color-cdx-text);
+    background: transparent;
+    padding: 0;
+    border: none;
+    font-size: inherit;
+}
+
+/* Inline token-based import line */
+.cdx-import-line {
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-cdx-text);
+    margin: 0;
+}
+
+.cdx-import-kw {
+    color: hsl(270 50% 55%);
+    font-weight: 500;
+}
+
+.cdx-import-name {
+    color: var(--color-cdx-primary);
+    font-weight: 600;
+}
+
+.cdx-import-str {
+    color: hsl(170 45% 40%);
+}
+
+.dark .cdx-import-kw {
+    color: hsl(270 60% 72%);
+}
+
+.dark .cdx-import-str {
+    color: hsl(170 50% 60%);
+}
+
+.cdx-deprecation-banner {
+    /* border: 1px solid
+        color-mix(in srgb, var(--color-cdx-danger) 35%, var(--color-cdx-border)); */
+    border-left: 4px solid var(--color-cdx-danger);
+    background: color-mix(
+        in srgb,
+        var(--color-cdx-danger) 8%,
+        var(--color-cdx-bg-elevated)
+    );
+    color: var(--color-cdx-text);
+    padding: var(--spacing-cdx-md) var(--spacing-cdx-lg);
+    /* border-radius: var(--radius-cdx-md); */
+    font-size: 0.875rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.55;
+}
+
+.cdx-deprecation-banner strong {
+    color: var(--color-cdx-danger);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+    margin-right: var(--spacing-cdx-sm);
+}
+
+.dark .cdx-deprecation-banner {
+    background: color-mix(
+        in srgb,
+        var(--color-cdx-danger) 12%,
+        var(--color-cdx-bg-alt)
+    );
+}
+.cdx-prose {
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: var(--color-cdx-text);
+    /* max-width: 72ch; */
+}
+
+.cdx-prose > p {
+    margin-bottom: 1rem;
+}
+
+.cdx-prose > p:last-child {
+    margin-bottom: 0;
+}
+
+.cdx-prose a {
+    color: var(--color-cdx-primary);
+}
+
+.cdx-prose a:hover {
+    text-decoration: underline;
+}
+
+.cdx-section-heading {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-cdx-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 3rem;
+    margin-bottom: 1.25rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-cdx-border);
+}
+
+.cdx-content-section:first-child > .cdx-section-heading {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+.cdx-entity-hero + .cdx-content-section > .cdx-section-heading {
+    margin-top: var(--spacing-cdx-lg);
+    padding-top: 0;
+    border-top: none;
+}
+
+.cdx-metadata-card {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    padding: 0;
+    margin: 0;
+}
+
+.cdx-metadata-row {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    gap: 0 var(--spacing-cdx-lg);
+    padding: var(--spacing-cdx-sm) 0;
+    align-items: baseline;
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--color-cdx-border) 50%, transparent);
+}
+
+.cdx-metadata-row:last-child {
+    border-bottom: none;
+}
+
+.cdx-metadata-label {
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-cdx-text-muted);
+    margin: 0;
+}
+
+.cdx-metadata-value {
+    font-size: 0.875rem;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-cdx-xs) var(--spacing-cdx-sm);
+    align-items: baseline;
+}
+
+.cdx-metadata-value code {
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+}
+
+/* ── Entity chips inside metadata values ──────────────────
+ * Rendered by MetadataChipsRow — each chip is a clickable entity
+ * reference (Module, Component, Directive, ...) rendered in a
+ * code-block style: dark bg, monospace, entity-coloured text.
+ * Matches the "Features" chip style on the AppConfig provider cards.
+ */
+
+.cdx-metadata-value .cdx-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    align-items: center;
+}
+
+.cdx-chip {
+    --cdx-chip-color: var(--color-cdx-text-secondary);
+
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1875rem 0.5rem;
+    border-radius: var(--radius-cdx-sm);
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid color-mix(in srgb, var(--cdx-chip-color) 28%, transparent);
+    color: var(--cdx-chip-color);
+    font-size: 0.75rem;
+    font-family: var(--font-code);
+    font-weight: 500;
+    text-decoration: none;
+    line-height: 1.4;
+    white-space: nowrap;
+    transition:
+        background 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease;
+}
+
+a.cdx-chip:hover {
+    background: color-mix(
+        in srgb,
+        var(--cdx-chip-color) 10%,
+        var(--color-cdx-bg-elevated)
+    );
+    border-color: var(--cdx-chip-color);
+    color: var(--cdx-chip-color);
+    text-decoration: none;
+}
+
+.cdx-chip-label {
+    letter-spacing: 0;
+}
+
+/* Icons are no longer used in the code-block style — hide any leftover
+   icon spans if they land in the HTML so older rendered output doesn't
+   break the layout. */
+.cdx-chip-icon {
+    display: none;
+}
+
+/* Per-entity colour tokens */
+.cdx-chip--component {
+    --cdx-chip-color: var(--color-cdx-entity-component);
+}
+.cdx-chip--directive {
+    --cdx-chip-color: var(--color-cdx-entity-directive);
+}
+.cdx-chip--pipe {
+    --cdx-chip-color: var(--color-cdx-entity-pipe);
+}
+.cdx-chip--module {
+    --cdx-chip-color: var(--color-cdx-entity-module);
+}
+.cdx-chip--class {
+    --cdx-chip-color: var(--color-cdx-entity-class);
+}
+.cdx-chip--interface {
+    --cdx-chip-color: var(--color-cdx-entity-interface);
+}
+.cdx-chip--guard {
+    --cdx-chip-color: var(--color-cdx-entity-guard);
+}
+.cdx-chip--interceptor {
+    --cdx-chip-color: var(--color-cdx-entity-interceptor);
+}
+.cdx-chip--injectable,
+.cdx-chip--service {
+    --cdx-chip-color: var(--color-cdx-entity-service);
+}
+.cdx-chip--miscellaneous {
+    --cdx-chip-color: var(--color-cdx-entity-function);
+}
+.cdx-chip--entity {
+    --cdx-chip-color: var(--color-cdx-entity-component);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-chip {
+        transition: none;
+    }
+}
+
+/* ── Host directives (object literal style) ──────────────
+ * Rendered by MetadataHostDirectivesRow — each host directive is a
+ * TypeScript object literal printed in monospace that mirrors the
+ * original `@Component({ hostDirectives: [...] })` source. Only the
+ * directive identifier is a clickable link.
+ */
+
+.cdx-host-dir-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    align-items: stretch;
+}
+
+.cdx-host-dir-object {
+    white-space: pre;
+    color: var(--color-cdx-text);
+}
+
+.cdx-host-dir-punct {
+    color: var(--color-cdx-text-muted);
+}
+
+.cdx-host-dir-key {
+    color: var(--color-cdx-text-secondary);
+    font-weight: 500;
+}
+
+.cdx-host-dir-name {
+    color: var(--color-cdx-entity-directive);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 150ms ease;
+}
+
+.cdx-host-dir-name:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.cdx-host-dir-token {
+    color: var(--color-cdx-text);
+}
+
+/* Flat host directive rows (no braces) */
+.cdx-host-dir-flat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.cdx-host-dir-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.cdx-host-dir-entry-io {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.cdx-host-dir-label {
+    font-size: 0.75rem;
+    color: var(--color-cdx-text-muted);
+}
+
+.cdx-host-dir-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-cdx-sm);
+    border: 1px solid var(--color-cdx-border);
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    color: var(--color-cdx-text);
+    white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-host-dir-name {
+        transition: none;
+    }
+}
+
+/* When value has multi-line code (template/styles), stack label above */
+.cdx-metadata-row--block {
+    grid-template-columns: 1fr;
+}
+
+@container (max-width: 500px) {
+    .cdx-metadata-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cdx-metadata-row {
+        transition: none;
+    }
+}
+
+.cdx-index {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-cdx-lg) var(--spacing-cdx-xl);
+}
+
+.cdx-index-group {
+    min-width: 0;
+}
+
+.cdx-index-group-label {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: color-mix(in srgb, var(--color-cdx-text-muted) 60%, transparent);
+    margin: 0 0 var(--spacing-cdx-sm);
+    padding-bottom: var(--spacing-cdx-xs);
+}
+
+.cdx-index-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cdx-index-entry {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-cdx-sm);
+    padding: var(--spacing-cdx-xs) 0;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-cdx-text);
+    text-decoration: none;
+    cursor: pointer;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.cdx-index-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cdx-index-entry:hover {
+    color: var(--color-cdx-primary);
+}
+
+.cdx-index-entry--deprecated .cdx-index-name {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.cdx-index-indicator {
+    --cdx-indicator-color: var(--color-cdx-text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-cdx-sm);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--cdx-indicator-color);
+    background: color-mix(in srgb, var(--cdx-indicator-color) 12%, transparent);
+    flex-shrink: 0;
+}
+
+.cdx-index-indicator--property {
+    --cdx-indicator-color: var(--color-cdx-entity-class);
+}
+.cdx-index-indicator--method {
+    --cdx-indicator-color: var(--color-cdx-entity-module);
+}
+.cdx-index-indicator--input {
+    --cdx-indicator-color: var(--color-cdx-entity-component);
+}
+.cdx-index-indicator--output {
+    --cdx-indicator-color: var(--color-cdx-entity-pipe);
+}
+.cdx-index-indicator--derived {
+    --cdx-indicator-color: var(--color-cdx-entity-typealias);
+}
+.cdx-index-indicator--accessor {
+    --cdx-indicator-color: var(--color-cdx-entity-interface);
+}
+.cdx-index-indicator--constructor {
+    --cdx-indicator-color: var(--color-cdx-text-muted);
+}
+.cdx-index-indicator--hostbinding {
+    --cdx-indicator-color: var(--color-cdx-entity-directive);
+}
+.cdx-index-indicator--hostlistener {
+    --cdx-indicator-color: var(--color-cdx-entity-interceptor);
+}
+.cdx-index-indicator--indexsignature {
+    --cdx-indicator-color: var(--color-cdx-entity-guard);
+}
+
+.cdx-misc-filter {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.cdx-index-indicator--function {
+    --cdx-indicator-color: var(--color-cdx-entity-function);
+}
+.cdx-index-indicator--variable {
+    --cdx-indicator-color: var(--color-cdx-entity-service);
+}
+.cdx-index-indicator--typealias {
+    --cdx-indicator-color: var(--color-cdx-entity-typealias);
+}
+.cdx-index-indicator--enum {
+    --cdx-indicator-color: var(--color-cdx-entity-enum);
+}
+
+.cdx-index-entry:focus-visible {
+    outline: 2px solid var(--color-cdx-primary);
+    outline-offset: 1px;
+}
+
+.dark .cdx-index-indicator {
+    background: color-mix(in srgb, var(--cdx-indicator-color) 20%, transparent);
+}
+
+@container (max-width: 700px) {
+    .cdx-index {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@container (max-width: 400px) {
+    .cdx-index {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Dependencies section ──────────────────────────────── */
+
+.cdx-deps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.cdx-deps-item {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-cdx-sm);
+    padding: var(--spacing-cdx-sm) 0;
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--color-cdx-border) 50%, transparent);
+    font-size: 0.875rem;
+}
+
+.cdx-deps-item:last-child {
+    border-bottom: none;
+}
+
+.cdx-deps-name {
+    font-family: var(--font-code);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    color: var(--color-cdx-text);
+}
+
+.cdx-deps-name a {
+    color: var(--color-cdx-primary);
+    text-decoration: none;
+}
+
+.cdx-deps-name a:hover {
+    text-decoration: underline;
+}
+
+.cdx-deps-badges {
+    display: flex;
+    gap: var(--spacing-cdx-xs);
+    align-items: baseline;
+}
+
+.cdx-deps-alias {
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    color: var(--color-cdx-text-muted);
+    margin-left: auto;
+}
+
+.cdx-badge--constructor-di {
+    --cdx-badge-bg: color-mix(in srgb, hsl(210 45% 50%) 15%, transparent);
+    --cdx-badge-color: hsl(210 45% 50%);
+    background: var(--cdx-badge-bg);
+    color: var(--cdx-badge-color);
+    border: 1px solid
+        color-mix(in srgb, var(--cdx-badge-color) 30%, transparent);
+}
+
+.dark .cdx-badge--constructor-di {
+    --cdx-badge-bg: color-mix(in srgb, hsl(210 45% 60%) 20%, transparent);
+    --cdx-badge-color: hsl(210 45% 70%);
+}
+
+/* ── Host section chips ───────────────────────────────── */
+
+.cdx-host-chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    padding: 0.1875rem 0.5rem;
+    border-radius: var(--radius-cdx-sm);
+    background: var(--color-cdx-bg-alt);
+    border: 1px solid var(--color-cdx-border);
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    color: var(--color-cdx-text-secondary);
+    white-space: nowrap;
+}
+
+.cdx-host-chip a {
+    color: var(--color-cdx-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.cdx-host-chip a:hover {
+    text-decoration: underline;
+}
+
+.cdx-host-val {
+    color: var(--color-cdx-text);
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+}
+
+.cdx-host-attr-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.125rem var(--spacing-cdx-lg);
+}
+
+.cdx-host-attr-pair {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+}
+
+/* ── Providers table ─────────────────────────────────── */
+
+.cdx-provider-table {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    margin: 0;
+    padding: 0;
+}
+
+.cdx-provider-row {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    gap: 0 var(--spacing-cdx-xl);
+    padding: var(--spacing-cdx-sm) 0;
+    align-items: baseline;
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--color-cdx-border) 50%, transparent);
+}
+
+.cdx-provider-row:last-child {
+    border-bottom: none;
+}
+
+.cdx-provider-name {
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.cdx-provider-value {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+    margin: 0;
+}
+
+.cdx-provider-strategy {
+    color: var(--color-cdx-text-muted);
+}
+
+/* Relationships: see src/styles/components/relationships.css */

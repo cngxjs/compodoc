@@ -1,0 +1,3159 @@
+import * as crypto from 'node:crypto';
+import * as path from 'node:path';
+import * as fs from 'fs-extra';
+import traverse from 'neotraverse/legacy';
+import polka from 'polka';
+import sirv from 'sirv';
+
+import { SyntaxKind } from 'ts-morph';
+import { hasAnyApiSections } from '../templates/helpers/tab-helpers';
+import AngularVersionUtil from '../utils/angular-version.util';
+import { COMPODOC_CONSTANTS } from '../utils/constants';
+import { COMPODOC_DEFAULTS } from '../utils/defaults';
+import { buildEntityIndex } from '../utils/entity-index.util';
+import { logger } from '../utils/logger';
+import { markedAcl } from '../utils/marked.acl';
+import { promiseSequential } from '../utils/promise-sequential';
+import RouterParserUtil from '../utils/router-parser.util';
+import { collectThemeTokens } from '../utils/theme-doc-parser';
+import {
+    cleanNameWithoutSpaceAndToLowerCase,
+    cleanSourcesForWatch,
+    findMainSourceFolder
+} from '../utils/utils';
+import type { IComponentDep } from './compiler/angular/deps/component-dep.factory';
+import { AngularDependencies } from './compiler/angular-dependencies';
+import Configuration from './configuration';
+import DependenciesEngine from './engines/dependencies.engine';
+import ExportEngine from './engines/export.engine';
+import FileEngine from './engines/file.engine';
+import HtmlEngine from './engines/html.engine';
+import I18nEngine from './engines/i18n.engine';
+import MarkdownEngine, { type markdownReadedDatas } from './engines/markdown.engine';
+import NgdEngine from './engines/ngd.engine';
+import { runPagefindIndex } from './engines/search-indexer.engine';
+import { initHighlighter } from './engines/syntax-highlight.engine';
+import type { AdditionalNode } from './interfaces/additional-node.interface';
+import type { CoverageData } from './interfaces/coverageData.interface';
+
+const cwd = process.cwd();
+let startTime = new Date();
+let generationPromiseResolve;
+let generationPromiseReject;
+const generationPromise = new Promise((resolve, reject) => {
+    generationPromiseResolve = resolve;
+    generationPromiseReject = reject;
+});
+
+export class Application {
+    /**
+     * Files processed during initial scanning
+     */
+    public files: Array<string>;
+    /**
+     * Files processed during watch scanning
+     */
+    public updatedFiles: Array<string>;
+    /**
+     * Files changed during watch scanning
+     */
+    public watchChangedFiles: Array<string> = [];
+    /**
+     * Boolean for watching status
+     * @type {boolean}
+     */
+    public isWatching: boolean = false;
+
+    /**
+     * Create a new compodocx application instance.
+     *
+     * @param options An object containing the options that should be used.
+     */
+    constructor(options?: Object) {
+        for (const option in options) {
+            if (typeof Configuration.mainData[option] !== 'undefined') {
+                Configuration.mainData[option] = options[option];
+            }
+            // For documentationMainName, process it outside the loop, for handling conflict with pages name
+            if (option === 'name') {
+                Configuration.mainData.documentationMainName = options[option];
+            }
+            // For documentationMainName, process it outside the loop, for handling conflict with pages name
+            if (option === 'silent') {
+                logger.silent = false;
+            }
+        }
+    }
+
+    /**
+     * Start compodocx process
+     */
+    protected generate(): Promise<{}> {
+        process.on('unhandledRejection', this.unhandledRejectionListener);
+        process.on('uncaughtException', this.uncaughtExceptionListener);
+
+        I18nEngine.init(Configuration.mainData.language);
+
+        if (
+            Configuration.mainData.output.charAt(Configuration.mainData.output.length - 1) !== '/'
+        ) {
+            Configuration.mainData.output += '/';
+        }
+
+        if (Configuration.mainData.exportFormat !== COMPODOC_DEFAULTS.exportFormat) {
+            this.processPackageJson();
+        } else {
+            initHighlighter(Configuration.mainData.shikiTheme || undefined)
+                .then(() => HtmlEngine.init(Configuration.mainData.templates))
+                .then(() => this.processPackageJson());
+        }
+        return generationPromise;
+    }
+
+    private endCallback() {
+        process.removeListener('unhandledRejection', this.unhandledRejectionListener);
+        process.removeListener('uncaughtException', this.uncaughtExceptionListener);
+    }
+
+    private unhandledRejectionListener(err, p) {
+        console.log('Unhandled Rejection at:', p, 'reason:', err);
+        logger.error(
+            'Sorry, but there was a problem during parsing or generation of the documentation. Please fill an issue on github. (https://github.com/cngxjs/compodocx/issues/new)'
+        ); // tslint:disable-line
+        process.exit(1);
+    }
+
+    private uncaughtExceptionListener(err) {
+        logger.error(err);
+        logger.error(
+            'Sorry, but there was a problem during parsing or generation of the documentation. Please fill an issue on github. (https://github.com/cngxjs/compodocx/issues/new)'
+        ); // tslint:disable-line
+        process.exit(1);
+    }
+
+    /**
+     * Start compodocx documentation coverage
+     */
+    protected testCoverage() {
+        this.getDependenciesData();
+    }
+
+    /**
+     * Store files for initial processing
+     * @param  {Array<string>} files Files found during source folder and tsconfig scan
+     */
+    public setFiles(files: Array<string>) {
+        this.files = files;
+    }
+
+    /**
+     * Store files for watch processing
+     * @param  {Array<string>} files Files found during source folder and tsconfig scan
+     */
+    public setUpdatedFiles(files: Array<string>) {
+        this.updatedFiles = files;
+    }
+
+    /**
+     * Return a boolean indicating presence of one TypeScript file in updatedFiles list
+     * @return {boolean} Result of scan
+     */
+    public hasWatchedFilesTSFiles(): boolean {
+        let result = false;
+
+        this.updatedFiles.forEach(file => {
+            if (path.extname(file) === '.ts') {
+                result = true;
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Return a boolean indicating presence of one root markdown files in updatedFiles list
+     * @return {boolean} Result of scan
+     */
+    public hasWatchedFilesRootMarkdownFiles(): boolean {
+        let result = false;
+
+        this.updatedFiles.forEach(file => {
+            if (path.extname(file) === '.md' && path.dirname(file) === cwd) {
+                result = true;
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Clear files for watch processing
+     */
+    public clearUpdatedFiles(): void {
+        this.updatedFiles = [];
+        this.watchChangedFiles = [];
+    }
+
+    private processPackageJson(): void {
+        logger.info('Searching package.json file');
+        FileEngine.get(`${cwd + path.sep}package.json`).then(
+            packageData => {
+                const parsedData = JSON.parse(packageData);
+                this.packageJsonData = parsedData;
+                if (
+                    typeof parsedData.name !== 'undefined' &&
+                    Configuration.mainData.documentationMainName === COMPODOC_DEFAULTS.title
+                ) {
+                    Configuration.mainData.documentationMainName = `${parsedData.name} documentation`;
+                }
+                if (typeof parsedData.description !== 'undefined') {
+                    Configuration.mainData.documentationMainDescription = parsedData.description;
+                }
+                Configuration.mainData.angularVersion =
+                    AngularVersionUtil.getAngularVersionOfProject(parsedData);
+
+                // Detect zone.js in dependencies (if absent, app is zoneless)
+                const allDeps = {
+                    ...parsedData.dependencies,
+                    ...parsedData.devDependencies
+                };
+                Configuration.mainData.hasZoneJs = 'zone.js' in allDeps;
+                logger.info('package.json file found');
+
+                if (!Configuration.mainData.disableDependencies) {
+                    if (typeof parsedData.dependencies !== 'undefined') {
+                        this.processPackageDependencies(parsedData.dependencies);
+                    }
+                    if (typeof parsedData.peerDependencies !== 'undefined') {
+                        this.processPackagePeerDependencies(parsedData.peerDependencies);
+                    }
+                }
+
+                if (!Configuration.mainData.disableProperties) {
+                    const propertiesToCheck = [
+                        'version',
+                        'description',
+                        'keywords',
+                        'homepage',
+                        'bugs',
+                        'license',
+                        'repository',
+                        'author'
+                    ];
+                    let hasOneOfCheckedProperties = false;
+                    propertiesToCheck.forEach(prop => {
+                        if (prop in parsedData) {
+                            hasOneOfCheckedProperties = true;
+                            Configuration.mainData.packageProperties[prop] = parsedData[prop];
+                        }
+                    });
+                    if (hasOneOfCheckedProperties) {
+                        Configuration.addPage({
+                            name: 'properties',
+                            id: 'packageProperties',
+                            context: 'package-properties',
+                            depth: 0,
+                            pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                        });
+                    }
+                }
+
+                this.processMarkdowns().then(
+                    () => {
+                        this.getDependenciesData();
+                    },
+                    errorMessage => {
+                        logger.error(errorMessage);
+                        process.exit(1);
+                    }
+                );
+            },
+            errorMessage => {
+                logger.error(errorMessage);
+                logger.error('Continuing without package.json file');
+                this.processMarkdowns().then(
+                    () => {
+                        this.getDependenciesData();
+                    },
+                    errorMessage1 => {
+                        logger.error(errorMessage1);
+                        process.exit(1);
+                    }
+                );
+            }
+        );
+    }
+
+    private processPackagePeerDependencies(dependencies): void {
+        logger.info('Processing package.json peerDependencies');
+        Configuration.mainData.packagePeerDependencies = dependencies;
+        if (!Configuration.hasPage('dependencies')) {
+            Configuration.addPage({
+                name: 'dependencies',
+                id: 'packageDependencies',
+                context: 'package-dependencies',
+                depth: 0,
+                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+            });
+        }
+    }
+
+    private processPackageDependencies(dependencies): void {
+        logger.info('Processing package.json dependencies');
+        Configuration.mainData.packageDependencies = dependencies;
+        Configuration.addPage({
+            name: 'dependencies',
+            id: 'packageDependencies',
+            context: 'package-dependencies',
+            depth: 0,
+            pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+        });
+    }
+
+    private processMarkdowns(): Promise<any> {
+        logger.info(
+            'Searching README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE.md, TODO.md files'
+        );
+
+        return new Promise((resolve, _reject) => {
+            let i = 0;
+            const markdowns = ['readme', 'changelog', 'contributing', 'license', 'todo'];
+            const numberOfMarkdowns = 5;
+            const loop = () => {
+                if (i < numberOfMarkdowns) {
+                    MarkdownEngine.getTraditionalMarkdown(markdowns[i].toUpperCase())
+                        .then((readmeData: markdownReadedDatas) => {
+                            logger.info(`${markdowns[i].toUpperCase()}.md file found`);
+                            if (markdowns[i] === 'readme') {
+                                Configuration.mainData.readme = true;
+                                // Always create index.html as main page with README content
+                                Configuration.addPage({
+                                    name: 'index',
+                                    context: 'readme',
+                                    id: 'index',
+                                    markdown: readmeData.markdown,
+                                    data: readmeData.rawData,
+                                    depth: 0,
+                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                });
+
+                                // If overview is not disabled, also create separate overview page
+                                if (!Configuration.mainData.disableOverview) {
+                                    Configuration.addPage({
+                                        name: 'overview',
+                                        context: 'overview',
+                                        id: 'overview',
+                                        depth: 0,
+                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                    });
+                                }
+                            } else {
+                                // For other markdown files (changelog, contributing, etc.)
+                                Configuration.addPage({
+                                    name: markdowns[i],
+                                    context: markdowns[i],
+                                    id: markdowns[i],
+                                    markdown: readmeData.markdown,
+                                    data: readmeData.rawData,
+                                    depth: 0,
+                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                });
+                                Configuration.mainData.markdowns.push({
+                                    name: markdowns[i],
+                                    uppername: markdowns[i].toUpperCase(),
+                                    depth: 0,
+                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                });
+                            }
+                            i++;
+                            loop();
+                        })
+                        .catch(errorMessage => {
+                            logger.warn(errorMessage);
+                            logger.warn(`Continuing without ${markdowns[i].toUpperCase()}.md file`);
+                            if (markdowns[i] === 'readme') {
+                                if (!Configuration.mainData.disableOverview) {
+                                    Configuration.addPage({
+                                        name: 'index',
+                                        id: 'index',
+                                        context: 'overview',
+                                        depth: 0,
+                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                    });
+                                } else {
+                                    // When README doesn't exist and overview is disabled,
+                                    // generate overview page anyway but show warning
+                                    logger.warn(
+                                        'No README.md found and --disableOverview is enabled.'
+                                    );
+                                    logger.warn(
+                                        'Generating overview page as landing page. Consider adding a README.md file.'
+                                    );
+                                    Configuration.addPage({
+                                        name: 'index',
+                                        id: 'index',
+                                        context: 'overview',
+                                        depth: 0,
+                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+                                    });
+                                }
+                            }
+                            i++;
+                            loop();
+                        });
+                } else {
+                    resolve(true);
+                }
+            };
+            loop();
+        });
+    }
+
+    private rebuildRootMarkdowns(): void {
+        logger.info(
+            'Regenerating README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE.md, TODO.md pages'
+        );
+
+        const actions = [];
+
+        Configuration.resetRootMarkdownPages();
+
+        actions.push(() => {
+            return this.processMarkdowns();
+        });
+
+        promiseSequential(actions)
+            .then(_res => {
+                this.processPages();
+                this.clearUpdatedFiles();
+            })
+            .catch(errorMessage => {
+                logger.error(errorMessage);
+            });
+    }
+
+    /**
+     * Get dependency data for small group of updated files during watch process
+     */
+    private getMicroDependenciesData(): void {
+        logger.info('Get diff dependencies data');
+
+        Configuration.mainData.angularProject = true;
+
+        const crawler = new AngularDependencies(this.updatedFiles, {
+            tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
+        });
+
+        const dependenciesData = crawler.getDependencies();
+
+        DependenciesEngine.update(dependenciesData);
+
+        this.prepareJustAFewThings(dependenciesData);
+    }
+
+    /**
+     * Rebuild external documentation during watch process
+     */
+    private rebuildExternalDocumentation(): void {
+        logger.info('Rebuild external documentation');
+
+        const actions = [];
+
+        Configuration.resetAdditionalPages();
+
+        if (Configuration.mainData.includes !== '') {
+            actions.push(() => {
+                return this.prepareExternalIncludes();
+            });
+        }
+
+        promiseSequential(actions)
+            .then(_res => {
+                this.processPages();
+                this.clearUpdatedFiles();
+            })
+            .catch(errorMessage => {
+                logger.error(errorMessage);
+            });
+    }
+
+    private getDependenciesData(): void {
+        logger.info('Get dependencies data');
+
+        Configuration.mainData.angularProject = true;
+
+        const crawler = new AngularDependencies(this.files, {
+            tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
+        });
+
+        const dependenciesData = crawler.getDependencies();
+
+        // Auto-detect groupBy if not explicitly set by user
+        if (!Configuration.mainData.groupBy) {
+            const hasModules = dependenciesData.modules && dependenciesData.modules.length > 0;
+            Configuration.mainData.hasNgModules = hasModules;
+            Configuration.mainData.groupBy = hasModules ? 'none' : 'folder';
+        }
+
+        DependenciesEngine.init(dependenciesData);
+
+        // Inject category groupings for sidebar navigation (used by menu partial)
+        Configuration.mainData.categorizedComponents = DependenciesEngine.categorizedComponents;
+        Configuration.mainData.categorizedDirectives = DependenciesEngine.categorizedDirectives;
+        Configuration.mainData.categorizedInjectables = DependenciesEngine.categorizedInjectables;
+        Configuration.mainData.categorizedPipes = DependenciesEngine.categorizedPipes;
+        Configuration.mainData.categorizedClasses = DependenciesEngine.categorizedClasses;
+        Configuration.mainData.categorizedInterfaces = DependenciesEngine.categorizedInterfaces;
+        Configuration.mainData.categorizedGuards = DependenciesEngine.categorizedGuards;
+        Configuration.mainData.categorizedInterceptors = DependenciesEngine.categorizedInterceptors;
+        Configuration.mainData.categorizedEntities = DependenciesEngine.categorizedEntities;
+
+        Configuration.mainData.routesLength = RouterParserUtil.routesLength();
+
+        this.printStatistics();
+
+        this.prepareEverything();
+    }
+
+    private prepareJustAFewThings(diffCrawledData): void {
+        const actions = [];
+
+        Configuration.resetPages();
+
+        if (!Configuration.mainData.disableRoutesGraph) {
+            actions.push(() => this.prepareRoutes());
+        }
+
+        if (diffCrawledData.components.length > 0) {
+            actions.push(() => this.prepareComponents());
+        }
+        if (diffCrawledData.entities.length > 0) {
+            actions.push(() => this.prepareEntities());
+        }
+        if (diffCrawledData.modules.length > 0) {
+            actions.push(() => this.prepareModules());
+        }
+
+        if (diffCrawledData.directives.length > 0) {
+            actions.push(() => this.prepareDirectives());
+        }
+
+        if (diffCrawledData.injectables.length > 0) {
+            actions.push(() => this.prepareInjectables());
+        }
+
+        if (diffCrawledData.interceptors.length > 0) {
+            actions.push(() => this.prepareInterceptors());
+        }
+
+        if (diffCrawledData.guards.length > 0) {
+            actions.push(() => this.prepareGuards());
+        }
+
+        if (diffCrawledData.pipes.length > 0) {
+            actions.push(() => this.preparePipes());
+        }
+
+        if (diffCrawledData.classes.length > 0) {
+            actions.push(() => this.prepareClasses());
+        }
+
+        if (diffCrawledData.interfaces.length > 0) {
+            actions.push(() => this.prepareInterfaces());
+        }
+
+        if (
+            diffCrawledData.miscellaneous.variables.length > 0 ||
+            diffCrawledData.miscellaneous.functions.length > 0 ||
+            diffCrawledData.miscellaneous.typealiases.length > 0 ||
+            diffCrawledData.miscellaneous.enumerations.length > 0
+        ) {
+            actions.push(() => this.prepareMiscellaneous());
+        }
+
+        if (!Configuration.mainData.disableCoverage) {
+            actions.push(() => this.prepareCoverage());
+        }
+
+        promiseSequential(actions)
+            .then(_res => {
+                if (Configuration.mainData.exportFormat !== COMPODOC_DEFAULTS.exportFormat) {
+                    if (
+                        COMPODOC_DEFAULTS.exportFormatsSupported.indexOf(
+                            Configuration.mainData.exportFormat
+                        ) > -1
+                    ) {
+                        logger.info(
+                            `Generating documentation in export format ${Configuration.mainData.exportFormat}`
+                        );
+                        ExportEngine.export(
+                            Configuration.mainData.output,
+                            Configuration.mainData
+                        ).then(() => {
+                            generationPromiseResolve(true);
+                            this.endCallback();
+                            logger.info(
+                                'Documentation generated in ' +
+                                    Configuration.mainData.output +
+                                    ' in ' +
+                                    this.getElapsedTime() +
+                                    ' seconds'
+                            );
+                            if (Configuration.mainData.serve) {
+                                logger.info(
+                                    `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${Configuration.mainData.port}`
+                                );
+                                this.runWebServer(Configuration.mainData.output);
+                            }
+                        });
+                    } else {
+                        logger.warn(`Exported format not supported`);
+                    }
+                } else {
+                    this.processGraphs();
+                    this.clearUpdatedFiles();
+                }
+            })
+            .catch(errorMessage => {
+                logger.error(errorMessage);
+            });
+    }
+
+    private printStatistics() {
+        logger.info('-------------------');
+        logger.info('Project statistics ');
+        if (DependenciesEngine.modules.length > 0) {
+            logger.info(`- files        : ${this.files.length}`);
+        }
+        if (DependenciesEngine.modules.length > 0) {
+            logger.info(`- module       : ${DependenciesEngine.modules.length}`);
+        }
+        if (DependenciesEngine.components.length > 0) {
+            logger.info(`- component    : ${DependenciesEngine.components.length}`);
+        }
+        if (DependenciesEngine.entities.length > 0) {
+            logger.info(`- entity       : ${DependenciesEngine.entities.length}`);
+        }
+        if (DependenciesEngine.directives.length > 0) {
+            logger.info(`- directive    : ${DependenciesEngine.directives.length}`);
+        }
+        if (DependenciesEngine.injectables.length > 0) {
+            logger.info(`- injectable   : ${DependenciesEngine.injectables.length}`);
+        }
+        if (DependenciesEngine.interceptors.length > 0) {
+            logger.info(`- injector     : ${DependenciesEngine.interceptors.length}`);
+        }
+        if (DependenciesEngine.guards.length > 0) {
+            logger.info(`- guard        : ${DependenciesEngine.guards.length}`);
+        }
+        if (DependenciesEngine.pipes.length > 0) {
+            logger.info(`- pipe         : ${DependenciesEngine.pipes.length}`);
+        }
+        if (DependenciesEngine.classes.length > 0) {
+            logger.info(`- class        : ${DependenciesEngine.classes.length}`);
+        }
+        if (DependenciesEngine.interfaces.length > 0) {
+            logger.info(`- interface    : ${DependenciesEngine.interfaces.length}`);
+        }
+        if (Configuration.mainData.routesLength > 0) {
+            logger.info(`- route        : ${Configuration.mainData.routesLength}`);
+        }
+        if (DependenciesEngine.miscellaneous.typealiases.length > 0) {
+            logger.info(`- type aliases : ${DependenciesEngine.miscellaneous.typealiases.length}`);
+        }
+        logger.info('-------------------');
+    }
+
+    private prepareEverything() {
+        const actions = [];
+
+        actions.push(() => {
+            return this.prepareComponents();
+        });
+        actions.push(() => {
+            return this.prepareModules();
+        });
+
+        if (DependenciesEngine.directives.length > 0) {
+            actions.push(() => {
+                return this.prepareDirectives();
+            });
+        }
+
+        if (DependenciesEngine.entities.length > 0) {
+            actions.push(() => {
+                return this.prepareEntities();
+            });
+        }
+
+        if (DependenciesEngine.injectables.length > 0) {
+            actions.push(() => {
+                return this.prepareInjectables();
+            });
+        }
+
+        if (DependenciesEngine.interceptors.length > 0) {
+            actions.push(() => {
+                return this.prepareInterceptors();
+            });
+        }
+
+        if (DependenciesEngine.guards.length > 0) {
+            actions.push(() => {
+                return this.prepareGuards();
+            });
+        }
+
+        if (DependenciesEngine.routes && !Configuration.mainData.disableRoutesGraph) {
+            actions.push(() => {
+                return this.prepareRoutes();
+            });
+        }
+
+        if (DependenciesEngine.pipes.length > 0) {
+            actions.push(() => {
+                return this.preparePipes();
+            });
+        }
+
+        if (DependenciesEngine.classes.length > 0) {
+            actions.push(() => {
+                return this.prepareClasses();
+            });
+        }
+
+        if (DependenciesEngine.interfaces.length > 0) {
+            actions.push(() => {
+                return this.prepareInterfaces();
+            });
+        }
+
+        if (
+            DependenciesEngine.miscellaneous.variables.length > 0 ||
+            DependenciesEngine.miscellaneous.functions.length > 0 ||
+            DependenciesEngine.miscellaneous.typealiases.length > 0 ||
+            DependenciesEngine.miscellaneous.enumerations.length > 0
+        ) {
+            actions.push(() => {
+                return this.prepareMiscellaneous();
+            });
+        }
+
+        if (!Configuration.mainData.disableCoverage) {
+            actions.push(() => {
+                return this.prepareCoverage();
+            });
+        }
+
+        if (Configuration.mainData.unitTestCoverage !== '') {
+            actions.push(() => {
+                return this.prepareUnitTestCoverage();
+            });
+        }
+
+        if (Configuration.mainData.includes !== '') {
+            actions.push(() => {
+                return this.prepareExternalIncludes();
+            });
+        }
+
+        promiseSequential(actions)
+            .then(_res => {
+                if (Configuration.mainData.exportFormat !== COMPODOC_DEFAULTS.exportFormat) {
+                    if (
+                        COMPODOC_DEFAULTS.exportFormatsSupported.indexOf(
+                            Configuration.mainData.exportFormat
+                        ) > -1
+                    ) {
+                        logger.info(
+                            `Generating documentation in export format ${Configuration.mainData.exportFormat}`
+                        );
+                        ExportEngine.export(
+                            Configuration.mainData.output,
+                            Configuration.mainData
+                        ).then(() => {
+                            generationPromiseResolve(true);
+                            this.endCallback();
+                            logger.info(
+                                'Documentation generated in ' +
+                                    Configuration.mainData.output +
+                                    ' in ' +
+                                    this.getElapsedTime() +
+                                    ' seconds'
+                            );
+                            if (Configuration.mainData.serve) {
+                                logger.info(
+                                    `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${Configuration.mainData.port}`
+                                );
+                                this.runWebServer(Configuration.mainData.output);
+                            }
+                        });
+                    } else {
+                        logger.warn(`Exported format not supported`);
+                    }
+                } else {
+                    this.processGraphs();
+                }
+            })
+            .catch(errorMessage => {
+                logger.error(errorMessage);
+                process.exit(1);
+            });
+    }
+
+    private getIncludedPathForFile(file) {
+        return path.join(Configuration.mainData.includes, file);
+    }
+
+    private prepareExternalIncludes() {
+        logger.info('Adding external markdown files');
+        // Scan include folder for files detailed in summary.json
+        // For each file, add to Configuration.mainData.additionalPages
+        // Each file will be converted to html page, inside COMPODOC_DEFAULTS.additionalEntryPath
+        return new Promise((resolve, reject) => {
+            FileEngine.get(this.getIncludedPathForFile('summary.json')).then(
+                summaryData => {
+                    logger.info('Additional documentation: summary.json file found');
+
+                    const parsedSummaryData = JSON.parse(summaryData);
+
+                    const that = this;
+                    let lastLevelOnePage;
+
+                    traverse(parsedSummaryData).forEach(function () {
+                        // tslint:disable-next-line:no-invalid-this
+                        if (this.notRoot && typeof this.node === 'object') {
+                            // tslint:disable-next-line:no-invalid-this
+                            const rawPath = this.path;
+                            // tslint:disable-next-line:no-invalid-this
+                            const additionalNode: AdditionalNode = this.node;
+                            const file = additionalNode.file;
+                            const title = additionalNode.title;
+                            let finalPath = Configuration.mainData.includesFolder;
+
+                            const finalDepth = rawPath.filter(el => {
+                                return !Number.isNaN(parseInt(String(el), 10));
+                            });
+
+                            if (typeof file !== 'undefined' && typeof title !== 'undefined') {
+                                const url = cleanNameWithoutSpaceAndToLowerCase(title);
+
+                                /**
+                                 * Id created with title + file path hash, seems to be hypothetically unique here
+                                 */
+                                const id = crypto
+                                    .createHash('sha512')
+                                    .update(title + file)
+                                    .digest('hex');
+
+                                // tslint:disable-next-line:no-invalid-this
+                                this.node.id = id;
+
+                                let lastElementRootTree;
+                                finalDepth.forEach(el => {
+                                    let elementTree =
+                                        typeof lastElementRootTree === 'undefined'
+                                            ? parsedSummaryData
+                                            : lastElementRootTree;
+                                    if (typeof elementTree.children !== 'undefined') {
+                                        elementTree = elementTree.children[el];
+                                    } else {
+                                        elementTree = elementTree[el];
+                                    }
+                                    finalPath +=
+                                        '/' +
+                                        cleanNameWithoutSpaceAndToLowerCase(elementTree.title);
+                                    lastElementRootTree = elementTree;
+                                });
+
+                                finalPath = finalPath.replace(`/${url}`, '');
+                                const markdownFile = MarkdownEngine.getTraditionalMarkdownSync(
+                                    that.getIncludedPathForFile(file)
+                                );
+
+                                if (finalDepth.length > 5) {
+                                    logger.error('Only 5 levels of depth are supported');
+                                } else {
+                                    const _page = {
+                                        name: title,
+                                        id: id,
+                                        filename: url,
+                                        context: 'additional-page',
+                                        path: finalPath,
+                                        additionalPage: markdownFile,
+                                        depth: finalDepth.length,
+                                        childrenLength: additionalNode.children
+                                            ? additionalNode.children.length
+                                            : 0,
+                                        children: [],
+                                        lastChild: false,
+                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                                    };
+                                    if (finalDepth.length === 1) {
+                                        lastLevelOnePage = _page;
+                                    }
+                                    if (finalDepth.length > 1) {
+                                        // store all child pages of the last root level 1 page inside it
+                                        lastLevelOnePage.children.push(_page);
+                                    } else {
+                                        Configuration.addAdditionalPage(_page);
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    resolve(true);
+                },
+                errorMessage => {
+                    logger.error(errorMessage);
+                    reject('Error during Additional documentation generation');
+                }
+            );
+        });
+    }
+
+    public prepareModules(someModules?): Promise<any> {
+        logger.info('Prepare modules');
+        let i = 0;
+        const _modules = someModules ? someModules : DependenciesEngine.getModules();
+
+        return new Promise((resolve, _reject) => {
+            Configuration.mainData.modules = _modules.map(ngModule => {
+                ngModule.compodocxLinks = {
+                    components: [],
+                    directives: [],
+                    injectables: [],
+                    pipes: []
+                };
+                ['declarations', 'bootstrap', 'imports', 'exports'].forEach(metadataType => {
+                    ngModule[metadataType] = ngModule[metadataType].filter(metaDataItem => {
+                        switch (metaDataItem.type) {
+                            case 'directive':
+                                return DependenciesEngine.getDirectives().some(directive => {
+                                    let selectedDirective;
+                                    if (typeof metaDataItem.id !== 'undefined') {
+                                        selectedDirective =
+                                            (directive as any).id === metaDataItem.id;
+                                    } else {
+                                        selectedDirective =
+                                            (directive as any).name === metaDataItem.name;
+                                    }
+                                    if (
+                                        selectedDirective &&
+                                        !ngModule.compodocxLinks.directives.includes(directive)
+                                    ) {
+                                        ngModule.compodocxLinks.directives.push(directive);
+                                    }
+                                    return selectedDirective;
+                                });
+
+                            case 'component':
+                                return DependenciesEngine.getComponents().some(
+                                    (component: IComponentDep) => {
+                                        let selectedComponent;
+                                        if (typeof metaDataItem.id !== 'undefined') {
+                                            selectedComponent =
+                                                (component as any).id === metaDataItem.id;
+                                        } else {
+                                            selectedComponent =
+                                                (component as any).name === metaDataItem.name;
+                                        }
+                                        if (
+                                            selectedComponent &&
+                                            !ngModule.compodocxLinks.components.includes(component)
+                                        ) {
+                                            if (!component.standalone) {
+                                                ngModule.compodocxLinks.components.push(component);
+                                            }
+                                        }
+                                        return selectedComponent;
+                                    }
+                                );
+
+                            case 'module':
+                                return DependenciesEngine.getModules().some(
+                                    module => (module as any).name === metaDataItem.name
+                                );
+
+                            case 'pipe':
+                                return DependenciesEngine.getPipes().some(pipe => {
+                                    let selectedPipe;
+                                    if (typeof metaDataItem.id !== 'undefined') {
+                                        selectedPipe = (pipe as any).id === metaDataItem.id;
+                                    } else {
+                                        selectedPipe = (pipe as any).name === metaDataItem.name;
+                                    }
+                                    if (
+                                        selectedPipe &&
+                                        !ngModule.compodocxLinks.pipes.includes(pipe)
+                                    ) {
+                                        ngModule.compodocxLinks.pipes.push(pipe);
+                                    }
+                                    return selectedPipe;
+                                });
+
+                            default:
+                                return true;
+                        }
+                    });
+                });
+                ngModule.providers = ngModule.providers.filter(provider => {
+                    return (
+                        DependenciesEngine.getInjectables().some(injectable => {
+                            const selectedInjectable = (injectable as any).name === provider.name;
+                            if (
+                                selectedInjectable &&
+                                !ngModule.compodocxLinks.injectables.includes(injectable)
+                            ) {
+                                ngModule.compodocxLinks.injectables.push(injectable);
+                            }
+                            return selectedInjectable;
+                        }) ||
+                        DependenciesEngine.getInterceptors().some(
+                            interceptor => (interceptor as any).name === provider.name
+                        )
+                    );
+                });
+                // Try fixing type undefined for each providers
+                ngModule.providers.forEach(provider => {
+                    if (
+                        DependenciesEngine.getInjectables().find(
+                            injectable => (injectable as any).name === provider.name
+                        )
+                    ) {
+                        provider.type = 'injectable';
+                    }
+                    if (
+                        DependenciesEngine.getInterceptors().find(
+                            interceptor => (interceptor as any).name === provider.name
+                        )
+                    ) {
+                        provider.type = 'interceptor';
+                    }
+                });
+                // Order things
+                ngModule.compodocxLinks.components = [...ngModule.compodocxLinks.components].sort(
+                    (a, b) => a.name.localeCompare(b.name)
+                );
+                ngModule.compodocxLinks.directives = [...ngModule.compodocxLinks.directives].sort(
+                    (a, b) => a.name.localeCompare(b.name)
+                );
+                ngModule.compodocxLinks.injectables = [...ngModule.compodocxLinks.injectables].sort(
+                    (a, b) => a.name.localeCompare(b.name)
+                );
+                ngModule.compodocxLinks.pipes = [...ngModule.compodocxLinks.pipes].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
+
+                ngModule.declarations = [...ngModule.declarations].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
+                ngModule.entryComponents = [...ngModule.entryComponents].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
+                ngModule.providers = [...ngModule.providers].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
+                ngModule.imports = [...ngModule.imports].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
+                ngModule.exports = [...ngModule.exports].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                );
+
+                return ngModule;
+            });
+
+            Configuration.addPage({
+                name: 'modules',
+                id: 'modules',
+                context: 'modules',
+                depth: 0,
+                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+            });
+
+            const len = Configuration.mainData.modules.length;
+            const loop = () => {
+                if (i < len) {
+                    if (
+                        MarkdownEngine.hasNeighbourReadmeFile(
+                            Configuration.mainData.modules[i].file
+                        )
+                    ) {
+                        logger.info(
+                            ` ${Configuration.mainData.modules[i].name} has a README file, include it`
+                        );
+                        const readme = MarkdownEngine.readNeighbourReadmeFile(
+                            Configuration.mainData.modules[i].file
+                        );
+                        Configuration.mainData.modules[i].readme = markedAcl(readme);
+                    }
+                    Configuration.addPage({
+                        path: 'modules',
+                        name: Configuration.mainData.modules[i].name,
+                        id: Configuration.mainData.modules[i].id,
+                        navTabs: this.getNavTabs(Configuration.mainData.modules[i]),
+                        context: 'module',
+                        module: Configuration.mainData.modules[i],
+                        depth: 1,
+                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                    });
+                    i++;
+                    loop();
+                } else {
+                    resolve(true);
+                }
+            };
+            loop();
+        });
+    }
+
+    public preparePipes = (somePipes?) => {
+        logger.info('Prepare pipes');
+        Configuration.mainData.pipes = somePipes ? somePipes : DependenciesEngine.getPipes();
+
+        return new Promise((resolve, _reject) => {
+            let i = 0;
+            const len = Configuration.mainData.pipes.length;
+            const loop = () => {
+                if (i < len) {
+                    const pipe = Configuration.mainData.pipes[i];
+                    if (MarkdownEngine.hasNeighbourReadmeFile(pipe.file)) {
+                        logger.info(` ${pipe.name} has a README file, include it`);
+                        const readme = MarkdownEngine.readNeighbourReadmeFile(pipe.file);
+                        pipe.readme = markedAcl(readme);
+                    }
+                    const page = {
+                        path: 'pipes',
+                        name: pipe.name,
+                        id: pipe.id,
+                        navTabs: this.getNavTabs(pipe),
+                        context: 'pipe',
+                        pipe: pipe,
+                        depth: 1,
+                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                    };
+                    if (pipe.isDuplicate) {
+                        page.name += `-${pipe.duplicateId}`;
+                    }
+                    Configuration.addPage(page);
+                    i++;
+                    loop();
+                } else {
+                    resolve(true);
+                }
+            };
+            loop();
+        });
+    };
+
+    public prepareClasses = (someClasses?) => {
+        logger.info('Prepare classes');
+        Configuration.mainData.classes = someClasses
+            ? someClasses
+            : DependenciesEngine.getClasses();
+
+        return new Promise((resolve, _reject) => {
+            let i = 0;
+            const len = Configuration.mainData.classes.length;
+            const loop = () => {
+                if (i < len) {
+                    const classe = Configuration.mainData.classes[i];
+                    if (MarkdownEngine.hasNeighbourReadmeFile(classe.file)) {
+                        logger.info(` ${classe.name} has a README file, include it`);
+                        const readme = MarkdownEngine.readNeighbourReadmeFile(classe.file);
+                        classe.readme = markedAcl(readme);
+                    }
+                    const page = {
+                        path: 'classes',
+                        name: classe.name,
+                        id: classe.id,
+                        navTabs: this.getNavTabs(classe),
+                        context: 'class',
+                        class: classe,
+                        depth: 1,
+                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                    };
+                    if (classe.isDuplicate) {
+                        page.name += `-${classe.duplicateId}`;
+                    }
+                    Configuration.addPage(page);
+                    i++;
+                    loop();
+                } else {
+                    resolve(true);
+                }
+            };
+            loop();
+        });
+    };
+
+    public prepareInterfaces(someInterfaces?) {
+        logger.info('Prepare interfaces');
+        Configuration.mainData.interfaces = someInterfaces
+            ? someInterfaces
+            : DependenciesEngine.getInterfaces();
+
+        return new Promise((resolve, _reject) => {
+            let i = 0;
+            const len = Configuration.mainData.interfaces.length;
+            const loop = () => {
+                if (i < len) {
+                    const interf = Configuration.mainData.interfaces[i];
+                    if (MarkdownEngine.hasNeighbourReadmeFile(interf.file)) {
+                        logger.info(` ${interf.name} has a README file, include it`);
+                        const readme = MarkdownEngine.readNeighbourReadmeFile(interf.file);
+                        interf.readme = markedAcl(readme);
+                    }
+                    const page = {
+                        path: 'interfaces',
+                        name: interf.name,
+                        id: interf.id,
+                        navTabs: this.getNavTabs(interf),
+                        context: 'interface',
+                        interface: interf,
+                        depth: 1,
+                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                    };
+                    if (interf.isDuplicate) {
+                        page.name += `-${interf.duplicateId}`;
+                    }
+                    Configuration.addPage(page);
+                    i++;
+                    loop();
+                } else {
+                    resolve(true);
+                }
+            };
+            loop();
+        });
+    }
+
+    public prepareMiscellaneous(someMisc?) {
+        // Generate app-config page if ApplicationConfig found
+        Configuration.mainData.appConfig = DependenciesEngine.appConfig;
+        if (Configuration.mainData.appConfig?.length > 0) {
+            Configuration.addPage({
+                name: 'app-config',
+                id: 'app-config',
+                context: 'app-config',
+                depth: 0,
+                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+            });
+        }
+
+        logger.info('Prepare miscellaneous');
+        Configuration.mainData.miscellaneous = someMisc
+            ? someMisc
+            : DependenciesEngine.getMiscellaneous();
+
+        return new Promise((resolve, _reject) => {
+            if (Configuration.mainData.miscellaneous.functions.length > 0) {
+                Configuration.addPage({
+                    path: 'miscellaneous',
+                    name: 'functions',
+                    id: 'miscellaneous-functions',
+                    context: 'miscellaneous-functions',
+                    depth: 1,
+                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                });
+            }
+            if (Configuration.mainData.miscellaneous.variables.length > 0) {
+                Configuration.addPage({
+                    path: 'miscellaneous',
+                    name: 'variables',
+                    id: 'miscellaneous-variables',
+                    context: 'miscellaneous-variables',
+                    depth: 1,
+                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                });
+            }
+            if (Configuration.mainData.miscellaneous.typealiases.length > 0) {
+                Configuration.addPage({
+                    path: 'miscellaneous',
+                    name: 'typealiases',
+                    id: 'miscellaneous-typealiases',
+                    context: 'miscellaneous-typealiases',
+                    depth: 1,
+                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                });
+            }
+            if (Configuration.mainData.miscellaneous.enumerations.length > 0) {
+                Configuration.addPage({
+                    path: 'miscellaneous',
+                    name: 'enumerations',
+                    id: 'miscellaneous-enumerations',
+                    context: 'miscellaneous-enumerations',
+                    depth: 1,
+                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                });
+            }
+
+            resolve(true);
+        });
+    }
+
+    private handleTemplateurl(component): Promise<any> {
+        const dirname = path.dirname(component.file);
+        const templatePath = path.resolve(dirname + path.sep + component.templateUrl);
+
+        if (!FileEngine.existsSync(templatePath)) {
+            const err = `Cannot read template for ${component.name}`;
+            logger.error(err);
+            return new Promise((_resolve, _reject) => {});
+        }
+
+        return FileEngine.get(templatePath).then(
+            data => (component.templateData = data),
+            err => {
+                logger.error(err);
+                return Promise.reject('');
+            }
+        );
+    }
+
+    private handleStyles(component): Promise<any> {
+        const styles = component.styles;
+        component.stylesData = '';
+        return new Promise((resolveStyles, _rejectStyles) => {
+            styles.forEach(style => {
+                component.stylesData = `${component.stylesData + style}\n`;
+            });
+            resolveStyles(true);
+        });
+    }
+
+    private handleStyleurls(component): Promise<any> {
+        const dirname = path.dirname(component.file);
+
+        const styleDataPromise = component.styleUrls.map(styleUrl => {
+            const stylePath = path.resolve(dirname + path.sep + styleUrl);
+
+            if (!FileEngine.existsSync(stylePath)) {
+                const err = `Cannot read style url ${stylePath} for ${component.name}`;
+                logger.error(err);
+                return Promise.resolve(null);
+            }
+
+            return new Promise((resolve, _reject) => {
+                FileEngine.get(stylePath).then(data => {
+                    resolve({
+                        data,
+                        styleUrl
+                    });
+                });
+            });
+        });
+
+        return Promise.all(styleDataPromise).then(
+            data => (component.styleUrlsData = data.filter(item => item !== null)),
+            err => {
+                logger.error(err);
+                return Promise.reject('');
+            }
+        );
+    }
+
+    private getNavTabs(dependency): Array<any> {
+        let navTabConfig = Configuration.mainData.navTabConfig;
+        const hasCustomNavTabConfig = navTabConfig.length !== 0;
+        navTabConfig =
+            navTabConfig.length === 0
+                ? structuredClone(COMPODOC_CONSTANTS.navTabDefinitions)
+                : navTabConfig;
+        const matchDepType = (depType: string) => {
+            return depType === 'all' || depType === dependency.type;
+        };
+
+        const navTabs = [];
+        navTabConfig.forEach(customTab => {
+            const navTab = COMPODOC_CONSTANTS.navTabDefinitions.find(t => t.id === customTab.id);
+            if (!navTab) {
+                throw new Error(`Invalid tab ID '${customTab.id}' specified in tab configuration`);
+            }
+
+            navTab.label = customTab.label;
+
+            if (hasCustomNavTabConfig) {
+                (navTab as any).custom = true;
+            }
+
+            // is tab applicable to target dependency?
+            if (-1 === navTab.depTypes.findIndex(matchDepType)) {
+                return;
+            }
+
+            // global config
+            if (customTab.id === 'tree' && Configuration.mainData.disableDomTree) {
+                return;
+            }
+            if (customTab.id === 'source' && Configuration.mainData.disableSourceCode) {
+                return;
+            }
+            if (customTab.id === 'templateData' && Configuration.mainData.disableTemplateTab) {
+                return;
+            }
+            if (customTab.id === 'styleData' && Configuration.mainData.disableStyleTab) {
+                return;
+            }
+
+            // per dependency config
+            if (customTab.id === 'readme' && !dependency.readme) {
+                return;
+            }
+            if (customTab.id === 'example' && !dependency.exampleUrls) {
+                return;
+            }
+            if (
+                customTab.id === 'templateData' &&
+                (!dependency.templateUrl || dependency.templateUrl.length === 0)
+            ) {
+                return;
+            }
+            if (
+                customTab.id === 'styleData' &&
+                (!dependency.styleUrls || dependency.styleUrls.length === 0) &&
+                (!dependency.styles || dependency.styles.length === 0)
+            ) {
+                return;
+            }
+            if (
+                customTab.id === 'theming' &&
+                (!dependency.themeTokens || dependency.themeTokens.length === 0) &&
+                !dependency.themeOverview
+            ) {
+                return;
+            }
+
+            // API tab: drop it in legacy single-tab mode, or when the
+            // dependency has no member content to populate it.
+            if (customTab.id === 'api') {
+                if (!hasAnyApiSections()) {
+                    return;
+                }
+                const hasApiMembers = !!(
+                    dependency.constructorObj ||
+                    dependency.inputsClass?.length ||
+                    dependency.outputsClass?.length ||
+                    dependency.hostBindings?.length ||
+                    dependency.hostListeners?.length ||
+                    (dependency.methodsClass ?? dependency.methods)?.length ||
+                    (dependency.propertiesClass ?? dependency.properties)?.length ||
+                    dependency.indexSignatures?.length ||
+                    (dependency.accessors && Object.keys(dependency.accessors).length)
+                );
+                if (!hasApiMembers) {
+                    return;
+                }
+            }
+
+            navTabs.push(navTab);
+        });
+
+        if (navTabs.length === 0) {
+            throw new Error(`No valid navigation tabs have been defined for dependency type '${dependency.type}'. Specify \
+at least one config for the 'info' or 'source' tab in --navTabConfig.`);
+        }
+
+        return navTabs;
+    }
+
+    public prepareEntities(someEntities?) {
+        logger.info('Prepare entities');
+        Configuration.mainData.entities = someEntities
+            ? someEntities
+            : DependenciesEngine.getEntities();
+
+        return new Promise((resolve, _reject) => {
+            let i = 0;
+            const len = Configuration.mainData.entities.length;
+            const loop = () => {
+                if (i < len) {
+                    const entity = Configuration.mainData.entities[i];
+                    const page = {
+                        path: 'entities',
+                        name: entity.name,
+                        id: entity.id,
+                        navTabs: this.getNavTabs(entity),
+                        context: 'entity',
+                        entity: entity,
+                        depth: 1,
+                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                    };
+                    if (entity.isDuplicate) {
+                        page.name += `-${entity.duplicateId}`;
+                    }
+                    Configuration.addPage(page);
+                    i++;
+                    loop();
+                } else {
+                    resolve(true);
+                }
+            };
+            loop();
+        });
+    }
+
+    public prepareComponents(someComponents?) {
+        logger.info('Prepare components');
+        Configuration.mainData.components = someComponents
+            ? someComponents
+            : DependenciesEngine.getComponents();
+
+        return new Promise((mainPrepareComponentResolve, _mainPrepareComponentReject) => {
+            let i = 0;
+            const len = Configuration.mainData.components.length;
+            const loop = () => {
+                if (i <= len - 1) {
+                    const component = Configuration.mainData.components[i];
+                    if (MarkdownEngine.hasNeighbourReadmeFile(component.file)) {
+                        logger.info(` ${component.name} has a README file, include it`);
+                        const readmeFile = MarkdownEngine.readNeighbourReadmeFile(component.file);
+                        component.readme = markedAcl(readmeFile);
+                    }
+                    const themeResult = collectThemeTokens({
+                        entityFile: component.file,
+                        styleUrls: component.styleUrls,
+                        styles: component.styles
+                    });
+                    component.themeTokens = themeResult.tokens;
+                    component.themeStyleSources = themeResult.sources;
+                    component.themeOverview = themeResult.overview;
+                    const page = {
+                        path: 'components',
+                        name: component.name,
+                        id: component.id,
+                        navTabs: this.getNavTabs(component),
+                        context: 'component',
+                        component: component,
+                        depth: 1,
+                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                    };
+
+                    if (component.isDuplicate) {
+                        page.name += `-${component.duplicateId}`;
+                    }
+                    Configuration.addPage(page);
+
+                    const componentTemplateUrlPromise = new Promise(
+                        (componentTemplateUrlResolve, componentTemplateUrlReject) => {
+                            if (component.templateUrl.length > 0) {
+                                logger.info(` ${component.name} has a templateUrl, include it`);
+                                this.handleTemplateurl(component).then(
+                                    () => {
+                                        componentTemplateUrlResolve(true);
+                                    },
+                                    e => {
+                                        logger.error(e);
+                                        componentTemplateUrlReject();
+                                    }
+                                );
+                            } else {
+                                componentTemplateUrlResolve(true);
+                            }
+                        }
+                    );
+                    const componentStyleUrlsPromise = new Promise(
+                        (componentStyleUrlsResolve, componentStyleUrlsReject) => {
+                            if (component.styleUrls.length > 0) {
+                                logger.info(` ${component.name} has styleUrls, include them`);
+                                this.handleStyleurls(component).then(
+                                    () => {
+                                        componentStyleUrlsResolve(true);
+                                    },
+                                    e => {
+                                        logger.error(e);
+                                        componentStyleUrlsReject();
+                                    }
+                                );
+                            } else {
+                                componentStyleUrlsResolve(true);
+                            }
+                        }
+                    );
+                    const componentStylesPromise = new Promise(
+                        (componentStylesResolve, componentStylesReject) => {
+                            if (component.styles.length > 0) {
+                                logger.info(` ${component.name} has styles, include them`);
+                                this.handleStyles(component).then(
+                                    () => {
+                                        componentStylesResolve(true);
+                                    },
+                                    e => {
+                                        logger.error(e);
+                                        componentStylesReject();
+                                    }
+                                );
+                            } else {
+                                componentStylesResolve(true);
+                            }
+                        }
+                    );
+
+                    Promise.all([
+                        componentTemplateUrlPromise,
+                        componentStyleUrlsPromise,
+                        componentStylesPromise
+                    ]).then(() => {
+                        i++;
+                        loop();
+                    });
+                } else {
+                    mainPrepareComponentResolve(true);
+                }
+            };
+            loop();
+        });
+    }
+
+    public prepareDirectives(someDirectives?) {
+        logger.info('Prepare directives');
+
+        Configuration.mainData.directives = someDirectives
+            ? someDirectives
+            : DependenciesEngine.getDirectives();
+
+        return new Promise((resolve, _reject) => {
+            let i = 0;
+            const len = Configuration.mainData.directives.length;
+            const loop = () => {
+                if (i < len) {
+                    const directive = Configuration.mainData.directives[i];
+                    if (MarkdownEngine.hasNeighbourReadmeFile(directive.file)) {
+                        logger.info(` ${directive.name} has a README file, include it`);
+                        const readme = MarkdownEngine.readNeighbourReadmeFile(directive.file);
+                        directive.readme = markedAcl(readme);
+                    }
+                    const page = {
+                        path: 'directives',
+                        name: directive.name,
+                        id: directive.id,
+                        navTabs: this.getNavTabs(directive),
+                        context: 'directive',
+                        directive: directive,
+                        depth: 1,
+                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                    };
+                    if (directive.isDuplicate) {
+                        page.name += `-${directive.duplicateId}`;
+                    }
+                    Configuration.addPage(page);
+                    i++;
+                    loop();
+                } else {
+                    resolve(true);
+                }
+            };
+            loop();
+        });
+    }
+
+    public prepareInjectables(someInjectables?): Promise<void> {
+        logger.info('Prepare injectables');
+
+        Configuration.mainData.injectables = someInjectables
+            ? someInjectables
+            : DependenciesEngine.getInjectables();
+
+        return new Promise((resolve, _reject) => {
+            let i = 0;
+            const len = Configuration.mainData.injectables.length;
+            const loop = () => {
+                if (i < len) {
+                    const injec = Configuration.mainData.injectables[i];
+                    if (MarkdownEngine.hasNeighbourReadmeFile(injec.file)) {
+                        logger.info(` ${injec.name} has a README file, include it`);
+                        const readme = MarkdownEngine.readNeighbourReadmeFile(injec.file);
+                        injec.readme = markedAcl(readme);
+                    }
+                    const page = {
+                        path: 'injectables',
+                        name: injec.name,
+                        id: injec.id,
+                        navTabs: this.getNavTabs(injec),
+                        context: 'injectable',
+                        injectable: injec,
+                        depth: 1,
+                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                    };
+                    if (injec.isDuplicate) {
+                        page.name += `-${injec.duplicateId}`;
+                    }
+                    Configuration.addPage(page);
+                    i++;
+                    loop();
+                } else {
+                    resolve();
+                }
+            };
+            loop();
+        });
+    }
+
+    public prepareInterceptors(someInterceptors?): Promise<void> {
+        logger.info('Prepare interceptors');
+
+        Configuration.mainData.interceptors = someInterceptors
+            ? someInterceptors
+            : DependenciesEngine.getInterceptors();
+
+        return new Promise((resolve, _reject) => {
+            let i = 0;
+            const len = Configuration.mainData.interceptors.length;
+            const loop = () => {
+                if (i < len) {
+                    const interceptor = Configuration.mainData.interceptors[i];
+                    if (MarkdownEngine.hasNeighbourReadmeFile(interceptor.file)) {
+                        logger.info(` ${interceptor.name} has a README file, include it`);
+                        const readme = MarkdownEngine.readNeighbourReadmeFile(interceptor.file);
+                        interceptor.readme = markedAcl(readme);
+                    }
+                    const page = {
+                        path: 'interceptors',
+                        name: interceptor.name,
+                        id: interceptor.id,
+                        navTabs: this.getNavTabs(interceptor),
+                        context: 'interceptor',
+                        injectable: interceptor,
+                        depth: 1,
+                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                    };
+                    if (interceptor.isDuplicate) {
+                        page.name += `-${interceptor.duplicateId}`;
+                    }
+                    Configuration.addPage(page);
+                    i++;
+                    loop();
+                } else {
+                    resolve();
+                }
+            };
+            loop();
+        });
+    }
+
+    public prepareGuards(someGuards?): Promise<void> {
+        logger.info('Prepare guards');
+
+        Configuration.mainData.guards = someGuards ? someGuards : DependenciesEngine.getGuards();
+
+        return new Promise((resolve, _reject) => {
+            let i = 0;
+            const len = Configuration.mainData.guards.length;
+            const loop = () => {
+                if (i < len) {
+                    const guard = Configuration.mainData.guards[i];
+                    if (MarkdownEngine.hasNeighbourReadmeFile(guard.file)) {
+                        logger.info(` ${guard.name} has a README file, include it`);
+                        const readme = MarkdownEngine.readNeighbourReadmeFile(guard.file);
+                        guard.readme = markedAcl(readme);
+                    }
+                    const page = {
+                        path: 'guards',
+                        name: guard.name,
+                        id: guard.id,
+                        navTabs: this.getNavTabs(guard),
+                        context: 'guard',
+                        injectable: guard,
+                        depth: 1,
+                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                    };
+                    if (guard.isDuplicate) {
+                        page.name += `-${guard.duplicateId}`;
+                    }
+                    Configuration.addPage(page);
+                    i++;
+                    loop();
+                } else {
+                    resolve();
+                }
+            };
+            loop();
+        });
+    }
+
+    public prepareRoutes(): Promise<void> {
+        logger.info('Process routes');
+        Configuration.mainData.routes = DependenciesEngine.getRoutes();
+
+        return new Promise((resolve, reject) => {
+            Configuration.addPage({
+                name: 'routes',
+                id: 'routes',
+                context: 'routes',
+                depth: 0,
+                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+            });
+
+            if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
+                RouterParserUtil.generateRoutesIndex(
+                    Configuration.mainData.output,
+                    Configuration.mainData.routes
+                ).then(
+                    () => {
+                        logger.info(' Routes index generated');
+                        resolve();
+                    },
+                    e => {
+                        logger.error(e);
+                        reject();
+                    }
+                );
+            } else {
+                resolve();
+            }
+        });
+    }
+
+    public prepareCoverage() {
+        logger.info('Process documentation coverage report');
+
+        return new Promise((resolve, _reject) => {
+            /*
+             * loop with components, directives, entities, classes, injectables, interfaces, pipes, guards, misc functions variables
+             */
+            let files = [];
+            let totalProjectStatementDocumented = 0;
+            const getStatus = percent => {
+                let status;
+                if (percent <= 25) {
+                    status = 'low';
+                } else if (percent > 25 && percent <= 50) {
+                    status = 'medium';
+                } else if (percent > 50 && percent <= 75) {
+                    status = 'good';
+                } else {
+                    status = 'very-good';
+                }
+                return status;
+            };
+            const processComponentsAndDirectivesAndControllersAndEntities = list => {
+                list.forEach((el: any) => {
+                    const element = (Object as any).assign({}, el);
+                    if (!element.propertiesClass) {
+                        element.propertiesClass = [];
+                    }
+                    if (!element.methodsClass) {
+                        element.methodsClass = [];
+                    }
+                    if (!element.hostBindings) {
+                        element.hostBindings = [];
+                    }
+                    if (!element.hostListeners) {
+                        element.hostListeners = [];
+                    }
+                    if (!element.inputsClass) {
+                        element.inputsClass = [];
+                    }
+                    if (!element.outputsClass) {
+                        element.outputsClass = [];
+                    }
+                    const cl: any = {
+                        filePath: element.file,
+                        type: element.type,
+                        linktype: element.type,
+                        name: element.name
+                    };
+                    let totalStatementDocumented = 0;
+                    let totalStatements =
+                        element.propertiesClass.length +
+                        element.methodsClass.length +
+                        element.inputsClass.length +
+                        element.hostBindings.length +
+                        element.hostListeners.length +
+                        element.outputsClass.length +
+                        1; // +1 for element decorator comment
+
+                    if (element.constructorObj) {
+                        totalStatements += 1;
+                        if (
+                            element.constructorObj?.description &&
+                            element.constructorObj.description !== ''
+                        ) {
+                            totalStatementDocumented += 1;
+                        }
+                    }
+                    if (element.description && element.description !== '') {
+                        totalStatementDocumented += 1;
+                    }
+
+                    element.propertiesClass.forEach((property: any) => {
+                        if (property.modifierKind === SyntaxKind.PrivateKeyword) {
+                            // Doesn't handle private for coverage
+                            totalStatements -= 1;
+                        }
+                        if (
+                            property.description &&
+                            property.description !== '' &&
+                            property.modifierKind !== SyntaxKind.PrivateKeyword
+                        ) {
+                            totalStatementDocumented += 1;
+                        }
+                    });
+                    element.methodsClass.forEach((method: any) => {
+                        if (method.modifierKind === SyntaxKind.PrivateKeyword) {
+                            // Doesn't handle private for coverage
+                            totalStatements -= 1;
+                        }
+                        if (
+                            method.description &&
+                            method.description !== '' &&
+                            method.modifierKind !== SyntaxKind.PrivateKeyword
+                        ) {
+                            totalStatementDocumented += 1;
+                        }
+                    });
+                    element.hostBindings.forEach((property: any) => {
+                        if (property.modifierKind === SyntaxKind.PrivateKeyword) {
+                            // Doesn't handle private for coverage
+                            totalStatements -= 1;
+                        }
+                        if (
+                            property.description &&
+                            property.description !== '' &&
+                            property.modifierKind !== SyntaxKind.PrivateKeyword
+                        ) {
+                            totalStatementDocumented += 1;
+                        }
+                    });
+                    element.hostListeners.forEach((method: any) => {
+                        if (method.modifierKind === SyntaxKind.PrivateKeyword) {
+                            // Doesn't handle private for coverage
+                            totalStatements -= 1;
+                        }
+                        if (
+                            method.description &&
+                            method.description !== '' &&
+                            method.modifierKind !== SyntaxKind.PrivateKeyword
+                        ) {
+                            totalStatementDocumented += 1;
+                        }
+                    });
+                    element.inputsClass.forEach((input: any) => {
+                        if (input.modifierKind === SyntaxKind.PrivateKeyword) {
+                            // Doesn't handle private for coverage
+                            totalStatements -= 1;
+                        }
+                        if (
+                            input.description &&
+                            input.description !== '' &&
+                            input.modifierKind !== SyntaxKind.PrivateKeyword
+                        ) {
+                            totalStatementDocumented += 1;
+                        }
+                    });
+                    element.outputsClass.forEach((output: any) => {
+                        if (output.modifierKind === SyntaxKind.PrivateKeyword) {
+                            // Doesn't handle private for coverage
+                            totalStatements -= 1;
+                        }
+                        if (
+                            output.description &&
+                            output.description !== '' &&
+                            output.modifierKind !== SyntaxKind.PrivateKeyword
+                        ) {
+                            totalStatementDocumented += 1;
+                        }
+                    });
+
+                    cl.coveragePercent = Math.floor(
+                        (totalStatementDocumented / totalStatements) * 100
+                    );
+                    if (totalStatements === 0) {
+                        cl.coveragePercent = 0;
+                    }
+                    cl.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
+                    cl.status = getStatus(cl.coveragePercent);
+                    totalProjectStatementDocumented += cl.coveragePercent;
+                    files.push(cl);
+                });
+            };
+            const processCoveragePerFile = () => {
+                logger.info('Process documentation coverage per file');
+                logger.info('-------------------');
+
+                const overFiles = files.filter(f => {
+                    const overTest =
+                        f.coveragePercent >= Configuration.mainData.coverageMinimumPerFile;
+                    if (overTest && !Configuration.mainData.coverageTestShowOnlyFailed) {
+                        logger.info(
+                            `${f.coveragePercent} % for file ${f.filePath} - ${f.name} - over minimum per file`
+                        );
+                    }
+                    return overTest;
+                });
+                const underFiles = files.filter(f => {
+                    const underTest =
+                        f.coveragePercent < Configuration.mainData.coverageMinimumPerFile;
+                    if (underTest) {
+                        logger.error(
+                            `${f.coveragePercent} % for file ${f.filePath} - ${f.name} - under minimum per file`
+                        );
+                    }
+                    return underTest;
+                });
+
+                logger.info('-------------------');
+                return {
+                    overFiles: overFiles,
+                    underFiles: underFiles
+                };
+            };
+            const processFunctionsAndVariables = (id, type) => {
+                id.forEach((el: any) => {
+                    const cl: any = {
+                        filePath: el.file,
+                        type: type,
+                        linktype: el.type,
+                        linksubtype: el.subtype,
+                        name: el.name
+                    };
+                    if (type === 'variable' || type === 'function' || type === 'type alias') {
+                        cl.linktype = 'miscellaneous';
+                    }
+                    let totalStatementDocumented = 0;
+                    let totalStatements = 1;
+
+                    if (el.modifierKind === SyntaxKind.PrivateKeyword) {
+                        // Doesn't handle private for coverage
+                        totalStatements -= 1;
+                    }
+                    if (
+                        el.description &&
+                        el.description !== '' &&
+                        el.modifierKind !== SyntaxKind.PrivateKeyword
+                    ) {
+                        totalStatementDocumented += 1;
+                    }
+
+                    cl.coveragePercent = Math.floor(
+                        (totalStatementDocumented / totalStatements) * 100
+                    );
+                    cl.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
+                    cl.status = getStatus(cl.coveragePercent);
+                    totalProjectStatementDocumented += cl.coveragePercent;
+                    files.push(cl);
+                });
+            };
+
+            const processClasses = (list, type, linktype) => {
+                list.forEach((cl: any) => {
+                    const element = (Object as any).assign({}, cl);
+                    if (!element.properties) {
+                        element.properties = [];
+                    }
+                    if (!element.methods) {
+                        element.methods = [];
+                    }
+                    const cla: any = {
+                        filePath: element.file,
+                        type: type,
+                        linktype: linktype,
+                        name: element.name
+                    };
+                    let totalStatementDocumented = 0;
+                    let totalStatements = element.properties.length + element.methods.length + 1; // +1 for element itself
+
+                    if (element.constructorObj) {
+                        totalStatements += 1;
+                        if (
+                            element.constructorObj?.description &&
+                            element.constructorObj.description !== ''
+                        ) {
+                            totalStatementDocumented += 1;
+                        }
+                    }
+                    if (element.description && element.description !== '') {
+                        totalStatementDocumented += 1;
+                    }
+
+                    element.properties.forEach((property: any) => {
+                        if (property.modifierKind === SyntaxKind.PrivateKeyword) {
+                            // Doesn't handle private for coverage
+                            totalStatements -= 1;
+                        }
+                        if (
+                            property.description &&
+                            property.description !== '' &&
+                            property.modifierKind !== SyntaxKind.PrivateKeyword
+                        ) {
+                            totalStatementDocumented += 1;
+                        }
+                    });
+                    element.methods.forEach((method: any) => {
+                        if (method.modifierKind === SyntaxKind.PrivateKeyword) {
+                            // Doesn't handle private for coverage
+                            totalStatements -= 1;
+                        }
+                        if (
+                            method.description &&
+                            method.description !== '' &&
+                            method.modifierKind !== SyntaxKind.PrivateKeyword
+                        ) {
+                            totalStatementDocumented += 1;
+                        }
+                    });
+
+                    cla.coveragePercent = Math.floor(
+                        (totalStatementDocumented / totalStatements) * 100
+                    );
+                    if (totalStatements === 0) {
+                        cla.coveragePercent = 0;
+                    }
+                    cla.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
+                    cla.status = getStatus(cla.coveragePercent);
+                    totalProjectStatementDocumented += cla.coveragePercent;
+                    files.push(cla);
+                });
+            };
+
+            processComponentsAndDirectivesAndControllersAndEntities(
+                Configuration.mainData.components
+            );
+            processComponentsAndDirectivesAndControllersAndEntities(
+                Configuration.mainData.directives
+            );
+            processComponentsAndDirectivesAndControllersAndEntities(
+                Configuration.mainData.entities
+            );
+
+            processClasses(Configuration.mainData.classes, 'class', 'classe');
+            processClasses(Configuration.mainData.injectables, 'injectable', 'injectable');
+            processClasses(Configuration.mainData.interfaces, 'interface', 'interface');
+            processClasses(Configuration.mainData.guards, 'guard', 'guard');
+            processClasses(Configuration.mainData.interceptors, 'interceptor', 'interceptor');
+
+            Configuration.mainData.pipes.forEach((pipe: any) => {
+                const cl: any = {
+                    filePath: pipe.file,
+                    type: pipe.type,
+                    linktype: pipe.type,
+                    name: pipe.name
+                };
+                let totalStatementDocumented = 0;
+                const totalStatements = 1;
+                if (pipe.description && pipe.description !== '') {
+                    totalStatementDocumented += 1;
+                }
+
+                cl.coveragePercent = Math.floor((totalStatementDocumented / totalStatements) * 100);
+                cl.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
+                cl.status = getStatus(cl.coveragePercent);
+                totalProjectStatementDocumented += cl.coveragePercent;
+                files.push(cl);
+            });
+
+            processFunctionsAndVariables(
+                Configuration.mainData.miscellaneous.functions,
+                'function'
+            );
+            processFunctionsAndVariables(
+                Configuration.mainData.miscellaneous.variables,
+                'variable'
+            );
+            processFunctionsAndVariables(
+                Configuration.mainData.miscellaneous.typealiases,
+                'type alias'
+            );
+
+            files = [...files].sort((a, b) => a.filePath.localeCompare(b.filePath));
+
+            const coverageData = {
+                count:
+                    files.length > 0
+                        ? Math.floor(totalProjectStatementDocumented / files.length)
+                        : 0,
+                status: '',
+                files
+            };
+            coverageData.status = getStatus(coverageData.count);
+            Configuration.addPage({
+                name: 'coverage',
+                id: 'coverage',
+                context: 'coverage',
+                files: files,
+                data: coverageData,
+                depth: 0,
+                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+            });
+            coverageData.files = files;
+            Configuration.mainData.coverageData = coverageData;
+            if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
+                HtmlEngine.generateCoverageBadge(
+                    Configuration.mainData.output,
+                    'documentation',
+                    coverageData
+                );
+            }
+            files = [...files].sort((a, b) => a.coveragePercent - b.coveragePercent);
+
+            let coverageTestPerFileResults;
+            if (
+                Configuration.mainData.coverageTest &&
+                !Configuration.mainData.coverageTestPerFile
+            ) {
+                // Global coverage test and not per file
+                if (coverageData.count >= Configuration.mainData.coverageTestThreshold) {
+                    logger.info(
+                        `Documentation coverage (${coverageData.count}%) is over threshold (${Configuration.mainData.coverageTestThreshold}%)`
+                    );
+                    generationPromiseResolve(true);
+                    process.exit(0);
+                } else {
+                    const message = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`;
+                    generationPromiseReject();
+                    if (Configuration.mainData.coverageTestThresholdFail) {
+                        logger.error(message);
+                        process.exit(1);
+                    } else {
+                        logger.warn(message);
+                        process.exit(0);
+                    }
+                }
+            } else if (
+                !Configuration.mainData.coverageTest &&
+                Configuration.mainData.coverageTestPerFile
+            ) {
+                coverageTestPerFileResults = processCoveragePerFile();
+                // Per file coverage test and not global
+                if (coverageTestPerFileResults.underFiles.length > 0) {
+                    const message = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
+                    generationPromiseReject();
+                    if (Configuration.mainData.coverageTestThresholdFail) {
+                        logger.error(message);
+                        process.exit(1);
+                    } else {
+                        logger.warn(message);
+                        process.exit(0);
+                    }
+                } else {
+                    logger.info(
+                        `Documentation coverage per file is over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`
+                    );
+                    generationPromiseResolve(true);
+                    process.exit(0);
+                }
+            } else if (
+                Configuration.mainData.coverageTest &&
+                Configuration.mainData.coverageTestPerFile
+            ) {
+                // Per file coverage test and global
+                coverageTestPerFileResults = processCoveragePerFile();
+                if (
+                    coverageData.count >= Configuration.mainData.coverageTestThreshold &&
+                    coverageTestPerFileResults.underFiles.length === 0
+                ) {
+                    logger.info(
+                        `Documentation coverage (${coverageData.count}%) is over threshold (${Configuration.mainData.coverageTestThreshold}%)`
+                    );
+                    logger.info(
+                        `Documentation coverage per file is over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`
+                    );
+                    generationPromiseResolve(true);
+                    process.exit(0);
+                } else if (
+                    coverageData.count >= Configuration.mainData.coverageTestThreshold &&
+                    coverageTestPerFileResults.underFiles.length > 0
+                ) {
+                    logger.info(
+                        `Documentation coverage (${coverageData.count}%) is over threshold (${Configuration.mainData.coverageTestThreshold}%)`
+                    );
+                    const message = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
+                    generationPromiseReject();
+                    if (Configuration.mainData.coverageTestThresholdFail) {
+                        logger.error(message);
+                        process.exit(1);
+                    } else {
+                        logger.warn(message);
+                        process.exit(0);
+                    }
+                } else if (
+                    coverageData.count < Configuration.mainData.coverageTestThreshold &&
+                    coverageTestPerFileResults.underFiles.length > 0
+                ) {
+                    const messageGlobal = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`,
+                        messagePerFile = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
+                    generationPromiseReject();
+                    if (Configuration.mainData.coverageTestThresholdFail) {
+                        logger.error(messageGlobal);
+                        logger.error(messagePerFile);
+                        process.exit(1);
+                    } else {
+                        logger.warn(messageGlobal);
+                        logger.warn(messagePerFile);
+                        process.exit(0);
+                    }
+                } else {
+                    const message = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`,
+                        messagePerFile = `Documentation coverage per file is over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
+                    generationPromiseReject();
+                    if (Configuration.mainData.coverageTestThresholdFail) {
+                        logger.error(message);
+                        logger.info(messagePerFile);
+                        process.exit(1);
+                    } else {
+                        logger.warn(message);
+                        logger.info(messagePerFile);
+                        process.exit(0);
+                    }
+                }
+            } else {
+                resolve(true);
+            }
+        });
+    }
+
+    public prepareUnitTestCoverage() {
+        logger.info('Process unit test coverage report');
+        return new Promise((resolve, _reject) => {
+            let covDat, covFileNames;
+
+            const coverageData: CoverageData = Configuration.mainData.coverageData;
+
+            if (!coverageData.files) {
+                logger.warn('Missing documentation coverage data');
+            } else {
+                covDat = {};
+                covFileNames = coverageData.files.map(el => {
+                    const fileName = path.normalize(el.filePath);
+                    covDat[fileName] = {
+                        type: el.type,
+                        linktype: el.linktype,
+                        linksubtype: el.linksubtype,
+                        name: el.name
+                    };
+                    return fileName;
+                });
+            }
+            // read coverage summary file and data
+            let unitTestSummary = {};
+            const fileDat = FileEngine.getSync(Configuration.mainData.unitTestCoverage);
+            if (fileDat) {
+                unitTestSummary = JSON.parse(fileDat);
+            } else {
+                return Promise.reject('Error reading unit test coverage file');
+            }
+            const getCovStatus = (percent, totalLines) => {
+                let status;
+                if (totalLines === 0) {
+                    status = 'uncovered';
+                } else if (percent <= 25) {
+                    status = 'low';
+                } else if (percent > 25 && percent <= 50) {
+                    status = 'medium';
+                } else if (percent > 50 && percent <= 75) {
+                    status = 'good';
+                } else {
+                    status = 'very-good';
+                }
+                return status;
+            };
+            const getCoverageData = (data, fileName) => {
+                let out = {};
+                if (fileName !== 'total') {
+                    if (covDat === undefined) {
+                        // need a name to include in output but this isn't visible
+                        out = { name: fileName, filePath: fileName };
+                    } else {
+                        const findMatch = covFileNames.filter(el => {
+                            const normalizedFilename = path.normalize(fileName).replace(/\\/g, '/');
+                            return el.includes(fileName) || normalizedFilename.includes(el);
+                        });
+                        if (findMatch.length > 0) {
+                            out = { ...covDat[findMatch[0]] };
+                            out['filePath'] = fileName;
+                        }
+                    }
+                }
+                const keysToGet = ['statements', 'branches', 'functions', 'lines'];
+                keysToGet.forEach(key => {
+                    if (data[key]) {
+                        const t = data[key];
+                        out[key] = {
+                            coveragePercent: Math.round(t.pct),
+                            coverageCount: `${t.covered}/${t.total}`,
+                            status: getCovStatus(t.pct, t.total),
+                            total: t.total,
+                            covered: t.covered
+                        };
+                    }
+                });
+                return out;
+            };
+
+            const unitTestData = {};
+            const files = [];
+            for (const file in unitTestSummary) {
+                const dat = getCoverageData(unitTestSummary[file], file);
+                if (file === 'total') {
+                    unitTestData['total'] = dat;
+                } else {
+                    files.push(dat);
+                }
+            }
+            unitTestData['files'] = files;
+            unitTestData['idColumn'] = covDat !== undefined; // should we include the id column
+            Configuration.mainData.unitTestData = unitTestData;
+            Configuration.addPage({
+                name: 'unit-test',
+                id: 'unit-test',
+                context: 'unit-test',
+                files: files,
+                data: unitTestData,
+                depth: 0,
+                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+            });
+
+            if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
+                const keysToGet = ['statements', 'branches', 'functions', 'lines'];
+                keysToGet.forEach(key => {
+                    if (unitTestData['total'][key]) {
+                        HtmlEngine.generateCoverageBadge(Configuration.mainData.output, key, {
+                            count: unitTestData['total'][key]['coveragePercent'],
+                            status: unitTestData['total'][key]['status']
+                        });
+                    }
+                });
+            }
+            resolve(true);
+        });
+    }
+
+    private processPage(page): Promise<void> {
+        logger.info('Process page', page.name);
+
+        const htmlData = HtmlEngine.render(Configuration.mainData, page);
+        let finalPath = Configuration.mainData.output;
+
+        if (Configuration.mainData.output.lastIndexOf('/') === -1) {
+            finalPath += '/';
+        }
+        if (page.path) {
+            finalPath += `${page.path}/`;
+        }
+
+        if (page.filename) {
+            finalPath += `${page.filename}.html`;
+        } else {
+            finalPath += `${page.name}.html`;
+        }
+
+        FileEngine.writeSync(finalPath, htmlData);
+        return Promise.resolve();
+    }
+
+    private processTemplatePlayground(): void {
+        logger.info('Process template playground');
+
+        // Create template playground page
+        const _templatePlaygroundPage = {
+            name: 'template-playground',
+            filename: 'template-playground',
+            context: 'template-playground',
+            depth: 0,
+            pageType: 'template-playground'
+        };
+
+        // Generate a comprehensive template playground page with all required dependencies
+        const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Template Playground - ${Configuration.mainData.documentationMainName || 'Documentation'}</title>
+    <meta name="description" content="Template playground for customizing Compodoc templates">
+    <link rel="stylesheet" href="styles/template-playground.css">
+    <script src="js/libs/monaco-editor/min/vs/loader.js"></script>
+    <script src="js/libs/handlebars.min.js"></script>
+    <script src="js/libs/jszip.min.js"></script>
+</head>
+<body>
+    <div id="template-playground-root">
+        <div class="template-playground-container">
+            <h1>Template Playground</h1>
+            <p>Welcome to the Template Playground! This tool allows you to customize and preview Compodoc templates.</p>
+            
+            <div class="features">
+                <h2>Features</h2>
+                <ul>
+                    <li>Live template editing with monaco-editor</li>
+                    <li>Real-time preview using handlebars.min.js</li>
+                    <li>Template export and download with jszip.min.js</li>
+                    <li>Session-based customization</li>
+                </ul>
+            </div>
+            
+            <div class="usage">
+                <h2>How to Use</h2>
+                <ol>
+                    <li>Start the template playground server</li>
+                    <li>Edit templates in the Monaco editor</li>
+                    <li>Preview changes in real-time</li>
+                    <li>Download customized template package</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/template-playground.js"></script>
+</body>
+</html>`;
+
+        let finalPath = Configuration.mainData.output;
+
+        if (Configuration.mainData.output.lastIndexOf('/') === -1) {
+            finalPath += '/';
+        }
+        finalPath += 'template-playground.html';
+
+        FileEngine.writeSync(finalPath, htmlContent);
+        logger.info('Template playground page generated');
+
+        // Generate required JavaScript file
+        const jsPath = path.join(Configuration.mainData.output, 'js', 'template-playground.js');
+        const jsContent = `// Template Playground JavaScript
+(function() {
+    'use strict';
+    
+    // Initialize template playground
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Template Playground initialized');
+        
+        // Initialize Monaco Editor when available
+        if (typeof require !== 'undefined') {
+            require.config({ paths: { 'vs': 'js/libs/monaco-editor/min/vs' }});
+            require(['vs/editor/editor.main'], function() {
+                console.log('Monaco Editor loaded');
+            });
+        }
+        
+        // Initialize Handlebars when available
+        if (typeof Handlebars !== 'undefined') {
+            console.log('Handlebars loaded');
+        }
+        
+        // Initialize JSZip when available
+        if (typeof JSZip !== 'undefined') {
+            console.log('JSZip loaded');
+        }
+    });
+})();`;
+
+        // Ensure js directory exists
+        const jsDir = path.join(Configuration.mainData.output, 'js');
+        if (!fs.existsSync(jsDir)) {
+            fs.mkdirSync(jsDir, { recursive: true });
+        }
+        FileEngine.writeSync(jsPath, jsContent);
+        logger.info('Template playground JavaScript generated');
+
+        // Generate required CSS file
+        const cssPath = path.join(
+            Configuration.mainData.output,
+            'styles',
+            'template-playground.css'
+        );
+        const cssContent = `/* Template Playground Styles */
+.template-playground-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#template-playground-root {
+    min-height: 100vh;
+    background: #f8f9fa;
+}
+
+.template-playground-container h1 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+.features, .usage {
+    background: white;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.features h2, .usage h2 {
+    color: #34495e;
+    margin-top: 0;
+}
+
+.features ul, .usage ol {
+    line-height: 1.6;
+}
+
+.features li, .usage li {
+    margin: 8px 0;
+}`;
+
+        // Ensure styles directory exists
+        const stylesDir = path.join(Configuration.mainData.output, 'styles');
+        if (!fs.existsSync(stylesDir)) {
+            fs.mkdirSync(stylesDir, { recursive: true });
+        }
+        FileEngine.writeSync(cssPath, cssContent);
+        logger.info('Template playground CSS generated');
+    }
+
+    /**
+     * Build the standalone component dependency graph from all components
+     * that have standalone: true and imports.
+     */
+    private buildDependencyGraph() {
+        const components = (Configuration.mainData.components as any[]) ?? [];
+        const directives = (Configuration.mainData.directives as any[]) ?? [];
+        const pipes = (Configuration.mainData.pipes as any[]) ?? [];
+        const modules = (Configuration.mainData.modules as any[]) ?? [];
+        const injectables = (Configuration.mainData.injectables as any[]) ?? [];
+
+        // Build a name→type+url lookup for all known entities
+        const entityMap = new Map<string, { type: string; url?: string }>();
+        for (const c of components) {
+            entityMap.set(c.name, { type: 'component', url: `./components/${c.name}.html` });
+        }
+        for (const d of directives) {
+            entityMap.set(d.name, { type: 'directive', url: `./directives/${d.name}.html` });
+        }
+        for (const p of pipes) {
+            entityMap.set(p.name, { type: 'pipe', url: `./pipes/${p.name}.html` });
+        }
+        for (const m of modules) {
+            entityMap.set(m.name, { type: 'module', url: `./modules/${m.name}.html` });
+        }
+        for (const s of injectables) {
+            entityMap.set(s.name, { type: 'injectable', url: `./injectables/${s.name}.html` });
+        }
+
+        const nodeSet = new Set<string>();
+        const edges: Array<{ source: string; target: string }> = [];
+
+        for (const comp of components) {
+            if (!comp.standalone || !comp.imports?.length) {
+                continue;
+            }
+            nodeSet.add(comp.name);
+            for (const imp of comp.imports) {
+                const impName = typeof imp === 'string' ? imp : imp.name;
+                if (!impName) {
+                    continue;
+                }
+                nodeSet.add(impName);
+                edges.push({ source: comp.name, target: impName });
+            }
+        }
+
+        const nodes = Array.from(nodeSet).map(name => {
+            const info = entityMap.get(name);
+            return {
+                name,
+                type: info?.type ?? 'module',
+                url: info?.url
+            };
+        });
+
+        Configuration.mainData.dependencyGraph = { nodes, edges };
+    }
+
+    private buildEntityIndex() {
+        const index = buildEntityIndex(
+            Configuration.mainData as unknown as Record<string, unknown>
+        );
+        Configuration.mainData.entityIndex = index;
+    }
+
+    public processPages() {
+        this.buildDependencyGraph();
+        this.buildEntityIndex();
+        Configuration.mainData.generatedAt = new Date().toISOString();
+        const pages = [...Configuration.pages].sort((a, b) => a.name.localeCompare(b.name));
+
+        logger.info('Process pages');
+        Promise.all(pages.map(page => this.processPage(page)))
+            .then(() => {
+                const callbacksAfterGenerateSearchIndexJson = () => {
+                    // Process template playground if enabled
+                    if (Configuration.mainData.templatePlayground) {
+                        this.processTemplatePlayground();
+                    }
+
+                    if (Configuration.mainData.additionalPages.length > 0) {
+                        this.processAdditionalPages();
+                    } else {
+                        if (Configuration.mainData.assetsFolder !== '') {
+                            this.processAssetsFolder();
+                        }
+                        this.processResources();
+                    }
+                };
+                callbacksAfterGenerateSearchIndexJson();
+            })
+            .catch(e => {
+                logger.error(e);
+            });
+    }
+
+    public processAdditionalPages() {
+        logger.info('Process additional pages');
+        const pages = Configuration.mainData.additionalPages;
+        Promise.all(
+            pages.map(page => {
+                if (page.children.length > 0) {
+                    return Promise.all([
+                        this.processPage(page),
+                        ...page.children.map(childPage => this.processPage(childPage))
+                    ]);
+                } else {
+                    return this.processPage(page);
+                }
+            })
+        )
+            .then(() => {
+                if (Configuration.mainData.assetsFolder !== '') {
+                    this.processAssetsFolder();
+                }
+                this.processResources();
+            })
+            .catch(e => {
+                logger.error(e);
+                return Promise.reject(e);
+            });
+    }
+
+    public processAssetsFolder(): void {
+        logger.info('Copy assets folder');
+
+        if (!FileEngine.existsSync(Configuration.mainData.assetsFolder)) {
+            logger.error(
+                `Provided assets folder ${Configuration.mainData.assetsFolder} did not exist`
+            );
+        } else {
+            let finalOutput = Configuration.mainData.output;
+
+            const testOutputDir = Configuration.mainData.output.match(cwd);
+
+            if (testOutputDir && testOutputDir.length > 0) {
+                finalOutput = Configuration.mainData.output.replace(cwd + path.sep, '');
+            }
+
+            const destination = path.join(
+                finalOutput,
+                path.basename(Configuration.mainData.assetsFolder)
+            );
+            fs.copy(
+                path.resolve(Configuration.mainData.assetsFolder),
+                path.resolve(destination),
+                err => {
+                    if (err) {
+                        logger.error('Error during resources copy ', err);
+                    }
+                }
+            );
+        }
+    }
+
+    public processResources() {
+        logger.info('Copy main resources');
+
+        const onComplete = () => {
+            // Run Pagefind search indexing after all HTML files are written
+            if (!Configuration.mainData.disableSearch) {
+                runPagefindIndex(Configuration.mainData.output);
+            }
+
+            logger.info(
+                'Documentation generated in ' +
+                    Configuration.mainData.output +
+                    ' in ' +
+                    this.getElapsedTime() +
+                    ' seconds using ' +
+                    Configuration.mainData.theme +
+                    ' theme'
+            );
+            if (Configuration.mainData.serve) {
+                logger.info(
+                    `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${Configuration.mainData.port}`
+                );
+                this.runWebServer(Configuration.mainData.output);
+            } else {
+                generationPromiseResolve(true);
+                this.endCallback();
+            }
+        };
+
+        let finalOutput = Configuration.mainData.output;
+
+        const testOutputDir = Configuration.mainData.output.match(cwd);
+
+        if (testOutputDir && testOutputDir.length > 0) {
+            finalOutput = Configuration.mainData.output.replace(cwd + path.sep, '');
+        }
+
+        fs.copy(
+            path.resolve(`${__dirname}/../src/resources/`),
+            path.resolve(finalOutput),
+            errorCopy => {
+                if (errorCopy) {
+                    logger.error('Error during resources copy ', errorCopy);
+                } else {
+                    const extThemePromise = new Promise((extThemeResolve, extThemeReject) => {
+                        if (Configuration.mainData.customThemePath) {
+                            fs.copy(
+                                Configuration.mainData.customThemePath,
+                                path.resolve(`${finalOutput}/styles/custom.css`),
+                                errorCopyTheme => {
+                                    if (errorCopyTheme) {
+                                        logger.error(
+                                            'Error during custom theme copy ',
+                                            errorCopyTheme
+                                        );
+                                        extThemeReject();
+                                    } else {
+                                        logger.info('Custom theme copy succeeded');
+                                        extThemeResolve(true);
+                                    }
+                                }
+                            );
+                        } else if (Configuration.mainData.extTheme) {
+                            fs.copy(
+                                path.resolve(cwd + path.sep + Configuration.mainData.extTheme),
+                                path.resolve(`${finalOutput}/styles/`),
+                                errorCopyTheme => {
+                                    if (errorCopyTheme) {
+                                        logger.error(
+                                            'Error during external styling theme copy ',
+                                            errorCopyTheme
+                                        );
+                                        extThemeReject();
+                                    } else {
+                                        logger.info('External styling theme copy succeeded');
+                                        extThemeResolve(true);
+                                    }
+                                }
+                            );
+                        } else {
+                            extThemeResolve(true);
+                        }
+                    });
+
+                    const customFaviconPromise = new Promise(
+                        (customFaviconResolve, customFaviconReject) => {
+                            if (Configuration.mainData.customFavicon !== '') {
+                                logger.info(`Custom favicon supplied`);
+                                fs.copy(
+                                    path.resolve(
+                                        cwd + path.sep + Configuration.mainData.customFavicon
+                                    ),
+                                    path.resolve(`${finalOutput}/images/favicon.ico`),
+                                    errorCopyFavicon => {
+                                        // tslint:disable-line
+                                        if (errorCopyFavicon) {
+                                            logger.error(
+                                                'Error during resources copy of favicon',
+                                                errorCopyFavicon
+                                            );
+                                            customFaviconReject();
+                                        } else {
+                                            logger.info('External custom favicon copy succeeded');
+                                            customFaviconResolve(true);
+                                        }
+                                    }
+                                );
+                            } else {
+                                customFaviconResolve(true);
+                            }
+                        }
+                    );
+
+                    const customLogoPromise = new Promise((customLogoResolve, customLogoReject) => {
+                        if (Configuration.mainData.customLogo !== '') {
+                            logger.info(`Custom logo supplied`);
+                            fs.copy(
+                                path.resolve(cwd + path.sep + Configuration.mainData.customLogo),
+                                path.resolve(
+                                    finalOutput +
+                                        '/images/' +
+                                        Configuration.mainData.customLogo.split('/').pop()
+                                ),
+                                errorCopyLogo => {
+                                    // tslint:disable-line
+                                    if (errorCopyLogo) {
+                                        logger.error(
+                                            'Error during resources copy of logo',
+                                            errorCopyLogo
+                                        );
+                                        customLogoReject();
+                                    } else {
+                                        logger.info('External custom logo copy succeeded');
+                                        customLogoResolve(true);
+                                    }
+                                }
+                            );
+                        } else {
+                            customLogoResolve(true);
+                        }
+                    });
+
+                    Promise.all([extThemePromise, customFaviconPromise, customLogoPromise]).then(
+                        () => {
+                            onComplete();
+                        }
+                    );
+                }
+            }
+        );
+    }
+
+    /**
+     * Calculates the elapsed time since the program was started.
+     *
+     * @returns {number}
+     */
+    private getElapsedTime() {
+        return (Date.now() - startTime.valueOf()) / 1000;
+    }
+
+    public processGraphs() {
+        if (Configuration.mainData.disableGraph) {
+            logger.info('Graph generation disabled');
+            this.processPages();
+        } else {
+            logger.info('Process main graph');
+            const modules = Configuration.mainData.modules;
+            let i = 0;
+            const len = modules.length;
+            const loop = () => {
+                if (i <= len - 1) {
+                    logger.info('Process module graph ', modules[i].name);
+                    let finalPath = Configuration.mainData.output;
+                    if (Configuration.mainData.output.lastIndexOf('/') === -1) {
+                        finalPath += '/';
+                    }
+                    finalPath += `modules/${modules[i].name}`;
+                    const _rawModule = DependenciesEngine.getRawModule(modules[i].name);
+                    if (
+                        _rawModule.declarations.length > 0 ||
+                        _rawModule.bootstrap.length > 0 ||
+                        _rawModule.imports.length > 0 ||
+                        _rawModule.exports.length > 0 ||
+                        _rawModule.providers.length > 0
+                    ) {
+                        NgdEngine.renderGraph(
+                            modules[i].file,
+                            finalPath,
+                            'f',
+                            modules[i].name
+                        ).then(
+                            () => {
+                                NgdEngine.readGraph(
+                                    path.resolve(`${finalPath + path.sep}dependencies.svg`),
+                                    modules[i].name
+                                ).then(
+                                    data => {
+                                        modules[i].graph = data;
+                                        i++;
+                                        loop();
+                                    },
+                                    err => {
+                                        logger.error('Error during graph read: ', err);
+                                    }
+                                );
+                            },
+                            errorMessage => {
+                                logger.error(errorMessage);
+                            }
+                        );
+                    } else {
+                        i++;
+                        loop();
+                    }
+                } else {
+                    this.processPages();
+                }
+            };
+            let finalMainGraphPath = Configuration.mainData.output;
+            if (finalMainGraphPath.lastIndexOf('/') === -1) {
+                finalMainGraphPath += '/';
+            }
+            finalMainGraphPath += 'graph';
+            NgdEngine.init(path.resolve(finalMainGraphPath));
+
+            NgdEngine.renderGraph(
+                Configuration.mainData.tsconfig,
+                path.resolve(finalMainGraphPath),
+                'p'
+            ).then(
+                () => {
+                    NgdEngine.readGraph(
+                        path.resolve(`${finalMainGraphPath + path.sep}dependencies.svg`),
+                        'Main graph'
+                    ).then(
+                        data => {
+                            Configuration.mainData.mainGraph = data;
+                            loop();
+                        },
+                        err => {
+                            logger.error('Error during main graph reading : ', err);
+                            Configuration.mainData.disableMainGraph = true;
+                            loop();
+                        }
+                    );
+                },
+                err => {
+                    logger.error(
+                        'Ooops error during main graph generation, moving on next part with main graph disabled : ',
+                        err
+                    );
+                    Configuration.mainData.disableMainGraph = true;
+                    loop();
+                }
+            );
+        }
+    }
+
+    public runWebServer(folder) {
+        if (!this.isWatching) {
+            const host = Configuration.mainData.host || 'localhost';
+            const port = Configuration.mainData.port;
+            const assets = sirv(folder, { dev: true, single: false });
+
+            polka()
+                .use(assets)
+                .listen(port, host, () => {
+                    logger.info(`Serving on http://${host}:${port}`);
+                    if (Configuration.mainData.open) {
+                        const open = require('node:child_process').exec;
+                        const url = `http://${host}:${port}`;
+                        switch (process.platform) {
+                            case 'darwin':
+                                open(`open "${url}"`);
+                                break;
+                            case 'win32':
+                                open(`start "" "${url}"`);
+                                break;
+                            default:
+                                open(`xdg-open "${url}"`);
+                                break;
+                        }
+                    }
+                });
+        }
+        if (Configuration.mainData.watch && !this.isWatching) {
+            if (typeof this.files === 'undefined') {
+                logger.error('No sources files available, please use -p flag');
+                generationPromiseReject();
+                process.exit(1);
+            } else {
+                this.runWatch();
+            }
+        } else if (Configuration.mainData.watch && this.isWatching) {
+            const srcFolder = findMainSourceFolder(this.files);
+            logger.info(`Already watching sources in ${srcFolder} folder`);
+        }
+    }
+
+    public async runWatch() {
+        let sources = [findMainSourceFolder(this.files)];
+        let watcherReady = false;
+
+        this.isWatching = true;
+
+        logger.info(`Watching sources in ${findMainSourceFolder(this.files)} folder`);
+
+        if (MarkdownEngine.hasRootMarkdowns()) {
+            sources = sources.concat(MarkdownEngine.listRootMarkdowns());
+        }
+
+        if (Configuration.mainData.includes !== '') {
+            sources = sources.concat(Configuration.mainData.includes);
+        }
+
+        // Check all elements of sources list exist
+        sources = cleanSourcesForWatch(sources);
+
+        const { default: chokidar } = await import('chokidar');
+        const watcher = chokidar.watch(sources, {
+            awaitWriteFinish: true,
+            ignoreInitial: true,
+            ignored: /(spec|\.d)\.ts/
+        });
+        let timerAddAndRemoveRef;
+        let timerChangeRef;
+        const runnerAddAndRemove = () => {
+            startTime = new Date();
+            this.generate();
+        };
+        const waiterAddAndRemove = () => {
+            clearTimeout(timerAddAndRemoveRef);
+            timerAddAndRemoveRef = setTimeout(runnerAddAndRemove, 1000);
+        };
+        const runnerChange = () => {
+            startTime = new Date();
+            this.setUpdatedFiles(this.watchChangedFiles);
+            if (this.hasWatchedFilesTSFiles()) {
+                this.getMicroDependenciesData();
+            } else if (this.hasWatchedFilesRootMarkdownFiles()) {
+                this.rebuildRootMarkdowns();
+            } else {
+                this.rebuildExternalDocumentation();
+            }
+        };
+        const waiterChange = () => {
+            clearTimeout(timerChangeRef);
+            timerChangeRef = setTimeout(runnerChange, 1000);
+        };
+
+        watcher.on('ready', () => {
+            if (!watcherReady) {
+                watcherReady = true;
+                watcher
+                    .on('add', file => {
+                        logger.debug(`File ${file} has been added`);
+                        // Test extension, if ts
+                        // rescan everything
+                        if (path.extname(file) === '.ts') {
+                            waiterAddAndRemove();
+                        }
+                    })
+                    .on('change', file => {
+                        logger.debug(`File ${file} has been changed`);
+                        // Test extension, if ts
+                        // rescan only file
+                        if (
+                            path.extname(file) === '.ts' ||
+                            path.extname(file) === '.md' ||
+                            path.extname(file) === '.json'
+                        ) {
+                            this.watchChangedFiles.push(path.join(cwd + path.sep + file));
+                            waiterChange();
+                        }
+                    })
+                    .on('unlink', file => {
+                        logger.debug(`File ${file} has been removed`);
+                        // Test extension, if ts
+                        // rescan everything
+                        if (path.extname(file) === '.ts') {
+                            waiterAddAndRemove();
+                        }
+                    });
+            }
+        });
+    }
+
+    /**
+     * Return the application / root component instance.
+     */
+    get application(): Application {
+        return this;
+    }
+
+    get isCLI(): boolean {
+        return false;
+    }
+}
