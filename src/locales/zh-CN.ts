@@ -162,6 +162,7 @@ export const TRANSLATION_ZH_CN = {
     routes: '路由列表',
     schemas: '模式',
     'search-placeholder': '请输入查询关键字',
+    see: '参见',
     selector: '选择器',
     signature: '签名',
     'signal-adoption': '信号',

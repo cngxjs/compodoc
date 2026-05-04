@@ -162,6 +162,7 @@ export const TRANSLATION_KO_KR = {
     routes: 'Routes',
     schemas: '스키마',
     'search-placeholder': '검색어 입력',
+    see: '참조',
     selector: '선택자',
     signature: 'Signature',
     'signal-adoption': '시그널',

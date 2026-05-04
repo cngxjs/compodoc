@@ -164,6 +164,7 @@ export const TRANSLATION_IT_IT = {
     routes: 'Routes',
     schemas: 'Schemas',
     'search-placeholder': 'Digita per avviare la ricerca',
+    see: 'Vedi',
     selector: 'Selector',
     signature: 'Signature',
     'signal-adoption': 'Segnali',

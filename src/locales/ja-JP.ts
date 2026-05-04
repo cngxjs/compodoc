@@ -164,6 +164,7 @@ export const TRANSLATION_JA_JP = {
     routes: 'ルート',
     schemas: 'スキーマ',
     'search-placeholder': '入力して検索',
+    see: '参照',
     selector: 'セレクタ',
     signature: 'シグネチャ',
     'signal-adoption': 'シグナル',

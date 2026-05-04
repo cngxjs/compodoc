@@ -164,6 +164,7 @@ export const TRANSLATION_PL_PL = {
     routes: "Route'y",
     schemas: 'Schematy',
     'search-placeholder': 'Wprowadź tekst wyszukiwania',
+    see: 'Zobacz',
     selector: 'Selektor',
     signature: 'Podpis',
     'signal-adoption': 'Sygnały',

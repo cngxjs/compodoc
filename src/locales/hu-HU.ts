@@ -164,6 +164,7 @@ export const TRANSLATION_HU_HU = {
     routes: 'Útvonalak',
     schemas: 'Sémák',
     'search-placeholder': 'Keresendő kifejezés',
+    see: 'Lásd',
     selector: 'Szelektor',
     signature: 'Aláírás',
     'signal-adoption': 'Szignálok',

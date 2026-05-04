@@ -164,6 +164,7 @@ export const TRANSLATION_BG_BG = {
     routes: 'Пътища',
     schemas: 'Схеми',
     'search-placeholder': 'Търсене',
+    see: 'Виж',
     selector: 'Селектор',
     signature: 'Подпис',
     'signal-adoption': 'Сигнали',

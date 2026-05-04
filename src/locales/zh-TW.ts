@@ -162,6 +162,7 @@ export const TRANSLATION_ZH_TW = {
     routes: '路由列表',
     schemas: 'Schemas',
     'search-placeholder': '請輸入查詢關鍵字',
+    see: '參見',
     selector: '選擇器',
     signature: '簽名',
     'signal-adoption': '信號',
