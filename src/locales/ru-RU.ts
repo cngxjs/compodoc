@@ -166,6 +166,7 @@ export const TRANSLATION_RU_RU = {
     routes: 'Маршруты',
     schemas: 'Схемы',
     'search-placeholder': 'Введите для поиска',
+    see: 'См.',
     selector: 'Селектор',
     signature: 'Сигнатура',
     'signal-adoption': 'Сигналы',

@@ -165,6 +165,7 @@ export const TRANSLATION_NL_NL = {
     routes: 'Routes',
     schemas: "Schema's",
     'search-placeholder': 'Type om te zoeken',
+    see: 'Zie',
     selector: 'Selector',
     signature: 'Handtekening',
     'signal-adoption': 'Signals',

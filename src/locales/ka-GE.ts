@@ -163,6 +163,7 @@ export const TRANSLATION_KA_GE = {
     routes: 'მარშრუტები',
     schemas: 'სქემები',
     'search-placeholder': 'დაწერე მოსაძებნად',
+    see: 'იხილეთ',
     selector: 'სელექტორი',
     signature: 'ხელმოწერა',
     'signal-adoption': 'სიგნალები',

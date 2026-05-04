@@ -163,6 +163,7 @@ export const TRANSLATION_SK_SK = {
     routes: 'Routes',
     schemas: 'Schémy',
     'search-placeholder': 'Zadajte hľadaný text',
+    see: 'Pozri',
     selector: 'Selektor',
     signature: 'Podpis',
     'signal-adoption': 'Signály',

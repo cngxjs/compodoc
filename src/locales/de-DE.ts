@@ -165,6 +165,7 @@ export const TRANSLATION_DE_DE = {
     routes: 'Routen',
     schemas: 'Schemata',
     'search-placeholder': 'Eingeben zur Suche',
+    see: 'Siehe',
     selector: 'Selektor',
     signature: 'Unterschrift',
     'signal-adoption': 'Signals',
