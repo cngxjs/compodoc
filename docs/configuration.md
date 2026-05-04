@@ -221,6 +221,8 @@ These are config-file only (no CLI flag). An explicit non-empty list replaces th
 
 Components grow a **Theming** tab when the parser finds documented theme tokens inside their `styleUrls` or inline `styles[]`. Tokens are described with a small inline-doc convention -- no separate manifest, no companion files. The same convention works for SCSS variables, CSS custom properties, and `@property` at-rules.
 
+> Authoring a stylesheet from scratch or retrofitting an existing one? See `docs/theming-tokens-authoring-guide.md` for copy-paste recipes, anti-patterns, and a verification loop.
+
 ### SCSS variables -- SassDoc `///` blocks
 
 ```scss
