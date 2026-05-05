@@ -52,7 +52,7 @@ jobs:
             # Windows / Node 20 / lint / e2e. Wait-interval is 30s; the
             # action times out after 30 minutes by default.
             - name: Wait for main CI to succeed on this commit
-              uses: lewagon/wait-on-check-action@v1.3.4
+              uses: lewagon/wait-on-check-action@v1.7.0
               with:
                   ref: ${{ github.sha }}
                   running-workflow-name: 'Build and publish to npm'
@@ -66,14 +66,14 @@ jobs:
             # with npm 10.x which silently falls back to anonymous publish
             # and the registry responds with a misleading 404.
             - name: Use Node.js 24.x
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v5
               with:
                   node-version: 24.x
                   registry-url: 'https://registry.npmjs.org/'
                   scope: '@cngxjs'
 
             - name: Cache node modules
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: node_modules
                   key: ${{ runner.OS }}-release-${{ hashFiles('**/package-lock.json') }}

@@ -28,12 +28,12 @@ jobs:
             - uses: actions/checkout@v5
 
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v5
               with:
                   node-version: ${{ matrix.node-version }}
 
             - name: Cache node modules
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: node_modules
                   key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
@@ -62,12 +62,12 @@ jobs:
             - uses: actions/checkout@v5
 
             - name: Use Node.js 22.x
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v5
               with:
                   node-version: 22.x
 
             - name: Cache node modules
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: node_modules
                   key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
@@ -85,5 +85,10 @@ jobs:
             - name: Install Playwright Browsers
               run: npx playwright install --with-deps
 
-            - name: E2E tests
-              run: npm run test-e2e-playwright
+            # Per-push e2e: only the chromium-class browser + the two
+            # fixture-specific projects. Firefox and webkit run nightly via
+            # .github/workflows/e2e-cross-browser.yml — cross-engine
+            # regressions in a static-HTML doc generator are rare and the
+            # nightly catches them without slowing every push by ~6 minutes.
+            - name: E2E tests (chrome + fixtures)
+              run: npx playwright test --project=chrome --project=todomvc --project=standalone
