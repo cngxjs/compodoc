@@ -6,6 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.0.4] — 2026-05-05
+
+### Fixed
+
+- **Sidebar sections opened by default regardless of `toggleMenuItems`**. The Handlebars-era helper read `toggleMenuItems` as a whitelist of types that stay open, with the special token `'all'` collapsing everything; the JSX port inverted the semantics so `['all']` (the default) caused every section to render fully expanded. The default now matches compodoc's long-standing behaviour again — sections start collapsed unless their type is explicitly listed in `toggleMenuItems`.
+
+### Changed
+
+- **Release pipeline gated on CI.** The `Release` workflow now waits for the main CI workflow (4-OS x 2-node-matrix + e2e) to succeed on the same commit before publishing to npm, plus runs `npm run lint` itself as defence-in-depth. Tags pushed against commits that fail CI are no longer published.
+
+### Internal
+
+- Dependency bumps (patch + minor only): `@angular-devkit/schematics 21.1→21.2.9`, `@biomejs/biome 2.4.10→2.4.14`, `@playwright/test 1.57→1.59.1`, `@types/node 25.0→25.6`, `cheerio 1.1.2→1.2.0`, `rollup 4.55→4.60`. Major bumps deferred (i18next, marked, os-name, ts-morph, uuid, esbuild).
+- Release workflow now uses Node 24 + npm 11 so OIDC Trusted Publisher works without a pre-publish CLI upgrade step.
+
 ## [0.0.3] — 2026-05-05
 
 ### Fixed
