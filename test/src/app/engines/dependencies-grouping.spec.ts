@@ -9,11 +9,17 @@ function deriveGroupKey(filePath: string): string {
         return '';
     }
     let rel = filePath.replace(/\\/g, '/');
-    for (const marker of ['src/app/', 'src/', 'app/', 'lib/']) {
-        const idx = rel.indexOf(marker);
-        if (idx !== -1) {
-            rel = rel.slice(idx + marker.length);
-            break;
+    const projectsIdx = rel.indexOf('projects/');
+    if (projectsIdx !== -1) {
+        rel = rel.slice(projectsIdx + 'projects/'.length);
+        rel = rel.replace(/\/src\//, '/');
+    } else {
+        for (const marker of ['src/app/', 'src/', 'app/', 'lib/']) {
+            const idx = rel.indexOf(marker);
+            if (idx !== -1) {
+                rel = rel.slice(idx + marker.length);
+                break;
+            }
         }
     }
     const segments = rel.split('/').slice(0, -1);
@@ -64,6 +70,36 @@ describe('deriveGroupKey', () => {
         expect(
             deriveGroupKey('src/app/features/admin/ui/settings/notifications.component.ts')
         ).toBe('features/admin/ui/settings');
+    });
+
+    // ─── multi-project Angular workspace (projects/<group>/<lib>/src/...) ───
+    it('should strip projects/ AND inner src/ for multi-project workspace files', () => {
+        // Both projects/ and the inner src/ folder must drop so that
+        // groupDepth=2 yields the natural library boundary <group>/<lib>.
+        expect(deriveGroupKey('projects/ui/layout/src/stack.component.ts')).toBe('ui/layout');
+    });
+
+    it('should keep folder structure inside src/ as further depth segments', () => {
+        // For files in subfolders below src/, those subfolders become
+        // additional grouping segments after <group>/<lib>.
+        expect(
+            deriveGroupKey('projects/common/interactive/src/error-registry/foo.ts')
+        ).toBe('common/interactive/error-registry');
+    });
+
+    it('should handle absolute paths containing projects/', () => {
+        expect(
+            deriveGroupKey('/Users/me/cngx/projects/forms/field/src/form-errors.component.ts')
+        ).toBe('forms/field');
+    });
+
+    it('should strip only the FIRST inner /src/ when the path has multiple', () => {
+        // Replace is non-global by design — the first /src/ is the
+        // canonical Angular library boundary; later src/ folders inside
+        // a library are treated as ordinary subfolders.
+        expect(
+            deriveGroupKey('projects/ui/layout/src/widgets/src/grid.ts')
+        ).toBe('ui/layout/widgets/src');
     });
 });
 

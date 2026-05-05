@@ -36,12 +36,23 @@ function deriveGroupKey(filePath: string, maxDepth: number): string {
     // Normalize path separators
     let rel = filePath.replaceAll('\\', '/');
 
-    // Strip everything up to and including a known app root marker
-    for (const marker of ['src/app/', 'src/', 'app/', 'lib/']) {
-        const idx = rel.indexOf(marker);
-        if (idx !== -1) {
-            rel = rel.slice(idx + marker.length);
-            break;
+    // Multi-project Angular workspace (projects/<group>/<lib>/src/...) is
+    // special: we want segments to be [<group>, <lib>, ...rest inside src/]
+    // so groupDepth 2 yields <group>/<lib> as a clean library boundary.
+    // Strip `projects/` AND the inner `/src/` folder, keeping everything
+    // around it.
+    const projectsIdx = rel.indexOf('projects/');
+    if (projectsIdx !== -1) {
+        rel = rel.slice(projectsIdx + 'projects/'.length);
+        rel = rel.replace(/\/src\//, '/');
+    } else {
+        // Single-app fallback: strip the first matching root marker.
+        for (const marker of ['src/app/', 'src/', 'app/', 'lib/']) {
+            const idx = rel.indexOf(marker);
+            if (idx !== -1) {
+                rel = rel.slice(idx + marker.length);
+                break;
+            }
         }
     }
 

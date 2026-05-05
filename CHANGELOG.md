@@ -6,7 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
-## [0.0.2] — Unreleased
+## [0.0.3] — 2026-05-05
+
+### Fixed
+
+- **Folder grouping in the sidebar for multi-project Angular workspaces** (`projects/<group>/<lib>/src/...`). The grouping function had a hardcoded marker list that stripped at the first `src/` it found, which collapsed the entire `projects/<group>/<lib>` hierarchy into nothing. Workspaces ended up with either no grouping or a flat per-library group, ignoring `groupDepth` entirely. The function now detects the `projects/` prefix, strips it, and also strips the inner `/src/` folder so segments become `[<group>, <lib>, ...rest]`. With `groupDepth: 2` you now get one sidebar group per library (e.g. `forms/field`, `ui/layout`); `groupDepth: 1` gives one group per top-level project (e.g. `forms`, `ui`, `common`). Single-app layouts are unchanged.
+
+## [0.0.2] — 2026-05-05
 
 ### Fixed
 
