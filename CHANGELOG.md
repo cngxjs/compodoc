@@ -6,7 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
-## [0.0.1] — Unreleased
+## [0.0.2] — Unreleased
+
+### Fixed
+
+- **Published tarball was missing two runtime files** — `src/data/api-list.json` (Angular API name index used by the type linker) and `src/banner` (ASCII startup banner). Both are required at runtime by the bundled CLI but were excluded from the `files` whitelist in 0.0.1, causing `Cannot find module '.../src/data/api-list.json'` on every invocation of an installed `0.0.1` package. The 0.0.2 tarball includes both files, restoring CLI functionality. **0.0.1 is broken on npm — install 0.0.2 or later.**
+
+## [0.0.1] — 2026-05-05
 
 First cngx-line tag. compodocx forks compodoc 1.1.32 with the analyzer and configuration story preserved and the rendering layer rewritten from scratch.
 
