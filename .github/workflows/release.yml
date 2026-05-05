@@ -18,6 +18,11 @@ name: Release
 #   npx release-it patch       # interactive bump + tag + push
 #
 # This workflow does NOT create the tag — it only reacts to tag pushes.
+#
+# Safety guards: the publish step is gated on the main CI workflow having
+# already passed on the same commit (4-OS x 2-node-matrix + e2e), and on
+# `npm run lint` passing inside this workflow. Together they make sure no
+# broken artifact ever reaches npm.
 
 on:
     push:
@@ -28,6 +33,8 @@ on:
 permissions:
     contents: read
     id-token: write
+    # `wait-on-check-action` queries the Checks API on the same SHA.
+    checks: read
 
 jobs:
     publish:
@@ -36,6 +43,22 @@ jobs:
 
         steps:
             - uses: actions/checkout@v5
+
+            # Block publish until the main CI workflow has succeeded on the
+            # same commit. Tags are usually pushed milliseconds after the
+            # commit they point at, so the CI workflow is normally still
+            # running when the release workflow starts. Without this gate the
+            # release races CI and could publish a commit that fails on
+            # Windows / Node 20 / lint / e2e. Wait-interval is 30s; the
+            # action times out after 30 minutes by default.
+            - name: Wait for main CI to succeed on this commit
+              uses: lewagon/wait-on-check-action@v1.3.4
+              with:
+                  ref: ${{ github.sha }}
+                  running-workflow-name: 'Build and publish to npm'
+                  repo-token: ${{ secrets.GITHUB_TOKEN }}
+                  wait-interval: 30
+                  allowed-conclusions: success
 
             # Node 24 ships with npm >= 11.5.1 which is required for the
             # Trusted Publisher (OIDC) flow that exchanges the GitHub Actions
@@ -60,6 +83,9 @@ jobs:
 
             - name: Install Dependencies
               run: npm ci
+
+            - name: Lint
+              run: npm run lint
 
             - name: Build
               run: npm run build
