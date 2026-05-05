@@ -3,15 +3,21 @@ import DependenciesEngine from '../../app/engines/dependencies.engine';
 
 /**
  * Check if a menu section should be initially expanded.
- * "all" in toggleMenuItems means everything is expanded.
- * A specific type in toggleMenuItems means that type is expanded.
+ *
+ * `toggleMenuItems` is a whitelist of types that stay OPEN by default; the
+ * special token `'all'` collapses everything (overrides any whitelisting).
+ * Schema description: "Close by default items in the menu". Anything NOT
+ * listed is closed by default; types listed (without `'all'`) are open.
+ *
+ * Default config has `toggleMenuItems: ['all']` → every section starts
+ * collapsed, which matches compodoc's long-standing behaviour.
  */
 export const isToggled = (type: string): boolean => {
     const items = Configuration.mainData.toggleMenuItems;
     if (items.indexOf('all') !== -1) {
-        return true;
+        return false; // 'all' overrides → every section closed
     }
-    return items.indexOf(type) !== -1;
+    return items.indexOf(type) !== -1; // open iff explicitly listed
 };
 
 /**
