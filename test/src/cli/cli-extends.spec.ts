@@ -39,9 +39,9 @@ describe('CLI simple generation - extends app', () => {
     it('DoNothingDirective extends ADirective', () => {
         const file = read(`${distFolder}/directives/DoNothingDirective.html`);
         expect(file).to.contain('Extends');
-        expect(file).to.contain(
-            '<a href="../directives/ADirective.html" target="_self" >ADirective'
-        );
+        expect(file).to.contain('cdx-chip cdx-chip--directive');
+        expect(file).to.contain('href="../directives/ADirective.html"');
+        expect(file).to.contain('>ADirective</a>');
     });
 
     it('MyInitialClass extends SubClassA', () => {
@@ -51,8 +51,18 @@ describe('CLI simple generation - extends app', () => {
 
     it('FirstClass extends BSecondClass extends AThirdClass', () => {
         const FirstClassFile = read(`${distFolder}/classes/FirstClass.html`);
-        expect(FirstClassFile).to.contain('BSecondClass:4');
-        expect(FirstClassFile).to.contain('AThirdClass:2');
+        // Direct parent shown in entity hero context line.
+        expect(FirstClassFile).to.contain('extends BSecondClass');
+        // Inherited members are merged into the FirstClass page:
+        //   `name` is declared on FirstClass,
+        //   `age`  is inherited from BSecondClass,
+        //   `adress` is inherited from AThirdClass (typo in fixture preserved).
+        // The current renderer no longer labels each inherited member with its
+        // origin class (legacy `BSecondClass:4` / `AThirdClass:2` labels are
+        // gone) — assert on member-row ids instead.
+        expect(FirstClassFile).to.contain('id="name"');
+        expect(FirstClassFile).to.contain('id="age"');
+        expect(FirstClassFile).to.contain('id="adress"');
     });
 
     it('CharactersService extends AbstractService', () => {

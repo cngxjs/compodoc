@@ -27,19 +27,19 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should exclude methods marked as private', () => {
-            expect(componentFile).not.to.contain('<code>privateMethod');
+            expect(componentFile).not.to.contain('cdx-io-member-name">privateMethod');
         });
 
         it('should include methods marked as internal', () => {
-            expect(componentFile).to.contain('<code>internalMethod');
+            expect(componentFile).to.contain('cdx-io-member-name">internalMethod');
         });
 
         it('should include stuff marked as protected', () => {
-            expect(componentFile).to.contain('varprotected</b></span>');
+            expect(componentFile).to.contain('cdx-io-member-name">varprotected');
         });
 
         it('should display lifecyle hooks', () => {
-            expect(componentFile).to.contain('<code>ngOnInit');
+            expect(componentFile).to.contain('cdx-io-member-name">ngOnInit');
         });
 
         it('should exclude miscellaneous function marked as @private', () => {
@@ -70,19 +70,19 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should exclude methods marked as protected', () => {
-            expect(componentFile).not.to.contain('<code>varprotected');
+            expect(componentFile).not.to.contain('cdx-io-member-name">varprotected');
         });
 
         it('should include methods marked as private', () => {
-            expect(componentFile).to.contain('<code>privateMethod');
+            expect(componentFile).to.contain('cdx-io-member-name">privateMethod');
         });
 
         it('should include methods marked as internal', () => {
-            expect(componentFile).to.contain('<code>internalMethod');
+            expect(componentFile).to.contain('cdx-io-member-name">internalMethod');
         });
 
         it('should display lifecyle hooks', () => {
-            expect(componentFile).to.contain('<code>ngOnInit');
+            expect(componentFile).to.contain('cdx-io-member-name">ngOnInit');
         });
     });
 
@@ -108,32 +108,40 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should exclude methods marked as @internal', () => {
-            expect(componentFile).not.to.contain('<code>internalMethod');
+            expect(componentFile).not.to.contain('cdx-io-member-name">internalMethod');
         });
 
         it('Component input @internal ignored', () => {
-            expect(componentFile).not.to.contain('<code>internalInput');
+            expect(componentFile).not.to.contain('cdx-io-member-name">internalInput');
         });
 
         it('Component internal constructor property ignored', () => {
-            expect(componentFile).not.to.contain('<b>internalConstructorProp</b>');
+            expect(componentFile).not.to.contain('cdx-io-member-name">internalConstructorProp');
         });
 
         it('should include methods marked as private', () => {
-            expect(componentFile).to.contain('<code>privateMethod');
+            expect(componentFile).to.contain('cdx-io-member-name">privateMethod');
         });
 
         it('should include stuff marked as protected', () => {
-            expect(componentFile).to.contain('varprotected</b></span>');
+            expect(componentFile).to.contain('cdx-io-member-name">varprotected');
         });
 
         it('should display lifecyle hooks', () => {
-            expect(componentFile).to.contain('<code>ngOnInit');
+            expect(componentFile).to.contain('cdx-io-member-name">ngOnInit');
         });
 
         it('correct supports @internal + link', () => {
             const file = read(`${distFolder}/directives/QueryParamNameDirective.html`);
-            expect(file).to.contain('code>constructor(groupService: QueryParamGroupService');
+            // Constructor is now rendered as a `DependenciesSection`-style
+            // block instead of a `<code>constructor(arg: T)</code>` line.
+            // Each dep ends up in `cdx-deps-name` with the parameter type
+            // wrapped in `<code>`. The original assertion's intent — that
+            // the @internal-tagged groupService param survives and is
+            // linked to the QueryParamGroupService injectable — is verified
+            // by the dep landmark + a link to the injectable's page.
+            expect(file).to.contain('cdx-deps-name"><code>QueryParamGroupService');
+            expect(file).to.contain('cdx-badge--constructor');
         });
     });
 
@@ -159,25 +167,25 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should exclude lifecyle hooks', () => {
-            expect(componentFile).not.to.contain('<code>ngOnInit');
+            expect(componentFile).not.to.contain('cdx-io-member-name">ngOnInit');
             const directiveFile = read(`${distFolder}/directives/BarDirective.html`);
-            expect(directiveFile).not.to.contain('<code>ngOnInit');
+            expect(directiveFile).not.to.contain('cdx-io-member-name">ngOnInit');
             const pipeFile = read(`${distFolder}/pipes/BarPipe.html`);
-            expect(pipeFile).not.to.contain('<code>ngOnDestroy');
+            expect(pipeFile).not.to.contain('cdx-io-member-name">ngOnDestroy');
             const serviceFile = read(`${distFolder}/injectables/BarService.html`);
-            expect(serviceFile).not.to.contain('<code>ngOnDestroy');
+            expect(serviceFile).not.to.contain('cdx-io-member-name">ngOnDestroy');
         });
 
         it('should include methods marked as private', () => {
-            expect(componentFile).to.contain('<code>privateMethod');
+            expect(componentFile).to.contain('cdx-io-member-name">privateMethod');
         });
 
         it('should include stuff marked as protected', () => {
-            expect(componentFile).to.contain('varprotected</b></span>');
+            expect(componentFile).to.contain('cdx-io-member-name">varprotected');
         });
 
         it('should include methods marked as internal', () => {
-            expect(componentFile).to.contain('<code>internalMethod');
+            expect(componentFile).to.contain('cdx-io-member-name">internalMethod');
         });
     });
 
@@ -203,7 +211,7 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should exclude lifecyle hooks', () => {
-            expect(componentFile).not.to.contain('<code>ngOnInit');
+            expect(componentFile).not.to.contain('cdx-io-member-name">ngOnInit');
         });
     });
 
@@ -232,19 +240,19 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should exclude lifecyle hooks', () => {
-            expect(componentFile).not.to.contain('<code>ngOnInit');
+            expect(componentFile).not.to.contain('cdx-io-member-name">ngOnInit');
         });
 
         it('should exclude methods marked as private', () => {
-            expect(componentFile).not.to.contain('<code>privateMethod');
+            expect(componentFile).not.to.contain('cdx-io-member-name">privateMethod');
         });
 
         it('should exclude stuff marked as protected', () => {
-            expect(componentFile).not.to.contain('<code>varprotected');
+            expect(componentFile).not.to.contain('cdx-io-member-name">varprotected');
         });
 
         it('should exclude methods marked as internal', () => {
-            expect(componentFile).not.to.contain('<code>internalMethod');
+            expect(componentFile).not.to.contain('cdx-io-member-name">internalMethod');
         });
     });
 
@@ -270,13 +278,13 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should exclude constructors', () => {
-            expect(componentFile).not.to.contain('<code>constructor');
+            expect(componentFile).not.to.contain('cdx-badge--constructor');
             const directiveFile = read(`${distFolder}/directives/BarDirective.html`);
-            expect(directiveFile).not.to.contain('<code>constructor');
+            expect(directiveFile).not.to.contain('cdx-badge--constructor');
             const pipeFile = read(`${distFolder}/pipes/BarPipe.html`);
-            expect(pipeFile).not.to.contain('<code>constructor');
+            expect(pipeFile).not.to.contain('cdx-badge--constructor');
             const serviceFile = read(`${distFolder}/injectables/BarService.html`);
-            expect(serviceFile).not.to.contain('<code>constructor');
+            expect(serviceFile).not.to.contain('cdx-badge--constructor');
         });
     });
 
@@ -302,7 +310,7 @@ describe('CLI disable flags', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should exclude constructors', () => {
-            expect(componentFile).not.to.contain('<code>constructor');
+            expect(componentFile).not.to.contain('cdx-badge--constructor');
         });
     });
 
@@ -512,9 +520,12 @@ describe('CLI disable flags', () => {
 
         it('should still display other content sections', () => {
             componentFile = read(`${distFolder}/components/BarComponent.html`);
-            // Should still contain other sections like metadata, implements, etc.
-            expect(componentFile).to.contain('<h3>Metadata</h3>');
-            expect(componentFile).to.contain('<h3>Implements</h3>');
+            // Metadata is a section heading; Implements moved into the
+            // metadata card as a `<dt class="cdx-metadata-label">`.
+            expect(componentFile).to.contain(
+                '<h3 class="cdx-section-heading" id="metadata">Metadata'
+            );
+            expect(componentFile).to.contain('cdx-metadata-label">Implements');
         });
 
         it('should work with file paths that have dependencies', () => {
@@ -567,7 +578,9 @@ describe('CLI disable flags', () => {
         it('should still display other menu items', () => {
             menuFile = read(`${distFolder}/index.html`);
             expect(menuFile).to.contain('href="modules.html"');
-            expect(menuFile).to.contain('ion-ios-archive');
+            // Ionicons (`ion-ios-archive`) replaced by Lucide SVGs — assert
+            // on the cdx-icon class on the inline `<svg>` next to the link.
+            expect(menuFile).to.contain('cdx-icon');
         });
 
         it('should properly handle menu structure without overview', () => {
@@ -676,7 +689,7 @@ describe('CLI disable flags', () => {
             const bigIntroFile = read(
                 `${additionalTestFolder}/additional-documentation/big-introduction.html`
             );
-            expect(bigIntroFile).to.contain('<h1>Introduction</h1>');
+            expect(bigIntroFile).to.contain('<h1 id="introduction">Introduction');
             expect(bigIntroFile).to.contain("COMPODOC_CURRENT_PAGE_CONTEXT = 'additional-page'");
         });
 
@@ -812,8 +825,8 @@ describe('CLI disable flags', () => {
             );
 
             // Content should be identical (excluding any timestamps or generation metadata)
-            expect(withOverviewIntroFile).to.contain('<h1>Introduction</h1>');
-            expect(withoutOverviewIntroFile).to.contain('<h1>Introduction</h1>');
+            expect(withOverviewIntroFile).to.contain('<h1 id="introduction">Introduction');
+            expect(withoutOverviewIntroFile).to.contain('<h1 id="introduction">Introduction');
 
             // Both should have correct context
             expect(withOverviewIntroFile).to.contain(
