@@ -4,15 +4,15 @@ export class ParsePropertyHelper implements IHtmlEngineHelper {
     public helperFunc(_context: any, text: string) {
         let prop: any = text;
 
-        if (!!text && text.constructor === Object && text['url'] !== undefined) {
+        if (text && text.constructor === Object && text['url'] !== undefined) {
             prop = text['url'];
         }
 
-        if (!!text && text.constructor === Object && text['name'] !== undefined) {
+        if (text && text.constructor === Object && text['name'] !== undefined) {
             prop = text['name'];
         }
 
-        if (!!text && text.constructor === Object && Object.keys(text).length === 0) {
+        if (text && text.constructor === Object && Object.keys(text).length === 0) {
             prop = '';
         }
 
