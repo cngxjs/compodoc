@@ -39,25 +39,28 @@ describe('CLI silent flag - error', () => {
 
     beforeAll(() => {
         tmp.create(distFolder);
-        const ls = exec(
-            'node' +
-                [
-                    '',
-                    './bin/index-cli.js',
-                    '-p',
-                    './test/fixtures/sample-files/tsconfig.simple.json',
-                    '-d',
-                    distFolder,
-                    '--silent',
-                    '--includes',
-                    './test/fixtures/todomvc-ng2/additional-doc-wrong'
-                ].join(' '),
-            (_error, stdout) => {
-                stdoutString = stdout;
-            }
-        );
-        ls.on('close', code => {
-            exitCode = code;
+        return new Promise<void>(resolve => {
+            const ls = exec(
+                'node' +
+                    [
+                        '',
+                        './bin/index-cli.js',
+                        '-p',
+                        './test/fixtures/sample-files/tsconfig.simple.json',
+                        '-d',
+                        distFolder,
+                        '--silent',
+                        '--includes',
+                        './test/fixtures/todomvc-ng2/additional-doc-wrong'
+                    ].join(' '),
+                (_error, stdout) => {
+                    stdoutString = stdout;
+                }
+            );
+            ls.on('close', code => {
+                exitCode = code;
+                resolve();
+            });
         });
     });
     afterAll(() => tmp.clean(distFolder));
