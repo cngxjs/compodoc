@@ -1,5 +1,3 @@
-import vm from 'node:vm';
-
 import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
@@ -27,13 +25,11 @@ describe('CLI i18n', () => {
         });
         afterAll(() => tmp.clean(distFolder));
 
+        // The legacy js/menu-wc.js Web Component artefact is gone — the menu is
+        // now inline in every page (`Menu.tsx`), so translation strings live in
+        // the rendered HTML directly. We read index.html as the canonical page.
         it('it should contain a sentence in the correct language', () => {
-            const file = read(`${distFolder}/js/menu-wc.js`);
-            try {
-                const script = new vm.Script(file);
-            } catch (e) {
-                throw new Error('Error parsing menu-wc.js file');
-            }
+            const file = read(`${distFolder}/index.html`);
             expect(file).to.contain(message);
         });
     };
@@ -91,7 +87,6 @@ describe('CLI i18n', () => {
     });
 
     describe('with un-supported language', () => {
-        let indexFile;
         beforeAll(() => {
             tmp.create(distFolder);
             const ls = shell('node', [
@@ -108,12 +103,11 @@ describe('CLI i18n', () => {
                 console.error(`shell error: ${ls.stderr.toString()}`);
                 throw new Error('error');
             }
-            indexFile = read(`${distFolder}/js/menu-wc.js`);
         });
         afterAll(() => tmp.clean(distFolder));
 
-        it('it should contain a sentence in the correct language', () => {
-            const file = read(`${distFolder}/js/menu-wc.js`);
+        it('it should fall back to English', () => {
+            const file = read(`${distFolder}/index.html`);
             expect(file).to.contain('Documentation generated using');
         });
     });
