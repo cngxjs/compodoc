@@ -59,7 +59,11 @@ export class DirectiveDepFactory {
             directiveDeps.methodsClass = cleanLifecycleHooksFromMethods(directiveDeps.methodsClass);
         }
         if (IO.jsdoctags && IO.jsdoctags.length > 0) {
-            directiveDeps.jsdoctags = IO.jsdoctags[0].tags;
+            // IO.jsdoctags is already a flat array of tag objects (post-
+            // markedtags), not the legacy compodoc shape `[{ tags: [...] }]`.
+            // Stripping the [0].tags accessor used to drop every @example /
+            // @see / @since the user wrote on a class.
+            directiveDeps.jsdoctags = IO.jsdoctags;
         }
         if (IO.extends) {
             directiveDeps.extends = IO.extends;

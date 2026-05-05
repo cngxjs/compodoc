@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.0.5] — 2026-05-05
+
+### Fixed
+
+- **Class-level `@example` (and every other class-level JSDoc tag) was silently dropped from generated component / directive pages.** The TSX-era Examples section on the Info tab (and any other render path that reads `c.jsdoctags`) saw an empty array because `component-dep.factory.ts` and `directive-dep.factory.ts` accessed `IO.jsdoctags[0].tags` — a leftover from a 2017-era compodoc shape where `IO.jsdoctags` was wrapped in a single-element array. After the migration `IO.jsdoctags` is the flat tag array directly, so `[0].tags` returned `undefined` for every component and directive. The bug was invisible in old compodoc because its Handlebars templates never read class-level `c.jsdoctags` — they only sourced examples from `component.exampleUrls` (iframe previews). The TSX migration added a real Examples section but built it on top of the pre-existing broken data path. Both factories now assign `IO.jsdoctags` directly. Verified against a project with 163 `@example` tags: 22 component pages now render an Examples section that previously rendered nothing.
+
 ## [0.0.4] — 2026-05-05
 
 ### Fixed

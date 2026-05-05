@@ -92,7 +92,11 @@ export class ComponentDepFactory {
             componentDep.methodsClass = cleanLifecycleHooksFromMethods(componentDep.methodsClass);
         }
         if (IO.jsdoctags && IO.jsdoctags.length > 0) {
-            componentDep.jsdoctags = IO.jsdoctags[0].tags;
+            // IO.jsdoctags is already a flat array of tag objects (post-
+            // markedtags), not the legacy compodoc shape `[{ tags: [...] }]`.
+            // Stripping the [0].tags accessor used to drop every @example /
+            // @see / @since the user wrote on a class.
+            componentDep.jsdoctags = IO.jsdoctags;
         }
         if (IO.constructor && !Configuration.mainData.disableConstructors) {
             componentDep.constructorObj = IO.constructor;
