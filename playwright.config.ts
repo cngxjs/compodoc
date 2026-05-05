@@ -36,18 +36,19 @@ export default defineConfig({
 
     /* Configure projects for major browsers */
     projects: [
-        {
-            name: 'chromium',
-            use: { ...devices['Desktop Chrome'] },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts', '**/tab-routing.spec.ts', '**/theming-tab.spec.ts'],
-        },
-
+        // chromium and Microsoft Edge are intentionally not listed — both run
+        // the Chromium engine (identical results to `chrome`) and would only
+        // duplicate work for a static-HTML doc generator. Add back here if a
+        // Chromium-channel-specific regression ever needs reproducing.
         {
             name: 'chrome',
             use: { ...devices['Desktop Chrome'], channel: 'chrome' },
             testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts', '**/tab-routing.spec.ts', '**/theming-tab.spec.ts'],
         },
 
+        // firefox + webkit run on a nightly cron (.github/workflows/e2e-cross-browser.yml),
+        // not on every push. Cross-engine bugs in static-HTML output are rare;
+        // keeping them out of the per-push matrix saves ~6 minutes per CI run.
         {
             name: 'firefox',
             use: { ...devices['Desktop Firefox'] },
@@ -57,12 +58,6 @@ export default defineConfig({
         {
             name: 'webkit',
             use: { ...devices['Desktop Safari'] },
-            testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts', '**/tab-routing.spec.ts', '**/theming-tab.spec.ts'],
-        },
-
-        {
-            name: 'Microsoft Edge',
-            use: { ...devices['Desktop Edge'], channel: 'msedge' },
             testIgnore: ['**/empty-states.spec.ts', '**/standalone-features.spec.ts', '**/entity-hero.spec.ts', '**/content-sections.spec.ts', '**/coverage-report.spec.ts', '**/miscellaneous-index.spec.ts', '**/overview-dashboard.spec.ts', '**/source-viewer.spec.ts', '**/tab-routing.spec.ts', '**/theming-tab.spec.ts'],
         },
 

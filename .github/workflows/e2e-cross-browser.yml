@@ -1,0 +1,51 @@
+name: E2E cross-browser (nightly)
+
+# Runs the Playwright e2e suite against Firefox (Gecko) and WebKit (Safari)
+# on a daily cron, plus on-demand via workflow_dispatch. The per-push CI
+# (.github/workflows/main.yml) only runs the chrome project to keep PR
+# turnaround tight; cross-engine bugs in static-HTML output are rare, and
+# this nightly catches them within 24h instead of the day-of-release.
+
+on:
+    schedule:
+        # 02:30 UTC every day — quiet hour for the European timezone the
+        # team works in, well clear of US business-hours CI load.
+        - cron: '30 2 * * *'
+    workflow_dispatch:
+
+jobs:
+    e2e-cross-browser:
+        runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                browser: [firefox, webkit]
+
+        steps:
+            - uses: actions/checkout@v5
+
+            - name: Use Node.js 24.x
+              uses: actions/setup-node@v5
+              with:
+                  node-version: 24.x
+
+            - name: Cache node modules
+              uses: actions/cache@v5
+              with:
+                  path: node_modules
+                  key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.OS }}-build-
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Build
+              run: npm run build
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps ${{ matrix.browser }}
+
+            - name: E2E tests (${{ matrix.browser }})
+              run: npx playwright test --project=${{ matrix.browser }}
