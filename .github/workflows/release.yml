@@ -3,13 +3,16 @@ name: Release
 # Triggers when a tag matching v* (e.g. v0.0.1, v0.1.0, v1.0.0-beta.2) is pushed.
 # Build → unit tests → npm publish to public registry under @cngxjs scope.
 #
-# Manual prerequisites (one-time):
-#   1. NPM_TOKEN secret in repo settings (Granular Access Token with read+write
-#      on @cngxjs scope from npmjs.com).
-#   2. The @cngxjs npm organization exists and the token has access to it.
+# Authentication: OIDC via npm Trusted Publisher.
+# The @cngxjs/compodocx package on npm is configured (Settings →
+# Trusted Publisher) to trust the cngxjs/compodocx repo's release.yml
+# workflow. The npm CLI picks up the GitHub Actions OIDC token
+# automatically when this workflow runs `npm publish` and exchanges it
+# for a short-lived publish credential. No NPM_TOKEN, no long-lived
+# secret to leak or rotate.
 #
 # To release: bump package.json version, commit, tag, push tag.
-#   npm version 0.0.2          # writes package.json + creates v0.0.2 commit + tag
+#   npm version 0.0.3          # writes package.json + creates v0.0.3 commit + tag
 #   git push origin develop --follow-tags
 # Or via release-it (see .release-it.json):
 #   npx release-it patch       # interactive bump + tag + push
@@ -72,7 +75,5 @@ jobs:
             - name: Show what would be published
               run: npm pack --dry-run
 
-            - name: Publish to npm
+            - name: Publish to npm (OIDC via Trusted Publisher)
               run: npm publish --access public --provenance
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
