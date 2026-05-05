@@ -37,19 +37,17 @@ jobs:
         steps:
             - uses: actions/checkout@v5
 
-            - name: Use Node.js 22.x
+            # Node 24 ships with npm >= 11.5.1 which is required for the
+            # Trusted Publisher (OIDC) flow that exchanges the GitHub Actions
+            # OIDC token for a short-lived publish credential. Node 22 ships
+            # with npm 10.x which silently falls back to anonymous publish
+            # and the registry responds with a misleading 404.
+            - name: Use Node.js 24.x
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org/'
                   scope: '@cngxjs'
-
-            # Trusted Publisher (OIDC) requires npm >= 11.5.1. Node 22.x ships
-            # with npm 10.x which silently falls back to anonymous publish and
-            # gets a misleading 404 from the registry. Pin to a version that
-            # supports OIDC publish.
-            - name: Upgrade npm for OIDC publish support
-              run: npm install -g npm@latest
 
             - name: Cache node modules
               uses: actions/cache@v4
