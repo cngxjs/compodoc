@@ -45,8 +45,8 @@ If you maintain a modern Angular library or app and want documentation that look
 
 ## Requirements
 
-- Node.js 20 or newer.
-- An Angular project with a `tsconfig.json`. compodocx is built against modern Angular conventions (signals, `inject()`, standalone components) and is tested on 20 / 21, but it works against any 17+ codebase.
+- Node.js 22 or newer.
+- An Angular project with a `tsconfig.json`. compodocx is built against modern Angular conventions (signals, `inject()`, standalone components) and is tested on Angular 20 / 21, but it works against any 17+ codebase.
 
 ## Install
 

@@ -10,11 +10,19 @@ jobs:
     build-and-test:
         runs-on: ${{ matrix.os }}
 
+        # Minimal coverage: current LTS on both OSes, next LTS on the
+        # primary OS. Drops the Node 20 lane (EOL April 2026) — we no
+        # longer promise Node 20 support (engines.node = >=22).
         strategy:
             fail-fast: false
             matrix:
-                node-version: [20.x, 22.x]
-                os: [ubuntu-latest, windows-latest]
+                include:
+                    - node-version: 22.x
+                      os: ubuntu-latest
+                    - node-version: 22.x
+                      os: windows-latest
+                    - node-version: 24.x
+                      os: ubuntu-latest
 
         steps:
             - uses: actions/checkout@v5
@@ -44,7 +52,7 @@ jobs:
               run: npm run test:unit
 
             - name: Lint
-              if: ${{ matrix.node-version == '22.x' && matrix.os == 'ubuntu-latest' }}
+              if: ${{ matrix.node-version == '24.x' && matrix.os == 'ubuntu-latest' }}
               run: npm run lint
 
     e2e:
