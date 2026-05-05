@@ -82,9 +82,9 @@ describe('deriveGroupKey', () => {
     it('should keep folder structure inside src/ as further depth segments', () => {
         // For files in subfolders below src/, those subfolders become
         // additional grouping segments after <group>/<lib>.
-        expect(
-            deriveGroupKey('projects/common/interactive/src/error-registry/foo.ts')
-        ).toBe('common/interactive/error-registry');
+        expect(deriveGroupKey('projects/common/interactive/src/error-registry/foo.ts')).toBe(
+            'common/interactive/error-registry'
+        );
     });
 
     it('should handle absolute paths containing projects/', () => {
@@ -97,9 +97,9 @@ describe('deriveGroupKey', () => {
         // Replace is non-global by design — the first /src/ is the
         // canonical Angular library boundary; later src/ folders inside
         // a library are treated as ordinary subfolders.
-        expect(
-            deriveGroupKey('projects/ui/layout/src/widgets/src/grid.ts')
-        ).toBe('ui/layout/widgets/src');
+        expect(deriveGroupKey('projects/ui/layout/src/widgets/src/grid.ts')).toBe(
+            'ui/layout/widgets/src'
+        );
     });
 });
 
