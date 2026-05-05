@@ -43,13 +43,16 @@ describe('CLI generation - TypeDoc examples', () => {
         const file = read(`${distFolder}/interfaces/IPrintNameInterface.html`);
         expect(file).to.contain('This is a interface inheriting from two other interfaces.');
         expect(file).to.contain('This is a interface function of IPrintNameInterface');
-        expect(file).to.contain('Extends');
+        // Interface metadata-label uses lowercase 'extends' (matches the TS keyword).
+        expect(file).to.contain('cdx-metadata-label">extends</dt>');
+        expect(file).to.contain('href="../interfaces/INameInterface.html"');
     });
 
     it('classes - BaseClass', () => {
         const file = read(`${distFolder}/classes/BaseClass.html`);
         expect(file).to.contain('This is a simple base class.');
-        expect(file).to.contain('Implements');
+        // Class metadata-label uses lowercase 'implements' (matches the TS keyword).
+        expect(file).to.contain('cdx-metadata-label">implements</dt>');
         expect(file).to.contain('This is a private function.');
     });
 });

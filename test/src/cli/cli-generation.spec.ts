@@ -64,8 +64,7 @@ describe('CLI simple generation', () => {
             expect(isJSExists).to.be.true;
             const isStylesExists = exists(`${distFolder}/styles`);
             expect(isStylesExists).to.be.true;
-            const isFontsExists = exists(`${distFolder}/fonts`);
-            expect(isFontsExists).to.be.true;
+            // Legacy Bootstrap-era `fonts/` folder is no longer emitted.
         });
 
         it('should have generated search index json', () => {
@@ -114,7 +113,11 @@ describe('CLI simple generation', () => {
         });
 
         it('it should have infos about FooService open function example', () => {
-            expect(fooServiceFile).to.contain('<b>Example :</b>');
+            // Method-level @example markdown is now rendered through the
+            // markdown engine, which wraps fenced code in `cdx-code-snippet`
+            // (no `<b>Example :</b>` label — that legacy label was for
+            // property-level examples only, see JsdocExamplesBlock.tsx:45).
+            expect(fooServiceFile).to.contain('cdx-code-snippet');
             expect(fooServiceFile).to.contain('FooService.open(');
         });
 
@@ -136,421 +139,72 @@ describe('CLI simple generation', () => {
          * internal/private methods
          */
         it('should include by default methods marked as internal', () => {
-            expect(componentFile).to.contain('<code>internalMethod');
+            expect(componentFile).to.contain('cdx-io-member-name">internalMethod');
         });
 
         it('should exclude methods marked as hidden', () => {
-            expect(componentFile).not.to.contain('<code>hiddenMethod');
+            // `hiddenMethod` still shows up in the entity search index and
+            // the source-code panel — assert it is NOT rendered as a
+            // member-row in the API tab (no `cdx-io-member-name` entry).
+            expect(componentFile).not.to.contain('cdx-io-member-name">hiddenMethod');
         });
 
         it('should include by default methods marked as private', () => {
-            expect(componentFile).to.contain('<code>privateMethod');
+            expect(componentFile).to.contain('cdx-io-member-name">privateMethod');
         });
 
         /**
          * inputs outputs
          */
         it('should generate inputs', () => {
-            expect(fooComponentFile).to.contain(`<h3 id="inputs">Inputs</h3>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="aliasedAndRequiredInput"></a>
-                        <b>aliasedAndRequiredInput</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Required : </i>&nbsp;<b>true</b>
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="52" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:52</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example aliased required input using the object syntax</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="aliasedInput"></a>
-                        <b>aliasedInput</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="42" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:42</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example aliased input</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="aliasedInputObjectSyntax"></a>
-                        <b>aliasedInputObjectSyntax</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="47" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:47</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example aliased input using the object syntax</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="exampleInput"></a>
-                        <b>exampleInput</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Default value : </i><code>&#x27;foo&#x27;</code>
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="32" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:32</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example input
-<a href="../components/BarComponent.html">BarComponent</a> or <a href="../components/BarComponent.html">BarComponent2</a> or <a href="../components/BarComponent.html">BarComponent3</a></p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="requiredInput"></a>
-                        <b>requiredInput</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Required : </i>&nbsp;<b>true</b>
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="37" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:37</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example required input</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="aliasedInputSignal"></a>
-                        <b>aliasedInputSignal</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Default value : </i><code>null, { alias: &#x27;aliasedInSignal&#x27; }</code>
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="72" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:72</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example aliased input signal</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="inputSignal"></a>
-                        <b>inputSignal</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="../miscellaneous/functions.html#foo" target="_self" >&quot;foo&quot; | &quot;bar&quot;</a></code>
-
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Default value : </i><code>&#x27;foo&#x27;</code>
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="62" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:62</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example input signal</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="modelInputSignal"></a>
-                        <b>modelInputSignal</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Default value : </i><code>0</code>
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="92" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:92</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example model input signal</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="requiredInputSignal"></a>
-                        <b>requiredInputSignal</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Required : </i>&nbsp;<b>true</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Default value : </i><code>&#x27;foo&#x27;</code>
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="67" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:67</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example required input signal</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>`);
+            // Inputs section heading + the `block-inputs` data-compodoc anchor.
+            expect(fooComponentFile).to.contain('data-compodoc="block-inputs"');
+            expect(fooComponentFile).to.contain('<h3 id="inputs">Inputs');
+            // Each input is a `cdx-io-member--input` row anchored on its name.
+            const inputs = [
+                'aliasedAndRequiredInput',
+                'aliasedInput',
+                'aliasedInputObjectSyntax',
+                'exampleInput',
+                'requiredInput',
+                'aliasedInputSignal',
+                'inputSignal',
+                'modelInputSignal',
+                'requiredInputSignal'
+            ];
+            for (const name of inputs) {
+                expect(fooComponentFile).to.contain(`cdx-io-member-name">${name}`);
+                expect(fooComponentFile).to.contain(`id="${name}"`);
+            }
+            // Type chips, descriptions, and source links should all reach the page.
+            expect(fooComponentFile).to.contain(
+                'href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string"'
+            );
+            expect(fooComponentFile).to.contain(
+                'An example aliased required input using the object syntax'
+            );
+            expect(fooComponentFile).to.contain('data-cdx-line="52"');
+            // Required-flag rendering still surfaces somewhere in the row.
+            expect(fooComponentFile).to.contain('Required');
         });
 
         it('should generate outputs', () => {
-            expect(fooComponentFile).to.contain(`<h3 id="outputs">Outputs</h3>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="exampleOutput"></a>
-                        <b>exampleOutput</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Type : </i>    <code>EventEmitter&lt;literal type&gt;</code>
-
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="57" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:57</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example output</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="aliasedOutputSignal"></a>
-                        <b>aliasedOutputSignal</b>
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="87" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:87</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example aliased output signal</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="modelInputSignal"></a>
-                        <b>modelInputSignal</b>
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="92" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:92</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example model input signal</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="outputSignal"></a>
-                        <b>outputSignal</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="../miscellaneous/functions.html#foo" target="_self" >&quot;foo&quot; | &quot;bar&quot;</a></code>
-
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="77" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:77</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example output signal</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="requiredOutputSignal"></a>
-                        <b>requiredOutputSignal</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-
-                    </td>
-                </tr>
-                        <tr>
-                            <td class="col-md-2" colspan="2">
-                                    <div class="io-line">Defined in <a href="" data-cdx-line="82" class="cdx-link-to-source">test/fixtures/sample-files/foo.component.ts:82</a></div>
-                            </td>
-                        </tr>
-                <tr>
-                    <td class="col-md-4">
-                        <div class="cdx-member-description"><p>An example required output signal</p>
-</div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>`);
+            expect(fooComponentFile).to.contain('data-compodoc="block-outputs"');
+            expect(fooComponentFile).to.contain('<h3 id="outputs">Outputs');
+            const outputs = [
+                'exampleOutput',
+                'aliasedOutputSignal',
+                'modelInputSignal',
+                'outputSignal',
+                'requiredOutputSignal'
+            ];
+            for (const name of outputs) {
+                expect(fooComponentFile).to.contain(`cdx-io-member-name">${name}`);
+                expect(fooComponentFile).to.contain(`id="${name}"`);
+            }
+            // Output type chip + source-line landmark.
+            expect(fooComponentFile).to.contain('EventEmitter');
+            expect(fooComponentFile).to.contain('data-cdx-line="57"');
         });
 
         /**
@@ -570,7 +224,13 @@ describe('CLI simple generation', () => {
          */
 
         it('it should display function type parameters', () => {
-            expect(fooServiceFile).to.contain('<code>close(work: (toto: ');
+            // Function-type parameters are now rendered as a `function` link
+            // to the MDN reference instead of expanding the `(arg: T) => U`
+            // shape inline. Assert on the parameter name + the MDN link.
+            expect(fooServiceFile).to.contain('<code>close(work: ');
+            expect(fooServiceFile).to.contain(
+                'href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function"'
+            );
         });
 
         it('it should display c-style typed arrays', () => {
@@ -578,13 +238,14 @@ describe('CLI simple generation', () => {
         });
 
         /**
-         * WC Menu
+         * Inline menu (legacy `js/menu-wc.js` web component is gone — every
+         * page now renders the menu inline via `Menu.tsx`).
          */
-        it('should have generated wc menu', () => {
-            const isWCFile = exists(`${distFolder}/js/menu-wc.js`);
-            expect(isWCFile).to.be.true;
-            const isWCFileES5 = exists(`${distFolder}/js/menu-wc_es5.js`);
-            expect(isWCFileES5).to.be.true;
+        it('should have inline sidebar menu in generated pages', () => {
+            const indexHtml = read(`${distFolder}/index.html`);
+            expect(indexHtml).to.contain('cdx-sidebar menu');
+            // Sanity check: at least one chapter button is present.
+            expect(indexHtml).to.contain('class="chapter"');
         });
     });
 
@@ -670,8 +331,7 @@ describe('CLI simple generation', () => {
             expect(isJSExists).to.be.true;
             const isStylesExists = exists(`/tmp/${distFolder}/styles`);
             expect(isStylesExists).to.be.true;
-            const isFontsExists = exists(`/tmp/${distFolder}/fonts`);
-            expect(isFontsExists).to.be.true;
+            // Legacy `fonts/` folder no longer emitted.
         });
 
         it('should have generated search index json', () => {
@@ -877,8 +537,7 @@ describe('CLI simple generation', () => {
             expect(isJSExists).to.be.true;
             const isStylesExists = exists('documentation/styles');
             expect(isStylesExists).to.be.true;
-            const isFontsExists = exists('documentation/fonts');
-            expect(isFontsExists).to.be.true;
+            // Legacy `fonts/` folder no longer emitted.
         });
     });
 
@@ -963,7 +622,9 @@ describe('CLI simple generation', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('should edit name', () => {
-            index = read(`${distFolder}/js/menu-wc.js`);
+            // The custom name now lives in the inline sidebar markup of
+            // every page (legacy `js/menu-wc.js` is gone).
+            index = read(`${distFolder}/index.html`);
             expect(index).to.contain(name);
         });
     });
@@ -1110,7 +771,12 @@ describe('CLI simple generation', () => {
             expect(index).to.not.contain('id="templateData-tab"');
         });
         it('should set source as the active tab', () => {
-            expect(index).to.contain('<a href="#source" class="nav-link active"');
+            // Tabs migrated from Bootstrap (`nav-link active`) to the cdx
+            // tab bar — assert the stable href + active class + a11y
+            // attribute on the source-tab anchor.
+            expect(index).to.contain('href="#source" class="active"');
+            expect(index).to.contain('id="source-tab"');
+            expect(index).to.contain('aria-selected="true"');
         });
         it('should set the source tab label', () => {
             expect(index).to.contain('data-link="source">Test Label 1');
