@@ -62,6 +62,19 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                             ))}
                             {m.optional && <span class="cdx-member-modifier">{t('optional')}</span>}
                         </div>
+                        {m.decorators?.length > 0 && (
+                            <div class="cdx-member-decorators">
+                                <code>
+                                    {m.decorators
+                                        .map((d: any) =>
+                                            d.stringifiedArguments
+                                                ? `@${d.name}(${d.stringifiedArguments})`
+                                                : `@${d.name}()`
+                                        )
+                                        .join('<br />') + '<br />'}
+                                </code>
+                            </div>
+                        )}
                         {m.deprecated && m.deprecationMessage && (
                             <div class="cdx-member-deprecated">{m.deprecationMessage}</div>
                         )}

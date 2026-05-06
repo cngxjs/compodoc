@@ -1,6 +1,7 @@
 import Html from '@kitajs/html';
 import Configuration from '../../app/configuration';
 import { BlockAccessors } from '../blocks/BlockAccessors';
+import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockDerivedState } from '../blocks/BlockDerivedState';
 import { BlockHostBindings } from '../blocks/BlockHostBindings';
 import { BlockHostListeners } from '../blocks/BlockHostListeners';
@@ -316,6 +317,18 @@ const InfoContent = (props: EntityInfoProps): string => {
                     const injectProps = allProps.filter((p: any) => p.signalKind === 'inject');
                     const ctorArgs = e.constructorObj?.args ?? [];
                     if (injectProps.length === 0 && ctorArgs.length === 0) {
+                        // Constructor with no public deps but with explicit
+                        // modifiers (e.g. `private constructor()`) still
+                        // deserves a Constructor section so the modifier
+                        // surfaces — fall back to BlockConstructor.
+                        const ctorModifiers = e.constructorObj?.modifierKind ?? [];
+                        if (e.constructorObj && ctorModifiers.length > 0) {
+                            return BlockConstructor({
+                                constructor: e.constructorObj,
+                                file: e.file,
+                                depth: props.depth ?? 0
+                            });
+                        }
                         return '';
                     }
                     return DependenciesSection({ injectProps, constructorArgs: ctorArgs });

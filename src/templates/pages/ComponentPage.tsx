@@ -76,12 +76,16 @@ const ComponentMetadata = (c: any): string => {
     };
 
     // Scalar source-of-truth values — kept in the table. Boolean/enum traits
-    // (standalone, changeDetection, encapsulation, preserveWhitespaces) now live
-    // in the hero badge row so the metadata table stays focused on substantive
-    // values that actually need a value cell.
+    // (standalone, changeDetection, encapsulation, preserveWhitespaces) ALSO
+    // ship as hero badges for visual emphasis, but the underlying decorator
+    // option is restored to the metadata table for compodoc-line compatibility
+    // (downstream consumers grep these labels in CI / migration scripts).
     codeField('selector', c.selector);
     codeField('exportAs', c.exportAs);
     codeField('animations', c.animations);
+    codeField('changeDetection', c.changeDetection);
+    codeField('encapsulation', c.encapsulation);
+    codeField('preserveWhitespaces', c.preserveWhitespaces);
     codeField('interpolation', c.interpolation);
     codeField('moduleId', c.moduleId);
     codeField('queries', c.queries);
