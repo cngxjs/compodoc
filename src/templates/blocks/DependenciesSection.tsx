@@ -1,5 +1,5 @@
 import Html from '@kitajs/html';
-import { linkTypeHtml, t } from '../helpers';
+import { linkTypeHtml, parseDescription, t } from '../helpers';
 
 /** Parse inject() modifiers from the defaultValue string. */
 export const parseInjectModifiers = (defaultValue: string): string[] => {
@@ -26,12 +26,15 @@ export const parseInjectModifiers = (defaultValue: string): string[] => {
 export const DependenciesSection = (props: {
     injectProps: any[];
     constructorArgs: any[];
+    constructorDescription?: string;
+    depth?: number;
 }): string => {
     const items: Array<{
         name: string;
         type: string;
         source: 'inject' | 'constructor';
         modifiers: string[];
+        description?: string;
     }> = [];
 
     for (const p of props.injectProps) {
@@ -39,7 +42,8 @@ export const DependenciesSection = (props: {
             name: p.name,
             type: p.type ?? '',
             source: 'inject',
-            modifiers: parseInjectModifiers(p.defaultValue ?? '')
+            modifiers: parseInjectModifiers(p.defaultValue ?? ''),
+            description: p.description
         });
     }
 
@@ -48,7 +52,8 @@ export const DependenciesSection = (props: {
             name: arg.name,
             type: arg.type ?? '',
             source: 'constructor',
-            modifiers: arg.optional ? ['optional'] : []
+            modifiers: arg.optional ? ['optional'] : [],
+            description: arg.description
         });
     }
 
@@ -64,6 +69,11 @@ export const DependenciesSection = (props: {
                     #
                 </a>
             </h3>
+            {props.constructorDescription && (
+                <div class="cdx-deps-constructor-desc">
+                    {parseDescription(props.constructorDescription, props.depth ?? 0)}
+                </div>
+            )}
             <div class="cdx-deps-list">
                 {items.map(item => (
                     <div class="cdx-deps-item">
@@ -82,6 +92,11 @@ export const DependenciesSection = (props: {
                         </span>
                         {item.source === 'inject' && item.name && (
                             <span class="cdx-deps-alias">{item.name}</span>
+                        )}
+                        {item.description && (
+                            <div class="cdx-deps-desc">
+                                {parseDescription(item.description, props.depth ?? 0)}
+                            </div>
                         )}
                     </div>
                 ))}

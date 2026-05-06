@@ -553,9 +553,9 @@ export class ComponentHelper {
 
     public getComponentProviders(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
-        _srcFile: ts.SourceFile
+        srcFile: ts.SourceFile
     ): ProviderEntry[] {
-        return this.symbolHelper.getProviderEntries(props, 'providers');
+        return this.symbolHelper.getProviderEntries(props, 'providers', srcFile);
     }
 
     public getComponentImports(
@@ -578,9 +578,9 @@ export class ComponentHelper {
 
     public getComponentViewProviders(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
-        _srcFile: ts.SourceFile
+        srcFile: ts.SourceFile
     ): ProviderEntry[] {
-        return this.symbolHelper.getProviderEntries(props, 'viewProviders');
+        return this.symbolHelper.getProviderEntries(props, 'viewProviders', srcFile);
     }
 
     public getComponentTemplateUrl(

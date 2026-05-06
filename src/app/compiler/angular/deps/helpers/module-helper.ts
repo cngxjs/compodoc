@@ -19,7 +19,7 @@ export class ModuleHelper {
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
         srcFile: ts.SourceFile
     ): ProviderEntry[] {
-        const entries = this.symbolHelper.getProviderEntries(props, 'providers');
+        const entries = this.symbolHelper.getProviderEntries(props, 'providers', srcFile);
         for (const entry of entries) {
             if (entry.name) {
                 const enriched = this.symbolHelper.parseDeepIndentifier(entry.name, srcFile);

@@ -369,7 +369,13 @@ describe('ComponentHelper', () => {
 
             const result = componentHelper.getComponentProviders(props, sourceFile);
 
-            expect(symbolHelperStub.getProviderEntries).toHaveBeenCalledWith(props, 'providers');
+            // srcFile threaded through so Object-Literal-Shorthand resolution
+            // can walk the file's top-level `const providers = […]` declaration.
+            expect(symbolHelperStub.getProviderEntries).toHaveBeenCalledWith(
+                props,
+                'providers',
+                sourceFile
+            );
             expect(result).to.deep.equal(stubbedEntries);
         });
     });
@@ -431,7 +437,8 @@ describe('ComponentHelper', () => {
 
             expect(symbolHelperStub.getProviderEntries).toHaveBeenCalledWith(
                 props,
-                'viewProviders'
+                'viewProviders',
+                sourceFile
             );
             expect(result).to.deep.equal(stubbedEntries);
         });

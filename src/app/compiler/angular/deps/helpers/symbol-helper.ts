@@ -310,7 +310,8 @@ export class SymbolHelper {
      */
     public getProviderEntries(
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
-        decoratorKey: string
+        decoratorKey: string,
+        srcFile?: ts.SourceFile
     ): ProviderEntry[] {
         let matching: any;
         for (const prop of props) {
@@ -322,18 +323,66 @@ export class SymbolHelper {
         if (!matching) {
             return [];
         }
+
+        let arrayLiteral: ts.ArrayLiteralExpression | undefined;
         const initializer = matching.initializer;
-        if (!initializer || !ts.isArrayLiteralExpression(initializer)) {
+        if (initializer && ts.isArrayLiteralExpression(initializer)) {
+            arrayLiteral = initializer;
+        } else if (
+            srcFile &&
+            (ts.isShorthandPropertyAssignment(matching) ||
+                (initializer && ts.isIdentifier(initializer)))
+        ) {
+            // Object-Literal-Shorthand resolution: `@NgModule({ providers })`
+            // resolves to a local `const providers = [Foo]` declaration.
+            // Mirrors the shorthand-aware branch in `parseSymbols` but
+            // returns the underlying array literal so the typed
+            // `ProviderEntry[]` shape is preserved.
+            const name = ts.isShorthandPropertyAssignment(matching)
+                ? (matching.name as any).text
+                : (initializer as any).text;
+            arrayLiteral = this.resolveLocalArrayLiteral(name, srcFile);
+        }
+
+        if (!arrayLiteral) {
             return [];
         }
+
         const result: ProviderEntry[] = [];
-        for (const element of initializer.elements) {
+        for (const element of arrayLiteral.elements) {
             const entry = this.parseProviderElement(element);
             if (entry) {
                 result.push(entry);
             }
         }
         return result;
+    }
+
+    /**
+     * Walk the top-level statements of `srcFile` and return the array literal
+     * bound to a `const`/`let` declaration matching `name`. Used by
+     * `getProviderEntries` for Object-Literal-Shorthand resolution.
+     */
+    private resolveLocalArrayLiteral(
+        name: string,
+        srcFile: ts.SourceFile
+    ): ts.ArrayLiteralExpression | undefined {
+        for (const stmt of srcFile.statements) {
+            if (!ts.isVariableStatement(stmt)) {
+                continue;
+            }
+            for (const decl of stmt.declarationList.declarations) {
+                if (
+                    ts.isIdentifier(decl.name) &&
+                    decl.name.text === name &&
+                    decl.initializer &&
+                    ts.isArrayLiteralExpression(decl.initializer)
+                ) {
+                    return decl.initializer;
+                }
+            }
+        }
+        return undefined;
     }
 
     /**
