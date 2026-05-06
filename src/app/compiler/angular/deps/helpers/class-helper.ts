@@ -1347,6 +1347,25 @@ export class ClassHelper {
         } else if (result.args.length > 0) {
             result.jsdoctags = mergeTagsAndArgs(result.args);
         }
+
+        // Thread @param descriptions back into `result.args` so downstream
+        // consumers (e.g. `DependenciesSection`) that don't walk
+        // `jsdoctags` still see the per-parameter description text.
+        if (result.args.length > 0 && result.jsdoctags?.length > 0) {
+            const commentByName = new Map<string, any>();
+            for (const tag of result.jsdoctags) {
+                const tagName = tag.name?.text ?? tag.name;
+                if (tagName && tag.comment) {
+                    commentByName.set(String(tagName), tag.comment);
+                }
+            }
+            for (const arg of result.args) {
+                const comment = commentByName.get(arg.name);
+                if (comment != null) {
+                    arg.description = comment;
+                }
+            }
+        }
         return result;
     }
 

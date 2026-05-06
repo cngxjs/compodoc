@@ -331,7 +331,12 @@ const InfoContent = (props: EntityInfoProps): string => {
                         }
                         return '';
                     }
-                    return DependenciesSection({ injectProps, constructorArgs: ctorArgs });
+                    return DependenciesSection({
+                        injectProps,
+                        constructorArgs: ctorArgs,
+                        constructorDescription: e.constructorObj?.description,
+                        depth: props.depth ?? 0
+                    });
                 })()}
 
             {/* 4.5 Relationships (cross-linking) */}

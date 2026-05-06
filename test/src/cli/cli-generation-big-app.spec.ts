@@ -331,9 +331,10 @@ describe('CLI simple generation - big app', () => {
     it('should have correct links for {@link into main description and constructor}', () => {
         // Class-level `See {@link TodoStore}` resolves to a real anchor.
         expect(todoClassFile).to.contain('See <a href="../injectables/TodoStore');
-        // TODO(bug): constructor-level `Watch {@link TodoStore}` is no
-        // longer parsed alongside the dependency-row entry (same
-        // limitation as the @param JSDoc note above).
+        // Constructor-level `Watch {@link TodoStore}` flows through
+        // `DependenciesSection.constructorDescription` and gets the
+        // same `parseDescription` treatment.
+        expect(todoClassFile).to.contain('Watch <a href="../injectables/TodoStore');
     });
 
     it('should support misc links', () => {
@@ -558,16 +559,10 @@ describe('CLI simple generation - big app', () => {
     it('should support Object Literal Property Value Shorthand support for metadatas for modules', () => {
         // Module list-section headings remain bare `<h3>` (no
         // `cdx-section-heading` class — that's only on Metadata/Identifier).
-        // TODO(bug): the Object-Literal-Shorthand resolution loses the
-        // `providers` array specifically — `<h3>Providers` does not render
-        // for AboutModule even though `const providers = [TodoStore]; ... `
-        // `@NgModule({ providers, ... })` is in the source. Other shorthand
-        // fields (declarations, imports, bootstrap, schemas, entryComponents)
-        // resolve correctly. Tracked separately from the cluster-2a markup
-        // migration.
         expect(aboutModuleFile).to.contain('<h3>Declarations');
         expect(aboutModuleFile).to.contain('<h3>Imports');
         expect(aboutModuleFile).to.contain('<h3>EntryComponents');
+        expect(aboutModuleFile).to.contain('<h3>Providers');
         expect(aboutModuleFile).to.contain('<h3>Bootstrap');
         expect(aboutModuleFile).to.contain('<h3>Schemas');
     });
@@ -931,11 +926,15 @@ describe('CLI simple generation - big app', () => {
         expect(todoStore).to.contain(
             'all todos -&gt; see <a href="../components/FooterComponent.html">FooterComponent'
         );
-        // TODO(bug): constructor-parameter @param JSDoc (FooterComponent's
-        // constructor `(todoStore: TodoStore)`) is no longer parsed and
-        // rendered alongside the dependency-row entry — the description
-        // reaches the source-code panel only. `DependenciesSection` would
-        // need to thread the @param description into the dep card.
+        // Constructor-parameter @param JSDoc (FooterComponent's
+        // `(todoStore: TodoStore)`) now threads through
+        // `DependenciesSection` — `arg.description` is populated by
+        // `class-helper.ts:visitConstructorDeclaration` after the
+        // `mergeTagsAndArgs` merge.
+        const footer = read(`${distFolder}/components/FooterComponent.html`);
+        expect(footer).to.contain(
+            'A TodoStore -&gt; see <a href="../injectables/TodoStore.html">TodoStore'
+        );
     });
 
     it('should support JSDoc @link in JSDoc @see tag', () => {

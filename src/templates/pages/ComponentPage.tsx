@@ -223,7 +223,12 @@ const InfoContent = (data: any): string => {
                     );
                     const ctorArgs = c.constructorObj?.args ?? [];
                     return injectProps.length > 0 || ctorArgs.length > 0
-                        ? DependenciesSection({ injectProps, constructorArgs: ctorArgs })
+                        ? DependenciesSection({
+                              injectProps,
+                              constructorArgs: ctorArgs,
+                              constructorDescription: c.constructorObj?.description,
+                              depth: depth ?? 0
+                          })
                         : '';
                 })()}
 
