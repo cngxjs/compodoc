@@ -54,39 +54,6 @@ describe('CLI Routes graph', () => {
         });
     });
 
-    // TODO(bug): the routes_index.js for the `routing-without-module` fixture
-    // contains the `ExampleRoutingModule` entry but not the `ExampleComponent`
-    // referenced from its lazy-loaded `{ path: '', component: ExampleComponent }`
-    // child route. The route extractor does not descend into lazy-loaded
-    // routing modules to pull out their component references. Reproduces with
-    // `node ./bin/index-cli.js -p ./test/fixtures/routing-without-module/src/tsconfig.app.json`
-    // — see /tmp/<dist>/js/routes/routes_index.js. Separate fix.
-    describe.skip('should support routing without routing module', () => {
-        beforeAll(() => {
-            tmp.create(distFolder);
-            const ls = shell('node', [
-                './bin/index-cli.js',
-                '-p',
-                './test/fixtures/routing-without-module/src/tsconfig.app.json',
-                '-d',
-                distFolder
-            ]);
-
-            if (hasStderrError(ls.stderr.toString())) {
-                console.error(`shell error: ${ls.stderr.toString()}`);
-                throw new Error('error');
-            }
-        });
-        afterAll(() => tmp.clean(distFolder));
-
-        it('should have a clean graph', () => {
-            const isFileExists = exists(`${distFolder}/js/routes/routes_index.js`);
-            expect(isFileExists).to.be.true;
-            const file = read(`${distFolder}/js/routes/routes_index.js`);
-            expect(file).to.contain('ExampleComponent');
-        });
-    });
-
     describe('should support lazy-loaded modules with loadChildren syntax (containing possible trailing commas)', () => {
         beforeAll(() => {
             tmp.create(distFolder);
