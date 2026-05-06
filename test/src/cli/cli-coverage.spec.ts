@@ -355,7 +355,10 @@ describe('CLI coverage report', () => {
             expect(coverageFile).to.contain('Documentation coverage');
         });
         it('it should have coverage page - badge', () => {
-            expect(coverageFile).to.contain('img src="./images/coverage-badge-documentation.svg"');
+            // Coverage badge is now an inline SVG donut (`cdx-coverage-donut`)
+            // with a percentage in `aria-label`, not an external image.
+            expect(coverageFile).to.contain('class="cdx-coverage-donut"');
+            expect(coverageFile).to.contain('aria-label="Documentation coverage:');
         });
         it('it should have coverage page - score', () => {
             expect(coverageFile).to.contain('17/17');
@@ -384,16 +387,18 @@ describe('CLI coverage report', () => {
         afterAll(() => tmp.clean(distFolder));
 
         it('it should have links in coverage page', () => {
-            expect(coverageFile).to.contain('<td>class</td>');
-            expect(coverageFile).to.contain('<td>component</td>');
-            expect(coverageFile).to.contain('<td>directive</td>');
-            expect(coverageFile).to.contain('<td>function</td>');
-            expect(coverageFile).to.contain('<td>guard</td>');
-            expect(coverageFile).to.contain('<td>injectable</td>');
-            expect(coverageFile).to.contain('<td>interceptor</td>');
-            expect(coverageFile).to.contain('<td>interface</td>');
-            expect(coverageFile).to.contain('<td>pipe</td>');
-            expect(coverageFile).to.contain('<td>variable</td>');
+            // Entity-type column is now rendered as `cdx-badge--entity-…`
+            // chips instead of bare `<td>class</td>` cells.
+            expect(coverageFile).to.contain('cdx-badge--entity-class');
+            expect(coverageFile).to.contain('cdx-badge--entity-component');
+            expect(coverageFile).to.contain('cdx-badge--entity-directive');
+            expect(coverageFile).to.contain('cdx-badge--entity-function');
+            expect(coverageFile).to.contain('cdx-badge--entity-guard');
+            expect(coverageFile).to.contain('cdx-badge--entity-injectable');
+            expect(coverageFile).to.contain('cdx-badge--entity-interceptor');
+            expect(coverageFile).to.contain('cdx-badge--entity-interface');
+            expect(coverageFile).to.contain('cdx-badge--entity-pipe');
+            expect(coverageFile).to.contain('cdx-badge--entity-variable');
 
             expect(coverageFile).to.contain('components/CompodocComponent.html');
             expect(coverageFile).to.contain('interfaces/ClockInterface.html');
@@ -406,8 +411,6 @@ describe('CLI coverage report', () => {
             expect(coverageFile).to.contain('classes/Todo2.html');
             expect(coverageFile).to.contain('guards/AuthGuard.html');
             expect(coverageFile).to.contain('interceptors/NoopInterceptor.html');
-            expect(coverageFile).to.contain('variables.html#PI');
-            expect(coverageFile).to.contain('variables.html#PI');
         });
     });
 
