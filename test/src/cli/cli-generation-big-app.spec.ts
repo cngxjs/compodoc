@@ -154,15 +154,11 @@ describe('CLI simple generation - big app', () => {
         expect(listComponentFile).to.contain('readme-tab');
     });
 
-    // TODO(bug): custom property decorators (e.g. `@LogProperty`) are no
-    // longer surfaced on the property row in the API tab. The legacy
-    // Handlebars template rendered them inline as `@LogProperty()<br />`
-    // next to the property name; the TSX `BlockProperty` does not render
-    // any decorator metadata other than the Angular-known ones (@Input,
-    // @Output, @HostBinding, @HostListener) which become section / badge
-    // classifications. The fixture's `@LogProperty` on
-    // `FooterComponent#id` reaches the source-code panel only.
-    it.skip('should have a decorator listed', () => {
+    it('should have a decorator listed', () => {
+        // Custom property decorators (e.g. `@LogProperty`,
+        // `@LogPropertyWithArgs(…)`) render in a `cdx-member-decorators`
+        // line inside the property row, with `<br />` separators between
+        // multiple decorators on the same property.
         expect(footerComponentFile).to.contain('@LogProperty()<br');
     });
 
@@ -581,15 +577,12 @@ describe('CLI simple generation - big app', () => {
             '<h3 class="cdx-section-heading" id="metadata">Metadata'
         );
         expect(homeComponentFile).to.contain('<code>home</code>');
-        // TODO(bug): the `changeDetection` and `encapsulation` metadata
-        // cells are no longer rendered on the component metadata card —
-        // only Selector and Template URL surface. The shorthand-resolution
-        // path covers them in the underlying data shape but the TSX
-        // template intentionally drops them in favour of the existing
-        // standalone/imports chips. Fold them back in once a design
-        // decision is made.
+        expect(homeComponentFile).to.contain('<code>ChangeDetectionStrategy.OnPush</code>');
+        expect(homeComponentFile).to.contain('<code>ViewEncapsulation.Emulated</code>');
         expect(homeComponentFile).to.contain('<code>./home.component.html</code>');
         expect(homeComponentFile).to.contain('cdx-metadata-label">Template URL');
+        expect(homeComponentFile).to.contain('cdx-metadata-label">Change detection');
+        expect(homeComponentFile).to.contain('cdx-metadata-label">Encapsulation');
     });
 
     it('should support @link to miscellaneous', () => {
@@ -656,15 +649,12 @@ describe('CLI simple generation - big app', () => {
         expect(file).to.contain('Optional');
     });
 
-    // TODO(bug): private constructors are no longer rendered as a member
-    // section on the class page — `PrivateConstructor` shows the class
-    // name only, not a `cdx-member-modifier">Private` badge alongside
-    // a constructor row. Either the private filter is too aggressive or
-    // the constructor block is unconditionally hidden when no public
-    // signature exists.
-    it.skip('should support private for constructor', () => {
+    it('should support private for constructor', () => {
         const file = read(`${distFolder}/classes/PrivateConstructor.html`);
-        expect(file).to.contain('class="cdx-member-modifier">Private');
+        // Constructors with explicit modifiers but no inject/ctor args
+        // fall back to `BlockConstructor` so the modifier still surfaces;
+        // the badge class adds a `--{slug}` suffix (e.g. `--private`).
+        expect(file).to.contain('cdx-member-modifier--private">Private');
     });
 
     it('should support union type with array', () => {
@@ -707,14 +697,11 @@ describe('CLI simple generation - big app', () => {
         expect(file).to.contain('>FirstUpperPipe2');
     });
 
-    // TODO(bug): the `preserveWhitespaces` component-decorator option is no
-    // longer surfaced as a metadata-card row — only its source-code line
-    // reaches the rendered output. Other metadata fields (selector,
-    // template, styleUrls, …) DO render via `MetadataRow.tsx`. Restore the
-    // assertion once `preserveWhitespaces` is added back to the rendered
-    // metadata set (or document the omission as intentional).
-    it.skip('should support component metadata preserveWhiteSpaces', () => {
-        expect(aboutComponentFile).to.contain('cdx-metadata-label">preserveWhitespaces');
+    it('should support component metadata preserveWhiteSpaces', () => {
+        // `preserveWhitespaces` is restored to the metadata card (along
+        // with `changeDetection` / `encapsulation`) for compodoc-line
+        // compatibility; the humanized label is "Preserve whitespaces".
+        expect(aboutComponentFile).to.contain('cdx-metadata-label">Preserve whitespaces');
     });
 
     it('should support component metadata entryComponents', () => {
@@ -846,20 +833,25 @@ describe('CLI simple generation - big app', () => {
         );
     });
 
-    // TODO(bug): the legacy template truncated arrow-function bodies on
-    // property assignments to `() => {...}`. The TSX `BlockProperty` now
-    // shows the property type as `unknown` and does not display any
-    // function shorthand. Restore once the truncation helper is ported.
-    it.skip('shorten long arrow function declaration for properties', () => {
-        expect(todoClassFile).to.contain('() &#x3D;&gt; {...}</code>');
+    it('shorten long arrow function declaration for properties', () => {
+        // Arrow-function property assignments render the truncated
+        // `() => {...}` shorthand from `class-helper.ts:1389` as the
+        // property's `defaultValue`, which then flows through
+        // `highlightedCodeWrap` → Shiki and emerges inside a
+        // `<code class="cdx-shiki-inline">…</code>` span tree. The
+        // legacy assertion targeted the pre-Shiki entity-escaped form
+        // (`() &#x3D;&gt; {...}`) — assert on the truncation marker
+        // (`{...}`) plus the inline-code wrapper landmark instead.
+        expect(todoClassFile).to.contain('cdx-shiki-inline');
+        expect(todoClassFile).to.contain('{</span>');
+        expect(todoClassFile).to.contain('>...</span>');
     });
 
-    // TODO(bug): same as `should have a decorator listed` — custom
-    // decorator arguments (`@throttle(1000 as PollingSpeed)`) reach the
-    // source-code panel only; no `cdx-io-member`-side decorator rendering
-    // exists in the new TSX templates.
-    it.skip('correct supports 1000 as PollingSpeed for decorator arguments', () => {
+    it('correct supports 1000 as PollingSpeed for decorator arguments', () => {
         const file = read(`${distFolder}/classes/SomeFeature.html`);
+        // Custom method decorators get the same `cdx-member-decorators`
+        // treatment as property decorators, with `stringifiedArguments`
+        // preserved verbatim (including the `as PollingSpeed` cast).
         expect(file).to.contain('code>@throttle(1000 as PollingSpeed');
     });
 

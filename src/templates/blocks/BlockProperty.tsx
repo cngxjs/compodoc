@@ -74,6 +74,19 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                                 <span class="cdx-badge cdx-badge--factory">Required</span>
                             )}
                         </div>
+                        {p.decorators?.length > 0 && (
+                            <div class="cdx-member-decorators">
+                                <code>
+                                    {p.decorators
+                                        .map((d: any) =>
+                                            d.stringifiedArguments
+                                                ? `@${d.name}(${d.stringifiedArguments})`
+                                                : `@${d.name}()`
+                                        )
+                                        .join('<br />') + '<br />'}
+                                </code>
+                            </div>
+                        )}
                         {p.deprecated && p.deprecationMessage && (
                             <div class="cdx-member-deprecated">{p.deprecationMessage}</div>
                         )}
