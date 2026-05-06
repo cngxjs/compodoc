@@ -37,22 +37,41 @@ describe('CLI Unit Test Report', () => {
 
         it('should have unit test page', () => {
             expect(unitTestFile).to.contain('Unit test coverage');
-            expect(unitTestFile).to.contain('<span class="coverage-count">(22/26)</span>');
+            // Per-file count shifted from a single "statements" fraction
+            // (legacy `(22/26)`) to an aggregate of all four metrics
+            // (lines + statements + functions + branches) inside
+            // `cdx-coverage-count-detail`. todo.model.ts: 18+22+6+2 / 22+26+10+2 = 48/60.
+            expect(unitTestFile).to.contain('cdx-coverage-count-detail">(48/60)');
         });
 
-        it('should have badges', () => {
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-statements.svg"');
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-branches.svg"');
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-functions.svg"');
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-lines.svg"');
+        it('should have per-metric stats instead of badge images', () => {
+            // Legacy `<img src="./images/coverage-badge-{kind}.svg">`
+            // images replaced by a per-metric stat block; assert the
+            // four metric labels and one of the covered/total fractions
+            // (statements: 256/336, branches: 8/17, functions: 40/104,
+            // lines: 217/293).
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Statements');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Branches');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Functions');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Lines');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-sub">256/336');
         });
 
         it('should have full file path links', () => {
+            // Entity link now uses the entity name as link text; the
+            // file path is rendered separately in a `<td>` and its
+            // `title` attribute preserves the JSON input format.
             expect(unitTestFile).to.contain(
-                '<a href="./components/AppComponent.html">test/fixtures/todomvc-ng2/src/app/app.component.ts</a>'
+                '<a href="./components/AppComponent.html">AppComponent</a>'
             );
             expect(unitTestFile).to.contain(
-                '<a href="./components/AboutComponent.html">test/fixtures/todomvc-ng2/src/app/about/about.component.ts</a>'
+                '<a href="./components/AboutComponent.html">AboutComponent</a>'
+            );
+            expect(unitTestFile).to.contain(
+                'title="test/fixtures/todomvc-ng2/src/app/app.component.ts"'
+            );
+            expect(unitTestFile).to.contain(
+                'title="test/fixtures/todomvc-ng2/src/app/about/about.component.ts"'
             );
         });
     });
@@ -87,23 +106,28 @@ describe('CLI Unit Test Report', () => {
 
         it('should have unit test page', () => {
             expect(unitTestFile).to.contain('Unit test coverage');
-            expect(unitTestFile).to.contain('<span class="coverage-count">(22/26)</span>');
+            expect(unitTestFile).to.contain('cdx-coverage-count-detail">(48/60)');
         });
 
-        it('should have badges', () => {
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-statements.svg"');
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-branches.svg"');
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-functions.svg"');
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-lines.svg"');
+        it('should have per-metric stats instead of badge images', () => {
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Statements');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Branches');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Functions');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Lines');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-sub">256/336');
         });
 
         it('should have partial file path links', () => {
             expect(unitTestFile).to.contain(
-                '<a href="./components/AppComponent.html">src/app/app.component.ts</a>'
+                '<a href="./components/AppComponent.html">AppComponent</a>'
             );
             expect(unitTestFile).to.contain(
-                '<a href="./components/AboutComponent.html">src/app/about/about.component.ts</a>'
+                '<a href="./components/AboutComponent.html">AboutComponent</a>'
             );
+            // Partial path JSON keeps the trimmed `src/app/...` form
+            // verbatim in the `title` attribute.
+            expect(unitTestFile).to.contain('title="src/app/app.component.ts"');
+            expect(unitTestFile).to.contain('title="src/app/about/about.component.ts"');
         });
     });
 
@@ -137,23 +161,33 @@ describe('CLI Unit Test Report', () => {
 
         it('should have unit test page', () => {
             expect(unitTestFile).to.contain('Unit test coverage');
-            expect(unitTestFile).to.contain('<span class="coverage-count">(22/26)</span>');
+            expect(unitTestFile).to.contain('cdx-coverage-count-detail">(48/60)');
         });
 
-        it('should have badges', () => {
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-statements.svg"');
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-branches.svg"');
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-functions.svg"');
-            expect(unitTestFile).to.contain('img src="./images/coverage-badge-lines.svg"');
+        it('should have per-metric stats instead of badge images', () => {
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Statements');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Branches');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Functions');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-label">Lines');
+            expect(unitTestFile).to.contain('cdx-coverage-stat-sub">256/336');
         });
 
         it('should have partial file path links', () => {
             expect(unitTestFile).to.contain(
-                '<a href="./components/AppComponent.html">src\\app\\app.component.ts</a>'
+                '<a href="./components/AppComponent.html">AppComponent</a>'
             );
             expect(unitTestFile).to.contain(
-                '<a href="./components/AboutComponent.html">src\\app\\about\\about.component.ts</a>'
+                '<a href="./components/AboutComponent.html">AboutComponent</a>'
             );
+            // Windows-style backslash paths from the input JSON are
+            // preserved verbatim in the `title` attribute (display text
+            // in the `<td>` is normalised to forward-slash, but the
+            // tooltip exposes the raw input format).
+            expect(unitTestFile).to.contain('title="src\\app\\app.component.ts"');
+            expect(unitTestFile).to.contain('title="src\\app\\about\\about.component.ts"');
+            // Display text is forward-slash regardless of input format.
+            expect(unitTestFile).to.contain('>src/app/app.component.ts</td>');
+            expect(unitTestFile).to.contain('>src/app/about/about.component.ts</td>');
         });
     });
 });
