@@ -461,7 +461,7 @@ export const ComponentPage = (data: any): string => {
                     )}
                 </div>
                 {!data.disableFilePath && c.file && (
-                    <p class="cdx-entity-hero-file" title="Source file" aria-label="Source file">
+                    <p class="cdx-entity-hero-file" title="Source file">
                         {IconFile()}
                         <span>{c.file}</span>
                     </p>

@@ -77,13 +77,13 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
                         {p.decorators?.length > 0 && (
                             <div class="cdx-member-decorators">
                                 <code>
-                                    {p.decorators
+                                    {`${p.decorators
                                         .map((d: any) =>
                                             d.stringifiedArguments
                                                 ? `@${d.name}(${d.stringifiedArguments})`
                                                 : `@${d.name}()`
                                         )
-                                        .join('<br />') + '<br />'}
+                                        .join('<br />')}<br />`}
                                 </code>
                             </div>
                         )}

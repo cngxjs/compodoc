@@ -199,7 +199,7 @@ export const ModulePage = (data: any): string => {
                     <span class="cdx-badge cdx-badge--entity-module">Module</span>
                 </div>
                 {!data.disableFilePath && mod.file && (
-                    <p class="cdx-entity-hero-file" title="Source file" aria-label="Source file">
+                    <p class="cdx-entity-hero-file" title="Source file">
                         {IconFile()}
                         <span>{mod.file}</span>
                     </p>

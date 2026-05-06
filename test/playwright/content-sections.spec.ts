@@ -26,11 +26,15 @@ test.describe('Content Sections', () => {
             await expect(filePath).toContainText('todo.store.ts');
         });
 
-        test('file path has aria-label', async ({ page }) => {
+        test('file path has source-file title tooltip', async ({ page }) => {
             await page.goto('/components/AboutComponent.html');
 
             const filePath = page.locator('.cdx-entity-hero-file');
-            await expect(filePath).toHaveAttribute('aria-label', 'Source file');
+            // `<p>` does not support `aria-label` (Biome
+            // `useAriaPropsSupportedByRole`); the source-file hint lives in
+            // the `title` attribute instead and surfaces as a native browser
+            // tooltip on hover.
+            await expect(filePath).toHaveAttribute('title', 'Source file');
         });
 
         test('no File section in Info tab body', async ({ page }) => {

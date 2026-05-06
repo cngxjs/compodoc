@@ -559,7 +559,7 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                     ''
                 )}
                 {!props.disableFilePath && e.file && (
-                    <p class="cdx-entity-hero-file" title="Source file" aria-label="Source file">
+                    <p class="cdx-entity-hero-file" title="Source file">
                         {IconFile()}
                         <span>{e.file}</span>
                     </p>
