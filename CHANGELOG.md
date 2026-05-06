@@ -6,6 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.1.0] — 2026-05-06
+
+The first feature-complete release. Closes the compodoc → compodocx rendering compatibility gap surfaced by a full sweep of the legacy CLI test suite, drops the last `it.skip` / `describe.skip` markers from the migration era, and brings the published behaviour up to "no broken promises" against the migration guide.
+
+### Fixed
+
+- **Custom property and method decorator listing on the API tab.** `BlockProperty` and `BlockMethod` now render `p.decorators` / `m.decorators` (already populated upstream by `class-helper.ts:formatDecorators`) inside a `cdx-member-decorators` line, with `<br />`-separated entries when multiple decorators stack on the same member. Custom decorators like `@LogProperty()`, `@LogPropertyWithArgs('theCurrentFilter')`, and `@throttle(1000 as PollingSpeed, {leading: true})` now reach the rendered output again instead of disappearing into the source-code panel only.
+- **Component metadata table now includes `changeDetection`, `encapsulation`, and `preserveWhitespaces`.** The TSX rewrite had pushed those boolean / enum traits into hero-row badges only; downstream consumers that grep the metadata-card labels (Change detection / Encapsulation / Preserve whitespaces) for migration scripts and snapshot tests had nothing to match. Both surfaces ship now — badges for visual emphasis, metadata-card row as the source-of-truth label.
+- **Private-only constructors render with their modifier badge.** `EntityPage`'s Dependencies branch falls back to `BlockConstructor` when `e.constructorObj.modifierKind` is non-empty but inject() props and constructor args are both empty, so a `private constructor()` now surfaces a proper Constructor section with `cdx-member-modifier--private">Private` chip instead of being filtered out entirely.
+- **`@NgModule({ providers, … })` shorthand resolution.** `SymbolHelper.getProviderEntries` previously bailed out when the prop was an Object-Literal-Shorthand (`@NgModule({ providers })` referencing a local `const providers = [Foo]`) because the prop's initializer was an `Identifier`, not an `ArrayLiteralExpression`. Threaded `srcFile` through and added a shorthand-aware branch that walks the file's top-level `const`/`let` declarations to find the bound array literal — same pattern as `parseSymbols`. The AboutModule providers section renders again, and `<h3>Providers</h3>` reappears for every module that uses the shorthand pattern.
+- **Constructor JSDoc threading into the Dependencies section.** `visitConstructorDeclaration` now copies `@param` descriptions back onto each `result.args` entry after `mergeTagsAndArgs`, and `DependenciesSection` gained two optional fields: `description` (per-dep, rendered below the dep row inside `cdx-deps-desc`) and `constructorDescription` (whole constructor body, rendered above the deps list inside `cdx-deps-constructor-desc`). Both flow through `parseDescription` so `{@link X}` resolves to a proper anchor. Restores the `Watch {@link TodoStore}` constructor body link on the Todo class and the `A TodoStore -> see {@link TodoStore}` per-param description on FooterComponent.
+
+### Internal
+
+- **CLI test migration complete.** Six clusters of stale Bootstrap-era assertions (12 spec files, ~250 assertions across `cli-extends`, `cli-typedoc-examples`, `cli-generation`, `cli-disable-options`, `cli-generation-big-app`, `cli-jsdoc-examples`, `cli-coverage`, `cli-unit-test`, `cli-deprecated`, `cli-duplicates`, `cli-toggle-menu-items`, `cli-uniqid`) rewritten against the cdx-\* TSX markup surface. No `it.skip` / `describe.skip` markers remaining from the migration era. The legacy `routing-without-module` fixture (12 files) targeting the deprecated Angular ≤ 8 `loadChildren: 'app/path#ModuleName'` string-syntax was removed entirely.
+- **CLI assertion markup reference added to `CLAUDE.md`.** Documents every Bootstrap → cdx-\* shift surfaced during the migration so future spec authors can write assertions against the right landmarks the first time.
+
 ## [0.0.5] — 2026-05-05
 
 ### Fixed

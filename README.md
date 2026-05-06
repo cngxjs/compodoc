@@ -16,7 +16,7 @@
 
 ## Status
 
-Pre-release. This is the first cngx-line tag (0.0.1). The CLI flags and config-file shape are backwards-compatible with compodoc, so existing projects can switch with a one-line `package.json` edit. Internal data shapes and the template-override contract may shift between 0.x minor versions, so pin the dependency until 1.0. Output HTML is static and self-contained, so generated docs keep working even if you skip a release.
+`0.1.0` — first feature-complete release with the full Phase 5 UI redesign, theming tab, JS-based custom template overrides, and compodoc-line rendering compatibility verified across the migrated CLI test suite. The CLI flags and config-file shape are backwards-compatible with compodoc, so existing projects can switch with a one-line `package.json` edit. Internal data shapes and the template-override contract may shift between 0.x minor versions, so pin the dependency until 1.0. Output HTML is static and self-contained, so generated docs keep working even if you skip a release.
 
 ## Why compodocx
 
@@ -143,7 +143,7 @@ What's actually different and may need attention:
 - **Search** — Lunr is replaced with Pagefind. The `search-results` and `search-input` template overrides no longer exist. The search experience is faster and works offline; no migration step needed unless you customized the search UI.
 - **Bootstrap markup** — gone entirely. If you scraped the output for downstream automation that relied on Bootstrap class names (`card`, `card-block`, `panel`, `nav-tabs`, …), the new selectors are `cdx-` prefixed equivalents.
 
-A complete, point-by-point migration guide will ship with the 0.0.1 tag in `MIGRATION.md`.
+A complete, point-by-point migration guide ships in [`MIGRATION.md`](./MIGRATION.md).
 
 ## Development
 
