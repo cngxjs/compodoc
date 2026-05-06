@@ -1,16 +1,49 @@
-import { temporaryDir } from '../helpers';
+import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
 describe('CLI toggle menu items', () => {
     describe('with a list', () => {
-        // TODO(cluster-2): rewrite for the inline TSX menu. The legacy
-        // js/menu-wc.js artefact is gone, and `ion-ios-arrow-up` was an Ionicons
-        // glyph replaced by Lucide SVGs. The toggle behaviour is now driven by
-        // the `aria-expanded` attribute on `.menu-toggler` buttons in Menu.tsx
-        // — this spec needs new assertions matching that markup.
-        it.skip('it should have a toggled item menu', () => {
-            expect(tmp.name).to.exist;
+        const distFolder = `${tmp.name}-toggle`;
+        let indexFile;
+        beforeAll(() => {
+            tmp.create(distFolder);
+            const ls = shell('node', [
+                './bin/index-cli.js',
+                '-p',
+                './test/fixtures/todomvc-ng2/src/tsconfig.json',
+                '-d',
+                distFolder,
+                '--toggleMenuItems',
+                'modules'
+            ]);
+
+            if (hasStderrError(ls.stderr.toString())) {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                throw new Error('error');
+            }
+            // Inline TSX menu — read any generated page (the menu is
+            // identical on every page).
+            indexFile = read(`${distFolder}/index.html`);
+        });
+        afterAll(() => tmp.clean(distFolder));
+
+        it('it should leave the listed type expanded and the rest collapsed', () => {
+            // `--toggleMenuItems modules` keeps the modules section open
+            // (aria-expanded="true") while every other section starts
+            // collapsed (aria-expanded="false"). The `data-cdx-target`
+            // pairs each toggler button with the `<ul id="…-links">`
+            // it controls.
+            expect(indexFile).to.contain('data-cdx-target="#modules-links" aria-expanded="true"');
+            expect(indexFile).to.contain(
+                'data-cdx-target="#components-links" aria-expanded="false"'
+            );
+            expect(indexFile).to.contain(
+                'data-cdx-target="#directives-links" aria-expanded="false"'
+            );
+            expect(indexFile).to.contain(
+                'data-cdx-target="#injectables-links" aria-expanded="false"'
+            );
         });
     });
 });

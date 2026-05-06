@@ -92,19 +92,24 @@ describe('CLI duplicates support', () => {
         expect(file).to.be.true;
     });
 
-    // TODO(cluster-2): both assertions below targeted the legacy js/menu-wc.js
-    // Web Component menu. The TSX inline menu (`Menu.tsx`) emits a different
-    // anchor shape — `data-context`/`data-context-id` are still present but
-    // there is no `data-context="sub-entity"` namespacing for nested entities.
-    // Rewrite against the inline menu's actual output.
-    it.skip('should support component inside module', () => {
-        const file = read(`${distFolder}/components/ValidationDemo.html`);
-        expect(file).to.contain('ValidationDemo');
+    it('should support component inside module', () => {
+        // The inline TSX menu (`Menu.tsx`) DOES emit a sub-entity anchor
+        // for nested-in-module components — the link sits inside the
+        // module's `<ul id="components-links-module-…">` group with
+        // `data-context="sub-entity" data-context-id="modules"`.
+        const indexFile = read(`${distFolder}/index.html`);
+        expect(indexFile).to.contain('data-context="sub-entity" data-context-id="modules"');
+        expect(indexFile).to.contain('>ValidationDemo');
     });
 
-    it.skip('should support component inside module with duplicate', () => {
-        const file = read(`${distFolder}/components/FooterComponent.html`);
-        expect(file).to.contain('FooterComponent');
+    it('should support component inside module with duplicate', () => {
+        const indexFile = read(`${distFolder}/index.html`);
+        // The duplicates fixture mounts FooterComponent under its
+        // owning module via the same sub-entity link shape.
+        expect(indexFile).to.contain(
+            'data-context="sub-entity" data-context-id="modules" class="" data-cdx-entity-type="component"'
+        );
+        expect(indexFile).to.contain('>FooterComponent');
     });
 
     it('Injectable with multiple decorators should not appear twice', () => {
