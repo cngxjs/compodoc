@@ -2,13 +2,7 @@ import { hasStderrError, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
 
-// TODO(cluster-2): every test in this suite asserts class="deprecated-name" on
-// menu anchors read from js/menu-wc.js. Both surfaces changed: the menu lives
-// inline (Menu.tsx) and emits class="cdx-member-name--deprecated" instead.
-// The per-page assertions on `<h3 class="deprecated">Deprecated` etc. also
-// need updating against the current TSX deprecation banner. Re-write under the
-// Bootstrap → cdx markup migration cluster.
-describe.skip('CLI Deprecated', () => {
+describe('CLI Deprecated', () => {
     const tmpFolder = `${tmp.name}-deprecated`;
     const distFolder = `${tmpFolder}/documentation`;
 
@@ -29,104 +23,109 @@ describe.skip('CLI Deprecated', () => {
                 throw new Error('error');
             }
 
-            menuFile = read(`${distFolder}/js/menu-wc.js`);
+            // Inline TSX menu lives in every page; the legacy
+            // `js/menu-wc.js` is gone.
+            menuFile = read(`${distFolder}/index.html`);
         });
         afterAll(() => tmp.clean(tmpFolder));
 
         it('it should contain module deprecated', () => {
             const file = read(`${distFolder}/modules/AboutModule2.html`);
-            expect(file).to.contain('<h3 class="deprecated">Deprecated');
-            expect(menuFile).to.contain(
-                'data-type="entity-link" class="deprecated-name">AboutModule2'
-            );
+            expect(file).to.contain('class="cdx-deprecation-banner"');
+            expect(file).to.contain('<strong>Deprecated</strong>');
+            expect(menuFile).to.contain('cdx-member-name--deprecated">AboutModule2');
         });
 
         it('it should contain injectable deprecated and one API inside', () => {
             const file = read(`${distFolder}/injectables/TodoStore.html`);
-            expect(file).to.contain('<h3 class="deprecated">Deprecated');
-            expect(file).to.contain('class="deprecated-name">getThemAll');
+            expect(file).to.contain('class="cdx-deprecation-banner"');
+            expect(file).to.contain('cdx-member-name--deprecated">getThemAll');
             expect(menuFile).to.contain(
-                'data-context-id="modules" class="deprecated-name">TodoStore'
+                'cdx-member-name--deprecated" data-cdx-entity-type="injectable"'
             );
         });
 
         it('it should contain component deprecated and APIs inside', () => {
             const file = read(`${distFolder}/components/DumbComponent.html`);
-            expect(file).to.contain('<h3 class="deprecated">Deprecated');
-            expect(file).to.contain('class="deprecated-name">emptyOutput');
-            expect(file).to.contain('class="deprecated-name">emptyInput');
-            expect(file).to.contain('class="deprecated-name">emptyHostBinding');
-            expect(file).to.contain('class="deprecated-name">onMouseup');
+            expect(file).to.contain('class="cdx-deprecation-banner"');
+            expect(file).to.contain('cdx-member-name--deprecated">emptyOutput');
+            expect(file).to.contain('cdx-member-name--deprecated">emptyInput');
+            expect(file).to.contain('cdx-member-name--deprecated">emptyHostBinding');
+            expect(file).to.contain('cdx-member-name--deprecated">onMouseup');
             expect(menuFile).to.contain(
-                'data-type="entity-link" class="deprecated-name">DumbComponent'
+                'cdx-member-name--deprecated" data-cdx-entity-type="component" data-cdx-selector="cp-dumb" data-cdx-io="2/2" data-cdx-desc="empty component">DumbComponent'
             );
         });
 
         it('it should contain directive deprecated and APIs inside', () => {
             const file = read(`${distFolder}/directives/DoNothingDirective2.html`);
-            expect(file).to.contain('<h3 class="deprecated">Deprecated');
-            expect(file).to.contain('class="deprecated-name">popover');
+            expect(file).to.contain('class="cdx-deprecation-banner"');
+            expect(file).to.contain('cdx-member-name--deprecated">popover');
             expect(menuFile).to.contain(
-                'data-type="entity-link" class="deprecated-name">DoNothingDirective2'
+                'cdx-member-name--deprecated" data-cdx-entity-type="directive" data-cdx-selector="[donothing]" data-cdx-desc="This directive does nothing !">DoNothingDirective2'
             );
         });
 
         it('it should contain class deprecated and APIs inside', () => {
             const file = read(`${distFolder}/classes/Tidi.html`);
-            expect(file).to.contain('<h3 class="deprecated">Deprecated');
-            expect(file).to.contain('class="deprecated-name">completed');
-            expect(menuFile).to.contain('data-type="entity-link" class="deprecated-name">Tidi');
+            expect(file).to.contain('class="cdx-deprecation-banner"');
+            expect(file).to.contain('cdx-member-name--deprecated">completed');
+            expect(menuFile).to.contain(
+                'cdx-member-name--deprecated" data-cdx-entity-type="class" data-cdx-desc="The tidi class">Tidi'
+            );
         });
 
         it('it should contain interceptor deprecated and APIs inside', () => {
             const file = read(`${distFolder}/interceptors/NoopInterceptor.html`);
-            expect(file).to.contain('<h3 class="deprecated">Deprecated');
+            expect(file).to.contain('class="cdx-deprecation-banner"');
             expect(menuFile).to.contain(
-                'data-type="entity-link" class="deprecated-name">NoopInterceptor'
+                'cdx-member-name--deprecated" data-cdx-entity-type="interceptor">NoopInterceptor'
             );
         });
 
         it('it should contain guard deprecated and APIs inside', () => {
             const file = read(`${distFolder}/guards/NotAuthGuard.html`);
-            expect(file).to.contain('<h3 class="deprecated">Deprecated');
+            expect(file).to.contain('class="cdx-deprecation-banner"');
             expect(menuFile).to.contain(
-                'data-type="entity-link" class="deprecated-name">NotAuthGuard'
+                'cdx-member-name--deprecated" data-cdx-entity-type="guard">NotAuthGuard'
             );
         });
 
         it('it should contain interface deprecated and APIs inside', () => {
             const file = read(`${distFolder}/interfaces/IDATA.html`);
-            expect(file).to.contain('<h3 class="deprecated">Deprecated');
-            expect(file).to.contain('deprecated-name"><b>value');
-            expect(menuFile).to.contain('data-type="entity-link" class="deprecated-name">IDATA');
+            expect(file).to.contain('class="cdx-deprecation-banner"');
+            expect(file).to.contain('cdx-member-name--deprecated">value');
+            expect(menuFile).to.contain(
+                'cdx-member-name--deprecated" data-cdx-entity-type="interface">IDATA'
+            );
         });
 
         it('it should contain pipe deprecated and APIs inside', () => {
             const file = read(`${distFolder}/pipes/FirstUpperPipe2.html`);
-            expect(file).to.contain('<h3 class="deprecated">Deprecated');
+            expect(file).to.contain('class="cdx-deprecation-banner"');
             expect(menuFile).to.contain(
-                'data-type="entity-link" class="deprecated-name">FirstUpperPipe2'
+                'cdx-member-name--deprecated" data-cdx-entity-type="pipe" data-cdx-desc="Uppercase the first letter of the string">FirstUpperPipe2'
             );
         });
 
         it('it should contain enum deprecated and APIs inside', () => {
             const file = read(`${distFolder}/miscellaneous/enumerations.html`);
-            expect(file).to.contain('deprecated-name"><b>Direction');
+            expect(file).to.contain('cdx-member-name--deprecated">Direction');
         });
 
         it('it should contain function deprecated and APIs inside', () => {
             const file = read(`${distFolder}/miscellaneous/functions.html`);
-            expect(file).to.contain('deprecated-name"><b>foo2');
+            expect(file).to.contain('cdx-member-name--deprecated">foo2');
         });
 
         it('it should contain type deprecated and APIs inside', () => {
             const file = read(`${distFolder}/miscellaneous/typealiases.html`);
-            expect(file).to.contain('deprecated-name"><b>LinearDomain');
+            expect(file).to.contain('cdx-member-name--deprecated">LinearDomain');
         });
 
         it('it should contain variable deprecated and APIs inside', () => {
             const file = read(`${distFolder}/miscellaneous/variables.html`);
-            expect(file).to.contain('deprecated-name"><b>PIT');
+            expect(file).to.contain('cdx-member-name--deprecated">PIT');
         });
     });
 });
