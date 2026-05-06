@@ -113,7 +113,7 @@ export const AppConfigPage = (data: any): string => {
                             {providers.length} {providers.length === 1 ? 'provider' : 'providers'}
                         </span>
                     </div>
-                    <p class="cdx-entity-hero-file" title="Source file" aria-label="Source file">
+                    <p class="cdx-entity-hero-file" title="Source file">
                         {IconFile()}
                         <span>{config.file}</span>
                     </p>

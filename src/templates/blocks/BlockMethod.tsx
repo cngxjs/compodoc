@@ -65,13 +65,13 @@ export const BlockMethod = (props: BlockMethodProps): string => {
                         {m.decorators?.length > 0 && (
                             <div class="cdx-member-decorators">
                                 <code>
-                                    {m.decorators
+                                    {`${m.decorators
                                         .map((d: any) =>
                                             d.stringifiedArguments
                                                 ? `@${d.name}(${d.stringifiedArguments})`
                                                 : `@${d.name}()`
                                         )
-                                        .join('<br />') + '<br />'}
+                                        .join('<br />')}<br />`}
                                 </code>
                             </div>
                         )}
