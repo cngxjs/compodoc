@@ -298,8 +298,82 @@ Be honest about what does not migrate cleanly:
 - **Bootstrap markup contract.** Downstream tooling that scraped specific Bootstrap selectors from compodoc's output (e.g. `.card.text-center`, `.panel-default`, `.navbar`) needs an update — those classes are no longer emitted. Use the `cdx-*` selectors or the stable `data-compodoc="<block-name>"` attributes instead.
 - **Lunr search index.** Replaced by Pagefind. The `js/search/` and `pageinfo.json` files compodoc emitted are gone. Pagefind writes its index to `pagefind/` next to the HTML output.
 
-## Future: `compodocx migrate`
+## `compodocx migrate` CLI
 
-A `compodocx migrate` CLI tool is planned for 0.2.0 — a one-shot command that reads a compodoc Handlebars template directory and emits the closest JavaScript equivalent for each `.hbs` file. For 0.0.1 the migration is manual; the cookbook above is the reference.
+Available since 0.3.0. Automates the mechanical 80% of the migration: HBS → JS template conversion, CSS class renames, and a project-level audit that points at the next step for every finding.
 
-If you have a specific `.hbs` partial you would like covered by an automated migration, or a question about a non-trivial pattern not covered here, please open an issue at <https://github.com/cngxjs/compodocx/issues>.
+```text
+compodocx migrate inspect <project-path>                    # audit, no writes
+compodocx migrate template <file.hbs> [--out <file.js>]     # single file
+compodocx migrate templates <hbs-dir> --out <js-dir>        # directory
+compodocx migrate css <file-or-dir> [--aggressive]          # CSS class renames
+```
+
+Common flags across every subcommand:
+
+- `--dry-run` — preview output, do not write to disk
+- `--json` — machine-readable report (default: human console summary)
+- `--no-warnings` — suppress fidelity warnings in console output (still in JSON)
+
+### Recommended workflow
+
+```bash
+# 1. Audit the project — see what's migrate-able vs blocked.
+compodocx migrate inspect ./my-compodoc-project
+
+# 2. Convert overrideable templates.
+compodocx migrate templates ./my-compodoc-project/templates --out ./templates-js
+
+# 3. Rewrite stylesheets (conservative).
+compodocx migrate css ./src/styles
+
+# 4. Run compodocx with the new templates dir.
+compodocx -p tsconfig.json -d docs --templates ./templates-js
+```
+
+### Fidelity scoring
+
+Every conversion gets a per-file score that maps to a CLI exit code:
+
+| Score | Meaning | Exit code |
+|-|-|-|
+| green | Every node mapped, no warnings. Output is mechanical, ready to use. | 0 |
+| yellow | Mapped, but at least one lossy transformation. Manual review recommended. | 1 |
+| red | At least one unknown helper, unsupported block, or partial with no target. Output emitted with TODO comments; user MUST review before using. | 2 |
+
+CI pipelines can fail-fast on red migrations.
+
+### Hard limits — what does NOT migrate
+
+The CLI rejects two cases instead of emitting broken output:
+
+1. **`page.hbs` (full-page layout).** compodocx's outer `Layout.tsx` is not in `CONTEXT_TEMPLATE_MAP` and is not overridable. The converter detects `page.hbs` filenames and any input starting with `<!doctype html>` and exits with code 2. Workarounds:
+   - Custom CSS via `--extTheme path/to/theme.css`
+   - Analytics via `--gaID G-XXXXXXXXXX` (GA4 only — Universal Analytics is gone)
+   - Extra Markdown pages via `--includes path/to/pages-dir --includesName "User Guide"`
+
+2. **Override names not in the wiring map.** Anything not matching `CONTEXT_TEMPLATE_MAP`, the `menu` special case, or a wired `block-*` name (see § Override names above). The converter exits with code 2 and points at the canonical name list. Custom user partials must be inlined into the surrounding override by hand.
+
+### Custom Handlebars helpers
+
+compodoc's `loadHelpers` extension point is gone. The migrate CLI cannot rewrite calls to user-authored `{{myHelper foo}}` invocations — they emit a `// TODO(migrate): unknown helper "myHelper"` and the file's score drops to red. Port the helper as a plain JavaScript function and call it inline from your `partials/*.js` override.
+
+### CSS rewrites
+
+Conservative mode (default) rewrites class names in `.css` / `.scss` / `.sass` only. Aggressive mode (`--aggressive`) also rewrites `.html` / `.ts` / `.tsx` / `.js` — risky against string-literal class names, so the recommended workflow is `--dry-run --aggressive` first.
+
+`data-compodoc="<block-name>"` attributes are intentionally preserved in both modes. They are the stable downstream-scraping selector.
+
+### ESM-package corner case
+
+If your project's `package.json` has `"type": "module"`, the `.js` overrides emitted by the converter will fail to load — the loader at `src/app/engines/custom-template.engine.ts:52` calls `require()`. Workarounds:
+
+- Rename converted outputs to `.cjs` after the conversion, OR
+- Remove the `"type": "module"` declaration in the templates directory (if your overrides live in a sub-folder), OR
+- Keep the templates directory outside the ESM package boundary entirely.
+
+`compodocx migrate inspect` flags this case automatically.
+
+### Issues
+
+If the converter mishandles a real-world `.hbs` partial, please open an issue with the input file at <https://github.com/cngxjs/compodocx/issues>. Manual cookbook fallbacks are the cookbook section above.
