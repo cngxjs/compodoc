@@ -17,9 +17,7 @@ describe('migrate/templates — directory walker', () => {
         // Normalize to POSIX separators — `path.relative` returns native ones
         // (`\` on Windows). The implementation correctly returns native paths;
         // only the assertion needs the cross-platform comparison.
-        const normalized = found
-            .map(f => path.relative(ROOT, f).split(path.sep).join('/'))
-            .sort();
+        const normalized = found.map(f => path.relative(ROOT, f).split(path.sep).join('/')).sort();
         expect(normalized).toEqual(['partials/block-method.hbs', 'partials/component.hbs']);
     });
 
