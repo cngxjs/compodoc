@@ -82,8 +82,13 @@ jobs:
             - name: Build
               run: npm run build
 
+            # Per-push e2e only runs chromium-engine projects (chrome, todomvc,
+            # standalone — see step below). Firefox and webkit are nightly via
+            # e2e-cross-browser.yml. Restricting `playwright install` to
+            # `chromium` here saves ~6-8 minutes per CI run on cold-cache
+            # runners (full install pulls all three engines + apt deps).
             - name: Install Playwright Browsers
-              run: npx playwright install --with-deps
+              run: npx playwright install --with-deps chromium
 
             # Per-push e2e: only the chromium-class browser + the two
             # fixture-specific projects. Firefox and webkit run nightly via
