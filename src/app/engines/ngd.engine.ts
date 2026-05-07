@@ -1,4 +1,4 @@
-import ngdT from '@compodoc/ngd-transformer';
+import { DotEngine } from '@compodoc/ngd-transformer';
 import DependenciesEngine from './dependencies.engine';
 import FileEngine from './file.engine';
 
@@ -15,7 +15,7 @@ export class NgdEngine {
     }
 
     public init(outputpath: string) {
-        this.engine = new ngdT.DotEngine({
+        this.engine = new DotEngine({
             output: outputpath,
             displayLegend: true,
             outputFormats: 'svg',

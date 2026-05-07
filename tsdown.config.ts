@@ -1,0 +1,65 @@
+import { defineConfig } from 'tsdown';
+
+export default defineConfig({
+    entry: {
+        'index-cli': 'src/index-cli.ts',
+        index: 'src/index.ts',
+        'template-playground-server': 'src/template-playground/template-playground-server.ts',
+    },
+    format: ['esm', 'cjs'],
+    outDir: 'dist',
+    sourcemap: 'inline',
+    // Keep CJS at dist/*.js (matches main field, bin shim, scripts/start-playground-simple.js
+    // require()), ESM at dist/*.mjs.
+    outExtensions: ({ format }) => ({ js: format === 'cjs' ? '.js' : '.mjs' }),
+    // Auto-detection covers most deps. Restate the explicit list to guard against
+    // missed sub-path imports (notably `neotraverse/legacy`) and to keep parity
+    // with the previous Rollup config.
+    deps: {
+        neverBundle: [
+            'child_process',
+            'crypto',
+            'fs',
+            'http',
+            'module',
+            'os',
+            'path',
+            '@kitajs/html',
+            '@compodoc/ngd-transformer',
+            '@polka/send-type',
+            'archiver',
+            'body-parser',
+            'cheerio',
+            'chokidar',
+            'commander',
+            'cosmiconfig',
+            'decache',
+            'fast-glob',
+            'fs-extra',
+            'handlebars',
+            'html-entities',
+            'i18next',
+            'json5',
+            'marked',
+            'minimist',
+            'neotraverse/legacy',
+            'os-name',
+            'picocolors',
+            'polka',
+            'semver',
+            'shiki',
+            'sirv',
+            'ts-morph',
+            'typescript',
+            'uuid',
+        ],
+    },
+    dts: false,
+    clean: true,
+    // Rolldown's default `dynamicImportInCjs: true` already preserves
+    // `await import('shiki' | 'chokidar' | ...)` in CJS output without
+    // rewriting it to require() — required because shiki is ESM-only.
+    // Note: Rolldown's `dynamicImportInCjs` semantics are NEGATED relative to
+    // classic Rollup (where false meant "preserve") — the default behavior is
+    // already correct, so no override needed.
+});
