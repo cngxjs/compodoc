@@ -14,10 +14,13 @@ describe('migrate/templates — directory walker', () => {
             [path.join(ROOT, 'README.md')]: 'docs'
         });
         const found = collectHbsFiles(ROOT, adapter);
-        expect(found.map(f => path.relative(ROOT, f)).sort()).toEqual([
-            'partials/block-method.hbs',
-            'partials/component.hbs'
-        ]);
+        // Normalize to POSIX separators — `path.relative` returns native ones
+        // (`\` on Windows). The implementation correctly returns native paths;
+        // only the assertion needs the cross-platform comparison.
+        const normalized = found
+            .map(f => path.relative(ROOT, f).split(path.sep).join('/'))
+            .sort();
+        expect(normalized).toEqual(['partials/block-method.hbs', 'partials/component.hbs']);
     });
 
     it('mirrors the partials/ structure under --out and renames .hbs → .js', () => {
