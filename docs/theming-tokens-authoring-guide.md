@@ -1,6 +1,5 @@
 # Theme Tokens — Authoring Guide
 
-> Audience: anyone writing or editing the SCSS / CSS of a component that compodocx will document. Optimized to be lifted into a Claude skill in a downstream project — every rule is concrete, every example is copy-paste ready, every silent-failure mode is called out explicitly.
 
 ## When to apply this guide
 
