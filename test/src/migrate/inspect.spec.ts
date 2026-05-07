@@ -45,6 +45,22 @@ describe('migrate/inspect — fixture project', () => {
         expect(esm[0].suggestion).toMatch(/\.cjs/);
     });
 
+    it('flags stale CLI flags from .compodocrc.json (gaSite removed in compodocx)', () => {
+        const staleFlags = findingsBy('stale-cli-flag');
+        expect(staleFlags).toHaveLength(1);
+        expect(staleFlags[0].message).toContain('gaSite');
+        expect(staleFlags[0].suggestion).toMatch(/--gaID/);
+        expect(staleFlags[0].severity).toBe('error');
+    });
+
+    it('flags stale theme names from .compodocrc.json (postmark not bundled)', () => {
+        const staleThemes = findingsBy('stale-theme-name');
+        expect(staleThemes).toHaveLength(1);
+        expect(staleThemes[0].message).toContain('postmark');
+        expect(staleThemes[0].suggestion).toMatch(/nord/);
+        expect(staleThemes[0].severity).toBe('warning');
+    });
+
     it('returns red overall score because page.hbs is rejected', () => {
         expect(report.score).toBe('red');
     });
