@@ -15,30 +15,38 @@ import { Command } from 'commander';
 import { type CssMode, isMarkupOrCode, isStylesheet, rewriteCss } from './css';
 import { realFs } from './fs-adapter';
 import { inspectProject } from './inspect';
+import {
+    printDetail,
+    printError,
+    printHeading,
+    printLine,
+    printSummary as printSummaryLine,
+    tagFor,
+    tagForSeverity
+} from './printer';
 import { exitCodeOf } from './report';
 import { convertTemplate } from './template';
 import { convertDirectory } from './templates';
 import type { ConvertResult, CssRewriteResult, InspectReport, RunSummary } from './types';
 
 const printConvertResult = (result: ConvertResult, suppressWarnings: boolean): void => {
-    const tag = result.score === 'green' ? '[OK]' : result.score === 'yellow' ? '[WARN]' : '[ERR]';
     const where = path.relative(process.cwd(), result.file) || result.file;
-    console.log(`${tag} ${where} (${result.score})`);
+    printLine(`${tagFor(result.score)} ${where} (${result.score})`);
     if (result.hardLimit) {
-        console.log(`  hard-limit: ${result.hardLimit.message}`);
-        console.log(`  suggestion: ${result.hardLimit.suggestion}`);
+        printDetail('hard-limit', result.hardLimit.message);
+        printDetail('suggestion', result.hardLimit.suggestion);
     }
     if (suppressWarnings) {
         return;
     }
     for (const w of result.warnings) {
-        console.log(`  ${w.kind}@${w.line}: ${w.message}`);
+        printDetail(`${w.kind}@${w.line}`, w.message);
     }
 };
 
-const printSummary = (summary: RunSummary): void => {
+const printRunSummary = (summary: RunSummary): void => {
     const { green, yellow, red } = summary.summary;
-    console.log(`Summary: ${green} green, ${yellow} yellow, ${red} red.`);
+    printSummaryLine(`Summary: ${green} green, ${yellow} yellow, ${red} red.`);
 };
 
 interface CommonFlags {
@@ -54,7 +62,7 @@ const runTemplate = async (
 ): Promise<number> => {
     const fs = realFs();
     if (!fs.isFile(path.resolve(file))) {
-        console.error(`migrate template: file not found: ${file}`);
+        printError(`migrate template: file not found: ${file}`);
         return 2;
     }
     const source = fs.readFile(path.resolve(file));
@@ -68,10 +76,10 @@ const runTemplate = async (
     if (!result.hardLimit && !flags.dryRun && out) {
         fs.ensureDir(path.dirname(path.resolve(out)));
         fs.writeFile(path.resolve(out), result.output);
-        console.log(`wrote ${path.relative(process.cwd(), path.resolve(out))}`);
+        printDetail('wrote', path.relative(process.cwd(), path.resolve(out)));
     } else if (!result.hardLimit && flags.dryRun) {
-        console.log('--- preview ---');
-        console.log(result.output);
+        printLine('--- preview ---');
+        process.stdout.write(`${result.output}\n`);
     }
     return exitCodeOf(result.score);
 };
@@ -97,7 +105,7 @@ const runTemplates = async (
     for (const result of summary.files) {
         printConvertResult(result, flags.noWarnings ?? false);
     }
-    printSummary(summary);
+    printRunSummary(summary);
     return exitCodeOf(summary.score);
 };
 
@@ -122,16 +130,15 @@ const cssTargetFiles = (target: string): readonly string[] => {
 };
 
 const printCssResult = (result: CssRewriteResult, suppressWarnings: boolean): void => {
-    const tag = result.score === 'green' ? '[OK]' : result.score === 'yellow' ? '[WARN]' : '[ERR]';
     const where = path.relative(process.cwd(), result.file) || result.file;
-    console.log(
-        `${tag} ${where}: ${result.rewriteCount} rewrites, ${result.auditMatches.length} audit-only`
+    printLine(
+        `${tagFor(result.score)} ${where} (${result.rewriteCount} rewrites, ${result.auditMatches.length} audit-only)`
     );
     if (suppressWarnings) {
         return;
     }
     for (const w of result.warnings) {
-        console.log(`  ${w.kind}@${w.line}: ${w.message}`);
+        printDetail(`${w.kind}@${w.line}`, w.message);
     }
 };
 
@@ -139,7 +146,7 @@ const runCss = async (target: string, mode: CssMode, flags: CommonFlags): Promis
     const fs = realFs();
     const files = cssTargetFiles(target);
     if (files.length === 0) {
-        console.error(`migrate css: no css/scss/sass/html/ts files found at ${target}`);
+        printError(`migrate css: no css/scss/sass/html/ts files found at ${target}`);
         return 2;
     }
     const results: CssRewriteResult[] = files.map(file => {
@@ -158,7 +165,7 @@ const runCss = async (target: string, mode: CssMode, flags: CommonFlags): Promis
         }
         const totalRewrites = results.reduce((sum, r) => sum + r.rewriteCount, 0);
         const totalAudits = results.reduce((sum, r) => sum + r.auditMatches.length, 0);
-        console.log(
+        printSummaryLine(
             `Summary: ${totalRewrites} rewrites${flags.dryRun ? ' (dry-run, not written)' : ''}, ${totalAudits} audit-only matches.`
         );
     }
@@ -172,27 +179,26 @@ const runCss = async (target: string, mode: CssMode, flags: CommonFlags): Promis
 
 const printInspectReport = (report: InspectReport, suppressWarnings: boolean): void => {
     const where = path.relative(process.cwd(), report.project) || report.project;
-    console.log(`Inspect ${where}: ${report.findings.length} finding(s)`);
+    printHeading(`Inspect ${where}: ${report.findings.length} finding(s)`);
     for (const f of report.findings) {
-        const tag = f.severity === 'info' ? '[OK]' : f.severity === 'warning' ? '[WARN]' : '[ERR]';
         const fileLabel = path.relative(process.cwd(), f.file) || f.file;
-        console.log(`${tag} ${f.kind}: ${fileLabel}`);
+        printLine(`${tagForSeverity(f.severity)} ${f.kind}: ${fileLabel}`);
         if (!suppressWarnings) {
-            console.log(`  ${f.message}`);
+            printDetail('message', f.message);
             if (f.suggestion) {
-                console.log(`  → ${f.suggestion}`);
+                printDetail('next-step', f.suggestion);
             }
         }
     }
     const { green, yellow, red } = report.summary;
-    console.log(`Summary: ${green} info, ${yellow} warning, ${red} error.`);
+    printSummaryLine(`Summary: ${green} info, ${yellow} warning, ${red} error.`);
 };
 
 const runInspect = async (project: string, flags: CommonFlags): Promise<number> => {
     const fs = realFs();
     const root = path.resolve(project);
     if (!fs.isDirectory(root)) {
-        console.error(`migrate inspect: directory not found: ${project}`);
+        printError(`migrate inspect: directory not found: ${project}`);
         return 2;
     }
     const report = inspectProject(root, fs);
