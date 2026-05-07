@@ -4,7 +4,11 @@ import traverse from 'neotraverse/legacy';
 import { logger } from '../../utils/logger';
 import Configuration from '../configuration';
 
-import type { ExportData } from '../interfaces/export-data.interface';
+import type {
+    ExportData,
+    ExportModule,
+    ExportModuleChildGroup
+} from '../interfaces/export-data.interface';
 import type { AngularNgModuleNode } from '../nodes/angular-ngmodule-node';
 import DependenciesEngine from './dependencies.engine';
 import FileEngine from './file.engine';
@@ -65,14 +69,22 @@ export class ExportJsonEngine {
         });
     }
 
-    public processModules() {
+    public processModules(): ExportModule[] {
         const modules: AngularNgModuleNode[] = DependenciesEngine.getModules();
 
-        const _resultedModules = [];
+        const _resultedModules: ExportModule[] = [];
 
         for (let moduleNr = 0; moduleNr < modules.length; moduleNr++) {
             const module = modules[moduleNr];
-            const moduleElement = {
+            const children: ExportModuleChildGroup[] = [
+                { type: 'providers', elements: [] },
+                { type: 'declarations', elements: [] },
+                { type: 'imports', elements: [] },
+                { type: 'exports', elements: [] },
+                { type: 'bootstrap', elements: [] },
+                { type: 'classes', elements: [] }
+            ];
+            const moduleElement: ExportModule = {
                 name: module.name,
                 id: module.id,
                 description: module.description,
@@ -82,63 +94,23 @@ export class ExportJsonEngine {
                 file: module.file,
                 methods: module.methods,
                 sourceCode: module.sourceCode,
-                children: [
-                    {
-                        type: 'providers',
-                        elements: []
-                    },
-                    {
-                        type: 'declarations',
-                        elements: []
-                    },
-                    {
-                        type: 'imports',
-                        elements: []
-                    },
-                    {
-                        type: 'exports',
-                        elements: []
-                    },
-                    {
-                        type: 'bootstrap',
-                        elements: []
-                    },
-                    {
-                        type: 'classes',
-                        elements: []
-                    }
-                ]
+                children
             };
 
             for (let k = 0; k < module.providers.length; k++) {
-                const providerElement = {
-                    name: module.providers[k].name
-                };
-                moduleElement.children[0].elements.push(providerElement);
+                children[0].elements.push({ name: module.providers[k].name });
             }
             for (let k = 0; k < module.declarations.length; k++) {
-                const declarationElement = {
-                    name: module.declarations[k].name
-                };
-                moduleElement.children[1].elements.push(declarationElement);
+                children[1].elements.push({ name: module.declarations[k].name });
             }
             for (let k = 0; k < module.imports.length; k++) {
-                const importElement = {
-                    name: module.imports[k].name
-                };
-                moduleElement.children[2].elements.push(importElement);
+                children[2].elements.push({ name: module.imports[k].name });
             }
             for (let k = 0; k < module.exports.length; k++) {
-                const exportElement = {
-                    name: module.exports[k].name
-                };
-                moduleElement.children[3].elements.push(exportElement);
+                children[3].elements.push({ name: module.exports[k].name });
             }
             for (let k = 0; k < module.bootstrap.length; k++) {
-                const bootstrapElement = {
-                    name: module.bootstrap[k].name
-                };
-                moduleElement.children[4].elements.push(bootstrapElement);
+                children[4].elements.push({ name: module.bootstrap[k].name });
             }
 
             _resultedModules.push(moduleElement);
