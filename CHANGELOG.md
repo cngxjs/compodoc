@@ -6,6 +6,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.2.0] — 2026-05-07
+
+Build modernization. Replaces the Rollup + esbuild + tsc + Tailwind + node-script chain with a single bundler — tsdown 0.21.10 (Rolldown engine, Rust) — for both the lib bundle and the client bundle. No public API change, no CLI flag change, no template API change. The published tarball is byte-for-byte equivalent in user-visible behavior; the lib bundle now ships dual ESM + CJS output for forward compatibility.
+
+### Changed
+
+- **Lib bundle migrated from Rollup to tsdown** (#48). Three entry points unchanged (`index-cli`, `index`, `template-playground-server`). Output is now dual format — CJS at `dist/*.js` (preserves the `main` field, the bin shim, and `scripts/start-playground-simple.js` `require()` resolution) and ESM at `dist/*.mjs` (added). Inline source maps preserved. The full Rollup `external` list ported verbatim into `deps.neverBundle`, because tsdown's auto-detection misses sub-path imports like `neotraverse/legacy`. Rolldown's default `dynamicImportInCjs: true` (semantics negated relative to classic Rollup) preserves `await import('shiki' | 'chokidar' | ...)` in CJS output, which is required because shiki is ESM-only and cannot be `require()`'d. `@rollup/plugin-typescript`, `@rollup/plugin-json`, and `rollup` removed from devDependencies.
+
+- **Client bundle migrated from esbuild to tsdown** (#49). Single config file `tsdown.client.config.ts`. ESM-only, minified, ES2020, `platform: 'browser'`. D3 stays lazy-loaded as a separate chunk under `src/resources/js/chunks/` (preserved from esbuild behaviour — module-graph pages only fetch D3 on demand). Pagefind unchanged: `await import(/* @vite-ignore */ pagefindUrl)` is a runtime-URL form that bundlers cannot follow, so it is fetched from the deployed site at runtime. `deps.alwaysBundle: [/.*/]` forces every `dependencies` entry to inline; without this override, tsdown's auto-externalization would leave `await import('d3')` as a bare specifier the browser cannot resolve. Bundle size regressed in the project's favour: total client gzipped 110.3 KB → 106.9 KB (-3.1%); entry chunk gzipped 14.5 KB → 13.9 KB (-4.0%). esbuild removed from devDependencies.
+
+### Fixed
+
+- **`@compodoc/ngd-transformer` default-import resolution under Rolldown** (#48). The package flags itself `__esModule: true` but exports no `default`, so `import ngdT from '@compodoc/ngd-transformer'` followed by `new ngdT.DotEngine(...)` resolved to `undefined.DotEngine` at runtime under Rolldown's spec-strict ESM interop (Rollup tolerated this via `@rollup/plugin-typescript` letting TypeScript apply `esModuleInterop` first). Switched `src/app/engines/ngd.engine.ts` to `import { DotEngine } from '@compodoc/ngd-transformer'`. The named import is also more idiomatic TypeScript and works under both bundlers.
+
+- **CLI shebang stripped from `dist/index-cli.{js,mjs}`** (#48). tsdown 0.21.x has a known issue (rolldown/tsdown#886, #300) where it removes the `#!/usr/bin/env node` shebang from CJS and ESM entries. Added `scripts/postbuild-shebang.mjs` as a post-build step that re-prepends the shebang and chmods 0755 on both formats. Idempotent. Without this, direct invocation of the bin would fail on POSIX systems.
+
+- **`scripts/dev-watch.mjs` was broken after the bundler swap** (#50). The dev watcher invoked `npx esbuild` and `npx rollup` directly from its build steps, both of which were removed in #48 / #49. Switched both invocations to `npx tsdown` (root config for the lib step, `tsdown.client.config.ts` for the client step). `npm run dev`, `dev:standalone`, and `dev:module` work again.
+
+### Internal
+
+- **`src/resources/js/compodocx.js` is now a gitignored build artifact** (#50). The file had been tracked since the 0.0.1 initial commit but never updated, and the chunks it referenced (`src/resources/js/chunks/*.js`) were already gitignored, so the committed version always pointed at chunk hashes that don't exist on disk after a fresh clone. Added to `.gitignore`, removed from tracking via `git rm --cached`. The vendored `libs/jszip.min.js` stays tracked. The npm tarball still ships the regenerated bundle because `src/resources/` is in `package.json` `files` and the release workflow runs `npm run build` before `npm pack`.
+
+- **Phase 7 build modernization complete.** Three PRs (#48, #49, #50) landed across a single working week. Plan doc: `.internal/2026-05-06-phase7-build-modernization-plan.md`. Build chain is now `tsdown && postbuild-shebang && tsc(schematics) && tsdown(client) && tailwindcss && copy-themes`. Single bundler engine (Rolldown) for everything that produces JavaScript.
+
 ## [0.1.0] — 2026-05-06
 
 The first feature-complete release. Closes the compodoc → compodocx rendering compatibility gap surfaced by a full sweep of the legacy CLI test suite, drops the last `it.skip` / `describe.skip` markers from the migration era, and brings the published behaviour up to "no broken promises" against the migration guide.
