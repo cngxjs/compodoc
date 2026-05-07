@@ -516,13 +516,26 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
 
         if (configFile.jsonIndent !== undefined) {
-            Configuration.mainData.jsonIndent = parseJsonIndent(configFile.jsonIndent, 'config');
+            const result = parseJsonIndent(configFile.jsonIndent, 'config');
+            if (!result.ok) {
+                logger.error(result.message);
+                process.exit(1);
+            }
+            Configuration.mainData.jsonIndent = result.value;
         }
-        if (
-            programOptions.jsonIndent !== undefined &&
-            programOptions.jsonIndent !== String(COMPODOC_DEFAULTS.jsonIndent)
-        ) {
-            Configuration.mainData.jsonIndent = parseJsonIndent(programOptions.jsonIndent, 'flag');
+        // Commander always assigns a default value; only override when the
+        // user actually passed `--jsonIndent` on the command line. Using
+        // getOptionValueSource avoids the trap where a config-file value of
+        // `4` would be silently re-overwritten by the CLI default `0` (or
+        // worse, where an explicit `--jsonIndent 0` from the CLI fails to
+        // override a config-file `4` because both stringify to the default).
+        if (program.getOptionValueSource('jsonIndent') === 'cli') {
+            const result = parseJsonIndent(programOptions.jsonIndent, 'flag');
+            if (!result.ok) {
+                logger.error(result.message);
+                process.exit(1);
+            }
+            Configuration.mainData.jsonIndent = result.value;
         }
 
         if (configFile.hideGenerator) {

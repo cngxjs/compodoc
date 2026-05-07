@@ -15,24 +15,6 @@ import type { AngularNgModuleNode } from '../nodes/angular-ngmodule-node';
 import DependenciesEngine from './dependencies.engine';
 import FileEngine from './file.engine';
 
-/**
- * Resolve the JSON indent for documentation.json from
- * `Configuration.mainData.jsonIndent`. The CLI plumbing in `src/index-cli.ts`
- * (or a config file) is the validation point — anything that gets here
- * outside `[0, 8]` (or undefined) silently falls back to 0 rather than
- * crashing the export at the very last step.
- */
-function resolveJsonIndent(): number {
-    const raw = Configuration.mainData.jsonIndent;
-    if (typeof raw !== 'number' || Number.isNaN(raw)) {
-        return 0;
-    }
-    if (raw < 0 || raw > 8) {
-        return 0;
-    }
-    return Math.floor(raw);
-}
-
 export class ExportJsonEngine {
     private static instance: ExportJsonEngine;
     private constructor() {}
@@ -86,7 +68,7 @@ export class ExportJsonEngine {
 
         return FileEngine.write(
             `${outputFolder + path.sep}/documentation.json`,
-            JSON.stringify(exportData, undefined, resolveJsonIndent())
+            JSON.stringify(exportData, undefined, Configuration.mainData.jsonIndent)
         ).catch(err => {
             logger.error('Error during export file generation ', err);
             return Promise.reject(err);

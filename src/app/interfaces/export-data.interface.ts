@@ -7,6 +7,13 @@ import type { JsdocTagInterface } from './jsdoc-tag.interface';
 import type { RouteInterface } from './routes.interface';
 
 /**
+ * Re-export of `RouteInterface` under the `Export*` naming convention so the
+ * public surface is uniform. Wraps rather than redefines, so the route shape
+ * stays in sync with the production interface.
+ */
+export type ExportRoute = RouteInterface;
+
+/**
  * Schema version of the `documentation.json` produced by `--exportFormat json`.
  *
  * Bump this constant when the shape of `ExportData` (or any nested `Export*`
@@ -22,6 +29,19 @@ import type { RouteInterface } from './routes.interface';
 export const EXPORT_SCHEMA_VERSION = 1 as const;
 
 export type ExportSchemaVersion = typeof EXPORT_SCHEMA_VERSION;
+
+/**
+ * Header fields on `ExportData` that change on every run even when the source
+ * code is unchanged. Byte-equal comparators (notably the upcoming sprint-3
+ * API Diff) must strip these before diffing — otherwise every comparison
+ * reports churn.
+ *
+ * Exported as a runtime array so consumers can iterate it without mirroring
+ * the list on their side.
+ */
+export const VOLATILE_EXPORT_FIELDS = ['generatedAt', 'compodocxVersion'] as const;
+
+export type VolatileExportField = (typeof VOLATILE_EXPORT_FIELDS)[number];
 
 export interface ExportArg {
     name: string;
@@ -385,12 +405,22 @@ export interface ExportCoverage {
  *    `MIGRATION.md`.
  * 3. Pre-v0.3.0 outputs have no `schemaVersion` field. Consumers should treat
  *    a missing `schemaVersion` as version 0.
+ *
+ * Volatile header fields: `generatedAt` and `compodocxVersion` change on
+ * every run even when the source is unchanged. Byte-equal comparators must
+ * strip them — see `VOLATILE_EXPORT_FIELDS` for the canonical list.
  */
 export interface ExportData {
     schemaVersion: ExportSchemaVersion;
-    /** ISO 8601 timestamp of when this snapshot was generated. */
+    /**
+     * ISO 8601 timestamp of when this snapshot was generated.
+     * Volatile — listed in `VOLATILE_EXPORT_FIELDS`; strip before byte-equal diffs.
+     */
     generatedAt: string;
-    /** Version of `@cngxjs/compodocx` that produced this snapshot. */
+    /**
+     * Version of `@cngxjs/compodocx` that produced this snapshot.
+     * Volatile — listed in `VOLATILE_EXPORT_FIELDS`; strip before byte-equal diffs.
+     */
     compodocxVersion: string;
     pipes?: ExportPipe[];
     modules?: ExportModule[];
@@ -400,7 +430,7 @@ export interface ExportData {
     interceptors?: ExportInterceptor[];
     classes?: ExportClass[];
     directives?: ExportDirective[];
-    routes?: RouteInterface[];
+    routes?: ExportRoute[];
     coverage?: ExportCoverage;
     miscellaneous?: ExportMiscellaneous;
     components?: ExportComponent[];

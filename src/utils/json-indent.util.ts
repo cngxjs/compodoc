@@ -1,17 +1,25 @@
-import { logger } from './logger';
-
 /**
  * Validate the `--jsonIndent` flag (and the matching config-file field).
  *
  * Accepts an integer between 0 and 8, inclusive — same range Node's
  * `JSON.stringify(value, replacer, space)` honours before silently capping.
- * Anything else exits the process with a clear error so users notice the
- * typo instead of getting silent fallback to 0.
- *
- * `source` is used purely to make the error message friendlier; pass
- * `'flag'` from CLI parsing and `'config'` from cosmiconfig file loads.
+ * Returns a discriminated result so callers (CLI, programmatic consumers,
+ * tests) decide how to surface failures. The CLI in `src/index-cli.ts` exits
+ * the process on `ok: false`; tests assert on the message without spying
+ * on `process.exit`.
  */
-export function parseJsonIndent(raw: unknown, source: 'flag' | 'config' = 'flag'): number {
+
+export type JsonIndentResult = { ok: true; value: number } | { ok: false; message: string };
+
+/**
+ * `source` shapes the failure message: `'flag'` for CLI invocations,
+ * `'config'` for cosmiconfig file loads. The accepted value space is the
+ * same in both modes.
+ */
+export function parseJsonIndent(
+    raw: unknown,
+    source: 'flag' | 'config' = 'flag'
+): JsonIndentResult {
     const label = source === 'flag' ? '--jsonIndent' : 'jsonIndent in config file';
 
     if (typeof raw === 'number') {
@@ -21,25 +29,33 @@ export function parseJsonIndent(raw: unknown, source: 'flag' | 'config' = 'flag'
     if (typeof raw === 'string') {
         const trimmed = raw.trim();
         if (trimmed === '') {
-            logger.error(`${label} requires a value between 0 and 8`);
-            process.exit(1);
+            return {
+                ok: false,
+                message: `${label} requires a value between 0 and 8`
+            };
         }
         const parsed = Number(trimmed);
         if (!Number.isFinite(parsed) || !/^-?\d+$/.test(trimmed)) {
-            logger.error(`${label} must be an integer between 0 and 8 (got "${raw}")`);
-            process.exit(1);
+            return {
+                ok: false,
+                message: `${label} must be an integer between 0 and 8 (got "${raw}")`
+            };
         }
         return assertInRange(parsed, label);
     }
 
-    logger.error(`${label} must be an integer between 0 and 8`);
-    process.exit(1);
+    return {
+        ok: false,
+        message: `${label} must be an integer between 0 and 8`
+    };
 }
 
-function assertInRange(value: number, label: string): number {
+function assertInRange(value: number, label: string): JsonIndentResult {
     if (!Number.isInteger(value) || value < 0 || value > 8) {
-        logger.error(`${label} must be an integer between 0 and 8 (got ${value})`);
-        process.exit(1);
+        return {
+            ok: false,
+            message: `${label} must be an integer between 0 and 8 (got ${value})`
+        };
     }
-    return value;
+    return { ok: true, value };
 }
