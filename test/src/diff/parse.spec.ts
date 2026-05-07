@@ -52,8 +52,8 @@ describe('diff/parse — schemaVersion gate', () => {
         }
     });
 
-    it('rejects a schemaVersion mismatch with an actionable message', () => {
-        const file = path.join(tmp, 'wrong-version.json');
+    it('rejects a newer-than-supported schemaVersion with an upgrade hint', () => {
+        const file = path.join(tmp, 'newer-version.json');
         fs.writeFileSync(
             file,
             JSON.stringify({ schemaVersion: 99, generatedAt: '', compodocxVersion: '99.0.0' })
@@ -61,8 +61,8 @@ describe('diff/parse — schemaVersion gate', () => {
         const result = parseExportFile(file);
         expect(result.ok).toBe(false);
         if (!result.ok) {
-            expect(result.message).toMatch(/schemaVersion 99 does not match/);
-            expect(result.message).toMatch(/re-export with compodocx ≥ 0\.3\.0/);
+            expect(result.message).toMatch(/produced by a newer compodocx/);
+            expect(result.message).toMatch(/upgrade compodocx to read it/);
         }
     });
 

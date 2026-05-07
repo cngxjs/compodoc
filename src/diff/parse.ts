@@ -62,6 +62,12 @@ export const parseExportSource = (raw: string, label: string): ParseResult<Parse
         };
     }
     if (version !== EXPORT_SCHEMA_VERSION) {
+        if (version > EXPORT_SCHEMA_VERSION) {
+            return {
+                ok: false,
+                message: `diff: ${label} was produced by a newer compodocx (schemaVersion ${version}, this CLI supports ${EXPORT_SCHEMA_VERSION}) — upgrade compodocx to read it`
+            };
+        }
         return {
             ok: false,
             message: `diff: ${label} schemaVersion ${version} does not match supported ${EXPORT_SCHEMA_VERSION} — re-export with compodocx ≥ 0.3.0`

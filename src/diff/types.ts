@@ -6,7 +6,14 @@
  * `DiffResult` directly; they don't mutate it.
  */
 
-import type { ExportData } from '../app/interfaces/export-data.interface';
+import type { ExportData, VolatileExportField } from '../app/interfaces/export-data.interface';
+
+/**
+ * Envelope captured for each side of a diff — uses the volatile-field type
+ * derived from `VOLATILE_EXPORT_FIELDS` so adding a field to the constant
+ * automatically widens this shape (F16). Never hand-write the field list.
+ */
+export type DiffSnapshotMeta = Pick<ExportData, VolatileExportField>;
 
 export type Severity = 'breaking' | 'additive' | 'docs-only';
 
@@ -108,8 +115,8 @@ export interface DiffSummary {
 export interface DiffResult {
     schemaVersion: number;
     comparedAt: string;
-    from: { generatedAt: string; compodocxVersion: string };
-    to: { generatedAt: string; compodocxVersion: string };
+    from: DiffSnapshotMeta;
+    to: DiffSnapshotMeta;
     summary: DiffSummary;
     changes: EntityChange[];
 }

@@ -9,18 +9,28 @@
  * automatically picks them up.
  */
 
-import { type ExportData, VOLATILE_EXPORT_FIELDS } from '../app/interfaces/export-data.interface';
+import {
+    type ExportData,
+    VOLATILE_EXPORT_FIELDS,
+    type VolatileExportField
+} from '../app/interfaces/export-data.interface';
+
+/**
+ * Result of stripping volatile fields. The omitted field set is derived from
+ * the runtime constant — if a future field is added to
+ * `VOLATILE_EXPORT_FIELDS`, this type follows automatically (F16). Never
+ * hand-write the field literal here.
+ */
+export type StrippedExportData = Omit<ExportData, VolatileExportField>;
 
 /**
  * Return a shallow copy of `data` with every `VOLATILE_EXPORT_FIELDS` entry
  * removed. Original input is untouched (immutable contract).
  */
-export const stripVolatileFields = (
-    data: ExportData
-): Omit<ExportData, 'generatedAt' | 'compodocxVersion'> => {
+export const stripVolatileFields = (data: ExportData): StrippedExportData => {
     const copy: Record<string, unknown> = { ...(data as unknown as Record<string, unknown>) };
     for (const field of VOLATILE_EXPORT_FIELDS) {
         delete copy[field];
     }
-    return copy as Omit<ExportData, 'generatedAt' | 'compodocxVersion'>;
+    return copy as StrippedExportData;
 };

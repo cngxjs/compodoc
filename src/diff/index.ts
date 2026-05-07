@@ -21,7 +21,7 @@ import { renderConsole, shouldShowDiffBanner } from './format/console';
 import { renderJson } from './format/json';
 import { renderMarkdown } from './format/markdown';
 import { parseDiffInputs } from './parse';
-import type { DiffResult } from './types';
+import type { DiffResult, DiffSnapshotMeta } from './types';
 
 interface DiffFlags {
     readonly old: string;
@@ -39,8 +39,8 @@ interface DiffFlags {
 const suppressNonBreaking = (flags: DiffFlags): boolean => flags.warnings === false;
 
 const buildDiffResult = (
-    fromVersion: { generatedAt: string; compodocxVersion: string },
-    toVersion: { generatedAt: string; compodocxVersion: string },
+    fromVersion: DiffSnapshotMeta,
+    toVersion: DiffSnapshotMeta,
     schemaVersion: number,
     classified: ReturnType<typeof classifyAll>,
     unchanged: number
