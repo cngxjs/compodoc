@@ -6,6 +6,23 @@ import type {
 import type { JsdocTagInterface } from './jsdoc-tag.interface';
 import type { RouteInterface } from './routes.interface';
 
+/**
+ * Schema version of the `documentation.json` produced by `--exportFormat json`.
+ *
+ * Bump this constant when the shape of `ExportData` (or any nested `Export*`
+ * interface) changes in a way that breaks downstream consumers
+ * (`compodocx diff`, `--export llm-md`, future VS Code extension, etc.).
+ *
+ * Pre-v0.3.0 outputs have no `schemaVersion` field at all and are treated as
+ * "version 0" by consumers. The drift-detection spec
+ * (`test/src/utils/export-json-schema-drift.spec.ts`) fails the build if any
+ * other place in `src/` writes a numeric literal as the schema version
+ * instead of importing this constant.
+ */
+export const EXPORT_SCHEMA_VERSION = 1 as const;
+
+export type ExportSchemaVersion = typeof EXPORT_SCHEMA_VERSION;
+
 export interface ExportArg {
     name: string;
     type?: string;
@@ -357,8 +374,24 @@ export interface ExportCoverage {
  * Top-level shape of `documentation.json`. This is the contract downstream
  * consumers (`compodocx diff`, `--export llm-md`, future VS Code extension)
  * import from `@cngxjs/compodocx`.
+ *
+ * Stability rules:
+ *
+ * 1. Adding a new optional field is a non-breaking change and does **not**
+ *    require bumping `EXPORT_SCHEMA_VERSION`.
+ * 2. Renaming a field, removing a field, narrowing an existing field's type,
+ *    or changing the meaning of a field **is** a breaking change. Bump
+ *    `EXPORT_SCHEMA_VERSION` and add a `### Changed` / `### Removed` note in
+ *    `MIGRATION.md`.
+ * 3. Pre-v0.3.0 outputs have no `schemaVersion` field. Consumers should treat
+ *    a missing `schemaVersion` as version 0.
  */
 export interface ExportData {
+    schemaVersion: ExportSchemaVersion;
+    /** ISO 8601 timestamp of when this snapshot was generated. */
+    generatedAt: string;
+    /** Version of `@cngxjs/compodocx` that produced this snapshot. */
+    compodocxVersion: string;
     pipes?: ExportPipe[];
     modules?: ExportModule[];
     interfaces?: ExportInterface[];

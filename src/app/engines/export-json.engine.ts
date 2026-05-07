@@ -1,13 +1,15 @@
 import * as path from 'node:path';
 import traverse from 'neotraverse/legacy';
 
+import pkg from '../../../package.json';
 import { logger } from '../../utils/logger';
 import Configuration from '../configuration';
 
-import type {
-    ExportData,
-    ExportModule,
-    ExportModuleChildGroup
+import {
+    EXPORT_SCHEMA_VERSION,
+    type ExportData,
+    type ExportModule,
+    type ExportModuleChildGroup
 } from '../interfaces/export-data.interface';
 import type { AngularNgModuleNode } from '../nodes/angular-ngmodule-node';
 import DependenciesEngine from './dependencies.engine';
@@ -24,7 +26,11 @@ export class ExportJsonEngine {
     }
 
     public export(outputFolder, data) {
-        const exportData: ExportData = {};
+        const exportData: ExportData = {
+            schemaVersion: EXPORT_SCHEMA_VERSION,
+            generatedAt: new Date().toISOString(),
+            compodocxVersion: pkg.version
+        };
 
         traverse(data).forEach(node => {
             if (node) {
