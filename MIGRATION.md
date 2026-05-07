@@ -35,7 +35,8 @@ The rest of the document only matters if you fall into one of these buckets:
 | `-r`, `--port` | unchanged | |
 | `-w`, `--watch` | unchanged | |
 | `-o`, `--open` | unchanged | |
-| `-e`, `--exportFormat` | unchanged | `json` and `html` are still the supported formats. |
+| `-e`, `--exportFormat` | unchanged | `json` and `html` are still the supported formats. The JSON shape gained typed `Export*` interfaces and three new header fields (`schemaVersion`, `generatedAt`, `compodocxVersion`) — see "JSON export" below. |
+| `--jsonIndent` | **new** (default `0`) | Indent size (0–8) for `documentation.json` produced by `--exportFormat json`. Default dropped from compodoc's hardcoded `4` to `0` (single-line output, smaller files). Pass `--jsonIndent 2` to restore human-readable formatting. Out-of-range values fail fast with a clear error. |
 | `-n`, `--name` | unchanged | |
 | `-a`, `--assetsFolder` | unchanged | |
 | `-y`, `--extTheme` | unchanged | Still accepts a path to a custom CSS file. |
@@ -57,6 +58,21 @@ The rest of the document only matters if you fall into one of these buckets:
 | `--templatePlayground` | deprecated | The browser-based template playground still ships but generates Handlebars output that is no longer compatible with `--templates`. Use it for visual reference only — the ZIP export's README spells this out. The flag will be removed in a future release. |
 
 Config-file (`.compodocrc.json`, `.compodocrc.yaml`, `.compodocrc.js`) keys mirror the CLI flags one-to-one. Existing config files keep working unchanged.
+
+## JSON export (`--exportFormat json`)
+
+`compodocx --exportFormat json -d <out>` writes `documentation.json`, the structured snapshot consumers like API Diff (`compodocx diff`, sprint 3) and the LLM context export (`--export llm-md`, sprint 4) read.
+
+### New
+
+- **Typed shape.** `ExportData` and every per-entity field (`ExportComponent`, `ExportModule`, `ExportInjectable`, `ExportPipe`, `ExportClass`, `ExportInterface`, `ExportGuard`, `ExportInterceptor`, `ExportDirective`, `ExportRoute`, `ExportCoverage`, `ExportMiscellaneous`) are exported from `@cngxjs/compodocx`. Downstream tooling can import and narrow without `any`.
+- **`schemaVersion: 1`.** Single source of truth: `EXPORT_SCHEMA_VERSION` in `src/app/interfaces/export-data.interface.ts`. Bumped on every breaking shape change with a corresponding note in this file. Pre-v0.3.0 outputs had no field — consumers should treat a missing `schemaVersion` as version 0.
+- **`generatedAt`** — ISO 8601 timestamp of when the snapshot was written. Useful for time-travel diffs and stale-cache detection. Non-deterministic by design; snapshot tests must either fix the clock or strip the field before comparing.
+- **`compodocxVersion`** — `package.json` version of the producing CLI, for consumer telemetry and cross-version diff handling.
+
+### Changed
+
+- **Default JSON indent dropped from `4` → `0`.** The new `documentation.json` is single-line by default — substantially smaller. Pass `--jsonIndent 2` (or any value 0–8) to restore human-readable formatting. Tools that read the file with `jq` are unaffected; tools that depend on whitespace-sensitive regexes should opt into `--jsonIndent 2` or migrate to a JSON parser.
 
 ## Themes
 
