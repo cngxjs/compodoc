@@ -80,7 +80,11 @@ const runTemplate = async (
         fs.ensureDir(path.dirname(path.resolve(out)));
         fs.writeFile(path.resolve(out), result.output);
         printDetail('wrote', path.relative(process.cwd(), path.resolve(out)));
-    } else if (!result.hardLimit && flags.dryRun) {
+    } else if (!result.hardLimit) {
+        // No --out and no --dry-run: stream the converted source to stdout so
+        // the user sees what the converter produced. Without this branch the
+        // command was silent — output was computed but discarded — which read
+        // as a broken tool. `cat`/`sed`/`awk` all stream-by-default, this matches.
         printLine('--- preview ---');
         process.stdout.write(`${result.output}\n`);
     }
