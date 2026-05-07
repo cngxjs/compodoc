@@ -1,0 +1,5 @@
+{
+    "name": "migrate-inspect-fixture",
+    "private": true,
+    "type": "module"
+}

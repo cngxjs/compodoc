@@ -12,11 +12,13 @@
 
 import * as path from 'node:path';
 import { Command } from 'commander';
+import { type CssMode, isMarkupOrCode, isStylesheet, rewriteCss } from './css';
 import { realFs } from './fs-adapter';
+import { inspectProject } from './inspect';
 import { exitCodeOf } from './report';
 import { convertTemplate } from './template';
 import { convertDirectory } from './templates';
-import type { ConvertResult, RunSummary } from './types';
+import type { ConvertResult, CssRewriteResult, InspectReport, RunSummary } from './types';
 
 const printConvertResult = (result: ConvertResult, suppressWarnings: boolean): void => {
     const tag = result.score === 'green' ? '[OK]' : result.score === 'yellow' ? '[WARN]' : '[ERR]';
@@ -99,6 +101,109 @@ const runTemplates = async (
     return exitCodeOf(summary.score);
 };
 
+const cssTargetFiles = (target: string): readonly string[] => {
+    const fs = realFs();
+    const abs = path.resolve(target);
+    if (fs.isFile(abs)) {
+        return [abs];
+    }
+    if (!fs.isDirectory(abs)) {
+        return [];
+    }
+    const walk = (dir: string): readonly string[] =>
+        fs.readdir(dir).flatMap(name => {
+            const full = path.join(dir, name);
+            if (fs.isDirectory(full)) {
+                return ['node_modules', 'dist', '.git'].includes(name) ? [] : walk(full);
+            }
+            return isStylesheet(full) || isMarkupOrCode(full) ? [full] : [];
+        });
+    return walk(abs);
+};
+
+const printCssResult = (result: CssRewriteResult, suppressWarnings: boolean): void => {
+    const tag = result.score === 'green' ? '[OK]' : result.score === 'yellow' ? '[WARN]' : '[ERR]';
+    const where = path.relative(process.cwd(), result.file) || result.file;
+    console.log(
+        `${tag} ${where}: ${result.rewriteCount} rewrites, ${result.auditMatches.length} audit-only`
+    );
+    if (suppressWarnings) {
+        return;
+    }
+    for (const w of result.warnings) {
+        console.log(`  ${w.kind}@${w.line}: ${w.message}`);
+    }
+};
+
+const runCss = async (target: string, mode: CssMode, flags: CommonFlags): Promise<number> => {
+    const fs = realFs();
+    const files = cssTargetFiles(target);
+    if (files.length === 0) {
+        console.error(`migrate css: no css/scss/sass/html/ts files found at ${target}`);
+        return 2;
+    }
+    const results: CssRewriteResult[] = files.map(file => {
+        const source = fs.readFile(file);
+        const result = rewriteCss(file, source, mode);
+        if (!flags.dryRun && result.rewriteCount > 0 && result.output !== source) {
+            fs.writeFile(file, result.output);
+        }
+        return result;
+    });
+    if (flags.json) {
+        console.log(JSON.stringify({ mode, files: results }, null, 2));
+    } else {
+        for (const r of results) {
+            printCssResult(r, flags.noWarnings ?? false);
+        }
+        const totalRewrites = results.reduce((sum, r) => sum + r.rewriteCount, 0);
+        const totalAudits = results.reduce((sum, r) => sum + r.auditMatches.length, 0);
+        console.log(
+            `Summary: ${totalRewrites} rewrites${flags.dryRun ? ' (dry-run, not written)' : ''}, ${totalAudits} audit-only matches.`
+        );
+    }
+    const worst = results.reduce<'green' | 'yellow' | 'red'>(
+        (acc, r) =>
+            r.score === 'red' ? 'red' : r.score === 'yellow' && acc === 'green' ? 'yellow' : acc,
+        'green'
+    );
+    return exitCodeOf(worst);
+};
+
+const printInspectReport = (report: InspectReport, suppressWarnings: boolean): void => {
+    const where = path.relative(process.cwd(), report.project) || report.project;
+    console.log(`Inspect ${where}: ${report.findings.length} finding(s)`);
+    for (const f of report.findings) {
+        const tag = f.severity === 'info' ? '[OK]' : f.severity === 'warning' ? '[WARN]' : '[ERR]';
+        const fileLabel = path.relative(process.cwd(), f.file) || f.file;
+        console.log(`${tag} ${f.kind}: ${fileLabel}`);
+        if (!suppressWarnings) {
+            console.log(`  ${f.message}`);
+            if (f.suggestion) {
+                console.log(`  → ${f.suggestion}`);
+            }
+        }
+    }
+    const { green, yellow, red } = report.summary;
+    console.log(`Summary: ${green} info, ${yellow} warning, ${red} error.`);
+};
+
+const runInspect = async (project: string, flags: CommonFlags): Promise<number> => {
+    const fs = realFs();
+    const root = path.resolve(project);
+    if (!fs.isDirectory(root)) {
+        console.error(`migrate inspect: directory not found: ${project}`);
+        return 2;
+    }
+    const report = inspectProject(root, fs);
+    if (flags.json) {
+        console.log(JSON.stringify(report, null, 2));
+    } else {
+        printInspectReport(report, flags.noWarnings ?? false);
+    }
+    return exitCodeOf(report.score);
+};
+
 export const runMigrateCli = async (argv: readonly string[]): Promise<number> => {
     const program = new Command();
     program
@@ -137,9 +242,9 @@ export const runMigrateCli = async (argv: readonly string[]): Promise<number> =>
         .option('--dry-run', 'Preview the rewrite without writing to disk')
         .option('--json', 'Emit a machine-readable JSON report')
         .option('--no-warnings', 'Suppress fidelity warnings in console output')
-        .action(async () => {
-            console.error('migrate css: not implemented in this commit (see PR commit 3).');
-            exitCode = 2;
+        .action(async (target: string, opts: CommonFlags & { aggressive?: boolean }) => {
+            const mode: CssMode = opts.aggressive ? 'aggressive' : 'conservative';
+            exitCode = await runCss(target, mode, opts);
         });
 
     program
@@ -147,9 +252,8 @@ export const runMigrateCli = async (argv: readonly string[]): Promise<number> =>
         .description('Audit a compodoc project for migrate-able templates and CSS classes.')
         .option('--json', 'Emit a machine-readable JSON report')
         .option('--no-warnings', 'Suppress fidelity warnings in console output')
-        .action(async () => {
-            console.error('migrate inspect: not implemented in this commit (see PR commit 3).');
-            exitCode = 2;
+        .action(async (project: string, opts: CommonFlags) => {
+            exitCode = await runInspect(project, opts);
         });
 
     await program.parseAsync(argv, { from: 'user' });
