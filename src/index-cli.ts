@@ -16,6 +16,7 @@ import type { ConfigurationFileInterface } from './app/interfaces/configuration-
 import AngularVersionUtil from './utils/angular-version.util';
 import { parseApiMarkdownExports } from './utils/api-markdown-parser.util';
 import { COMPODOC_DEFAULTS } from './utils/defaults';
+import { parseJsonIndent } from './utils/json-indent.util';
 import { logger } from './utils/logger';
 import { parsePublicApi } from './utils/public-api-parser.util';
 import { createSourcePathMapper } from './utils/source-path-mapper.util';
@@ -93,6 +94,11 @@ export class CliApplication extends Application {
                 '-e, --exportFormat [format]',
                 'Export in specified format (json, html)',
                 COMPODOC_DEFAULTS.exportFormat
+            )
+            .option(
+                '--jsonIndent <spaces>',
+                'JSON indent for the documentation.json export (0-8, default: 0)',
+                String(COMPODOC_DEFAULTS.jsonIndent)
             )
             .option('--files [files]', 'Files provided by external tool, used for coverage test')
             .option(
@@ -507,6 +513,16 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             programOptions.exportFormat !== COMPODOC_DEFAULTS.exportFormat
         ) {
             Configuration.mainData.exportFormat = programOptions.exportFormat;
+        }
+
+        if (configFile.jsonIndent !== undefined) {
+            Configuration.mainData.jsonIndent = parseJsonIndent(configFile.jsonIndent, 'config');
+        }
+        if (
+            programOptions.jsonIndent !== undefined &&
+            programOptions.jsonIndent !== String(COMPODOC_DEFAULTS.jsonIndent)
+        ) {
+            Configuration.mainData.jsonIndent = parseJsonIndent(programOptions.jsonIndent, 'flag');
         }
 
         if (configFile.hideGenerator) {

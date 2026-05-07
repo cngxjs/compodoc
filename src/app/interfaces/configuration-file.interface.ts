@@ -17,6 +17,7 @@ export interface ConfigurationFileInterface {
     port: number;
     watch: boolean;
     exportFormat: string;
+    jsonIndent: number;
     hideGenerator: boolean;
     hideDarkModeToggle: boolean;
     coverageTest: number;

@@ -8,6 +8,8 @@ export const COMPODOC_DEFAULTS = {
     theme: 'default',
     exportFormat: 'html',
     exportFormatsSupported: ['html', 'json'],
+    /** Default JSON indent for `--exportFormat json`. 0 = single-line; range 0–8. */
+    jsonIndent: 0,
     base: '/',
     defaultCoverageThreshold: 70,
     defaultCoverageMinimumPerFile: 0,

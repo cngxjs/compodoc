@@ -83,6 +83,8 @@ export interface MainDataInterface {
     routesLength: number;
     angularVersion: string;
     exportFormat: string;
+    /** Indent size (0–8) for `--exportFormat json`. 0 = single-line. */
+    jsonIndent: number;
     coverageData: CoverageData;
     customFavicon: string;
     customLogo: string;
