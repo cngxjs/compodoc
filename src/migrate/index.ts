@@ -12,15 +12,18 @@
 
 import * as path from 'node:path';
 import { Command } from 'commander';
+import pkg from '../../package.json';
 import { type CssMode, isMarkupOrCode, isStylesheet, rewriteCss } from './css';
 import { realFs } from './fs-adapter';
 import { inspectProject } from './inspect';
 import {
+    printBanner,
     printDetail,
     printError,
     printHeading,
     printLine,
     printSummary as printSummaryLine,
+    shouldShowBanner,
     tagFor,
     tagForSeverity
 } from './printer';
@@ -211,6 +214,10 @@ const runInspect = async (project: string, flags: CommonFlags): Promise<number> 
 };
 
 export const runMigrateCli = async (argv: readonly string[]): Promise<number> => {
+    if (shouldShowBanner(argv)) {
+        printBanner(pkg.version);
+    }
+
     const program = new Command();
     program
         .name('compodocx migrate')
