@@ -82,12 +82,12 @@ export const parseDiffInputs = (
     newFile: string
 ): ParseResult<{ from: ParsedExport; to: ParsedExport }> => {
     const oldResult = parseExportFile(oldFile);
-    if (!oldResult.ok) {
-        return oldResult;
+    if (oldResult.ok === false) {
+        return { ok: false, message: oldResult.message };
     }
     const newResult = parseExportFile(newFile);
-    if (!newResult.ok) {
-        return newResult;
+    if (newResult.ok === false) {
+        return { ok: false, message: newResult.message };
     }
     return {
         ok: true,
