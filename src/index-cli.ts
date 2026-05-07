@@ -35,6 +35,15 @@ export class CliApplication extends Application {
      * Run compodocx from the command line.
      */
     protected async start(): Promise<any> {
+        // Intercept `compodocx migrate <subcommand>` BEFORE the main commander
+        // parses argv — the migrate CLI has its own subcommand surface and
+        // shouldn't be treated as an unknown option.
+        if (process.argv[2] === 'migrate') {
+            const { runMigrateCli } = await import('./migrate');
+            const exitCode = await runMigrateCli(process.argv.slice(3));
+            process.exit(exitCode);
+        }
+
         function list(val) {
             return val.split(',');
         }

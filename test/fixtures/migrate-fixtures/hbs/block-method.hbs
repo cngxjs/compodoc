@@ -1,0 +1,11 @@
+<section data-compodoc="block-method">
+    <h3>{{t "methods"}}</h3>
+    <ul>
+    {{#each methods}}
+        <li>
+            <code>{{functionSignature this}}</code>
+            {{#if description}}<div>{{parseDescription description}}</div>{{/if}}
+        </li>
+    {{/each}}
+    </ul>
+</section>
