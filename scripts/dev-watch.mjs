@@ -87,13 +87,10 @@ const buildCss = () =>
     run('npx tailwindcss', ['-i', 'src/styles/compodocx.css', '-o', 'src/resources/styles/compodocx.css', '--minify'], 'css', c.yellow);
 
 const buildClient = () =>
-    run('npx esbuild', [
-        'src/client/compodocx.ts', '--bundle', '--minify', '--splitting', '--format=esm',
-        '--outdir=src/resources/js', '--target=es2020', '--entry-names=[name]', '--chunk-names=chunks/[name]-[hash]'
-    ], 'client', c.yellow);
+    run('npx tsdown', ['--config', 'tsdown.client.config.ts'], 'client', c.yellow);
 
-const buildRollup = () =>
-    run('npx rollup', ['-c', 'rollup/rollup.config.mjs', '--bundleConfigAsCjs'], 'rollup', c.cyan);
+const buildLib = () =>
+    run('npx tsdown', [], 'lib', c.cyan);
 
 const generateFixture = () => {
     if (existsSync(outDir)) {
@@ -178,7 +175,7 @@ const flush = async () => {
         const tasks = [];
         if (steps.has('css')) tasks.push(buildCss());
         if (steps.has('client')) tasks.push(buildClient());
-        if (steps.has('rollup')) tasks.push(buildRollup());
+        if (steps.has('lib')) tasks.push(buildLib());
 
         if (tasks.length > 0) await Promise.all(tasks);
 
@@ -232,7 +229,7 @@ const watch = (paths, exts, step, label) => {
 
 watch(['src/styles'], ['.css'], 'css', 'css');
 watch(['src/client'], ['.ts'], 'client', 'client');
-watch(['src/app', 'src/templates', 'src/utils', 'src/index.ts'], ['.ts', '.tsx'], 'rollup', 'rollup');
+watch(['src/app', 'src/templates', 'src/utils', 'src/index.ts'], ['.ts', '.tsx'], 'lib', 'lib');
 watch([`test/fixtures/${fixture}`], ['.ts', '.tsx', '.md', '.scss', '.css', '.html', '.json'], 'docs', 'fixture');
 
 // ---------- Cleanup ----------

@@ -110,7 +110,7 @@ npm run test
     npm start
     ```
 
-    Launch watch process for source files and rollup build.
+    Launch watch process for source files and the tsdown build.
 
 ## Node.js inspecting
 
