@@ -1,0 +1,218 @@
+import { spawnSync } from 'node:child_process';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import {
+    EXPORT_SCHEMA_VERSION,
+    type ExportComponent,
+    type ExportData,
+    type ExportInjectable,
+    type ExportInterface,
+    type ExportModule,
+    type ExportPipe
+} from '../../../src/app/interfaces/export-data.interface';
+
+/**
+ * Real-fixture snapshot. We spawn the CLI against test/fixtures/todomvc-ng2
+ * once per spec file, then assert the resulting documentation.json against
+ * the typed `ExportData` contract.
+ *
+ * todomvc is the lightest fixture that has non-empty components, modules,
+ * pipes and injectables — exactly the union of entity types most downstream
+ * consumers (sprint 3 API Diff, sprint 4 llm-md export) will be diffing.
+ */
+
+const REPO_ROOT = path.resolve(__dirname, '../../..');
+const CLI = path.join(REPO_ROOT, 'bin/index-cli.js');
+const FIXTURE_TSCONFIG = path.join(REPO_ROOT, 'test/fixtures/todomvc-ng2/src/tsconfig.json');
+
+let outDir: string;
+let snapshot: ExportData;
+
+const spawnExport = (extraArgs: string[]): { stdout: string; stderr: string; status: number } => {
+    const result = spawnSync(
+        process.execPath,
+        [
+            CLI,
+            '-p',
+            FIXTURE_TSCONFIG,
+            '-d',
+            outDir,
+            '--exportFormat',
+            'json',
+            '--disableSearch',
+            ...extraArgs
+        ],
+        { encoding: 'utf8' }
+    );
+    return {
+        stdout: result.stdout ?? '',
+        stderr: result.stderr ?? '',
+        status: result.status ?? 0
+    };
+};
+
+describe('export-json typed snapshot — todomvc fixture', () => {
+    beforeAll(() => {
+        outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'compodocx-typed-export-'));
+        const result = spawnExport([]);
+        if (result.status !== 0) {
+            throw new Error(
+                `CLI exited ${result.status}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`
+            );
+        }
+        const raw = fs.readFileSync(path.join(outDir, 'documentation.json'), 'utf8');
+        snapshot = JSON.parse(raw) as ExportData;
+    }, 120_000);
+
+    afterAll(() => {
+        if (outDir && fs.existsSync(outDir)) {
+            fs.rmSync(outDir, { recursive: true, force: true });
+        }
+    });
+
+    it('writes schemaVersion = EXPORT_SCHEMA_VERSION', () => {
+        expect(snapshot.schemaVersion).toBe(EXPORT_SCHEMA_VERSION);
+    });
+
+    it('writes a valid ISO 8601 generatedAt timestamp', () => {
+        expect(snapshot.generatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+        expect(Number.isFinite(Date.parse(snapshot.generatedAt))).toBe(true);
+    });
+
+    it('writes a non-empty compodocxVersion', () => {
+        expect(typeof snapshot.compodocxVersion).toBe('string');
+        expect(snapshot.compodocxVersion.length).toBeGreaterThan(0);
+    });
+
+    it('produces non-empty components, modules, pipes, injectables, interfaces', () => {
+        expect(Array.isArray(snapshot.components) && snapshot.components.length).toBeGreaterThan(0);
+        expect(Array.isArray(snapshot.modules) && snapshot.modules.length).toBeGreaterThan(0);
+        expect(Array.isArray(snapshot.pipes) && snapshot.pipes.length).toBeGreaterThan(0);
+        expect(Array.isArray(snapshot.injectables) && snapshot.injectables.length).toBeGreaterThan(
+            0
+        );
+        expect(Array.isArray(snapshot.interfaces) && snapshot.interfaces.length).toBeGreaterThan(0);
+    });
+
+    it('first component has the ExportComponent core fields', () => {
+        const c = (snapshot.components ?? [])[0] as ExportComponent;
+        expect(typeof c.name).toBe('string');
+        expect(typeof c.file).toBe('string');
+        expect(c.name.length).toBeGreaterThan(0);
+        // Optional fields must hold their expected types when present.
+        if (c.encapsulation !== undefined) {
+            expect(Array.isArray(c.encapsulation)).toBe(true);
+        }
+        if (c.standalone !== undefined) {
+            expect(typeof c.standalone).toBe('boolean');
+        }
+        if (c.providers !== undefined) {
+            expect(Array.isArray(c.providers)).toBe(true);
+        }
+    });
+
+    it('first module has the ExportModule structured children', () => {
+        const m = (snapshot.modules ?? [])[0] as ExportModule;
+        expect(typeof m.name).toBe('string');
+        expect(Array.isArray(m.children)).toBe(true);
+        const buckets = m.children.map(child => child.type).sort();
+        expect(buckets).toEqual(
+            ['bootstrap', 'classes', 'declarations', 'exports', 'imports', 'providers'].sort()
+        );
+        for (const child of m.children) {
+            expect(Array.isArray(child.elements)).toBe(true);
+            for (const el of child.elements) {
+                expect(typeof el.name).toBe('string');
+            }
+        }
+    });
+
+    it('first pipe has the ExportPipe core fields', () => {
+        const p = (snapshot.pipes ?? [])[0] as ExportPipe;
+        expect(typeof p.name).toBe('string');
+        if (p.standalone !== undefined) {
+            expect(typeof p.standalone).toBe('boolean');
+        }
+    });
+
+    it('first injectable has the ExportInjectable core fields', () => {
+        const i = (snapshot.injectables ?? [])[0] as ExportInjectable;
+        expect(typeof i.name).toBe('string');
+        expect(typeof i.file).toBe('string');
+    });
+
+    it('first interface has the ExportInterface core fields', () => {
+        const it = (snapshot.interfaces ?? [])[0] as ExportInterface;
+        expect(typeof it.name).toBe('string');
+    });
+
+    it('default export has indent 0 (single line — no leading whitespace per line)', () => {
+        const raw = fs.readFileSync(path.join(outDir, 'documentation.json'), 'utf8');
+        const lines = raw.split(/\r?\n/);
+        // Single-line JSON.stringify always emits exactly one line.
+        expect(lines.length).toBeLessThanOrEqual(2);
+        expect(lines[0].startsWith('{')).toBe(true);
+    });
+
+    it('--jsonIndent 2 yields a multi-line file with two-space indentation', () => {
+        const indentedDir = fs.mkdtempSync(path.join(os.tmpdir(), 'compodocx-typed-export-i2-'));
+        try {
+            const result = spawnSync(
+                process.execPath,
+                [
+                    CLI,
+                    '-p',
+                    FIXTURE_TSCONFIG,
+                    '-d',
+                    indentedDir,
+                    '--exportFormat',
+                    'json',
+                    '--jsonIndent',
+                    '2',
+                    '--disableSearch'
+                ],
+                { encoding: 'utf8' }
+            );
+            expect(result.status).toBe(0);
+            const file = path.join(indentedDir, 'documentation.json');
+            const raw = fs.readFileSync(file, 'utf8');
+            const lines = raw.split(/\r?\n/);
+            expect(lines.length).toBeGreaterThan(10);
+            // schemaVersion sits at the top; the first child line starts with two spaces.
+            expect(lines[1].startsWith('  ')).toBe(true);
+            expect(lines[1].startsWith('   ')).toBe(false);
+        } finally {
+            fs.rmSync(indentedDir, { recursive: true, force: true });
+        }
+    }, 120_000);
+
+    it('--jsonIndent 9 (out of range) exits non-zero and produces no output', () => {
+        const failDir = fs.mkdtempSync(path.join(os.tmpdir(), 'compodocx-typed-export-fail-'));
+        try {
+            const result = spawnSync(
+                process.execPath,
+                [
+                    CLI,
+                    '-p',
+                    FIXTURE_TSCONFIG,
+                    '-d',
+                    failDir,
+                    '--exportFormat',
+                    'json',
+                    '--jsonIndent',
+                    '9',
+                    '--disableSearch'
+                ],
+                { encoding: 'utf8' }
+            );
+            expect(result.status).not.toBe(0);
+            const errOutput = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+            expect(errOutput).toMatch(/--jsonIndent.*0 and 8/);
+            expect(fs.existsSync(path.join(failDir, 'documentation.json'))).toBe(false);
+        } finally {
+            fs.rmSync(failDir, { recursive: true, force: true });
+        }
+    }, 60_000);
+});
