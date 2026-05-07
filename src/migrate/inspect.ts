@@ -150,7 +150,8 @@ const inspectConfigFile = (file: string, fs: FsAdapter): readonly InspectFinding
                     severity: 'info',
                     file,
                     message: 'YAML config detected — flag/theme audit not implemented for YAML',
-                    suggestion: 'Re-run inspect after migrating to .compodocrc.json, or audit flags by hand against MIGRATION.md'
+                    suggestion:
+                        'Re-run inspect after migrating to .compodocrc.json, or audit flags by hand against MIGRATION.md'
                 }
             ];
         }

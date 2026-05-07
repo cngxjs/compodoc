@@ -55,8 +55,15 @@ const printRunSummary = (summary: RunSummary): void => {
 interface CommonFlags {
     readonly dryRun?: boolean;
     readonly json?: boolean;
-    readonly noWarnings?: boolean;
+    /**
+     * Commander's `--no-X` convention: declaring `.option('--no-warnings', …)`
+     * exposes `opts.warnings === false` (NOT `opts.noWarnings === true`). The
+     * field name reads inverted but matches commander's contract.
+     */
+    readonly warnings?: boolean;
 }
+
+const suppressWarnings = (flags: CommonFlags): boolean => flags.warnings === false;
 
 const runTemplate = async (
     file: string,
@@ -75,7 +82,7 @@ const runTemplate = async (
         console.log(JSON.stringify(payload, null, 2));
         return exitCodeOf(result.score);
     }
-    printConvertResult(result, flags.noWarnings ?? false);
+    printConvertResult(result, suppressWarnings(flags));
     if (!result.hardLimit && !flags.dryRun && out) {
         fs.ensureDir(path.dirname(path.resolve(out)));
         fs.writeFile(path.resolve(out), result.output);
@@ -110,7 +117,7 @@ const runTemplates = async (
         return exitCodeOf(summary.score);
     }
     for (const result of summary.files) {
-        printConvertResult(result, flags.noWarnings ?? false);
+        printConvertResult(result, suppressWarnings(flags));
     }
     printRunSummary(summary);
     return exitCodeOf(summary.score);
@@ -168,7 +175,7 @@ const runCss = async (target: string, mode: CssMode, flags: CommonFlags): Promis
         console.log(JSON.stringify({ mode, files: results }, null, 2));
     } else {
         for (const r of results) {
-            printCssResult(r, flags.noWarnings ?? false);
+            printCssResult(r, suppressWarnings(flags));
         }
         const totalRewrites = results.reduce((sum, r) => sum + r.rewriteCount, 0);
         const totalAudits = results.reduce((sum, r) => sum + r.auditMatches.length, 0);
@@ -212,7 +219,7 @@ const runInspect = async (project: string, flags: CommonFlags): Promise<number> 
     if (flags.json) {
         console.log(JSON.stringify(report, null, 2));
     } else {
-        printInspectReport(report, flags.noWarnings ?? false);
+        printInspectReport(report, suppressWarnings(flags));
     }
     return exitCodeOf(report.score);
 };
