@@ -89,6 +89,7 @@ export class Configuration implements ConfigurationInterface {
         hasZoneJs: true,
         hasNgModules: false,
         exportFormat: COMPODOC_DEFAULTS.exportFormat,
+        jsonIndent: COMPODOC_DEFAULTS.jsonIndent,
         coverageData: {} as CoverageData,
         customFavicon: '',
         customLogo: '',

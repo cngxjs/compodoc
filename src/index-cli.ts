@@ -16,6 +16,7 @@ import type { ConfigurationFileInterface } from './app/interfaces/configuration-
 import AngularVersionUtil from './utils/angular-version.util';
 import { parseApiMarkdownExports } from './utils/api-markdown-parser.util';
 import { COMPODOC_DEFAULTS } from './utils/defaults';
+import { parseJsonIndent } from './utils/json-indent.util';
 import { logger } from './utils/logger';
 import { parsePublicApi } from './utils/public-api-parser.util';
 import { createSourcePathMapper } from './utils/source-path-mapper.util';
@@ -93,6 +94,11 @@ export class CliApplication extends Application {
                 '-e, --exportFormat [format]',
                 'Export in specified format (json, html)',
                 COMPODOC_DEFAULTS.exportFormat
+            )
+            .option(
+                '--jsonIndent <spaces>',
+                'JSON indent for the documentation.json export (0-8, default: 0)',
+                String(COMPODOC_DEFAULTS.jsonIndent)
             )
             .option('--files [files]', 'Files provided by external tool, used for coverage test')
             .option(
@@ -507,6 +513,29 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             programOptions.exportFormat !== COMPODOC_DEFAULTS.exportFormat
         ) {
             Configuration.mainData.exportFormat = programOptions.exportFormat;
+        }
+
+        if (configFile.jsonIndent !== undefined) {
+            const result = parseJsonIndent(configFile.jsonIndent, 'config');
+            if (!result.ok) {
+                logger.error(result.message);
+                process.exit(1);
+            }
+            Configuration.mainData.jsonIndent = result.value;
+        }
+        // Commander always assigns a default value; only override when the
+        // user actually passed `--jsonIndent` on the command line. Using
+        // getOptionValueSource avoids the trap where a config-file value of
+        // `4` would be silently re-overwritten by the CLI default `0` (or
+        // worse, where an explicit `--jsonIndent 0` from the CLI fails to
+        // override a config-file `4` because both stringify to the default).
+        if (program.getOptionValueSource('jsonIndent') === 'cli') {
+            const result = parseJsonIndent(programOptions.jsonIndent, 'flag');
+            if (!result.ok) {
+                logger.error(result.message);
+                process.exit(1);
+            }
+            Configuration.mainData.jsonIndent = result.value;
         }
 
         if (configFile.hideGenerator) {
