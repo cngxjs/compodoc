@@ -28,8 +28,6 @@ Build modernization. Replaces the Rollup + esbuild + tsc + Tailwind + node-scrip
 
 - **`src/resources/js/compodocx.js` is now a gitignored build artifact** (#50). The file had been tracked since the 0.0.1 initial commit but never updated, and the chunks it referenced (`src/resources/js/chunks/*.js`) were already gitignored, so the committed version always pointed at chunk hashes that don't exist on disk after a fresh clone. Added to `.gitignore`, removed from tracking via `git rm --cached`. The vendored `libs/jszip.min.js` stays tracked. The npm tarball still ships the regenerated bundle because `src/resources/` is in `package.json` `files` and the release workflow runs `npm run build` before `npm pack`.
 
-- **Phase 7 build modernization complete.** Three PRs (#48, #49, #50) landed across a single working week. Plan doc: `.internal/2026-05-06-phase7-build-modernization-plan.md`. Build chain is now `tsdown && postbuild-shebang && tsc(schematics) && tsdown(client) && tailwindcss && copy-themes`. Single bundler engine (Rolldown) for everything that produces JavaScript.
-
 ## [0.1.0] — 2026-05-06
 
 The first feature-complete release. Closes the compodoc → compodocx rendering compatibility gap surfaced by a full sweep of the legacy CLI test suite, drops the last `it.skip` / `describe.skip` markers from the migration era, and brings the published behaviour up to "no broken promises" against the migration guide.
