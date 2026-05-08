@@ -15,6 +15,7 @@ describe('CLI Unit Test Report', () => {
                 'node',
                 [
                     '../bin/index-cli.js',
+                    '--no-multiVersion',
                     '-p',
                     './src/tsconfig.json',
                     '--unitTestCoverage',
@@ -85,6 +86,7 @@ describe('CLI Unit Test Report', () => {
                 'node',
                 [
                     '../bin/index-cli.js',
+                    '--no-multiVersion',
                     '-p',
                     './src/tsconfig.json',
                     '--unitTestCoverage',
@@ -140,6 +142,7 @@ describe('CLI Unit Test Report', () => {
                 'node',
                 [
                     '../bin/index-cli.js',
+                    '--no-multiVersion',
                     '-p',
                     './src/tsconfig.json',
                     '--unitTestCoverage',

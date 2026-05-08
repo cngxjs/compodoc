@@ -13,6 +13,7 @@ describe('CLI custom JS templates', () => {
 
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--templates',

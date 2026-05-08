@@ -10,6 +10,7 @@ describe('CLI silent flag', () => {
         tmp.create(distFolder);
         const ls = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -45,6 +46,7 @@ describe('CLI silent flag - error', () => {
                     [
                         '',
                         './bin/index-cli.js',
+                        '--no-multiVersion',
                         '-p',
                         './test/fixtures/sample-files/tsconfig.simple.json',
                         '-d',

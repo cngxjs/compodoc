@@ -20,6 +20,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '-d',
@@ -254,6 +255,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '-d',
@@ -288,6 +290,7 @@ describe('CLI simple generation', () => {
                 'node',
                 [
                     '../bin/index-cli.js',
+                    '--no-multiVersion',
                     '-p',
                     '../test/fixtures/sample-files/tsconfig.simple.json',
                     '-d',
@@ -358,7 +361,7 @@ describe('CLI simple generation', () => {
             actualDir = actualDir.replace('\r\n', '');
 
             let ls = shell('node', [
-                './bin/index-cli.js',
+                './bin/index-cli.js', '--no-multiVersion',
                 '-p', './test/fixtures/sample-files/tsconfig.simple.json',
                 '-d', actualDir + '/' + distFolder], { cwd: distFolder});
 
@@ -412,6 +415,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '-d',
@@ -438,6 +442,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '-d',
@@ -465,6 +470,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 './test/fixtures/sample-files/',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -502,6 +508,7 @@ describe('CLI simple generation', () => {
         beforeAll(() => {
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json'
             ]);
@@ -547,6 +554,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '-t',
@@ -575,6 +583,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--theme',
@@ -605,6 +614,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '-n',
@@ -635,6 +645,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--hideGenerator',
@@ -662,6 +673,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--hideDarkModeToggle',
@@ -689,6 +701,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableSourceCode',
@@ -716,6 +729,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableDomTree',
@@ -743,6 +757,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--navTabConfig',
@@ -792,6 +807,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--navTabConfig',
@@ -824,6 +840,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableTemplateTab',
@@ -851,6 +868,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableStyleTab',
@@ -878,6 +896,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableGraph',
@@ -923,6 +942,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableFilePath',
@@ -977,7 +997,16 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell(
                 'node',
-                ['./bin/index-cli.js', '-s', '-r', '-r', port, '-d', distFolder],
+                [
+                    './bin/index-cli.js',
+                    '--no-multiVersion',
+                    '-s',
+                    '-r',
+                    '-r',
+                    port,
+                    '-d',
+                    distFolder
+                ],
                 { timeout: 10000 }
             );
 
@@ -1002,6 +1031,7 @@ describe('CLI simple generation', () => {
 
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 path.join(`${process.cwd() + path.sep}test/fixtures/todomvc-ng2/src/tsconfig.json`),
                 '-d',
@@ -1029,6 +1059,7 @@ describe('CLI simple generation', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/router-parser-coverage/tsconfig.json',
                 '-d',

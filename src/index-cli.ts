@@ -1095,7 +1095,15 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                     // Resolved here (rather than at flag-parse time) because
                     // the package.json fallback walks up from the project
                     // root, which is only known after tsconfig resolution.
-                    if (Configuration.mainData.multiVersion) {
+                    //
+                    // Non-html exports (json, llm-md) emit a single snapshot
+                    // — there is nothing to navigate between — so the
+                    // version-folder rewrite is skipped for them and the
+                    // user keeps the legacy flat layout for their snapshot.
+                    if (
+                        Configuration.mainData.multiVersion &&
+                        Configuration.mainData.exportFormat === 'html'
+                    ) {
                         const resolved = resolveVersion({
                             explicitLabel: Configuration.mainData.versionLabel,
                             outputFolder: Configuration.mainData.output,
@@ -1110,6 +1118,10 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                         Configuration.mainData.versionLabel = resolved.value.label;
                         Configuration.mainData.versionsRoot = resolved.value.root;
                         Configuration.mainData.output = resolved.value.folder;
+                    } else {
+                        // Other export formats opt out of multi-version
+                        // implicitly so the manifest engine doesn't run.
+                        Configuration.mainData.multiVersion = false;
                     }
 
                     if (tsConfigFile.files) {

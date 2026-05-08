@@ -4,11 +4,11 @@ describe('CLI Options', () => {
     let runHelp;
 
     beforeAll(() => {
-        runHelp = shell('node', ['./bin/index-cli.js', '-h']);
+        runHelp = shell('node', ['./bin/index-cli.js', '--no-multiVersion', '-h']);
     });
 
     it(`should display correct version ${pkg.version}`, () => {
-        const runVersion = shell('node', ['./bin/index-cli.js', '-V']);
+        const runVersion = shell('node', ['./bin/index-cli.js', '--no-multiVersion', '-V']);
         expect(runVersion.stdout.toString()).to.contain(pkg.version);
     });
 

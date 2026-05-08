@@ -82,6 +82,7 @@ export class AppModule { }`;
     it('should generate documentation without JSON5 parsing errors for special character routes', () => {
         const ls = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             path.join(distFolder, 'tsconfig.json'),
             '-d',
@@ -111,6 +112,7 @@ export class AppModule { }`;
         // Test that our fix handles template literals and all reported special character issues
         const ls = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             path.join(distFolder, 'tsconfig.json'),
             '-d',

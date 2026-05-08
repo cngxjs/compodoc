@@ -14,6 +14,7 @@ describe('CLI custom favicon', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
                 '-d',

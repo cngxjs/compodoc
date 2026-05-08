@@ -33,7 +33,14 @@ describe('CLI simple generation - big app', () => {
         tmp.copy('./test/fixtures/todomvc-ng2/', tmpFolder);
         const ls = shell(
             'node',
-            ['../bin/index-cli.js', '-p', './src/tsconfig.json', '-d', 'documentation'],
+            [
+                '../bin/index-cli.js',
+                '--no-multiVersion',
+                '-p',
+                './src/tsconfig.json',
+                '-d',
+                'documentation'
+            ],
             { cwd: tmpFolder }
         );
 

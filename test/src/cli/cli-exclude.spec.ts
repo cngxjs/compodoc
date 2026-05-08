@@ -11,6 +11,7 @@ describe('CLI exclude from tsconfig', () => {
 
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.exclude.json',
                 '-d',

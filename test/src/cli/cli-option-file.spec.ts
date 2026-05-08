@@ -12,6 +12,7 @@ describe('CLI option file', () => {
 
         const ls = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-c',
             './test/fixtures/todomvc-ng2/.compodocrc',
             '-p',

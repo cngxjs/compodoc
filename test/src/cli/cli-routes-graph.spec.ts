@@ -10,6 +10,7 @@ describe('CLI Routes graph', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2-simple-routing/src/tsconfig.json',
                 '--disableRoutesGraph',
@@ -35,6 +36,7 @@ describe('CLI Routes graph', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2-simple-routing/src/tsconfig.json',
                 '-d',
@@ -59,6 +61,7 @@ describe('CLI Routes graph', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2-simple-routing-standard/src/tsconfig.json',
                 '-d',
@@ -85,6 +88,7 @@ describe('CLI Routes graph', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2-simple-routing-standard-async/src/tsconfig.json',
                 '-d',
@@ -111,6 +115,7 @@ describe('CLI Routes graph', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2-simple-routing-with-if/src/tsconfig.json',
                 '-d',
@@ -137,6 +142,7 @@ describe('CLI Routes graph', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2-simple-routing/src/tsconfig.json',
                 '-d',

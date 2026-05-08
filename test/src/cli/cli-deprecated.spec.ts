@@ -14,7 +14,14 @@ describe('CLI Deprecated', () => {
             tmp.copy('./test/fixtures/todomvc-ng2-deprecated/', tmpFolder);
             const ls = shell(
                 'node',
-                ['../bin/index-cli.js', '-p', './tsconfig.doc.json', '-d', 'documentation'],
+                [
+                    '../bin/index-cli.js',
+                    '--no-multiVersion',
+                    '-p',
+                    './tsconfig.doc.json',
+                    '-d',
+                    'documentation'
+                ],
                 { cwd: tmpFolder }
             );
 

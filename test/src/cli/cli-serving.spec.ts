@@ -16,9 +16,13 @@ describe('CLI serving', () => {
             child;
         beforeAll(() => {
             tmp.create(distFolder);
-            const ls = shell('node', ['./bin/index-cli.js', '-s', '-d', distFolder], {
-                timeout: TIMEOUT
-            });
+            const ls = shell(
+                'node',
+                ['./bin/index-cli.js', '--no-multiVersion', '-s', '-d', distFolder],
+                {
+                    timeout: TIMEOUT
+                }
+            );
 
             if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
@@ -44,6 +48,7 @@ describe('CLI serving', () => {
             return new Promise<void>((resolve, reject) => {
                 const child = shellAsync('node', [
                     './bin/index-cli.js',
+                    '--no-multiVersion',
                     '-p',
                     './test/fixtures/sample-files/tsconfig.simple.json',
                     '-s'
@@ -112,6 +117,7 @@ describe('CLI serving', () => {
             return new Promise<void>((resolve, reject) => {
                 const child = shellAsync('node', [
                     './bin/index-cli.js',
+                    '--no-multiVersion',
                     '-p',
                     './test/fixtures/sample-files/tsconfig.simple.json',
                     '-s',
@@ -185,9 +191,13 @@ describe('CLI serving', () => {
         let stdoutString = '',
             child;
         beforeAll(() => {
-            const ls = shell('node', ['./bin/index-cli.js', '-s', '-d', './documentation/'], {
-                timeout: TIMEOUT
-            });
+            const ls = shell(
+                'node',
+                ['./bin/index-cli.js', '--no-multiVersion', '-s', '-d', './documentation/'],
+                {
+                    timeout: TIMEOUT
+                }
+            );
 
             if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
@@ -207,7 +217,9 @@ describe('CLI serving', () => {
         let stdoutString = '',
             child;
         beforeAll(() => {
-            const ls = shell('node', ['./bin/index-cli.js', '-s'], { timeout: TIMEOUT });
+            const ls = shell('node', ['./bin/index-cli.js', '--no-multiVersion', '-s'], {
+                timeout: TIMEOUT
+            });
 
             if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);

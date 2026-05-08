@@ -26,7 +26,7 @@ describe('CLI simple flags', () => {
     describe('when no tsconfig.json provided with just -p', () => {
         let command;
         beforeEach(() => {
-            command = shell('node', ['./bin/index-cli.js', '-p']);
+            command = shell('node', ['./bin/index-cli.js', '--no-multiVersion', '-p']);
         });
 
         it('should display error message', () => {
@@ -37,7 +37,12 @@ describe('CLI simple flags', () => {
     describe('when no tsconfig.json is found in cwd', () => {
         let command;
         beforeEach(() => {
-            command = shell('node', ['./bin/index-cli.js', '-p', './test.json']);
+            command = shell('node', [
+                './bin/index-cli.js',
+                '--no-multiVersion',
+                '-p',
+                './test.json'
+            ]);
         });
 
         it('should display error message', () => {
@@ -55,7 +60,7 @@ describe('CLI simple flags', () => {
     describe('when just serving without generation', () => {
         let command;
         beforeEach(() => {
-            command = shell('node', ['./bin/index-cli.js', '-s']);
+            command = shell('node', ['./bin/index-cli.js', '--no-multiVersion', '-s']);
         });
 
         it('should display error message', () => {
@@ -66,7 +71,7 @@ describe('CLI simple flags', () => {
     /*describe("when just serving without generation and folder which does't exist", () => {
         let command = undefined;
         beforeEach(() => {
-            command = shell('node', ['./bin/index-cli.js', '-s', '-d', 'doc']);
+            command = shell('node', ['./bin/index-cli.js', '--no-multiVersion', '-s', '-d', 'doc']);
         });
 
         it('should display error message', () => {
@@ -82,7 +87,14 @@ describe('CLI simple flags', () => {
             tmp.copy('./test/fixtures/sample-files/', distFolder);
             command = shell(
                 'node',
-                ['../bin/index-cli.js', '-p', 'tsconfig.simple.json', '-d', distFolder],
+                [
+                    '../bin/index-cli.js',
+                    '--no-multiVersion',
+                    '-p',
+                    'tsconfig.simple.json',
+                    '-d',
+                    distFolder
+                ],
                 { cwd: distFolder }
             );
         });
@@ -109,7 +121,14 @@ describe('CLI simple flags', () => {
             tmp.copy('./test/fixtures/sample-files/', distFolder);
             const ls = shell(
                 'node',
-                ['../bin/index-cli.js', '-p', 'tsconfig.entry.json', '-d', 'documentation'],
+                [
+                    '../bin/index-cli.js',
+                    '--no-multiVersion',
+                    '-p',
+                    'tsconfig.entry.json',
+                    '-d',
+                    'documentation'
+                ],
                 { cwd: distFolder }
             );
 

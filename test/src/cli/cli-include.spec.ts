@@ -10,6 +10,7 @@ describe('CLI include with tsconfig', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.include-glob.json',
                 '-d',
@@ -38,6 +39,7 @@ describe('CLI include with tsconfig', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.include-file.json',
                 '-d',
@@ -64,6 +66,7 @@ describe('CLI include with tsconfig', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.extended.json',
                 '-d',

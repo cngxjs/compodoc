@@ -67,6 +67,7 @@ describe('CLI public-api-only option', () => {
 
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/library/libs/my-lib/tsconfig.lib.json',
                 '-d',
@@ -121,6 +122,7 @@ describe('CLI public-api-only option', () => {
 
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/library/libs/my-lib/tsconfig.lib.json',
                 '-d',

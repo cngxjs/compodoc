@@ -27,6 +27,7 @@ describe('CLI class-level JSDoc tags on library Components', () => {
 
         const ls = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/library/libs/my-lib/tsconfig.lib.json',
             '-d',
