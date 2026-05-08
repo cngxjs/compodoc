@@ -57,7 +57,8 @@ export const BLOCK_LEVEL_OVERRIDES: readonly string[] = [
     'block-property',
     'block-theming',
     'block-theming-token',
-    'block-typealias'
+    'block-typealias',
+    'version-switcher'
 ];
 
 const ALL = new Set<string>([...PAGE_LEVEL_OVERRIDES, ...BLOCK_LEVEL_OVERRIDES]);

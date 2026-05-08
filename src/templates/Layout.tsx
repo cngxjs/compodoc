@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { VersionSwitcher } from './blocks/VersionSwitcher';
 import { IconMoon, IconPalette, IconSearch, IconSun } from './components/Icons';
 import { relativeUrl } from './helpers';
 
@@ -17,6 +18,10 @@ export type PageData = {
     readonly maxSearchResults?: number;
     readonly gaID?: string;
     readonly entityIndex?: Record<string, { href: string; kind: string }>;
+    /** Multi-version: when true, the version switcher is rendered. */
+    readonly multiVersion?: boolean;
+    readonly versionLabel?: string;
+    readonly maxVersionsShown?: number;
 };
 
 type LayoutProps = {
@@ -158,6 +163,10 @@ const SidebarHeader = (props: {
     disableSearch?: boolean;
     hideDarkModeToggle?: boolean;
     lockedTheme?: string;
+    multiVersion?: boolean;
+    versionLabel?: string;
+    maxVersionsShown?: number;
+    depth: number;
     r: (path: string) => string;
 }): string => {
     // Show theme picker when using default theme (no --theme lock to a specific non-default one)
@@ -219,6 +228,13 @@ const SidebarHeader = (props: {
                     )}
                 </div>
             </div>
+            {props.multiVersion && props.versionLabel && (
+                <VersionSwitcher
+                    currentLabel={props.versionLabel}
+                    depth={props.depth}
+                    maxVersionsShown={props.maxVersionsShown ?? 10}
+                />
+            )}
             {!props.disableSearch && (
                 <button
                     type="button"
@@ -304,6 +320,13 @@ export const Layout = (props: LayoutProps): string => {
                     <a href={r('')} class="cdx-topbar-brand">
                         {data.documentationMainName}
                     </a>
+                    {data.multiVersion && data.versionLabel && (
+                        <VersionSwitcher
+                            currentLabel={data.versionLabel}
+                            depth={data.depth}
+                            maxVersionsShown={data.maxVersionsShown ?? 10}
+                        />
+                    )}
                     <div class="cdx-topbar-actions">
                         {!data.disableSearch && (
                             <button
@@ -408,6 +431,10 @@ export const Layout = (props: LayoutProps): string => {
                         disableSearch: data.disableSearch,
                         hideDarkModeToggle: data.hideDarkModeToggle,
                         lockedTheme: data.theme,
+                        multiVersion: data.multiVersion,
+                        versionLabel: data.versionLabel,
+                        maxVersionsShown: data.maxVersionsShown,
+                        depth: data.depth,
                         r
                     })}
                     {menuHtml}
