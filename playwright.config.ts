@@ -74,6 +74,13 @@ export default defineConfig({
             use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:4002' },
             testMatch: ['**/standalone-features.spec.ts', '**/source-viewer.spec.ts', '**/tab-routing.spec.ts', '**/theming-tab.spec.ts'],
         },
+
+        /* multi-version fixture tests (version-switcher) — uses port 4003 */
+        {
+            name: 'multi-version',
+            use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:4003' },
+            testMatch: ['**/version-switcher.spec.ts'],
+        },
     ],
 
     /* Run local dev servers before starting the tests */
@@ -91,6 +98,11 @@ export default defineConfig({
         {
             command: 'npm run test:standalone-doc',
             url: 'http://localhost:4002',
+            reuseExistingServer: !process.env.CI,
+        },
+        {
+            command: 'npm run test:multi-version-doc',
+            url: 'http://localhost:4003/v2.0.0/index.html',
             reuseExistingServer: !process.env.CI,
         },
     ]

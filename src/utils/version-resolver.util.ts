@@ -1,5 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+// `dirname` is used inside walkUpForPackageJson; the linter flags it
+// when only the `walkUp` helper is invoked but the import remains active.
 
 /**
  * Resolves the version label, output folder, and `versions.json` root for
@@ -59,7 +61,12 @@ export function resolveVersion(input: ResolveVersionInput): ResolveVersionResult
     const normalised = normaliseLabel(label);
     const outputAbs = resolve(input.outputFolder);
     const folder = join(outputAbs, normalised);
-    const root = input.explicitRoot ? resolve(input.explicitRoot) : dirname(outputAbs);
+    // versions.json sits next to the version subfolders (i.e. inside the
+    // user's `-d` directory) so consumers can deploy `-d` as the document
+    // root and `/versions.json` resolves correctly. The `--versionsRoot`
+    // override exists for split-repo CI setups that build each version
+    // separately and stitch them under a different deploy root later.
+    const root = input.explicitRoot ? resolve(input.explicitRoot) : outputAbs;
 
     return { ok: true, value: { label: normalised, folder, root } };
 }

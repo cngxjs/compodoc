@@ -33,7 +33,7 @@ describe('resolveVersion', () => {
             value: {
                 label: 'main',
                 folder: resolve(tempRoot, 'docs', 'main'),
-                root: resolve(tempRoot, 'docs', '..')
+                root: resolve(tempRoot, 'docs')
             }
         });
     });
@@ -118,7 +118,7 @@ describe('resolveVersion', () => {
         }
     });
 
-    it('uses --versionsRoot when provided, otherwise parent of output', () => {
+    it('uses --versionsRoot when provided, otherwise the output folder itself', () => {
         const explicitRoot = resolveVersion({
             explicitLabel: 'v1.0.0',
             outputFolder: join(tempRoot, 'a', 'b', 'docs'),
@@ -133,7 +133,9 @@ describe('resolveVersion', () => {
             outputFolder: join(tempRoot, 'a', 'b', 'docs')
         });
         if (defaultRoot.ok) {
-            expect(defaultRoot.value.root).toBe(resolve(tempRoot, 'a', 'b'));
+            // versions.json lives next to the version subfolders (inside `-d`),
+            // not in the parent — that way the user's `-d` is the deploy root.
+            expect(defaultRoot.value.root).toBe(resolve(tempRoot, 'a', 'b', 'docs'));
         }
     });
 });
