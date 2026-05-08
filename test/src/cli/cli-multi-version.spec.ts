@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { hasStderrError, shell } from '../helpers';
@@ -18,7 +18,7 @@ function isolatedDir() {
 const TSCONFIG = './test/fixtures/sample-files/tsconfig.simple.json';
 
 describe('CLI multi-version', () => {
-    it('default builds under <output>/<versionLabel>/', () => {
+    it('default builds under <output>/<versionLabel>/ and writes versions.json', () => {
         const outRoot = isolatedDir();
         const out = join(outRoot, 'docs');
         try {
@@ -28,6 +28,32 @@ describe('CLI multi-version', () => {
                 throw new Error('CLI error');
             }
             expect(existsSync(join(out, 'v9.9.9', 'index.html'))).toBe(true);
+            expect(existsSync(join(outRoot, 'versions.json'))).toBe(true);
+            const manifest = JSON.parse(readFileSync(join(outRoot, 'versions.json'), 'utf8'));
+            expect(manifest.schemaVersion).toBe(1);
+            expect(manifest.versions[0].label).toBe('v9.9.9');
+            expect(manifest.versions[0].path).toBe('v9.9.9/');
+        } finally {
+            rmSync(outRoot, { recursive: true, force: true });
+        }
+    });
+
+    it('a second build with a different label appends to versions.json', () => {
+        const outRoot = isolatedDir();
+        const out = join(outRoot, 'docs');
+        try {
+            const a = runCli(['-p', TSCONFIG, '-d', out, '--versionLabel', 'v1.0.0']);
+            if (hasStderrError(a.stderr.toString())) {
+                console.error(a.stderr.toString());
+                throw new Error('CLI error v1');
+            }
+            const b = runCli(['-p', TSCONFIG, '-d', out, '--versionLabel', 'v2.0.0']);
+            if (hasStderrError(b.stderr.toString())) {
+                console.error(b.stderr.toString());
+                throw new Error('CLI error v2');
+            }
+            const manifest = JSON.parse(readFileSync(join(outRoot, 'versions.json'), 'utf8'));
+            expect(manifest.versions.map(v => v.label)).toEqual(['v2.0.0', 'v1.0.0']);
         } finally {
             rmSync(outRoot, { recursive: true, force: true });
         }
@@ -45,6 +71,8 @@ describe('CLI multi-version', () => {
             expect(existsSync(join(out, 'index.html'))).toBe(true);
             // When opting out, no version subfolder should appear next to docs.
             expect(existsSync(join(out, 'v0.2.0'))).toBe(false);
+            // versions.json must NOT be written in flat mode.
+            expect(existsSync(join(outRoot, 'versions.json'))).toBe(false);
         } finally {
             rmSync(outRoot, { recursive: true, force: true });
         }
