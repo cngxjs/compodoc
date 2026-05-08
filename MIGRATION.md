@@ -561,3 +561,9 @@ Empty sections are dropped. Inputs / outputs / properties / methods are bulleted
 - **Multi-file split.** A single document is the entire point — splitting defeats clipboard / paste workflows.
 - **Token-budget enforcement.** Model context windows vary (8 K → 200 K+); trimming is the consumer's responsibility.
 - **AI-assistant-specific dialects.** One neutral form ships; downstream tooling can transform via `marked` if a model prefers a different shape.
+
+## Multi-version documentation
+
+compodocx supports publishing documentation for multiple library versions side-by-side out of the box. Every URL in the generated output is relative, so running the CLI N times into N subdirectories under one deploy root produces a working multi-version site with no rewrite step or extra flag.
+
+See [docs/versioned-docs.md](docs/versioned-docs.md) for the full pattern, deployment recipes (GitHub Pages, Netlify, Vercel, plain nginx), a drop-in version-switcher snippet, and current limitations.
