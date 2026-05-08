@@ -1,4 +1,5 @@
 import type { IAngularApi } from './angular-api.util';
+import { logger } from './logger';
 
 export class AngularVersionUtil {
     private static readonly CorePackage = '@angular/core';
@@ -30,7 +31,7 @@ export class AngularVersionUtil {
                 _result = this.cleanVersion(angularCore);
             }
         }
-        console.log('Angular version from dependencies:', _result);
+        logger.debug('Angular version from dependencies', _result);
         return _result;
     }
 

@@ -29,6 +29,12 @@ const formatArgs = (args: unknown[]): string => {
 
 export type Logger = {
     silent: boolean;
+    /**
+     * When true, every log line (errors included) is routed to stderr so
+     * stdout is reserved for the program's machine-readable output. Used by
+     * `--exportFormat llm-md` when streaming to stdout.
+     */
+    routeToStderr: boolean;
     info(...args: unknown[]): void;
     warn(...args: unknown[]): void;
     debug(...args: unknown[]): void;
@@ -36,14 +42,15 @@ export type Logger = {
 };
 
 export const createLogger = (): Logger => {
-    const state = { silent: true };
+    const state = { silent: true, routeToStderr: false };
 
     const write = (level: LogLevel, args: unknown[]) => {
         if (!state.silent && level !== 'error') {
             return;
         }
         const msg = colorize(level, formatArgs(args));
-        process.stdout.write(`${timestamp()} ${msg}\n`);
+        const stream = state.routeToStderr ? process.stderr : process.stdout;
+        stream.write(`${timestamp()} ${msg}\n`);
     };
 
     return {
@@ -52,6 +59,12 @@ export const createLogger = (): Logger => {
         },
         set silent(v: boolean) {
             state.silent = v;
+        },
+        get routeToStderr() {
+            return state.routeToStderr;
+        },
+        set routeToStderr(v: boolean) {
+            state.routeToStderr = v;
         },
         info: (...args: unknown[]) => write('info', args),
         warn: (...args: unknown[]) => write('warn', args),

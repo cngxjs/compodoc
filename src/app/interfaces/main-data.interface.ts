@@ -85,6 +85,12 @@ export interface MainDataInterface {
     exportFormat: string;
     /** Indent size (0–8) for `--exportFormat json`. 0 = single-line. */
     jsonIndent: number;
+    /**
+     * True when the user explicitly passed `-d` / `--output` on the CLI or in
+     * a config file. Used by `--exportFormat llm-md` to decide between writing
+     * to a file (`<output>/llm-context.md`) and streaming to stdout.
+     */
+    outputProvided: boolean;
     coverageData: CoverageData;
     customFavicon: string;
     customLogo: string;

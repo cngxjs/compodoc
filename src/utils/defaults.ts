@@ -7,7 +7,7 @@ export const COMPODOC_DEFAULTS = {
     port: 8080,
     theme: 'default',
     exportFormat: 'html',
-    exportFormatsSupported: ['html', 'json'],
+    exportFormatsSupported: ['html', 'json', 'llm-md'],
     /** Default JSON indent for `--exportFormat json`. 0 = single-line; range 0–8. */
     jsonIndent: 0,
     base: '/',

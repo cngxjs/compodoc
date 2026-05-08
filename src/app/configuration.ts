@@ -90,6 +90,7 @@ export class Configuration implements ConfigurationInterface {
         hasNgModules: false,
         exportFormat: COMPODOC_DEFAULTS.exportFormat,
         jsonIndent: COMPODOC_DEFAULTS.jsonIndent,
+        outputProvided: false,
         coverageData: {} as CoverageData,
         customFavicon: '',
         customLogo: '',
