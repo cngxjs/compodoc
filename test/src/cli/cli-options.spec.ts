@@ -89,7 +89,9 @@ describe('CLI Options', () => {
 
         it(`-e`, () => {
             expect(runHelp.stdout.toString()).to.contain('-e, --exportFormat [format]');
-            expect(runHelp.stdout.toString()).to.contain('Export in specified format (json, html)');
+            expect(runHelp.stdout.toString()).to.contain(
+                'Export in specified format (json, html, llm-md)'
+            );
         });
 
         it(`--hideGenerator`, () => {
