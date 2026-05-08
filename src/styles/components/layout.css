@@ -125,13 +125,12 @@ body {
     -webkit-overflow-scrolling: touch;
     min-height: 0;
     height: 100vh;
-    padding: 2rem;
+    padding: 0.5rem 2rem 2rem;
 }
 
 .content-data {
     display: flex;
     flex-direction: column;
-    min-height: 100%;
     max-width: 860px;
     container-type: inline-size;
     container-name: content;

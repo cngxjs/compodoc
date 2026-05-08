@@ -1,7 +1,9 @@
 /*
- * Version-switcher widget. Slotted into the topbar (mobile) and the
- * sidebar header (desktop). Uses existing cdx tokens — no new design
- * surface.
+ * Version-switcher widget. Sits next to the theme picker and dark-mode
+ * toggle inside `cdx-sidebar-actions` / `cdx-topbar-actions`. Trigger
+ * matches the `cdx-sidebar-action` icon-button height (32px) so the
+ * row stays visually flat; the text label inside makes it taller-by-glyph
+ * but the box stays the same.
  */
 
 .cdx-version-switcher {
@@ -13,26 +15,32 @@
 .cdx-version-switcher-trigger {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.25rem 0.6rem;
-    border-radius: var(--radius-cdx-sm, 4px);
-    background: var(--color-cdx-bg-alt);
-    color: var(--color-cdx-text);
-    border: 1px solid var(--color-cdx-border);
+    gap: var(--spacing-cdx-xs);
+    height: 32px;
+    padding: 0 var(--spacing-cdx-sm);
+    border: 0;
+    background: none;
+    color: var(--color-cdx-text-muted);
+    border-radius: var(--radius-cdx-sm);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: var(--cdx-transition-base, all 0.15s ease);
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .cdx-version-switcher-trigger:hover {
-    background: color-mix(in srgb, var(--color-cdx-bg-alt) 70%, var(--color-cdx-text) 5%);
-    border-color: color-mix(in srgb, var(--color-cdx-border) 80%, var(--color-cdx-text) 20%);
+    background: var(--color-cdx-bg-alt);
+    color: var(--color-cdx-text);
 }
 
 .cdx-version-switcher-trigger:focus-visible {
-    outline: 2px solid var(--color-cdx-focus-ring, currentColor);
-    outline-offset: 2px;
+    outline: 2px solid var(--color-cdx-primary);
+    outline-offset: -2px;
+}
+
+.cdx-version-switcher-trigger[aria-expanded="true"] {
+    background: var(--color-cdx-bg-alt);
+    color: var(--color-cdx-text);
 }
 
 .cdx-version-switcher-label {
@@ -41,17 +49,19 @@
 
 .cdx-version-switcher-caret {
     transition: transform 0.15s ease;
+    opacity: 0.7;
 }
 
 .cdx-version-switcher-trigger[aria-expanded="true"] .cdx-version-switcher-caret {
     transform: rotate(180deg);
+    opacity: 1;
 }
 
 .cdx-version-switcher-menu {
     position: absolute;
     top: calc(100% + 6px);
     right: 0;
-    min-width: 180px;
+    min-width: max-content;
     max-width: 320px;
     background: var(--color-cdx-bg-alt);
     border: 1px solid var(--color-cdx-border);
