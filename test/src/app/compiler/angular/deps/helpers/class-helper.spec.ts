@@ -12,6 +12,7 @@ describe('ClassHelper', () => {
         getJsdocTagsOfNode: ReturnType<typeof vi.fn>;
         parseComment: ReturnType<typeof vi.fn>;
         getJSDocs: ReturnType<typeof vi.fn>;
+        parseJSDocNode: ReturnType<typeof vi.fn>;
     };
 
     beforeEach(() => {
@@ -23,7 +24,15 @@ describe('ClassHelper', () => {
             getMainCommentOfNode: vi.fn().mockReturnValue(''),
             getJsdocTagsOfNode: vi.fn().mockReturnValue([]),
             parseComment: vi.fn().mockReturnValue(''),
-            getJSDocs: vi.fn().mockReturnValue([])
+            getJSDocs: vi.fn().mockReturnValue([]),
+            // Specs feed plain string `tag.comment` values, so the stub only
+            // needs the string path. Real impl walks JSDocText / JSDocLink.
+            parseJSDocNode: vi.fn().mockImplementation((node: any) => {
+                if (typeof node?.comment === 'string') {
+                    return node.comment;
+                }
+                return '';
+            })
         };
 
         classHelper = new ClassHelper(typeChecker);

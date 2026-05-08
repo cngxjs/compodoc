@@ -1416,10 +1416,12 @@ export class AngularDependencies extends FrameworkDependencies {
             if (tag.tagName?.text) {
                 if (tag.tagName.text.indexOf('deprecated') > -1) {
                     result.deprecated = true;
-                    result.deprecationMessage = tag.comment || '';
+                    // tag.comment becomes a NodeArray (not a string) when the
+                    // JSDoc has an inline {@link X}; parseJSDocNode flattens both shapes.
+                    result.deprecationMessage = this.jsdocParserUtil.parseJSDocNode(tag) || '';
                 }
                 if (tag.tagName.text === 'category') {
-                    result.category = (tag.comment || '').trim();
+                    result.category = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
                 }
             }
         });

@@ -134,5 +134,17 @@ describe('CLI Deprecated', () => {
             const file = read(`${distFolder}/miscellaneous/variables.html`);
             expect(file).to.contain('cdx-member-name--deprecated">PIT');
         });
+
+        // Inline {@link X} inside `@deprecated` parses as a NodeArray, not a
+        // string. The `[object Object]` check rules out a template-literal
+        // coerce that would still pass the other assertions.
+        it('renders @deprecated JSDoc that contains an inline {@link} reference', () => {
+            const file = read(`${distFolder}/interfaces/TabsI18n.html`);
+            expect(file).to.contain('cdx-member-name--deprecated">commitFailedRetry');
+            expect(file).to.contain('class="cdx-member-deprecated"');
+            expect(file).to.contain('superseded by');
+            expect(file).to.contain('{@link commitRolledBackTo}');
+            expect(file).to.not.contain('[object Object]');
+        });
     });
 });
