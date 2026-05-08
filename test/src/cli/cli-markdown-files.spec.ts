@@ -48,6 +48,7 @@ describe('CLI Markdown files generation', () => {
 
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 path.join(fixtureFolder, 'tsconfig.json'),
                 '-d',
@@ -130,6 +131,7 @@ describe('CLI Markdown files generation', () => {
             // Run compodoc - it will find project's markdown files from root
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '-d',

@@ -33,6 +33,7 @@ import MarkdownEngine, { type markdownReadedDatas } from './engines/markdown.eng
 import NgdEngine from './engines/ngd.engine';
 import { runPagefindIndex } from './engines/search-indexer.engine';
 import { initHighlighter } from './engines/syntax-highlight.engine';
+import { updateVersionsManifest } from './engines/versions-manifest.engine';
 import type { AdditionalNode } from './interfaces/additional-node.interface';
 import type { CoverageData } from './interfaces/coverageData.interface';
 
@@ -2765,6 +2766,24 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             // Run Pagefind search indexing after all HTML files are written
             if (!Configuration.mainData.disableSearch) {
                 runPagefindIndex(Configuration.mainData.output);
+            }
+
+            // Multi-version: append/update this version's entry in
+            // <versionsRoot>/versions.json. Runs after Pagefind so an
+            // indexing failure doesn't leave a stale manifest behind. The
+            // manifest stores a URL-relative path with a trailing slash
+            // (the switcher widget concatenates it with the per-page tail).
+            if (Configuration.mainData.multiVersion && Configuration.mainData.versionsRoot) {
+                try {
+                    updateVersionsManifest({
+                        versionsRoot: Configuration.mainData.versionsRoot,
+                        label: Configuration.mainData.versionLabel,
+                        path: `${Configuration.mainData.versionLabel}/`
+                    });
+                } catch (err) {
+                    logger.error(`Failed to update versions.json: ${(err as Error).message}`);
+                    process.exit(1);
+                }
             }
 
             logger.info(

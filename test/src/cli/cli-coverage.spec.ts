@@ -11,6 +11,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableCoverage',
@@ -37,6 +38,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--coverageTest',
@@ -64,6 +66,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 './test/fixtures/sample-files/',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
@@ -92,6 +95,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--coverageTest',
@@ -119,6 +123,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--coverageMinimumPerFile',
@@ -148,6 +153,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--coverageMinimumPerFile',
@@ -177,6 +183,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--coverageMinimumPerFile',
@@ -204,6 +211,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--coverageMinimumPerFile',
@@ -238,6 +246,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--coverageMinimumPerFile',
@@ -272,6 +281,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--coverageMinimumPerFile',
@@ -304,6 +314,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--coverageMinimumPerFile',
@@ -336,6 +347,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '-d',
@@ -371,6 +383,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
                 '-d',
@@ -420,6 +433,7 @@ describe('CLI coverage report', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '--files',
                 './test/fixtures/sample-files/bar.directive.ts',
                 '--files',

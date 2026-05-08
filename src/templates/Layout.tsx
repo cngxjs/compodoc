@@ -1,4 +1,5 @@
 import Html from '@kitajs/html';
+import { VersionSwitcher } from './blocks/VersionSwitcher';
 import { IconMoon, IconPalette, IconSearch, IconSun } from './components/Icons';
 import { relativeUrl } from './helpers';
 
@@ -17,6 +18,10 @@ export type PageData = {
     readonly maxSearchResults?: number;
     readonly gaID?: string;
     readonly entityIndex?: Record<string, { href: string; kind: string }>;
+    /** Multi-version: when true, the version switcher is rendered. */
+    readonly multiVersion?: boolean;
+    readonly versionLabel?: string;
+    readonly maxVersionsShown?: number;
 };
 
 type LayoutProps = {
@@ -156,16 +161,8 @@ const SidebarHeader = (props: {
     name: string;
     logo?: string;
     disableSearch?: boolean;
-    hideDarkModeToggle?: boolean;
-    lockedTheme?: string;
     r: (path: string) => string;
 }): string => {
-    // Show theme picker when using default theme (no --theme lock to a specific non-default one)
-    const isDefaultTheme =
-        !props.lockedTheme || props.lockedTheme === 'default' || props.lockedTheme === 'gitbook';
-    const showThemePicker = isDefaultTheme;
-    const activeTheme = isDefaultTheme ? 'default' : props.lockedTheme!;
-
     return (
         <div class="cdx-sidebar-header">
             <div class="cdx-sidebar-header-row">
@@ -178,46 +175,6 @@ const SidebarHeader = (props: {
                         {props.name}
                     </a>
                 )}
-                <div class="cdx-sidebar-actions">
-                    {showThemePicker && (
-                        <div class="cdx-theme-picker" data-cdx-theme-picker>
-                            <button
-                                type="button"
-                                class="cdx-sidebar-action"
-                                aria-label="Switch theme"
-                                aria-haspopup="listbox"
-                                aria-expanded="false"
-                            >
-                                {IconPalette()}
-                            </button>
-                            <ul class="cdx-theme-picker-menu" aria-label="Theme" hidden>
-                                {BUILTIN_THEMES.map(t => (
-                                    <li
-                                        data-cdx-theme={t.id}
-                                        aria-current={t.id === activeTheme ? 'true' : undefined}
-                                    >
-                                        <span
-                                            class="cdx-theme-swatch"
-                                            style={`--swatch: ${t.swatch}`}
-                                        ></span>
-                                        {t.name}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                    {!props.hideDarkModeToggle && (
-                        <button
-                            type="button"
-                            class="cdx-sidebar-action cdx-dark-toggle"
-                            aria-label="Toggle dark mode"
-                            aria-pressed="false"
-                        >
-                            {IconMoon('icon-moon')}
-                            {IconSun('icon-sun')}
-                        </button>
-                    )}
-                </div>
             </div>
             {!props.disableSearch && (
                 <button
@@ -234,6 +191,78 @@ const SidebarHeader = (props: {
                         <kbd class="cdx-kbd">K</kbd>
                     </span>
                 </button>
+            )}
+        </div>
+    ) as string;
+};
+
+/**
+ * Right-aligned action strip slotted at the very top of the main content
+ * area. Holds the theme picker, dark-mode toggle, and (when multi-version
+ * is active) the version-switcher dropdown — exactly the controls that
+ * used to live in `cdx-sidebar-actions`. The mobile topbar still carries
+ * its own copies; this strip is hidden on viewports where the topbar is
+ * shown so we never duplicate visible controls.
+ */
+const ContentActions = (props: {
+    hideDarkModeToggle?: boolean;
+    lockedTheme?: string;
+    multiVersion?: boolean;
+    versionLabel?: string;
+    maxVersionsShown?: number;
+    depth: number;
+}): string => {
+    const isDefaultTheme =
+        !props.lockedTheme || props.lockedTheme === 'default' || props.lockedTheme === 'gitbook';
+    const showThemePicker = isDefaultTheme;
+    const activeTheme = isDefaultTheme ? 'default' : props.lockedTheme!;
+
+    return (
+        <div class="cdx-content-actions">
+            {showThemePicker && (
+                <div class="cdx-theme-picker" data-cdx-theme-picker>
+                    <button
+                        type="button"
+                        class="cdx-sidebar-action"
+                        aria-label="Switch theme"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                    >
+                        {IconPalette()}
+                    </button>
+                    <ul class="cdx-theme-picker-menu" aria-label="Theme" hidden>
+                        {BUILTIN_THEMES.map(t => (
+                            <li
+                                data-cdx-theme={t.id}
+                                aria-current={t.id === activeTheme ? 'true' : undefined}
+                            >
+                                <span
+                                    class="cdx-theme-swatch"
+                                    style={`--swatch: ${t.swatch}`}
+                                ></span>
+                                {t.name}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+            {!props.hideDarkModeToggle && (
+                <button
+                    type="button"
+                    class="cdx-sidebar-action cdx-dark-toggle"
+                    aria-label="Toggle dark mode"
+                    aria-pressed="false"
+                >
+                    {IconMoon('icon-moon')}
+                    {IconSun('icon-sun')}
+                </button>
+            )}
+            {props.multiVersion && props.versionLabel && (
+                <VersionSwitcher
+                    currentLabel={props.versionLabel}
+                    depth={props.depth}
+                    maxVersionsShown={props.maxVersionsShown ?? 10}
+                />
             )}
         </div>
     ) as string;
@@ -355,6 +384,13 @@ export const Layout = (props: LayoutProps): string => {
                                 {IconSun('icon-sun')}
                             </button>
                         )}
+                        {data.multiVersion && data.versionLabel && (
+                            <VersionSwitcher
+                                currentLabel={data.versionLabel}
+                                depth={data.depth}
+                                maxVersionsShown={data.maxVersionsShown ?? 10}
+                            />
+                        )}
                         <button
                             type="button"
                             class="cdx-mobile-toggle"
@@ -406,8 +442,6 @@ export const Layout = (props: LayoutProps): string => {
                         name: data.documentationMainName,
                         logo: data.customLogo,
                         disableSearch: data.disableSearch,
-                        hideDarkModeToggle: data.hideDarkModeToggle,
-                        lockedTheme: data.theme,
                         r
                     })}
                     {menuHtml}
@@ -415,6 +449,14 @@ export const Layout = (props: LayoutProps): string => {
 
                 {/* Main content */}
                 <main id="main-content" class={`content ${data.context}`} tabindex="-1">
+                    {ContentActions({
+                        hideDarkModeToggle: data.hideDarkModeToggle,
+                        lockedTheme: data.theme,
+                        multiVersion: data.multiVersion,
+                        versionLabel: data.versionLabel,
+                        maxVersionsShown: data.maxVersionsShown,
+                        depth: data.depth
+                    })}
                     <div class="content-data">{content}</div>
                 </main>
 

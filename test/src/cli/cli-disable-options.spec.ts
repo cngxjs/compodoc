@@ -11,6 +11,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disablePrivate',
@@ -54,6 +55,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableProtected',
@@ -92,6 +94,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableInternal',
@@ -151,6 +154,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableLifeCycleHooks',
@@ -195,6 +199,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files-extends/src/tsconfig.json',
                 '--disableLifeCycleHooks',
@@ -221,6 +226,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disablePrivate',
@@ -262,6 +268,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableConstructors',
@@ -294,6 +301,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files-extends/src/tsconfig.json',
                 '--disableConstructors',
@@ -319,6 +327,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableSearch',
@@ -351,6 +360,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableDependencies',
@@ -376,6 +386,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableProperties',
@@ -403,6 +414,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--minimal',
@@ -468,6 +480,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableFilePath',
@@ -543,6 +556,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--disableOverview',
@@ -598,6 +612,7 @@ describe('CLI disable flags', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2-ignore/src/tsconfig.json',
                 '--disableOverview',
@@ -638,6 +653,7 @@ describe('CLI disable flags', () => {
             tmp.create(additionalTestFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
                 '-d',
@@ -751,6 +767,7 @@ describe('CLI disable flags', () => {
             tmp.create(withOverviewFolder);
             const ls1 = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
                 '-d',
@@ -770,6 +787,7 @@ describe('CLI disable flags', () => {
             tmp.create(withoutOverviewFolder);
             const ls2 = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2/src/tsconfig.json',
                 '-d',

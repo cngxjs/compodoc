@@ -10,6 +10,7 @@ describe('CLI ignore JSDoc tag support', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2-ignore/src/tsconfig.json',
                 '-d',
@@ -134,6 +135,7 @@ describe('CLI ignore JSDoc tag support', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/todomvc-ng2-ignore/src/tsconfig.json',
                 '--disableLifeCycleHooks',

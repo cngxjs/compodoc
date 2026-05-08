@@ -43,10 +43,14 @@ const readBlockLevelFromSource = (): readonly string[] => {
         return [];
     }
     const files = fs.readdirSync(BLOCKS_DIR).filter(f => f.endsWith('.tsx'));
+    // Any `renderCustomTemplate(...)` call inside `templates/blocks/` is a
+    // block-level override by definition. Most names follow the `block-*`
+    // convention, but a handful (e.g. `version-switcher`) historically opted
+    // out — derive from the regex without forcing a prefix.
     const names = files.flatMap(file => {
         const content = fs.readFileSync(path.join(BLOCKS_DIR, file), 'utf8');
         return Array.from(
-            content.matchAll(/renderCustomTemplate\(\s*['"](block-[\w-]+)['"]/g),
+            content.matchAll(/renderCustomTemplate\(\s*['"]([\w-]+)['"]/g),
             m => m[1]
         );
     });

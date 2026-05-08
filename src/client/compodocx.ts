@@ -10,6 +10,7 @@ import { initSidebar } from './sidebar';
 import { initStackblitz } from './stackblitz';
 import { initTabs } from './tabs';
 import { initTheme } from './theme';
+import { initVersionSwitcher } from './version-switcher';
 
 // import { initToc } from './toc';
 
@@ -28,6 +29,7 @@ const init = () => {
     initCoverage();
     initKeyboard();
     initAnimations();
+    initVersionSwitcher();
     // initToc(); // TODO: enable when ToC styling is finalized
 };
 

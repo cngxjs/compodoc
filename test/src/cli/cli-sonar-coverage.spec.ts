@@ -24,6 +24,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-constructor`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -41,6 +42,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-listeners`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -55,6 +57,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-i18n`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -71,6 +74,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-output-format`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -85,6 +89,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-export`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -101,6 +106,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-events`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -116,6 +122,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-coverage`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -132,6 +139,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-files`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -148,6 +156,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-package`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -162,6 +171,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-error`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './nonexistent/tsconfig.json', // This should trigger error paths
             '-d',
@@ -177,6 +187,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-peers`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -191,6 +202,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-strings`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -206,6 +218,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-paths`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -222,6 +235,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-config`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -236,6 +250,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-markdown`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -252,6 +267,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-lifecycle`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -267,6 +283,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-patterns`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -281,6 +298,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-typescript`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -295,6 +313,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-advanced`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -314,6 +333,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-additional`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',
@@ -330,6 +350,7 @@ describe('CLI Coverage - Targeted Line Execution', () => {
         currentTestFolder = `${distFolder}-custom-config`;
         const command = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/sample-files/tsconfig.simple.json',
             '-d',

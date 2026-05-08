@@ -14,7 +14,14 @@ describe('CLI tsconfig', () => {
 
             const ls = shell(
                 'node',
-                ['../bin/index-cli.js', '-p', './tsconfig.entry.json', '-d', 'documentation'],
+                [
+                    '../bin/index-cli.js',
+                    '--no-multiVersion',
+                    '-p',
+                    './tsconfig.entry.json',
+                    '-d',
+                    'documentation'
+                ],
                 { cwd: tmpFolder }
             );
 
@@ -45,6 +52,7 @@ describe('CLI tsconfig', () => {
                 'node',
                 [
                     '../bin/index-cli.js',
+                    '--no-multiVersion',
                     '-p',
                     './tsconfig.entry-and-include.json',
                     '-d',

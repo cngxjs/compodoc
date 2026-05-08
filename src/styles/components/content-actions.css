@@ -1,0 +1,21 @@
+/*
+ * Right-aligned micro-header at the top of <main id="main-content">.
+ * Hosts theme picker, dark-mode toggle, and version-switcher when
+ * multi-version is on. Hidden on the same viewport range where the
+ * mobile topbar takes over (<= 1023px) so we never render the same
+ * controls twice.
+ */
+
+.cdx-content-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-cdx-xs);
+    padding-bottom: var(--spacing-cdx-sm);
+}
+
+@media (max-width: 1023px) {
+    .cdx-content-actions {
+        display: none;
+    }
+}

@@ -13,7 +13,7 @@ describe('CLI Additional documentation', () => {
     beforeAll(() => {
         tmp.create(distFolder);
         let ls = shell('node', [
-            './bin/index-cli.js',
+            './bin/index-cli.js', '--no-multiVersion',
             '-p',
             './test/fixtures/todomvc-ng2/src/tsconfig.json',
             '-d',
@@ -99,7 +99,7 @@ describe('CLI Additional documentation - wrong folder', () => {
                 'node' +
                     [
                         '',
-                        './bin/index-cli.js',
+                        './bin/index-cli.js', '--no-multiVersion',
                         '-p',
                         './test/fixtures/todomvc-ng2/src/tsconfig.json',
                         '-d',

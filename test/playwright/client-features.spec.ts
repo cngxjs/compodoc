@@ -140,8 +140,8 @@ test.describe('Dark mode', () => {
     test('toggle switches dark mode off and on', async ({ page }) => {
         await page.goto('/');
 
-        // Click the sidebar .cdx-dark-toggle button (topbar one is hidden at desktop)
-        await page.locator('#sidebar .cdx-dark-toggle').click();
+        // Click the content-area .cdx-dark-toggle button (topbar one is hidden at desktop)
+        await page.locator('.cdx-content-actions .cdx-dark-toggle').click();
         await page.waitForTimeout(100);
 
         const noDark = await page.evaluate(
@@ -152,7 +152,7 @@ test.describe('Dark mode', () => {
         expect(noDark).toBe(true);
 
         // Click again to toggle dark mode back on
-        await page.locator('#sidebar .cdx-dark-toggle').click();
+        await page.locator('.cdx-content-actions .cdx-dark-toggle').click();
         await page.waitForTimeout(100);
 
         const hasDark = await page.evaluate(

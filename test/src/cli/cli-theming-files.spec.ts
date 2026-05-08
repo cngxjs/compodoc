@@ -89,6 +89,7 @@ describe('CLI Theming tab generation', () => {
 
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 path.join(fixtureFolder, 'tsconfig.json'),
                 '-d',

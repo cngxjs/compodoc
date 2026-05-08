@@ -59,6 +59,10 @@ Controls where and how the documentation is generated.
 | output | `-d, --output` | string | `'./documentation/'` | Directory for the generated static site. Created if it doesn't exist. Contents are overwritten on each run |
 | exportFormat | `-e, --exportFormat` | string | `'html'` | Output format. `html` generates a full static site. `json` exports the parsed data model as JSON files (useful for custom tooling) |
 | base | -- | string | `'/'` | Base URL path prepended to all generated links. Set this when hosting docs in a subdirectory (e.g. `'/my-project/'`) |
+| multiVersion | `--multiVersion` / `--no-multiVersion` | boolean | `true` | When `true` (default), HTML output is written to `<output>/<versionLabel>/` and a `versions.json` manifest is maintained next to it; the topbar version switcher reads the manifest at runtime. Pass `--no-multiVersion` to restore the previous flat layout. Non-HTML exports (`json`, `llm-md`) ignore this flag. |
+| versionLabel | `--versionLabel <label>` | string | (auto) | Override the version-subfolder name. Defaults to the nearest `package.json` `version`, prefixed with `v` (`1.2.3` → `v1.2.3`). Use `main`, `next`, `unreleased` for non-package builds. Hard error (exit 2) if no label can be resolved while `multiVersion` is on. |
+| versionsRoot | `--versionsRoot <path>` | string | the `-d` folder | Where `versions.json` is read from / written to. Override when CI builds each version separately and stitches the deploys together later. |
+| maxVersionsShown | `--maxVersionsShown <n>` | number | `10` | Cap on how many entries the switcher dropdown shows. `0` is unlimited. The manifest is always written in full — this is presentation-only. Range 0–1000. |
 
 ## Serving
 

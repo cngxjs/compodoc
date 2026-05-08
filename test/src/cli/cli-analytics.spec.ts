@@ -11,6 +11,7 @@ describe('CLI Analytics tracking', () => {
             tmp.create(distFolder);
             const ls = shell('node', [
                 './bin/index-cli.js',
+                '--no-multiVersion',
                 '-p',
                 './test/fixtures/sample-files/tsconfig.simple.json',
                 '--gaID',

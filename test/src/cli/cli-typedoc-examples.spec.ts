@@ -10,6 +10,7 @@ describe('CLI generation - TypeDoc examples', () => {
         tmp.create(distFolder);
         const ls = shell('node', [
             './bin/index-cli.js',
+            '--no-multiVersion',
             '-p',
             './test/fixtures/typedoc-examples/tsconfig.json',
             '-d',

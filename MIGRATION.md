@@ -2,6 +2,43 @@
 
 This guide walks through everything that changed between the upstream `@compodoc/compodoc` and `@cngxjs/compodocx`. The CLI flags and config-file shape are intentionally backwards-compatible, so a typical project switches with a one-line `package.json` edit. The rest of this document covers what is honestly different and what to do about it.
 
+## Breaking change in 0.3.0: multi-version output is the default
+
+Starting with `@cngxjs/compodocx@0.3.0`, `compodocx -d <output>` writes the generated HTML to `<output>/<versionLabel>/` instead of `<output>/`, and maintains a small `<output>/versions.json` manifest next to it. A topbar version-switcher widget reads the manifest at runtime and lets readers jump between built versions.
+
+For any deploy script that uploads `<output>/` to a docs host this means two things:
+
+- The HTML now lives one folder deeper. Update any path the script points at — for example a `gh-pages` deploy that copied `docs/index.html` should copy from `docs/<versionLabel>/index.html`, or copy the whole `docs/` so the manifest goes with it.
+- A new `versions.json` file is emitted alongside the version subfolder. It is an append-only manifest — re-running a build for the same label updates `builtAt` in place, never deletes neighbours — so safe to commit if the deploy lives in git.
+
+Two ways to react:
+
+```diff
+# 1. Embrace the new layout (recommended)
+- compodocx -p tsconfig.json -d docs
++ compodocx -p tsconfig.json -d docs           # writes docs/<version>/ + docs/versions.json
++ # update deploy to upload docs/ as the deploy root
+```
+
+```diff
+# 2. Keep the previous flat layout exactly as before
+- compodocx -p tsconfig.json -d docs
++ compodocx -p tsconfig.json -d docs --no-multiVersion
+```
+
+The new flags involved (full descriptions in the CLI table and `docs/configuration.md`):
+
+| Flag | Default | Purpose |
+|-|-|-|
+| `--multiVersion` / `--no-multiVersion` | `true` | Toggles the layout. `--no-multiVersion` restores `<output>/` as the document root. |
+| `--versionLabel <label>` | (auto) | Override the subfolder name. Auto-detected from the nearest `package.json` `version`, prefixed with `v` if not already (`1.2.3` → `v1.2.3`). Use `main`, `next`, `unreleased` for non-package builds. |
+| `--versionsRoot <path>` | the `-d` folder | Where `versions.json` is read from / written to. Override when CI builds each version separately and stitches the deploys together later. |
+| `--maxVersionsShown <n>` | `10` | Cap on how many entries the switcher dropdown shows. `0` is unlimited. The manifest is always written in full — this is presentation-only. |
+
+If `--multiVersion` is on (the default) but no version label can be resolved (no `package.json` and no `--versionLabel` flag), the build fails fast with exit code 2 and a hint pointing at the two opt-outs.
+
+For a longer walkthrough including deployment recipes (GitHub Pages, Netlify/Vercel, plain nginx), see `docs/versioned-docs.md`.
+
 ## Quick switch
 
 In your `package.json`:
@@ -37,6 +74,10 @@ The rest of the document only matters if you fall into one of these buckets:
 | `-o`, `--open` | unchanged | |
 | `-e`, `--exportFormat` | unchanged | `json` and `html` are still the supported formats. The JSON shape gained typed `Export*` interfaces and three new header fields (`schemaVersion`, `generatedAt`, `compodocxVersion`) — see "JSON export" below. |
 | `--jsonIndent` | **new** (default `0`) | Indent size (0–8) for `documentation.json` produced by `--exportFormat json`. Default dropped from compodoc's hardcoded `4` to `0` (single-line output, smaller files). Pass `--jsonIndent 2` to restore human-readable formatting. Out-of-range values fail fast with a clear error. |
+| `--multiVersion` / `--no-multiVersion` | **new** (default `true`, BREAKING) | When on, output is written to `<output>/<versionLabel>/` and a `versions.json` manifest is maintained next to it. Pass `--no-multiVersion` to restore the previous flat layout. See "Breaking change in 0.3.0" above. |
+| `--versionLabel <label>` | **new** | Override the version-subfolder name. Defaults to the nearest `package.json` `version`, prefixed with `v` (`1.2.3` → `v1.2.3`). Use `main`, `next`, `unreleased` for non-package builds. Hard error if missing while `--multiVersion` is on. |
+| `--versionsRoot <path>` | **new** | Folder where `versions.json` is read/written. Defaults to the `-d` folder so the deploy is self-contained; override when CI builds each version separately. |
+| `--maxVersionsShown <n>` | **new** (default `10`, range 0–1000) | Cap on the switcher dropdown. `0` means unlimited. The manifest is always written in full — this is presentation-only. |
 | `-n`, `--name` | unchanged | |
 | `-a`, `--assetsFolder` | unchanged | |
 | `-y`, `--extTheme` | unchanged | Still accepts a path to a custom CSS file. |
@@ -222,9 +263,11 @@ Every name compodocx exposes for `--templates` overrides. The names are the stab
 
 `overview`, `markdown`, `modules`, `module`, `component`, `component-detail`, `controller`, `entity`, `directive`, `injectable`, `interceptor`, `guard`, `pipe`, `class`, `interface`, `routes`, `miscellaneous-functions`, `miscellaneous-variables`, `miscellaneous-typealiases`, `miscellaneous-enumerations`, `additional-page`, `package-dependencies`, `package-properties`, `coverage-report`, `unit-test-report`, `menu`, `app-config`
 
-### Block-level (16)
+### Block-level (17)
 
-`block-theming`, `block-theming-token`, `block-method`, `block-property`, `block-input`, `block-output`, `block-accessors`, `block-host-listener`, `block-host-listeners`, `block-host-bindings`, `block-derived-state`, `block-constructor`, `block-enum`, `block-typealias`, `block-index`, `block-index-signatures`
+`block-theming`, `block-theming-token`, `block-method`, `block-property`, `block-input`, `block-output`, `block-accessors`, `block-host-listener`, `block-host-listeners`, `block-host-bindings`, `block-derived-state`, `block-constructor`, `block-enum`, `block-typealias`, `block-index`, `block-index-signatures`, `version-switcher`
+
+`version-switcher` is the override name for the multi-version dropdown widget. The override receives `{ currentLabel, depth, maxVersionsShown }` and returns a string of HTML inserted into the topbar/sidebar slot. Returning an empty string hides the widget while still leaving the rest of the multi-version pipeline (`versions.json`, version subfolder layout) intact.
 
 ### Intentionally not overridable for 0.0.1
 
