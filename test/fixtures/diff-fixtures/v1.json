@@ -1,0 +1,65 @@
+{
+    "schemaVersion": 1,
+    "generatedAt": "2026-04-01T00:00:00.000Z",
+    "compodocxVersion": "0.3.0-fixture",
+    "components": [
+        {
+            "name": "FooComponent",
+            "file": "src/foo.component.ts",
+            "selector": "app-foo",
+            "standalone": true,
+            "description": "Original Foo description.",
+            "inputsClass": [
+                {
+                    "name": "value",
+                    "type": "string",
+                    "defaultValue": "''"
+                },
+                {
+                    "name": "label",
+                    "type": "string"
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "reset",
+                    "returnType": "void"
+                }
+            ],
+            "themeTokens": [
+                {
+                    "name": "--foo-color",
+                    "type": "color",
+                    "defaultValue": "#000",
+                    "kind": "css-custom-property"
+                }
+            ]
+        },
+        {
+            "name": "BarComponent",
+            "file": "src/bar.component.ts",
+            "selector": "app-bar",
+            "description": "BarComponent stays unchanged."
+        },
+        {
+            "name": "RemovedComponent",
+            "file": "src/removed.component.ts",
+            "selector": "app-removed",
+            "description": "Will disappear in v2."
+        }
+    ],
+    "pipes": [
+        {
+            "name": "FormatDate",
+            "file": "src/format-date.pipe.ts",
+            "description": "Old description."
+        }
+    ],
+    "modules": [],
+    "directives": [],
+    "injectables": [],
+    "guards": [],
+    "interceptors": [],
+    "classes": [],
+    "interfaces": []
+}

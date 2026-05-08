@@ -1,0 +1,75 @@
+{
+    "schemaVersion": 1,
+    "generatedAt": "2026-05-01T00:00:00.000Z",
+    "compodocxVersion": "0.3.1-fixture",
+    "components": [
+        {
+            "name": "FooComponent",
+            "file": "src/foo.component.ts",
+            "selector": "app-foo",
+            "standalone": true,
+            "description": "Original Foo description.",
+            "inputsClass": [
+                {
+                    "name": "value",
+                    "type": "number",
+                    "defaultValue": "0"
+                },
+                {
+                    "name": "id",
+                    "type": "string"
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "reset",
+                    "returnType": "void"
+                },
+                {
+                    "name": "submit",
+                    "returnType": "Promise<void>"
+                }
+            ],
+            "themeTokens": [
+                {
+                    "name": "--foo-color",
+                    "type": "color",
+                    "defaultValue": "#000",
+                    "kind": "css-custom-property"
+                },
+                {
+                    "name": "--foo-padding",
+                    "type": "length",
+                    "defaultValue": "8px",
+                    "kind": "css-custom-property"
+                }
+            ]
+        },
+        {
+            "name": "BarComponent",
+            "file": "src/bar.component.ts",
+            "selector": "app-bar",
+            "description": "BarComponent stays unchanged."
+        },
+        {
+            "name": "BazComponent",
+            "file": "src/baz.component.ts",
+            "selector": "app-baz",
+            "description": "Brand new in v2."
+        }
+    ],
+    "pipes": [
+        {
+            "name": "FormatDate",
+            "file": "src/format-date.pipe.ts",
+            "description": "New description."
+        }
+    ],
+    "modules": [],
+    "directives": [],
+    "injectables": [],
+    "guards": [],
+    "interceptors": [],
+    "classes": [],
+    "interfaces": []
+}

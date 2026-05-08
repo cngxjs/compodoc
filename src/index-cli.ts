@@ -45,6 +45,14 @@ export class CliApplication extends Application {
             process.exit(exitCode);
         }
 
+        // Same gate for `compodocx diff <flags>` — the diff CLI compares two
+        // documentation.json snapshots and has its own --old/--new surface.
+        if (process.argv[2] === 'diff') {
+            const { runDiffCli } = await import('./diff');
+            const exitCode = await runDiffCli(process.argv.slice(3));
+            process.exit(exitCode);
+        }
+
         function list(val) {
             return val.split(',');
         }

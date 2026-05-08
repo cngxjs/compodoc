@@ -393,3 +393,76 @@ If your project's `package.json` has `"type": "module"`, the `.js` overrides emi
 ### Issues
 
 If the converter mishandles a real-world `.hbs` partial, please open an issue with the input file at <https://github.com/cngxjs/compodocx/issues>. Manual cookbook fallbacks are the cookbook section above.
+
+## `compodocx diff` CLI
+
+Available since 0.3.0. Compares two `documentation.json` snapshots produced by `compodocx --exportFormat json` and reports added / removed / changed symbols, classified by severity (`breaking` / `additive` / `docs-only`). Built for CI bots, release-notes generators, and changelog automation.
+
+```bash
+compodocx diff --old v1.json --new v2.json                 # human console
+compodocx diff --old v1.json --new v2.json --json          # machine-readable
+compodocx diff --old v1.json --new v2.json --md            # markdown for changelogs
+compodocx diff --old v1.json --new v2.json --no-warnings   # breaking-only console
+```
+
+### Severity rules
+
+| Change | Severity |
+|-|-|
+| Component / module / pipe / class removed | breaking |
+| Component selector changed | breaking |
+| Required input added (no default value) | breaking |
+| Optional input added (with default value) | additive |
+| Input removed or its type changed | breaking |
+| Public method / property removed | breaking |
+| Public method / property added | additive |
+| Theme token removed or its type changed | breaking |
+| Theme token added | additive |
+| New entity added | additive |
+| `@deprecated` toggled | additive |
+| Description / JSDoc text changed | docs-only |
+| `signalDeps` shifted (internal derivation) | docs-only |
+
+The classifier folds the rule table over each entity's field-level shifts and picks the worst severity (breaking > additive > docs-only) per entity.
+
+### Exit codes
+
+| Exit | Meaning | CI behavior |
+|-|-|-|
+| 0 | No breaking, no additive (pure docs-only or unchanged) | Pass |
+| 1 | Additive only (warning territory) | Surface but don't block merge |
+| 2 | At least one breaking, OR a fatal error (parse / schemaVersion mismatch) | Block merge |
+
+CI pipelines fail-fast on exit 2:
+
+```bash
+compodocx --exportFormat json -d /tmp/new-snapshot
+compodocx diff --old ./baseline/documentation.json --new /tmp/new-snapshot/documentation.json --json > diff.json
+# exit code carries the verdict; diff.json is the audit trail
+```
+
+### Schema-version gate
+
+The diff runs against `schemaVersion: 1` only — the contract introduced in 0.3.0 (see § JSON export above). Pre-0.3.0 outputs have no `schemaVersion` field and fail the gate with:
+
+```text
+diff: <file> has no schemaVersion — re-export with compodocx ≥ 0.3.0
+```
+
+Re-export both sides with the same compodocx version and re-run.
+
+### Volatile fields
+
+`generatedAt` and `compodocxVersion` change on every export run regardless of source code; the comparator strips both before counting `unchanged`. The list lives in `VOLATILE_EXPORT_FIELDS` (exported from `@cngxjs/compodocx`); future fields added to the export header become volatile by being added to that constant.
+
+### Output formats
+
+- **Default (console).** Severity-sorted, colored tags, `--no-warnings` collapses to breaking-only.
+- **`--json`.** Envelope: `{ schemaVersion, comparedAt, from, to, summary, changes[] }`. Pipe to `jq` for transformation.
+- **`--md`.** CHANGELOG-ready section. Empty severity sections are dropped. Heading uses `compodocxVersion` from each snapshot's header.
+
+### Limits — what does NOT diff
+
+- **Cross-schema comparison.** When `schemaVersion` differs between `--old` and `--new`, the gate fails. Manual migration is required (re-export the older snapshot with the newer compodocx version).
+- **Semantic-versioning recommendation.** The diff classifies changes; it does NOT advise "bump major" — leaves that to the consumer.
+- **Diff against last git tag.** Both `--old` and `--new` are required file paths. No magic resolution.
