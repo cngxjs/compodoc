@@ -18,6 +18,10 @@ export interface ConfigurationFileInterface {
     watch: boolean;
     exportFormat: string;
     jsonIndent: number;
+    multiVersion: boolean;
+    versionLabel: string;
+    versionsRoot: string;
+    maxVersionsShown: number;
     hideGenerator: boolean;
     hideDarkModeToggle: boolean;
     coverageTest: number;

@@ -86,6 +86,19 @@ export interface MainDataInterface {
     /** Indent size (0–8) for `--exportFormat json`. 0 = single-line. */
     jsonIndent: number;
     /**
+     * When true, output is written to `<output>/<versionLabel>/`, a
+     * `versions.json` manifest is maintained at `versionsRoot`, and the
+     * topbar version-switcher widget is rendered. Default true. Pass
+     * `--no-multiVersion` to restore the pre-v0.3.0 flat output layout.
+     */
+    multiVersion: boolean;
+    /** Resolved version label used as the version subfolder name. */
+    versionLabel: string;
+    /** Folder containing `versions.json`. Defaults to the parent of `output`. */
+    versionsRoot: string;
+    /** Switcher dropdown cap. `0` is unlimited. */
+    maxVersionsShown: number;
+    /**
      * True when the user explicitly passed `-d` / `--output` on the CLI or in
      * a config file. Used by `--exportFormat llm-md` to decide between writing
      * to a file (`<output>/llm-context.md`) and streaming to stdout.

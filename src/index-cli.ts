@@ -18,9 +18,11 @@ import { parseApiMarkdownExports } from './utils/api-markdown-parser.util';
 import { COMPODOC_DEFAULTS } from './utils/defaults';
 import { parseJsonIndent } from './utils/json-indent.util';
 import { logger } from './utils/logger';
+import { parseMaxVersionsShown } from './utils/max-versions-shown.util';
 import { parsePublicApi } from './utils/public-api-parser.util';
 import { createSourcePathMapper } from './utils/source-path-mapper.util';
 import { EXCLUDE_PATTERNS, INCLUDE_PATTERNS, readConfig } from './utils/utils';
+import { resolveVersion } from './utils/version-resolver.util';
 
 const cosmiconfigModuleName = 'compodoc';
 
@@ -107,6 +109,28 @@ export class CliApplication extends Application {
                 '--jsonIndent <spaces>',
                 'JSON indent for the documentation.json export (0-8, default: 0)',
                 String(COMPODOC_DEFAULTS.jsonIndent)
+            )
+            .option(
+                '--multiVersion',
+                'Write output to <output>/<versionLabel>/ and maintain a versions.json manifest (default: on)',
+                COMPODOC_DEFAULTS.multiVersion
+            )
+            .option(
+                '--no-multiVersion',
+                'Restore the previous flat output layout (no version subfolder, no versions.json, no switcher)'
+            )
+            .option(
+                '--versionLabel [label]',
+                "Override the version-subfolder name. Defaults to the project's package.json version, prefixed with 'v'."
+            )
+            .option(
+                '--versionsRoot [path]',
+                'Folder where versions.json is read/written. Defaults to the parent of the output folder.'
+            )
+            .option(
+                '--maxVersionsShown <n>',
+                'Cap on the number of versions shown in the switcher dropdown (0 = unlimited, range 0-1000, default: 10)',
+                String(COMPODOC_DEFAULTS.maxVersionsShown)
             )
             .option('--files [files]', 'Files provided by external tool, used for coverage test')
             .option(
@@ -566,6 +590,50 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             Configuration.mainData.jsonIndent = result.value;
         }
 
+        // Multi-version flags. Order matters: pick up config-file values
+        // first, then let CLI flags override only when they were actually
+        // passed (F22 — distinguishing default from user-provided).
+        if (typeof configFile.multiVersion === 'boolean') {
+            Configuration.mainData.multiVersion = configFile.multiVersion;
+        }
+        // Commander's --no-X sets opts.X to false even when the user didn't
+        // pass the flag (it's the option default), so the source check is
+        // the only safe way to distinguish "user opted out" from "default".
+        if (program.getOptionValueSource('multiVersion') === 'cli') {
+            Configuration.mainData.multiVersion = programOptions.multiVersion === true;
+        }
+
+        if (typeof configFile.versionLabel === 'string') {
+            Configuration.mainData.versionLabel = configFile.versionLabel;
+        }
+        if (program.getOptionValueSource('versionLabel') === 'cli') {
+            Configuration.mainData.versionLabel = String(programOptions.versionLabel ?? '');
+        }
+
+        if (typeof configFile.versionsRoot === 'string') {
+            Configuration.mainData.versionsRoot = configFile.versionsRoot;
+        }
+        if (program.getOptionValueSource('versionsRoot') === 'cli') {
+            Configuration.mainData.versionsRoot = String(programOptions.versionsRoot ?? '');
+        }
+
+        if (configFile.maxVersionsShown !== undefined) {
+            const result = parseMaxVersionsShown(configFile.maxVersionsShown, 'config');
+            if (!result.ok) {
+                logger.error(result.message);
+                process.exit(1);
+            }
+            Configuration.mainData.maxVersionsShown = result.value;
+        }
+        if (program.getOptionValueSource('maxVersionsShown') === 'cli') {
+            const result = parseMaxVersionsShown(programOptions.maxVersionsShown, 'flag');
+            if (!result.ok) {
+                logger.error(result.message);
+                process.exit(1);
+            }
+            Configuration.mainData.maxVersionsShown = result.value;
+        }
+
         if (configFile.hideGenerator) {
             Configuration.mainData.hideGenerator = configFile.hideGenerator;
         }
@@ -1020,6 +1088,29 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                         tsConfigFile.compilerOptions?.paths ?? {};
                     Configuration.mainData.tsconfigBaseUrl =
                         tsConfigFile.compilerOptions?.baseUrl ?? '';
+
+                    // Multi-version: resolve the version label, redirect the
+                    // output folder to <output>/<label>/, and remember the
+                    // versions.json root for the post-emit manifest write.
+                    // Resolved here (rather than at flag-parse time) because
+                    // the package.json fallback walks up from the project
+                    // root, which is only known after tsconfig resolution.
+                    if (Configuration.mainData.multiVersion) {
+                        const resolved = resolveVersion({
+                            explicitLabel: Configuration.mainData.versionLabel,
+                            outputFolder: Configuration.mainData.output,
+                            explicitRoot: Configuration.mainData.versionsRoot,
+                            projectRoot: cwd,
+                            cwd: process.cwd()
+                        });
+                        if (!resolved.ok) {
+                            logger.error(resolved.message);
+                            process.exit(2);
+                        }
+                        Configuration.mainData.versionLabel = resolved.value.label;
+                        Configuration.mainData.versionsRoot = resolved.value.root;
+                        Configuration.mainData.output = resolved.value.folder;
+                    }
 
                     if (tsConfigFile.files) {
                         scannedFiles = tsConfigFile.files;

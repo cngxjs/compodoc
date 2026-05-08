@@ -10,6 +10,19 @@ export const COMPODOC_DEFAULTS = {
     exportFormatsSupported: ['html', 'json', 'llm-md'],
     /** Default JSON indent for `--exportFormat json`. 0 = single-line; range 0–8. */
     jsonIndent: 0,
+    /**
+     * Multi-version output is the default. Output goes to
+     * `<output>/<versionLabel>/`, `<output-parent>/versions.json` accumulates
+     * known versions, and the topbar switcher widget is rendered. Opt out
+     * with `--no-multiVersion` to restore the previous flat layout.
+     */
+    multiVersion: true,
+    /**
+     * Cap on how many versions the switcher dropdown shows. The manifest
+     * is always written in full; this is a presentation-only slice. `0`
+     * means unlimited. Range 0..1000.
+     */
+    maxVersionsShown: 10,
     base: '/',
     defaultCoverageThreshold: 70,
     defaultCoverageMinimumPerFile: 0,
