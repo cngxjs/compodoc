@@ -4,6 +4,7 @@
 @import "./components/icons.css";
 @import "./components/breadcrumb.css";
 @import "./components/topbar.css";
+@import "./components/version-switcher.css";
 @import "./components/sidebar.css";
 @import "./components/toc.css";
 @import "./components/command-palette.css";
