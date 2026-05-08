@@ -6,6 +6,48 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.3.0] — 2026-05-08
+
+Migration and tooling foundations. Adds three new sub-commands (`migrate`, `diff`, plus an `llm-md` export format), an end-to-end multi-version output pipeline with a runtime version-switcher dropdown, and finer JSON output control. Existing 0.2.x consumers can stay on a flat single-version layout with `--no-multiVersion`; everything else lands additively.
+
+### Breaking
+
+- **`--multiVersion` defaults to `true` (#58).** Output now writes to `<output>/<versionLabel>/` instead of directly to `<output>/`, and a `versions.json` manifest is emitted at the deploy root. Opt out with `--no-multiVersion` to restore the previous flat layout. The version label auto-resolves from the nearest `package.json`; pass `--versionLabel <string>` to override or to satisfy projects without a `package.json`. Missing label combined with `--multiVersion` is a hard error (exit 2) with a hint pointing at `--versionLabel ... or --no-multiVersion`. See `MIGRATION.md` for the upgrade callout.
+
+### Added
+
+- **`compodocx migrate` sub-command (#53).** Helps existing compodoc consumers port custom Handlebars templates and CSS to the compodocx surface. Four sub-commands: `inspect <path>` reports template-format / CSS-class / config-file drift; `template <file.hbs>` converts a single Handlebars partial to the JS override format (streams to stdout when neither `--out` nor `--dry-run` is set); `templates <hbs-dir> --out <js-dir>` batch-converts a directory; `css <file-or-dir>` rewrites legacy class names to the `cdx-` prefix (conservative by default; `--aggressive` also rewrites HTML / TS / TSX / JS files). Common flags: `--dry-run`, `--json`, `--no-warnings`. Exit codes: 0 clean, 1 yellow (lossy or partial), 2 red (hard limit). Hard limits stop conversion when the input matches a full HTML page, an unknown override name, or any other shape that cannot map cleanly.
+
+- **`compodocx diff` sub-command (#55).** Compares two `--exportFormat json` snapshots and surfaces API changes by severity (breaking, additive, docs-only). Flags: `--old <path>`, `--new <path>`, `--json`, `--md`, `--no-warnings`. Exit codes: 0 clean (no changes), 1 additive only, 2 breaking or fatal error. The default console formatter mirrors `git diff` style with severity-coloured headers; `--json` emits a structured payload for downstream tooling and `--md` emits a markdown report ready to paste into PR descriptions or release notes. Volatile fields (`generatedAt`, `compodocxVersion`) are stripped before comparison so re-runs of the same source produce a clean diff.
+
+- **`--exportFormat llm-md` (#56).** Third value for `--exportFormat` (`json | html | llm-md`). Emits a single markdown file (`<output>/llm-context.md`) optimized for LLM context windows: per-entity sections, signal-typed properties, JSDoc tags, and source-file paths. Streams to stdout when `-d` is omitted (for piping into `cat`, `sed`, or downstream tooling); writes to file when `-d` is provided. Token-density caps are applied at the format boundary so embedded base64 images and giant union literals never bloat the output.
+
+- **Version-switcher widget (#58).** Right-aligned dropdown at the top of the content area on desktop (in the mobile topbar at smaller viewports). Shows the current version label, lists all built versions from `versions.json`, and navigates to the equivalent page in the target version using a HEAD-fetch existence probe — falls back to the version's root index when the page does not exist there instead of leaving the reader on a 404. On `file://` URLs the widget renders a static "open via http" hint instead of a half-working dropdown (HEAD fetch is uniformly blocked across browsers under the file scheme).
+
+- **`--jsonIndent <spaces>` flag (#54).** Controls `JSON.stringify` indentation for `--exportFormat json`. Default `0` (compact single-line, unchanged from 0.2.x); valid range 0–8; explicit `--jsonIndent 0` is honoured over a non-zero config-file value. Out-of-range or non-numeric values exit non-zero with a clear error message.
+
+- **`--versionsRoot <path>` and `--maxVersionsShown <n>` flags (#58).** `--versionsRoot` defaults to the `-d` folder itself (manifest at `<-d>/versions.json` alongside `<label>/` subfolders); override only for split-repo CI setups. `--maxVersionsShown` caps the dropdown entry count (default `10`, range 0–1000, `0` = unlimited); when the manifest contains more entries than the cap, the dropdown footer renders a "showing N of M versions" hint linking to the raw manifest.
+
+- **Multi-version pattern guide (`docs/versioned-docs.md`, #57).** Deployment recipes for GitHub Pages, Netlify / Vercel, plain nginx, and a drop-in script for projects that prefer to manage version routing externally. References `scripts/build-versioned-docs.sh` as a starting point.
+
+### Fixed
+
+- **Page renderer crash on `@deprecated` JSDoc with inline `{@link X}` (#58).** TypeScript parses such JSDoc comments as a `NodeArray<JSDocComment>` rather than a string, which used to leak through `checkForDeprecation` and reach `BlockProperty` as a JSX child — KitaJSX rejected it with "Objects are not valid as a KitaJSX child" and aborted the entire build. Both `class-helper.ts` and `angular-dependencies.ts` now flatten the comment via `JsdocParserUtil.parseJSDocNode` so a string is always stored on `result.deprecationMessage`. The `{@link X}` literal is preserved in the rendered banner.
+
+- **Diff output truncation cap missing on signature values (#55).** Embedded base64 images and giant union literals could push individual signature strings into the megabytes. A `SIGNATURE_VALUE_CAP = 160` constant in the format helper now truncates at the bottleneck, covering types, default values, return types, and rawtype in one place.
+
+### Changed
+
+- **Action icons moved out of the sidebar header into a content-area microheader (#58).** Theme picker, dark-mode toggle, and the new version-switcher used to share the sidebar brand row, which truncated long brand titles and crowded the header. They now sit in a right-aligned strip at the top of the content area on desktop; the mobile topbar still carries duplicates and the desktop strip hides under `@media (max-width: 1023px)`. Sidebar header is brand + search only.
+
+### Internal
+
+- **`tag.comment` flattening rule across the compiler (#58).** All sites that store JSDoc tag comments to user-visible string fields (`deprecationMessage`, `category`) now go through `JsdocParserUtil.parseJSDocNode` instead of reading `tag.comment` directly. This is the same gotcha that surfaced as the inline-`{@link}` crash; the rule prevents future regressions across other tag handlers.
+
+- **`VOLATILE_EXPORT_FIELDS` runtime constant (#54).** Lists the export-data fields that change every run (`generatedAt`, `compodocxVersion`). Diff and downstream consumers iterate this constant rather than hard-coding the list, so adding a future volatile field updates both sides atomically.
+
+- **`EXPORT_SCHEMA_VERSION = 1` runtime constant (#54).** Single source of truth for the export-data schema version. Diff and llm-md outputs include `schemaVersion` for forward compatibility; a drift-detection spec walks `src/` for any `schemaVersion: <number>` literal write and fails the build if any consumer hard-codes the number instead of importing the constant.
+
 ## [0.2.0] — 2026-05-07
 
 Build modernization. Replaces the Rollup + esbuild + tsc + Tailwind + node-script chain with a single bundler — tsdown 0.21.10 (Rolldown engine, Rust) — for both the lib bundle and the client bundle. No public API change, no CLI flag change, no template API change. The published tarball is byte-for-byte equivalent in user-visible behavior; the lib bundle now ships dual ESM + CJS output for forward compatibility.
