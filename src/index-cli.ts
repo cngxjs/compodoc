@@ -100,7 +100,7 @@ export class CliApplication extends Application {
             )
             .option(
                 '-e, --exportFormat [format]',
-                'Export in specified format (json, html)',
+                'Export in specified format (json, html, llm-md)',
                 COMPODOC_DEFAULTS.exportFormat
             )
             .option(
@@ -329,9 +329,18 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
 
         if (configFile.output) {
             Configuration.mainData.output = configFile.output;
+            Configuration.mainData.outputProvided = true;
         }
         if (programOptions.output && programOptions.output !== COMPODOC_DEFAULTS.folder) {
             Configuration.mainData.output = programOptions.output;
+            Configuration.mainData.outputProvided = true;
+        }
+        // Detect explicit -d on the CLI even if the user passed the default
+        // value verbatim. The previous block compares the resolved value to
+        // the default and would miss `-d ./documentation/`. Commander's
+        // option-source API distinguishes "default" from "cli" cleanly.
+        if (program.getOptionValueSource('output') === 'cli') {
+            Configuration.mainData.outputProvided = true;
         }
 
         if (configFile.extTheme) {
@@ -521,6 +530,17 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             programOptions.exportFormat !== COMPODOC_DEFAULTS.exportFormat
         ) {
             Configuration.mainData.exportFormat = programOptions.exportFormat;
+        }
+
+        // When llm-md streams to stdout, every progress log line must go to
+        // stderr so the markdown payload stays clean for `> file.md`,
+        // `| pbcopy`, `| less` and similar redirections. The banner is
+        // skipped entirely in that mode (downstream tools never want it).
+        const isLlmMdStdoutMode =
+            Configuration.mainData.exportFormat === 'llm-md' &&
+            !Configuration.mainData.outputProvided;
+        if (isLlmMdStdoutMode) {
+            logger.routeToStderr = true;
         }
 
         if (configFile.jsonIndent !== undefined) {
@@ -789,7 +809,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             Configuration.mainData.publicApiOnly = programOptions.publicApiOnly;
         }
 
-        if (!this.isWatching) {
+        if (!this.isWatching && !isLlmMdStdoutMode) {
             if (!logger.silent) {
                 console.log(`Compodoc v${pkg.version}`);
             } else {

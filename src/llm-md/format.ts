@@ -131,8 +131,32 @@ export const formatMethodSignature = (
     return `${name}(${argSeg})${ret}`;
 };
 
-/** Collapse intra-signature whitespace runs (newlines, tabs) to single spaces. */
-export const collapseSignatureWhitespace = (s: string): string => s.replace(/\s+/g, ' ').trim();
+/**
+ * Hard cap on individual signature values (types, default values, return
+ * types). Embedded base64 images, very long string literals, and giant
+ * union types would otherwise blow the markdown to multi-megabyte size and
+ * waste the LLM's context budget. The cap is intentionally tight — anyone
+ * who needs the full value reads the source.
+ */
+export const SIGNATURE_VALUE_CAP = 160;
+
+/**
+ * Collapse intra-signature whitespace runs to single spaces, then truncate at
+ * `SIGNATURE_VALUE_CAP` so a single embedded data URL or giant union literal
+ * cannot bloat the output. Some upstream fields (numeric enum values, complex
+ * types resolved as objects) arrive as non-string primitives or even
+ * objects; coerce defensively so the emitter never crashes the export
+ * pipeline on a typed-edge case.
+ */
+export const collapseSignatureWhitespace = (s: unknown): string => {
+    const collapsed = String(s ?? '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    if (collapsed.length <= SIGNATURE_VALUE_CAP) {
+        return collapsed;
+    }
+    return `${collapsed.slice(0, SIGNATURE_VALUE_CAP)}…`;
+};
 
 /**
  * Render a single deprecated tail like `(deprecated)` or
