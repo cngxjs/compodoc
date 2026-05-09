@@ -26,6 +26,7 @@
 @import "./components/theming.css";
 @import "./components/unit-test.css";
 @import "./components/examples.css";
+@import "./components/playground.css";
 @import "./components/external-links.css";
 @import "./components/relationships.css";
 @import "./components/readme.css";

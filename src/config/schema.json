@@ -298,6 +298,20 @@
             "default": false,
             "examples": [false]
         },
+        "disablePlaygroundTab": {
+            "$id": "/properties/disablePlaygroundTab",
+            "type": "boolean",
+            "title": "Do not add the Playground tab even when @playground blocks are present",
+            "default": false,
+            "examples": [false]
+        },
+        "playgroundDependencies": {
+            "$id": "/properties/playgroundDependencies",
+            "type": "object",
+            "title": "Extra npm dependencies to inject into every @playground StackBlitz manifest. Wins over the consumer-package.json auto-forward. Use for libraries the consumer ships but doesn't npm install directly, or to pin a specific version per build.",
+            "additionalProperties": { "type": "string" },
+            "examples": [{ "@my-org/ui-kit": "^1.0.0" }]
+        },
         "disableProperties": {
             "$id": "/properties/disableProperties",
             "type": "boolean",
@@ -423,13 +437,6 @@
             "title": "Max search results on the results page. Set to 0 for unlimited",
             "default": 15,
             "examples": [15]
-        },
-        "templatePlayground": {
-            "$id": "/properties/templatePlayground",
-            "type": "boolean",
-            "title": "Generate template playground page for customizing templates",
-            "default": false,
-            "examples": [false]
         }
     }
 }

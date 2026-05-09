@@ -148,6 +148,7 @@ export const TRANSLATION_RU_RU = {
     'peer-dependencies': 'Одноранговые зависимости',
     pipe: 'Конвейер',
     pipes: 'Конвейеры',
+    playground: 'Playground',
     prefix: 'Префикс',
     'project-health': 'Здоровье проекта',
     'project-overview': 'Обзор проекта',

@@ -32,6 +32,7 @@ import I18nEngine from './engines/i18n.engine';
 import MarkdownEngine, { type markdownReadedDatas } from './engines/markdown.engine';
 import NgdEngine from './engines/ngd.engine';
 import { runPagefindIndex } from './engines/search-indexer.engine';
+import { type FileRefBundle, type FsReader, readFileRef } from './engines/stackblitz';
 import { initHighlighter } from './engines/syntax-highlight.engine';
 import { updateVersionsManifest } from './engines/versions-manifest.engine';
 import type { AdditionalNode } from './interfaces/additional-node.interface';
@@ -219,6 +220,16 @@ export class Application {
                     ...parsedData.devDependencies
                 };
                 Configuration.mainData.hasZoneJs = 'zone.js' in allDeps;
+
+                // Surface the runtime + peer dep tables to the StackBlitz
+                // manifest builder so consumer-declared third-party libraries
+                // (incl. user-authored ones) are auto-forwarded into
+                // `@playground` projects with the right version.
+                Configuration.mainData.workspacePackage = {
+                    dependencies: parsedData.dependencies ?? {},
+                    peerDependencies: parsedData.peerDependencies ?? {}
+                };
+
                 logger.info('package.json file found');
 
                 if (!Configuration.mainData.disableDependencies) {
@@ -576,6 +587,11 @@ export class Application {
             actions.push(() => this.prepareCoverage());
         }
 
+        // Resolve `@playground` file refs after every dependency kind has
+        // been prepared (so `dependency.playgrounds` is fully populated) and
+        // before page rendering reads `data.playgroundFiles`.
+        actions.push(() => Promise.resolve(this.resolvePlaygroundFiles()));
+
         promiseSequential(actions)
             .then(_res => {
                 if (Configuration.mainData.exportFormat !== COMPODOC_DEFAULTS.exportFormat) {
@@ -757,6 +773,10 @@ export class Application {
                 return this.prepareExternalIncludes();
             });
         }
+
+        // Resolve `@playground` file refs after every prepare* step has
+        // populated `Configuration.mainData.<kind>.playgrounds`.
+        actions.push(() => Promise.resolve(this.resolvePlaygroundFiles()));
 
         promiseSequential(actions)
             .then(_res => {
@@ -1425,6 +1445,14 @@ export class Application {
                 !dependency.themeOverview
             ) {
                 return;
+            }
+            if (customTab.id === 'playground') {
+                if (Configuration.mainData.disablePlaygroundTab) {
+                    return;
+                }
+                if (!dependency.playgrounds || dependency.playgrounds.length === 0) {
+                    return;
+                }
             }
 
             // API tab: drop it in legacy single-tab mode, or when the
@@ -2305,6 +2333,83 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         });
     }
 
+    /**
+     * Walk every entity kind that may carry `@playground fileRef` blocks
+     * (components/directives/injectables/etc) and resolve each fileRef into
+     * a `FileRefBundle` keyed by `${entityName}:${blockIndex}`. Read failures
+     * surface as `logger.warn` and skip that block — the manifest builder
+     * then falls back to its "Project assembly failed" path. Inline-only
+     * playgrounds never enter this loop.
+     */
+    public resolvePlaygroundFiles(): void {
+        const fsReader: FsReader = {
+            readFile: (p: string): string | null => {
+                try {
+                    return fs.readFileSync(p, 'utf8');
+                } catch {
+                    return null;
+                }
+            },
+            exists: (p: string): boolean => {
+                try {
+                    return fs.existsSync(p);
+                } catch {
+                    return false;
+                }
+            }
+        };
+
+        const out: Record<string, FileRefBundle> = {};
+        const entitySources = [
+            Configuration.mainData.components,
+            Configuration.mainData.directives,
+            Configuration.mainData.injectables,
+            Configuration.mainData.guards,
+            Configuration.mainData.interceptors,
+            Configuration.mainData.pipes,
+            Configuration.mainData.classes,
+            Configuration.mainData.interfaces,
+            Configuration.mainData.entities
+        ];
+
+        for (const list of entitySources) {
+            if (!Array.isArray(list)) {
+                continue;
+            }
+            for (const entity of list) {
+                const playgrounds = entity?.playgrounds as
+                    | Array<{ title?: string; fileRef?: string }>
+                    | undefined;
+                if (!playgrounds || playgrounds.length === 0) {
+                    continue;
+                }
+                for (let i = 0; i < playgrounds.length; i++) {
+                    const block = playgrounds[i];
+                    if (!block?.fileRef) {
+                        continue;
+                    }
+                    const hostFile = entity.file;
+                    if (typeof hostFile !== 'string' || hostFile.length === 0) {
+                        logger.warn(
+                            `Playground "${block.title ?? '<untitled>'}" on ${entity.name}: missing host file path`
+                        );
+                        continue;
+                    }
+                    const result = readFileRef(block.fileRef, hostFile, fsReader);
+                    if (!result.ok) {
+                        logger.warn(
+                            `Playground "${block.title ?? '<untitled>'}" on ${entity.name}: ${result.error}`
+                        );
+                        continue;
+                    }
+                    out[`${entity.name}:${i}`] = result.value;
+                }
+            }
+        }
+
+        Configuration.mainData.playgroundFiles = out;
+    }
+
     public prepareUnitTestCoverage() {
         logger.info('Process unit test coverage report');
         return new Promise((resolve, _reject) => {
@@ -2443,166 +2548,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         FileEngine.writeSync(finalPath, htmlData);
         return Promise.resolve();
     }
-
-    private processTemplatePlayground(): void {
-        logger.info('Process template playground');
-
-        // Create template playground page
-        const _templatePlaygroundPage = {
-            name: 'template-playground',
-            filename: 'template-playground',
-            context: 'template-playground',
-            depth: 0,
-            pageType: 'template-playground'
-        };
-
-        // Generate a comprehensive template playground page with all required dependencies
-        const htmlContent = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Template Playground - ${Configuration.mainData.documentationMainName || 'Documentation'}</title>
-    <meta name="description" content="Template playground for customizing Compodoc templates">
-    <link rel="stylesheet" href="styles/template-playground.css">
-    <script src="js/libs/monaco-editor/min/vs/loader.js"></script>
-    <script src="js/libs/handlebars.min.js"></script>
-    <script src="js/libs/jszip.min.js"></script>
-</head>
-<body>
-    <div id="template-playground-root">
-        <div class="template-playground-container">
-            <h1>Template Playground</h1>
-            <p>Welcome to the Template Playground! This tool allows you to customize and preview Compodoc templates.</p>
-            
-            <div class="features">
-                <h2>Features</h2>
-                <ul>
-                    <li>Live template editing with monaco-editor</li>
-                    <li>Real-time preview using handlebars.min.js</li>
-                    <li>Template export and download with jszip.min.js</li>
-                    <li>Session-based customization</li>
-                </ul>
-            </div>
-            
-            <div class="usage">
-                <h2>How to Use</h2>
-                <ol>
-                    <li>Start the template playground server</li>
-                    <li>Edit templates in the Monaco editor</li>
-                    <li>Preview changes in real-time</li>
-                    <li>Download customized template package</li>
-                </ol>
-            </div>
-        </div>
-    </div>
-    
-    <script src="js/template-playground.js"></script>
-</body>
-</html>`;
-
-        let finalPath = Configuration.mainData.output;
-
-        if (Configuration.mainData.output.lastIndexOf('/') === -1) {
-            finalPath += '/';
-        }
-        finalPath += 'template-playground.html';
-
-        FileEngine.writeSync(finalPath, htmlContent);
-        logger.info('Template playground page generated');
-
-        // Generate required JavaScript file
-        const jsPath = path.join(Configuration.mainData.output, 'js', 'template-playground.js');
-        const jsContent = `// Template Playground JavaScript
-(function() {
-    'use strict';
-    
-    // Initialize template playground
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Template Playground initialized');
-        
-        // Initialize Monaco Editor when available
-        if (typeof require !== 'undefined') {
-            require.config({ paths: { 'vs': 'js/libs/monaco-editor/min/vs' }});
-            require(['vs/editor/editor.main'], function() {
-                console.log('Monaco Editor loaded');
-            });
-        }
-        
-        // Initialize Handlebars when available
-        if (typeof Handlebars !== 'undefined') {
-            console.log('Handlebars loaded');
-        }
-        
-        // Initialize JSZip when available
-        if (typeof JSZip !== 'undefined') {
-            console.log('JSZip loaded');
-        }
-    });
-})();`;
-
-        // Ensure js directory exists
-        const jsDir = path.join(Configuration.mainData.output, 'js');
-        if (!fs.existsSync(jsDir)) {
-            fs.mkdirSync(jsDir, { recursive: true });
-        }
-        FileEngine.writeSync(jsPath, jsContent);
-        logger.info('Template playground JavaScript generated');
-
-        // Generate required CSS file
-        const cssPath = path.join(
-            Configuration.mainData.output,
-            'styles',
-            'template-playground.css'
-        );
-        const cssContent = `/* Template Playground Styles */
-.template-playground-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-#template-playground-root {
-    min-height: 100vh;
-    background: #f8f9fa;
-}
-
-.template-playground-container h1 {
-    color: #2c3e50;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 10px;
-}
-
-.features, .usage {
-    background: white;
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.features h2, .usage h2 {
-    color: #34495e;
-    margin-top: 0;
-}
-
-.features ul, .usage ol {
-    line-height: 1.6;
-}
-
-.features li, .usage li {
-    margin: 8px 0;
-}`;
-
-        // Ensure styles directory exists
-        const stylesDir = path.join(Configuration.mainData.output, 'styles');
-        if (!fs.existsSync(stylesDir)) {
-            fs.mkdirSync(stylesDir, { recursive: true });
-        }
-        FileEngine.writeSync(cssPath, cssContent);
-        logger.info('Template playground CSS generated');
-    }
-
     /**
      * Build the standalone component dependency graph from all components
      * that have standalone: true and imports.
@@ -2679,11 +2624,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         Promise.all(pages.map(page => this.processPage(page)))
             .then(() => {
                 const callbacksAfterGenerateSearchIndexJson = () => {
-                    // Process template playground if enabled
-                    if (Configuration.mainData.templatePlayground) {
-                        this.processTemplatePlayground();
-                    }
-
                     if (Configuration.mainData.additionalPages.length > 0) {
                         this.processAdditionalPages();
                     } else {

@@ -4,10 +4,12 @@ export { computeCoverageStats } from './coverage-stats';
 export { functionSignature } from './function-signature';
 export { t } from './i18n';
 export { indexableSignature } from './indexable-signature';
+export type { ComponentPlaygroundBlock } from './jsdoc';
 export {
     extractJsdocCodeExamples,
     extractJsdocExamples,
     extractJsdocParams,
+    extractJsdocPlaygroundBlocks,
     hasJsdocParams,
     jsdocReturnsComment
 } from './jsdoc';

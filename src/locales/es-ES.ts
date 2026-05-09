@@ -146,6 +146,7 @@ export const TRANSLATION_ES_ES = {
     'peer-dependencies': 'Dependencias entre pares',
     pipe: 'Tubería',
     pipes: 'Tuberías',
+    playground: 'Playground',
     prefix: 'Prefijo',
     'project-health': 'Salud del proyecto',
     'project-overview': 'Resumen del proyecto',

@@ -146,6 +146,7 @@ export const TRANSLATION_PT_BR = {
     'peer-dependencies': 'Peer dependencies',
     pipe: 'Pipe',
     pipes: 'Pipes',
+    playground: 'Playground',
     prefix: 'Prefixo',
     'project-health': 'Saúde do projeto',
     'project-overview': 'Visão geral do projeto',

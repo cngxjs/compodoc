@@ -146,6 +146,7 @@ export const TRANSLATION_BG_BG = {
     'peer-dependencies': 'Peer-зависимости',
     pipe: 'Pipe',
     pipes: 'Pipes',
+    playground: 'Playground',
     prefix: 'Префикс',
     'project-health': 'Здраве на проекта',
     'project-overview': 'Преглед на проекта',

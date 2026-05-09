@@ -1,0 +1,59 @@
+.cdx-playground-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-cdx-xl);
+}
+
+[data-compodoc='block-playground'] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-cdx-md);
+}
+
+/* Snippet uses the existing `pre.shiki` chrome from code-blocks.css; no
+   extra wrapper padding (would double up against Shiki's own padding and
+   diverge from @example blocks on the Info tab). */
+.cdx-playground-snippet {
+    display: contents;
+}
+
+.cdx-playground-launch {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--color-cdx-primary);
+    border: 1px solid var(--color-cdx-primary);
+    border-radius: var(--radius-cdx-md);
+    color: var(--color-cdx-text-inverse);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: background-color var(--cdx-transition-fast, 120ms) ease;
+}
+
+.cdx-playground-launch:hover {
+    background: var(--color-cdx-primary-hover, var(--color-cdx-primary));
+    border-color: var(--color-cdx-primary-hover, var(--color-cdx-primary));
+}
+
+.cdx-playground-launch:focus-visible {
+    outline: 2px solid var(--color-cdx-focus-ring, var(--color-cdx-primary));
+    outline-offset: 2px;
+}
+
+.cdx-playground-launch svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.cdx-playground-fallback {
+    background: var(--color-cdx-bg-alt);
+    border: 1px dashed var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+    color: var(--color-cdx-text-muted);
+    padding: var(--spacing-cdx-md);
+    font-size: 0.875rem;
+}

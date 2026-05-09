@@ -145,6 +145,7 @@ export const TRANSLATION_SK_SK = {
     'peer-dependencies': 'Peer dependencies',
     pipe: 'Pipe',
     pipes: 'Pipes',
+    playground: 'Playground',
     prefix: 'Prefix',
     'project-health': 'Zdravie projektu',
     'project-overview': 'Prehľad projektu',

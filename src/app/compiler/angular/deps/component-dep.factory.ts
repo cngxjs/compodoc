@@ -1,4 +1,5 @@
 import * as crypto from 'node:crypto';
+import type { ComponentPlaygroundBlock } from '../../../../templates/helpers/jsdoc';
 import { cleanLifecycleHooksFromMethods } from '../../../../utils';
 import Configuration from '../../../configuration';
 import type { IDep } from '../dependencies.interfaces';
@@ -60,6 +61,7 @@ export class ComponentDepFactory {
             githubUrl: IO.githubUrl || '',
             docsUrl: IO.docsUrl || '',
             slots: IO.slots || [],
+            playgrounds: IO.playgrounds || [],
 
             hostBindings: IO.hostBindings,
             hostListeners: IO.hostListeners,
@@ -203,6 +205,13 @@ export interface IComponentDep extends IDep {
     githubUrl?: string;
     docsUrl?: string;
     slots?: Array<{ name: string; description: string }>;
+
+    /**
+     * Author-supplied runnable playground blocks (one per `@playground <title>`
+     * JSDoc tag on the class). Drives the Playground tab + StackBlitz launcher.
+     * Empty when the component declares no `@playground` blocks.
+     */
+    playgrounds?: ComponentPlaygroundBlock[];
 
     standalone: boolean;
     imports: Array<any>;

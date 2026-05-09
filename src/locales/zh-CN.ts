@@ -144,6 +144,7 @@ export const TRANSLATION_ZH_CN = {
     'peer-dependencies': '同级依赖',
     pipe: '管道',
     pipes: '管道列表',
+    playground: 'Playground',
     prefix: '字首',
     'project-health': '项目健康度',
     'project-overview': '项目概览',

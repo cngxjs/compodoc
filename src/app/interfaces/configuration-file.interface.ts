@@ -44,11 +44,11 @@ export interface ConfigurationFileInterface {
     disableSearch: boolean;
     disableDependencies: boolean;
     disableDependenciesTab: boolean;
+    disablePlaygroundTab: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
     disableOverview: boolean;
     showEffects: boolean;
-    templatePlayground: boolean;
     minimal: boolean;
     customFavicon: string;
     customLogo: string;

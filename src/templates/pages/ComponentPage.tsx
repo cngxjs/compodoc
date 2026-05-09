@@ -23,6 +23,7 @@ import {
     MetadataHostDirectivesRow,
     MetadataSection
 } from '../blocks/MetadataRow';
+import { PlaygroundContent } from '../blocks/PlaygroundContent';
 import { ProvidersSection } from '../blocks/ProvidersSection';
 import { RouteChip } from '../blocks/RouteChip';
 import { SourceViewer } from '../blocks/SourceViewer';
@@ -700,6 +701,39 @@ export const ComponentPage = (data: any): string => {
                             {GraphZoomControls({ prefix: 'dep-' })}
                         </div>
                         {GraphLegend({ items: DEPENDENCY_LEGEND_ITEMS })}
+                    </div>
+                )}
+
+                {isTabEnabled(navTabs, 'playground') && c.playgrounds?.length > 0 && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'playground') ? ' active' : ''}`}
+                        id="playground"
+                        role="tabpanel"
+                        aria-labelledby="playground-tab"
+                    >
+                        {(() => {
+                            // Pick out this component's pre-resolved file
+                            // bundles (keyed `${name}:${idx}` in mainData) and
+                            // fold to a {idx → bundle} map for the block stack.
+                            const all = data.playgroundFiles ?? {};
+                            const fileBundles: Record<number, unknown> = {};
+                            for (let i = 0; i < c.playgrounds.length; i++) {
+                                const bundle = all[`${c.name}:${i}`];
+                                if (bundle) {
+                                    fileBundles[i] = bundle;
+                                }
+                            }
+                            return PlaygroundContent({
+                                componentName: c.name,
+                                componentFile: c.file,
+                                componentSourceCode: c.sourceCode,
+                                playgrounds: c.playgrounds,
+                                resolve: data.playgroundResolver,
+                                workspacePackage: data.workspacePackage,
+                                extraDependencies: data.playgroundDependencies,
+                                fileBundles: fileBundles as never
+                            });
+                        })()}
                     </div>
                 )}
 

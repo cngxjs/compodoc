@@ -13,9 +13,8 @@ import { initGraphs } from './graphs';
 import { applyHashTarget, resolveHash } from './hash-router';
 import { resetKeyboardState } from './keyboard';
 import { expandToActive } from './sidebar';
+import { initStackblitz } from './stackblitz';
 import { initTabs } from './tabs';
-
-// import { initToc } from './toc';
 
 const CONTENT_SELECTOR = '.content-data';
 
@@ -56,7 +55,22 @@ const executeContentScripts = (): Promise<void> => {
 
     const promises: Promise<void>[] = [];
     content.querySelectorAll('script').forEach(oldScript => {
+        // Skip data scripts (application/json, application/ld+json, importmap, …).
+        // Re-cloning them as a default-type <script> would execute their JSON
+        // body as JavaScript and crash with "Unexpected token ':'".
+        const type = oldScript.getAttribute('type') ?? '';
+        const isExecutable =
+            type === '' ||
+            type === 'module' ||
+            /^(?:text|application)\/(?:javascript|ecmascript)/i.test(type);
+        if (!isExecutable) {
+            return;
+        }
         const newScript = document.createElement('script');
+        // Preserve type so module scripts stay modules.
+        if (type) {
+            newScript.type = type;
+        }
         if (oldScript.src) {
             const p = new Promise<void>(resolve => {
                 newScript.onload = () => resolve();
@@ -81,6 +95,10 @@ const reinitPage = async () => {
     initGraphs();
     initCoverage();
     initAnimations();
+    // Re-bind StackBlitz launchers — `<button class="cdx-playground-launch">`
+    // tags from the swapped page need a fresh click handler. WeakSet guards
+    // inside `initStackblitz` make this idempotent for already-bound buttons.
+    initStackblitz();
     // initToc();
 };
 

@@ -45,6 +45,7 @@ export const COMPODOC_DEFAULTS = {
     disableRoutesGraph: false,
     disableDependencies: false,
     disableDependenciesTab: false,
+    disablePlaygroundTab: false,
     disableProperties: false,
     disableFilePath: false,
     disableOverview: false,

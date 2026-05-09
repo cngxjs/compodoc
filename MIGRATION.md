@@ -113,6 +113,7 @@ The rest of the document only matters if you fall into one of these buckets:
 | `--coverageTest`, `--coverageMinimumPerFile`, `--coverageTestThresholdFail` | unchanged | |
 | `--disableSourceCode`, `--disableDomTree`, `--disableTemplateTab`, `--disableGraph`, `--disableCoverage`, `--disablePrivate`, `--disableProtected`, `--disableInternal`, `--disableLifeCycleHooks`, `--disableConstructors`, `--disableFilePath` | unchanged | |
 | `--disableDependenciesTab` | **new** | Hides the per-component standalone-import graph independently from `--disableGraph`. |
+| `--disablePlaygroundTab` | **new** (opt-in, default `false`) | Hides the per-component Playground tab even when `@playground` blocks are present in the source. |
 | `--customFavicon`, `--customLogo` | unchanged | |
 | `--hideGenerator`, `--hideDarkModeToggle` | unchanged | |
 | `--toggleMenuItems`, `--navTabConfig` | unchanged | |
@@ -122,7 +123,7 @@ The rest of the document only matters if you fall into one of these buckets:
 | `--publicApiOnly` | **new** | Restricts processing to symbols re-exported from a project's public entry. |
 | `--minimal` | unchanged | |
 | `--silent`, `--language`, `--maxSearchResults` | unchanged | |
-| `--templatePlayground` | deprecated | The browser-based template playground still ships but generates Handlebars output that is no longer compatible with `--templates`. Use it for visual reference only — the ZIP export's README spells this out. The flag will be removed in a future release. |
+| `--templatePlayground` | **removed in v0.4.0** | The Handlebars-based template playground was deprecated in v0.3.0 and removed in v0.4.0. Authors who relied on it should switch to the JS template override path (`--templates`) — see [Custom Templates](custom-templates.md). The companion `compodocx migrate` sub-CLI converts existing Handlebars partials to JS overrides automatically. |
 
 Config-file (`.compodocrc.json`, `.compodocrc.yaml`, `.compodocrc.js`) keys mirror the CLI flags one-to-one. Existing config files keep working unchanged.
 
@@ -140,6 +141,91 @@ Config-file (`.compodocrc.json`, `.compodocrc.yaml`, `.compodocrc.js`) keys mirr
 ### Changed
 
 - **Default JSON indent dropped from `4` → `0`.** The new `documentation.json` is single-line by default — substantially smaller. Pass `--jsonIndent 2` (or any value 0–8) to restore human-readable formatting. Tools that read the file with `jq` are unaffected; tools that depend on whitespace-sensitive regexes should opt into `--jsonIndent 2` or migrate to a JSON parser.
+
+## Adding runnable `@playground` blocks
+
+Components can now ship author-curated, runnable demos. Add one or more `@playground <title>` JSDoc blocks to a component class:
+
+```ts
+/**
+ * Reusable button.
+ *
+ * @example                              // unchanged — static, on the Info tab
+ * ```html
+ * <my-button label="Click me" />
+ * ```
+ *
+ * @playground Default state             // new — runnable, on the Playground tab
+ * ```html
+ * <my-button label="Click me" />
+ * ```
+ *
+ * @playground Disabled state
+ * ```html
+ * <my-button label="Click me" [disabled]="true" />
+ * ```
+ */
+@Component({ /* ... */ })
+export class MyButton { /* ... */ }
+```
+
+Each `@playground` block becomes one section on a dedicated **Playground** tab on the component page, with an "Open in StackBlitz" button. Clicking the button opens a new StackBlitz tab seeded with the consumed component source plus a minimal Angular workspace — no library publication required.
+
+- The tag is **opt-in**. Components without `@playground` blocks render exactly as before.
+- The title (everything after `@playground`) is required. Blocks with a missing title or no fenced code body are dropped with a build-time warning.
+- `@example` rendering on the Info tab is unchanged. `@example` and `@playground` can coexist.
+- `<example-url>` (live external iframes) keeps working — the existing **Examples** tab is untouched.
+- Disable the tab globally with `--disablePlaygroundTab` (config key `disablePlaygroundTab: true`).
+- Multiple blocks on the same component are rendered in source order.
+
+For very large components, the project assembler caps inline file size at 8000 chars per file, walks at most 25 transitive sources, and stops at depth 3. When those caps are hit the section renders a static fallback instead of the launcher; the build log surfaces the reason.
+
+### `@playground` file references (v0.4.0+)
+
+The tag now accepts a trailing relative path token. Long demos and stateful demos move out of the JSDoc comment into real files on disk that you author with full editor support:
+
+```ts
+/**
+ * Reusable button.
+ *
+ * @playground Inline snippet
+ * ```html
+ * <my-button>Click</my-button>
+ * ```
+ *
+ * @playground HTML file ./examples/showcase.html
+ * @playground Full component ./examples/full/full-example.component.ts
+ */
+@Component({ /* ... */ })
+export class MyButton {}
+```
+
+| Mode | Tag form | What ships in the StackBlitz |
+|-|-|-|
+| Inline (existing) | `@playground <title>` + fenced body | Generated AppComponent with the snippet as its `template: \`...\`` literal |
+| HTML file | `@playground <title> ./path.html` | Generated AppComponent with the file's body as its template |
+| TS component | `@playground <title> ./path.component.ts` | The entry's `@Component` class IS the AppComponent. `templateUrl` / `styleUrl` / `styleUrls` siblings and relative imports are walked and packed automatically |
+
+Authoring rules:
+
+- File paths must start with `./` or `../` and end in `.html` or `.ts`.
+- Path detection: only a trailing token preceded by whitespace at end-of-line triggers file-ref mode. Titles can contain slashes (`A / B comparison ./demo.html` parses to title `A / B comparison`, fileRef `./demo.html`).
+- Mutual exclusion: a tag with both a fileRef AND a fenced body is dropped with a `mutually exclusive` warning.
+- For TS mode: use `selector: 'app-root'` on the entry. The class name itself can be anything — compodocx appends `export { YourClass as AppComponent }` automatically so the scaffold's `src/main.ts` resolves.
+- `templateUrl` / `styleUrl` / `styleUrls` must use string literals (template literals are not parsed by the regex resolver).
+
+New config-only key for library authors who need to pin extra runtime dependencies in the StackBlitz manifest:
+
+```jsonc
+// compodocx.config.json
+{
+    "playgroundDependencies": {
+        "@my-org/ui-kit": "^1.0.0"
+    }
+}
+```
+
+`playgroundDependencies` wins over the consumer-`package.json` auto-forward and over any auto-detected version (e.g. Material). No CLI flag.
 
 ## Themes
 
@@ -362,11 +448,11 @@ If your custom CSS targets generated class names, this is the rough shape of the
 
 The full set of `cdx-*` class names emitted by the renderer is documented inline in `src/templates/blocks/*.tsx` and `src/templates/pages/*.tsx`. `data-compodoc="<block-name>"` attributes are also emitted on every section to make CSS targeting and downstream scraping stable across versions.
 
-## Template Playground
+## Template Playground (removed in v0.4.0)
 
-The compodoc-era browser-based Template Playground (`--templatePlayground`) still ships but is on the deprecation path. It generates Handlebars templates which are no longer compatible with `compodocx --templates`. The ZIP export's README warns about this explicitly.
+The compodoc-era browser-based Template Playground (`--templatePlayground`) was deprecated in v0.3.0 and removed in v0.4.0. It generated Handlebars templates which are no longer compatible with `compodocx --templates`.
 
-For 0.0.1, treat the playground as a visual-reference tool only. A JavaScript-based replacement is on the roadmap for a later release.
+Authors who used it should switch to the JS template override path (`--templates`). The companion `compodocx migrate` sub-CLI converts existing Handlebars partials to JS overrides automatically — see [Custom Templates](custom-templates.md).
 
 ## Unsupported migrations
 

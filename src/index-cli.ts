@@ -267,6 +267,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 COMPODOC_DEFAULTS.disableDependenciesTab
             )
             .option(
+                '--disablePlaygroundTab',
+                'Do not add the Playground tab even when @playground blocks are present',
+                COMPODOC_DEFAULTS.disablePlaygroundTab
+            )
+            .option(
                 '--disableProperties',
                 'Do not add the properties list',
                 COMPODOC_DEFAULTS.disableProperties
@@ -285,11 +290,6 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 '--showEffects',
                 'Show Angular effect() entries in a dedicated Effects block',
                 COMPODOC_DEFAULTS.showEffects
-            )
-            .option(
-                '--templatePlayground',
-                'Generate template playground page for customizing templates',
-                false
             )
             .option(
                 '--minimal',
@@ -485,6 +485,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             Configuration.mainData.themingTabSections = configFile.themingTabSections;
         }
 
+        if (
+            configFile.playgroundDependencies &&
+            typeof configFile.playgroundDependencies === 'object'
+        ) {
+            Configuration.mainData.playgroundDependencies = configFile.playgroundDependencies;
+        }
+
         if (configFile.includes) {
             Configuration.mainData.includes = configFile.includes;
         }
@@ -514,13 +521,6 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.serve) {
             Configuration.mainData.serve = programOptions.serve;
-        }
-
-        if (configFile.templatePlayground) {
-            Configuration.mainData.templatePlayground = configFile.templatePlayground;
-        }
-        if (programOptions.templatePlayground) {
-            Configuration.mainData.templatePlayground = programOptions.templatePlayground;
         }
 
         if (configFile.host) {
@@ -806,6 +806,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.disableDependenciesTab) {
             Configuration.mainData.disableDependenciesTab = programOptions.disableDependenciesTab;
+        }
+
+        if (configFile.disablePlaygroundTab) {
+            Configuration.mainData.disablePlaygroundTab = configFile.disablePlaygroundTab;
+        }
+        if (programOptions.disablePlaygroundTab) {
+            Configuration.mainData.disablePlaygroundTab = programOptions.disablePlaygroundTab;
         }
 
         if (configFile.disableProperties) {

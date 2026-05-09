@@ -147,6 +147,7 @@ export const TRANSLATION_NL_NL = {
     'peer-dependencies': 'Peer dependencies',
     pipe: 'Pipe',
     pipes: 'Pipes',
+    playground: 'Playground',
     prefix: 'Voorvoegsel',
     'project-health': 'Projectgezondheid',
     'project-overview': 'Projectoverzicht',

@@ -1,3 +1,4 @@
+import type { FileRefBundle } from '../engines/stackblitz';
 import type { CoverageData } from './coverageData.interface';
 
 export interface MainDataInterface {
@@ -7,7 +8,6 @@ export interface MainDataInterface {
     customThemePath: string;
     shikiTheme: string;
     serve: boolean;
-    templatePlayground: boolean;
     hostname: string;
     host: string;
     port: number;
@@ -61,6 +61,12 @@ export interface MainDataInterface {
     disableSearch: boolean;
     disableDependencies: boolean;
     disableDependenciesTab: boolean;
+    /**
+     * When true, suppresses the Playground tab on component pages even if
+     * `@playground` blocks were parsed. Default false. Independent of
+     * `disableDependenciesTab` — that flag only controls the dependency graph.
+     */
+    disablePlaygroundTab: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
     disableOverview: boolean;
@@ -121,6 +127,33 @@ export interface MainDataInterface {
     themingTabSections: string[];
     stackblitz: boolean;
     stackblitzTemplate: string;
+    /**
+     * Subset of the consumer's `package.json` (`dependencies` +
+     * `peerDependencies`) used to pin third-party deps in `@playground`
+     * StackBlitz manifests. Set in `application.ts` after the workspace
+     * `package.json` is loaded; left as `{}` when no manifest is reachable.
+     */
+    workspacePackage: {
+        dependencies?: Record<string, string>;
+        peerDependencies?: Record<string, string>;
+    };
+    /**
+     * Config-only override map for `@playground` manifests. Wins over the
+     * consumer-`package.json` auto-forward — use it for libraries the
+     * consumer hosts but doesn't `npm install` directly (peer-only CSS
+     * themes, dev-time-only deps), or to pin a specific version per build.
+     * No CLI flag — this surfaces only via `compodocx.config.json`.
+     */
+    playgroundDependencies: Record<string, string>;
+    /**
+     * Resolved file-ref bundles per playground block. Key format:
+     * `${componentName}:${blockIndex}`. Populated in `application.ts` after
+     * the dep-graph build by walking every component/directive/etc with at
+     * least one `@playground` block carrying `fileRef`. Failed reads warn via
+     * `logger.warn` and the entry is skipped — the manifest builder then
+     * surfaces a "Project assembly failed" fallback for that block.
+     */
+    playgroundFiles: Record<string, FileRefBundle>;
     appConfig: any[];
     categorizedComponents: Record<string, unknown[]>;
     categorizedDirectives: Record<string, unknown[]>;

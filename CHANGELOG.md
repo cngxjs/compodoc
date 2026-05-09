@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [Unreleased]
+
+### Added
+
+- **`@playground` file references.** The `@playground <title>` JSDoc tag now accepts an optional trailing `./*.html` or `./*.ts` relative path token. HTML files become the AppComponent template body; TS files (real standalone `@Component` classes with optional `templateUrl` / `styleUrl` / `styleUrls` siblings and relative imports) replace the AppComponent entirely. The resolver walks every dependent file via BFS, rewrites relative imports flat into `src/app/<basename>`, and appends an `export { OriginalName as AppComponent }` alias so the scaffold's `src/main.ts` resolves regardless of the entry's class name. Inline fenced-snippet authoring continues to work unchanged.
+- **`playgroundDependencies` config-only key.** Inject extra packages into every StackBlitz manifest's `dependencies`, with the version YOU specify. Wins over the consumer-`package.json` auto-forward AND any auto-detected version (e.g. Material). Use for libraries the consumer ships but doesn't `npm install` directly (peer-only CSS themes), or to pin a specific version per build.
+- **JSON-in-script hardening.** Inline `<script type="application/json">` payloads (used by every `@playground` block to ship its manifest to the browser) now escape every `<`, `>`, `&`, U+2028, U+2029 character as `\uXXXX`. Replaces the previous naive `</` sanitiser, which intermittently produced "Unterminated string in JSON" parse failures in browsers when manifest payloads contained arbitrary angle brackets.
+
+### Removed
+
+- **`--templatePlayground` CLI flag and the entire Handlebars-based Template Playground browser UI** (deprecated in v0.3.0). Authors who used the playground should migrate to the JS template override path (`--templates`) — the companion `compodocx migrate` sub-CLI converts existing Handlebars partials to JS overrides automatically. Six entry points removed from the codebase: `src/template-playground/`, `src/resources/template-playground/`, `tools/build-template-playground.js`, `scripts/start-playground{,-simple}.js`, the `templatePlayground` field on `MainDataInterface`/`ConfigurationFileInterface`, the `processTemplatePlayground()` method on `Application`, and the corresponding `package.json` scripts (`start-playground`, `playground`, `dev:playground`, `playground:simple`, `build-template-playground`, `test:playground`). The `template-playground-server` tsdown entry point is also dropped.
+
 ## [0.3.0] — 2026-05-08
 
 Migration and tooling foundations. Adds three new sub-commands (`migrate`, `diff`, plus an `llm-md` export format), an end-to-end multi-version output pipeline with a runtime version-switcher dropdown, and finer JSON output control. Existing 0.2.x consumers can stay on a flat single-version layout with `--no-multiVersion`; everything else lands additively.
