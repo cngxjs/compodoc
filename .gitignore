@@ -58,3 +58,4 @@ tmp/
 .playwright-mcp/
 /test/fixtures/cngx-library/
 /test/fixtures/rsg-module-library/
+/test/fixtures/playground-demo/*
