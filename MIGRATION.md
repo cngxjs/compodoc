@@ -180,6 +180,53 @@ Each `@playground` block becomes one section on a dedicated **Playground** tab o
 
 For very large components, the project assembler caps inline file size at 8000 chars per file, walks at most 25 transitive sources, and stops at depth 3. When those caps are hit the section renders a static fallback instead of the launcher; the build log surfaces the reason.
 
+### `@playground` file references (v0.4.0+)
+
+The tag now accepts a trailing relative path token. Long demos and stateful demos move out of the JSDoc comment into real files on disk that you author with full editor support:
+
+```ts
+/**
+ * Reusable button.
+ *
+ * @playground Inline snippet
+ * ```html
+ * <my-button>Click</my-button>
+ * ```
+ *
+ * @playground HTML file ./examples/showcase.html
+ * @playground Full component ./examples/full/full-example.component.ts
+ */
+@Component({ /* ... */ })
+export class MyButton {}
+```
+
+| Mode | Tag form | What ships in the StackBlitz |
+|-|-|-|
+| Inline (existing) | `@playground <title>` + fenced body | Generated AppComponent with the snippet as its `template: \`...\`` literal |
+| HTML file | `@playground <title> ./path.html` | Generated AppComponent with the file's body as its template |
+| TS component | `@playground <title> ./path.component.ts` | The entry's `@Component` class IS the AppComponent. `templateUrl` / `styleUrl` / `styleUrls` siblings and relative imports are walked and packed automatically |
+
+Authoring rules:
+
+- File paths must start with `./` or `../` and end in `.html` or `.ts`.
+- Path detection: only a trailing token preceded by whitespace at end-of-line triggers file-ref mode. Titles can contain slashes (`A / B comparison ./demo.html` parses to title `A / B comparison`, fileRef `./demo.html`).
+- Mutual exclusion: a tag with both a fileRef AND a fenced body is dropped with a `mutually exclusive` warning.
+- For TS mode: use `selector: 'app-root'` on the entry. The class name itself can be anything — compodocx appends `export { YourClass as AppComponent }` automatically so the scaffold's `src/main.ts` resolves.
+- `templateUrl` / `styleUrl` / `styleUrls` must use string literals (template literals are not parsed by the regex resolver).
+
+New config-only key for library authors who need to pin extra runtime dependencies in the StackBlitz manifest:
+
+```jsonc
+// compodocx.config.json
+{
+    "playgroundDependencies": {
+        "@my-org/ui-kit": "^1.0.0"
+    }
+}
+```
+
+`playgroundDependencies` wins over the consumer-`package.json` auto-forward and over any auto-detected version (e.g. Material). No CLI flag.
+
 ## Themes
 
 The bundled theme set is different. Pick one of the new names, or supply your own CSS file via `--extTheme` / `theme: "./path/to/theme.css"`.

@@ -126,7 +126,7 @@ compodocx builds on the JSDoc-tag conventions from compodoc but adds a few that 
 - `@overview` in a CSS / SCSS file produces the prose intro at the top of the Theming tab.
 - `@group <name>` on a token bucket organizes the Theming tab and the token index.
 - `@example` blocks (multi-line, fenced) render with Shiki syntax highlighting in both API and Theming tabs.
-- `@playground <title>` blocks add a dedicated Playground tab on the component page, with an "Open in StackBlitz" button per block. See [MIGRATION.md](MIGRATION.md#adding-runnable-playground-blocks) for the authoring guide.
+- `@playground <title>` blocks add a dedicated Playground tab on the component page, with an "Open in StackBlitz" button per block. The body can be an inline fenced snippet, a `./path.html` file reference, or a `./path.component.ts` standalone-component reference (with `templateUrl` / `styleUrl` siblings and relative imports walked automatically). See [MIGRATION.md](MIGRATION.md#adding-runnable-playground-blocks) for the authoring guide.
 - `@deprecated [reason]` adds a strikethrough plus a deprecation banner to any entity, member, or token.
 - `@since <version>` adds a "since" chip next to the entity / member / token name.
 - `@see <url-or-name>` renders a "See also" link list.

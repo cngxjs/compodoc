@@ -177,14 +177,48 @@ Integrate Google Analytics 4 (gtag.js) tracking into the generated documentation
 |-|-|-|-|-|
 | gaID | `--gaID` | string | -- | Google Analytics 4 measurement ID (e.g. `G-XXXXXXXXXX`). When set, the gtag.js script is injected into every page |
 
-## StackBlitz Integration
+## Playground (`@playground`)
 
-Enable live code examples powered by StackBlitz. When enabled, `@example` JSDoc tags with code blocks can be opened in StackBlitz directly from the documentation.
+The modern path for runnable component demos. Add `@playground <title>` JSDoc blocks to a component class and compodocx assembles a fresh, complete StackBlitz Angular project per block at build time. The SDK is lazy-loaded on first click; static doc pages stay light.
+
+Three authoring modes, dispatched by the trailing token on the tag line:
+
+| Mode | Tag form | Source of truth |
+|-|-|-|
+| Inline | `@playground <title>` + fenced HTML/TS code block | the JSDoc comment |
+| HTML file | `@playground <title> ./path/to/file.html` | external `.html` file |
+| TS component | `@playground <title> ./path/to/file.component.ts` | a real `@Component` class with optional `templateUrl`/`styleUrl`/`styleUrls` and any number of relative imports |
+
+All three modes share the same scaffold (Angular CLI 21 standalone project, WebContainer template). Material widgets are auto-detected: when the demo references known Material selectors or attribute directives, `@angular/material` and `@angular/cdk` are force-pinned and the prebuilt theme is wired up automatically. Bare-specifier imports in any walked source are auto-forwarded with the version your `package.json` declares.
 
 | Option | CLI | Type | Default | Description |
 |-|-|-|-|-|
-| stackblitz | `--stackblitz` | boolean | `false` | Enable StackBlitz integration. Adds "Open in StackBlitz" buttons to code examples |
-| stackblitzTemplate | `--stackblitzTemplate` | string | -- | StackBlitz project template ID. The example code is injected into this template when the user clicks "Open in StackBlitz" |
+| disablePlaygroundTab | `--disablePlaygroundTab` | boolean | `false` | Hide the per-component Playground tab even when `@playground` blocks are parsed. Independent of `--disableDependenciesTab`. No effect on components without `@playground` blocks (the tab is already absent). |
+| playgroundDependencies | -- (config-only) | object | `{}` | Extra packages to inject into every StackBlitz manifest's `dependencies`, with the version YOU specify. Wins over the consumer-`package.json` auto-forward AND any auto-detected version (e.g. Material). Use for libraries the consumer ships but doesn't `npm install` directly (peer-only CSS themes), or to pin a per-build version. |
+
+```jsonc
+// compodocx.config.json
+{
+    "tsconfig": "projects/ui-kit/tsconfig.lib.json",
+    "output": "docs/",
+    "publicApiOnly": true,
+    "playgroundDependencies": {
+        "@my-org/ui-kit": "^1.0.0",
+        "@my-org/themes": "next"
+    }
+}
+```
+
+For the complete authoring guide (folder layout, library-author workflow, troubleshooting), see [the Playground guide on compodocx.dev](https://compodocx.dev/guides/playground/).
+
+## Legacy `@stackblitz <url>` integration
+
+Predates `@playground`. The `@stackblitz <url>` JSDoc tag adds a single "Open in StackBlitz" link in the entity hero, pointing at a pre-existing StackBlitz project the author maintains externally. No build-time assembly, no manifest. Use `@playground` for new projects — `@stackblitz` is kept for migration compatibility.
+
+| Option | CLI | Type | Default | Description |
+|-|-|-|-|-|
+| stackblitz | `--stackblitz` | boolean | `false` | Enable legacy StackBlitz integration. Adds "Open in StackBlitz" buttons to `@example` code blocks (when paired with `stackblitzTemplate`) |
+| stackblitzTemplate | `--stackblitzTemplate` | string | -- | StackBlitz project template ID. Example code is injected into this template when the user clicks "Open in StackBlitz" |
 
 ## Search
 
@@ -310,3 +344,7 @@ Compodocx recognizes these custom JSDoc tags on any entity or member:
 | `@github <url>` | Adds a GitHub link in the entity hero |
 | `@docs <url>` | Adds a documentation link in the entity hero |
 | `@example` | Code examples rendered in the Info tab with syntax highlighting |
+| `@playground <title> [<path>]` | Runnable demo on the component's Playground tab. Title required. Optional trailing `./*.html` or `./*.ts` path triggers file-ref mode (see Playground section). |
+| `@slot <name> <description>` | Adds a row to the component's Slots section in the Info tab |
+| `@overview` (in CSS / SCSS) | Prose intro at the top of the Theming tab |
+| `@group <name>` (on a CSS / SCSS token) | Groups the token under this heading on the Theming tab |
