@@ -106,7 +106,7 @@ describe('buildPlaygroundManifest', () => {
         expect(result.value.dependencies['@angular/common']).to.equal('*');
     });
 
-    it('includes @angular/material and @angular/cdk so Material consumers compile', () => {
+    it('forwards @angular/material and @angular/cdk only when the consumer declares them', () => {
         const pkg = {
             dependencies: {
                 '@angular/core': '^21.0.0',
@@ -123,14 +123,14 @@ describe('buildPlaygroundManifest', () => {
         expect(result.value.dependencies['@angular/cdk']).to.equal('^21.0.0');
     });
 
-    it('falls back to "*" for Material/CDK when the consumer package.json omits them', () => {
+    it('omits @angular/material and @angular/cdk when the consumer does not declare them', () => {
         const result = buildPlaygroundManifest('MyButton', block, resolverFor([rootNode]), {});
         expect(result.ok).to.be.true;
         if (!result.ok) {
             return;
         }
-        expect(result.value.dependencies['@angular/material']).to.equal('*');
-        expect(result.value.dependencies['@angular/cdk']).to.equal('*');
+        expect(result.value.dependencies).not.to.have.property('@angular/material');
+        expect(result.value.dependencies).not.to.have.property('@angular/cdk');
     });
 
     it('preserves the snippet language inside the demo component template', () => {

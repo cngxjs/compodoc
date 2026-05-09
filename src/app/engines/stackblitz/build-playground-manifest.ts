@@ -48,10 +48,9 @@ const DEFAULT_SOURCE_ROOT = 'src/app/';
 const ANGULAR_FALLBACK = '*';
 
 // Public Angular peers always present in the manifest's dependencies map.
-// Material + CDK are included unconditionally because most consumers either
-// extend Material directives/components or rely on its theming primitives;
-// omitting them breaks StackBlitz compilation for any playground whose
-// snippet references a `<mat-*>` selector or imports from `@angular/cdk/*`.
+// Each entry falls back to '*' when the consumer's package.json does not
+// list it, so plain Angular snippets compile against whichever StackBlitz
+// resolves at boot time.
 const ANGULAR_PEERS = [
     '@angular/core',
     '@angular/common',
@@ -59,10 +58,15 @@ const ANGULAR_PEERS = [
     '@angular/router',
     '@angular/animations',
     '@angular/platform-browser',
-    '@angular/platform-browser-dynamic',
-    '@angular/cdk',
-    '@angular/material'
+    '@angular/platform-browser-dynamic'
 ];
+
+// Optional ecosystem peers — only forwarded into the manifest when the
+// consumer's package.json actually declares them. Pure cngx demos must not
+// drag Material into StackBlitz; conversely, a Material-extending component
+// will not boot without these peers. The consumer package.json is the
+// single source of truth.
+const OPTIONAL_ANGULAR_PEERS = ['@angular/cdk', '@angular/material'];
 
 const ESCAPE_SELECTOR = (selector: string): string => selector.replaceAll(/[^a-zA-Z0-9-]/g, '');
 
@@ -79,6 +83,11 @@ const collectAngularDeps = (manifest?: ConsumerPackageJson): Record<string, stri
     };
     for (const peer of ANGULAR_PEERS) {
         deps[peer] = provided[peer] ?? ANGULAR_FALLBACK;
+    }
+    for (const peer of OPTIONAL_ANGULAR_PEERS) {
+        if (provided[peer]) {
+            deps[peer] = provided[peer];
+        }
     }
     return deps;
 };
