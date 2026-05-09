@@ -150,7 +150,7 @@ Compodocx tracks documentation coverage -- the percentage of public members that
 
 ## Additional Content
 
-Include external documentation, static assets, or enable the template customization playground.
+Include external documentation, static assets, or supply custom templates.
 
 | Option | CLI | Type | Default | Description |
 |-|-|-|-|-|
@@ -158,7 +158,6 @@ Include external documentation, static assets, or enable the template customizat
 | includesName | `--includesName` | string | `'Additional documentation'` | Sidebar label for the external markdown pages section |
 | assetsFolder | `-a, --assetsFolder` | string | -- | Path to a folder of static assets (images, files) copied into the output directory. Referenced from markdown or custom templates via relative paths |
 | templates | `--templates` | string | -- | Path to a directory containing JS template overrides. Each file exports a function `(data, helpers) => string` that replaces the corresponding built-in template. See [Custom Templates](custom-templates.md) for the full API |
-| templatePlayground | `--templatePlayground` | boolean | `false` | Generate a Template Playground page that lets users experiment with template overrides interactively. Adds a special page with a code editor and live preview |
 
 ## Sidebar Grouping
 

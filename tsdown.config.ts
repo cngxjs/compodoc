@@ -4,13 +4,12 @@ export default defineConfig({
     entry: {
         'index-cli': 'src/index-cli.ts',
         index: 'src/index.ts',
-        'template-playground-server': 'src/template-playground/template-playground-server.ts',
     },
     format: ['esm', 'cjs'],
     outDir: 'dist',
     sourcemap: 'inline',
-    // Keep CJS at dist/*.js (matches main field, bin shim, scripts/start-playground-simple.js
-    // require()), ESM at dist/*.mjs.
+    // Keep CJS at dist/*.js (matches main field, bin shim require resolution),
+    // ESM at dist/*.mjs.
     outExtensions: ({ format }) => ({ js: format === 'cjs' ? '.js' : '.mjs' }),
     // Auto-detection covers most deps. Restate the explicit list to guard against
     // missed sub-path imports (notably `neotraverse/legacy`) and to keep parity

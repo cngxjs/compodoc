@@ -14,7 +14,6 @@ export class Configuration implements ConfigurationInterface {
         customThemePath: '',
         shikiTheme: '',
         serve: false,
-        templatePlayground: false,
         hostname: COMPODOC_DEFAULTS.hostname,
         host: '',
         port: COMPODOC_DEFAULTS.port,

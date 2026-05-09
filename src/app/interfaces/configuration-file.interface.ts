@@ -49,7 +49,6 @@ export interface ConfigurationFileInterface {
     disableFilePath: boolean;
     disableOverview: boolean;
     showEffects: boolean;
-    templatePlayground: boolean;
     minimal: boolean;
     customFavicon: string;
     customLogo: string;

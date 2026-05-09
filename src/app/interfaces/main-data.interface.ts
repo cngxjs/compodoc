@@ -8,7 +8,6 @@ export interface MainDataInterface {
     customThemePath: string;
     shikiTheme: string;
     serve: boolean;
-    templatePlayground: boolean;
     hostname: string;
     host: string;
     port: number;

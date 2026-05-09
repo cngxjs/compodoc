@@ -437,13 +437,6 @@
             "title": "Max search results on the results page. Set to 0 for unlimited",
             "default": 15,
             "examples": [15]
-        },
-        "templatePlayground": {
-            "$id": "/properties/templatePlayground",
-            "type": "boolean",
-            "title": "Generate template playground page for customizing templates",
-            "default": false,
-            "examples": [false]
         }
     }
 }

@@ -123,7 +123,7 @@ The rest of the document only matters if you fall into one of these buckets:
 | `--publicApiOnly` | **new** | Restricts processing to symbols re-exported from a project's public entry. |
 | `--minimal` | unchanged | |
 | `--silent`, `--language`, `--maxSearchResults` | unchanged | |
-| `--templatePlayground` | deprecated | The browser-based template playground still ships but generates Handlebars output that is no longer compatible with `--templates`. Use it for visual reference only — the ZIP export's README spells this out. The flag will be removed in a future release. |
+| `--templatePlayground` | **removed in v0.4.0** | The Handlebars-based template playground was deprecated in v0.3.0 and removed in v0.4.0. Authors who relied on it should switch to the JS template override path (`--templates`) — see [Custom Templates](custom-templates.md). The companion `compodocx migrate` sub-CLI converts existing Handlebars partials to JS overrides automatically. |
 
 Config-file (`.compodocrc.json`, `.compodocrc.yaml`, `.compodocrc.js`) keys mirror the CLI flags one-to-one. Existing config files keep working unchanged.
 
@@ -448,11 +448,11 @@ If your custom CSS targets generated class names, this is the rough shape of the
 
 The full set of `cdx-*` class names emitted by the renderer is documented inline in `src/templates/blocks/*.tsx` and `src/templates/pages/*.tsx`. `data-compodoc="<block-name>"` attributes are also emitted on every section to make CSS targeting and downstream scraping stable across versions.
 
-## Template Playground
+## Template Playground (removed in v0.4.0)
 
-The compodoc-era browser-based Template Playground (`--templatePlayground`) still ships but is on the deprecation path. It generates Handlebars templates which are no longer compatible with `compodocx --templates`. The ZIP export's README warns about this explicitly.
+The compodoc-era browser-based Template Playground (`--templatePlayground`) was deprecated in v0.3.0 and removed in v0.4.0. It generated Handlebars templates which are no longer compatible with `compodocx --templates`.
 
-For 0.0.1, treat the playground as a visual-reference tool only. A JavaScript-based replacement is on the roadmap for a later release.
+Authors who used it should switch to the JS template override path (`--templates`). The companion `compodocx migrate` sub-CLI converts existing Handlebars partials to JS overrides automatically — see [Custom Templates](custom-templates.md).
 
 ## Unsupported migrations
 
