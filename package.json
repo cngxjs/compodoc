@@ -18,7 +18,7 @@
         "dev": "node scripts/dev-watch.mjs",
         "dev:standalone": "node scripts/dev-watch.mjs --fixture=kitchen-sink-standalone --port=8081",
         "dev:module": "node scripts/dev-watch.mjs --fixture=kitchen-sink-module --port=8080",
-        "build-schematics": "tsc --project schematics/tsconfig.json && cp schematics/collection.json dist",
+        "build-schematics": "tsc --project schematics/tsconfig.json && cp schematics/collection.json dist && cp schematics/ng-add/schema.json dist/schematics/ng-add/schema.json",
         "*********UTILS********": "*******************",
         "changelog": "auto-changelog -o CH.md  --template tools/changelog-template.hbs -u",
         "angularexpo": "npm run pretest && node tools/tests-angularexpo.js",

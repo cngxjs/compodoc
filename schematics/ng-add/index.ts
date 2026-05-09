@@ -1,55 +1,49 @@
 import { Rule, SchematicContext, Tree, SchematicsException } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
+import type { NgAddSchema } from './schema';
 
 const TSCONFIG_DATA = {
     include: ['src/**/*.ts'],
     exclude: ['src/**/*.spec.ts']
 };
 
-function safeReadJSON(path: string, tree: Tree) {
+function safeReadJSON(path: string, tree: Tree): { [key: string]: unknown } {
+    const file = tree.read(path);
+    if (!file) {
+        throw new SchematicsException(`Could not read ${path}`);
+    }
     try {
-        return JSON.parse(tree.read(path)!.toString());
+        return JSON.parse(file.toString());
     } catch (e) {
-        throw new SchematicsException(`Error when parsing ${path}: ${e.message}`);
+        const message = e instanceof Error ? e.message : String(e);
+        throw new SchematicsException(`Error when parsing ${path}: ${message}`);
     }
 }
 
 // Just return the tree
-export function ngAdd(): Rule {
+export function ngAdd(_options: NgAddSchema = {}): Rule {
     return (tree: Tree, context: SchematicContext) => {
         // Create tsconfig.doc.json file
         const tsconfigDocFile = 'tsconfig.doc.json';
         if (!tree.exists(tsconfigDocFile)) {
             tree.create(tsconfigDocFile, JSON.stringify(TSCONFIG_DATA));
         }
-        // update package.json scripts
-        const packageJsonFile = 'package.json';
-        const packageJson = tree.exists(packageJsonFile) && safeReadJSON(packageJsonFile, tree);
 
-        if (packageJson === undefined) {
+        const packageJsonFile = 'package.json';
+        if (!tree.exists(packageJsonFile)) {
             throw new SchematicsException('Could not locate package.json');
         }
+        const packageJson = safeReadJSON(packageJsonFile, tree);
 
-        let packageScripts = {};
-        if (packageJson['scripts']) {
-            packageScripts = packageJson['scripts'];
-        } else {
-            packageScripts = {};
-        }
+        const packageScripts: { [key: string]: string } =
+            (packageJson['scripts'] as { [key: string]: string } | undefined) ?? {};
+        packageScripts['compodoc:build'] = 'compodoc -p tsconfig.doc.json';
+        packageScripts['compodoc:build-and-serve'] = 'compodoc -p tsconfig.doc.json -s';
+        packageScripts['compodoc:serve'] = 'compodoc -s';
+        packageJson['scripts'] = packageScripts;
 
-        if (packageScripts) {
-            packageScripts['compodoc:build'] = 'compodoc -p tsconfig.doc.json';
-            packageScripts['compodoc:build-and-serve'] = 'compodoc -p tsconfig.doc.json -s';
-            packageScripts['compodoc:serve'] = 'compodoc -s';
-        }
+        tree.overwrite(packageJsonFile, JSON.stringify(packageJson, null, 2));
 
-        if (tree.exists(packageJsonFile)) {
-            tree.overwrite(packageJsonFile, JSON.stringify(packageJson, null, 2));
-        } else {
-            tree.create(packageJsonFile, JSON.stringify(packageJson, null, 2));
-        }
-
-        // install package with npm
         context.addTask(new NodePackageInstallTask());
         return tree;
     };

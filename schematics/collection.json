@@ -2,8 +2,9 @@
     "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
     "schematics": {
         "ng-add": {
-            "description": "Add Compodoc schematic",
-            "factory": "./schematics/ng-add/index#ngAdd"
+            "description": "Install compodocx, generate tsconfig.doc.json and package.json scripts, and migrate any legacy @compodoc/compodoc artefacts.",
+            "factory": "./schematics/ng-add/index#ngAdd",
+            "schema": "./schematics/ng-add/schema.json"
         }
     }
 }
