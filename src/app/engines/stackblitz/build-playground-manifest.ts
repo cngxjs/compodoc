@@ -139,7 +139,7 @@ const resolvePackageRoot = (specifier: string): string => {
  * Scan a source file for bare-specifier imports and return the deduped set
  * of resolved package roots. Pure — no I/O.
  */
-const extractBareSpecifiers = (source: string): Set<string> => {
+export const extractBareSpecifiers = (source: string): Set<string> => {
     const found = new Set<string>();
     BARE_SPEC_RE.lastIndex = 0;
     let match: RegExpExecArray | null;

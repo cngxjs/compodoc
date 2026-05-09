@@ -4,7 +4,7 @@ export type {
     ConsumerPackageJson,
     PlaygroundManifest
 } from './build-playground-manifest';
-export { buildPlaygroundManifest } from './build-playground-manifest';
+export { buildPlaygroundManifest, extractBareSpecifiers } from './build-playground-manifest';
 export {
     PLAYGROUND_TAG_PATTERN,
     STACKBLITZ_DEP_DEPTH,
@@ -14,5 +14,8 @@ export {
     STACKBLITZ_TRUNCATION_FOOTER
 } from './constants';
 export { emitFileContent } from './format-files';
+export type { FileRefBundle, FileRefResult, FsReader } from './read-file-ref';
+export { readFileRef } from './read-file-ref';
+export { rewriteDecoratorUrls, rewriteRelativeImports } from './rewrite-imports';
 export type { DepGraphNode, DepGraphResolver, WalkOptions, WalkResult } from './walk-dep-graph';
 export { walkDepGraph } from './walk-dep-graph';
