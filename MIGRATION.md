@@ -55,6 +55,32 @@ In your `package.json`:
 
 For most projects this is the entire migration. The `compodoc` binary is also exposed by the new package, so leaving the script as `compodoc -p ...` works too.
 
+## Migrating with `ng add`
+
+Inside an Angular CLI workspace, `ng add @cngxjs/compodocx` does the package.json edit, the `tsconfig.doc.json` seed, and the legacy-artefact rewrite in one pass:
+
+```bash
+ng add @cngxjs/compodocx
+```
+
+What the schematic does on a project that previously used `@compodoc/compodoc`:
+
+- Removes `@compodoc/compodoc` from `dependencies` and `devDependencies` (the install task that runs at the end of the schematic reconciles `package-lock.json`).
+- Renames any `compodoc:<suffix>` script to `compodocx:<suffix>`. If a `compodocx:<suffix>` already exists with a different value, the source script is renamed to `compodoc:<suffix>-legacy` instead — never overwritten.
+- Rewrites the standalone `compodoc` token in any script value (covers `compodoc -p ...`, `npx compodoc ...`, `node_modules/.bin/compodoc ...`) to use the new bin.
+- Adds the three default scripts: `compodocx:build`, `compodocx:build-and-serve`, `compodocx:serve`.
+- Creates `tsconfig.doc.json` if it does not already exist (existing files are left intact).
+
+Useful flags:
+
+- `--skip-migration` — leave the legacy dependency and `compodoc:*` scripts in place. The new `compodocx:*` scripts and `tsconfig.doc.json` are still added.
+- `--project <name>` — required when `angular.json` declares more than one project; the schematic exits with a list of available project names if it is missing.
+- `--script-prefix compodoc` — produce `compodoc:*` script names instead of the default `compodocx:*`. Useful for teams that prefer the legacy naming.
+
+Re-running `ng add @cngxjs/compodocx` on the same workspace is a no-op — the schematic is idempotent and produces zero diff in the second pass.
+
+CI workflow files (GitHub Actions, GitLab CI, Jenkinsfiles) that invoke `compodoc -p ...` directly are not rewritten by the schematic. Update those manually, or rely on the `compodoc` bin alias the new package still ships, which keeps `compodoc -p ...` resolvable at runtime.
+
 The rest of the document only matters if you fall into one of these buckets:
 
 - You shipped a custom Handlebars template directory via `--templates`.
