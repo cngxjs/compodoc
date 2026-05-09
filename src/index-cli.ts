@@ -267,6 +267,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 COMPODOC_DEFAULTS.disableDependenciesTab
             )
             .option(
+                '--disablePlaygroundTab',
+                'Do not add the Playground tab even when @playground blocks are present',
+                COMPODOC_DEFAULTS.disablePlaygroundTab
+            )
+            .option(
                 '--disableProperties',
                 'Do not add the properties list',
                 COMPODOC_DEFAULTS.disableProperties
@@ -806,6 +811,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
         if (programOptions.disableDependenciesTab) {
             Configuration.mainData.disableDependenciesTab = programOptions.disableDependenciesTab;
+        }
+
+        if (configFile.disablePlaygroundTab) {
+            Configuration.mainData.disablePlaygroundTab = configFile.disablePlaygroundTab;
+        }
+        if (programOptions.disablePlaygroundTab) {
+            Configuration.mainData.disablePlaygroundTab = programOptions.disablePlaygroundTab;
         }
 
         if (configFile.disableProperties) {

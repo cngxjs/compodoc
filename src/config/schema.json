@@ -298,6 +298,13 @@
             "default": false,
             "examples": [false]
         },
+        "disablePlaygroundTab": {
+            "$id": "/properties/disablePlaygroundTab",
+            "type": "boolean",
+            "title": "Do not add the Playground tab even when @playground blocks are present",
+            "default": false,
+            "examples": [false]
+        },
         "disableProperties": {
             "$id": "/properties/disableProperties",
             "type": "boolean",
