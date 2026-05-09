@@ -1,7 +1,12 @@
 /**
- * Stackblitz integration — opens StackBlitz projects in new tabs.
- * Handles elements with [data-stackblitz-url] attribute and .cdx-stackblitz-tag buttons.
- * No SDK dependency — uses direct URL opening for simplicity and zero bundle impact.
+ * StackBlitz integration. Two surfaces:
+ *
+ * 1. Author-supplied @stackblitz JSDoc tag links (legacy) — open the linked
+ *    project in a new tab via `window.open` with no SDK loaded.
+ * 2. `@playground` blocks — click on a `.cdx-playground-launch` button
+ *    materializes the SDK lazily via dynamic `import('@stackblitz/sdk')`
+ *    and calls `openProject(manifest, { newWindow: true })`. Static doc
+ *    pages do not pay the SDK byte cost until the user opts in.
  */
 
 function createOpenButton(url: string, container: Element): void {
@@ -12,6 +17,46 @@ function createOpenButton(url: string, container: Element): void {
     btn.target = '_blank';
     btn.rel = 'noopener noreferrer';
     container.appendChild(btn);
+}
+
+async function launchPlayground(buttonEl: HTMLButtonElement): Promise<void> {
+    const manifestId = buttonEl.dataset.cdxStackblitzManifest;
+    if (!manifestId) {
+        return;
+    }
+    const manifestNode = document.querySelector<HTMLScriptElement>(
+        `script[data-cdx-stackblitz-manifest-data="${manifestId}"]`
+    );
+    if (!manifestNode) {
+        console.error('[compodocx] missing playground manifest:', manifestId);
+        return;
+    }
+    let manifest: unknown;
+    try {
+        manifest = JSON.parse(manifestNode.textContent ?? '{}');
+    } catch (err) {
+        console.error('[compodocx] could not parse playground manifest:', err);
+        return;
+    }
+    try {
+        const mod = await import('@stackblitz/sdk');
+        const sdk = (mod as any).default ?? mod;
+        sdk.openProject(manifest, { newWindow: true });
+    } catch (err) {
+        console.error('[compodocx] StackBlitz SDK failed to load:', err);
+    }
+}
+
+function initPlaygroundLaunchers(): void {
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.cdx-playground-launch');
+    if (buttons.length === 0) {
+        return;
+    }
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            launchPlayground(btn);
+        });
+    });
 }
 
 export function initStackblitz(): void {
@@ -38,4 +83,6 @@ export function initStackblitz(): void {
             });
         }
     });
+
+    initPlaygroundLaunchers();
 }

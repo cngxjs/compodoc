@@ -108,6 +108,7 @@
         "@compodoc/ngd-transformer": "^2.1.3",
         "@kitajs/html": "^4.2.13",
         "@polka/send-type": "^0.5.2",
+        "@stackblitz/sdk": "^1.11.0",
         "body-parser": "^2.2.2",
         "cheerio": "^1.2.0",
         "chokidar": "^5.0.0",
