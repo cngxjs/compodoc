@@ -84,29 +84,25 @@ export function BlockPlayground(props: BlockPlaygroundProps): string {
         lang: props.block.language,
         mode: 'snippet'
     });
-    const manifestJson = (Html.escapeHtml(JSON.stringify(manifest)) as string).replaceAll(
-        '</',
-        '<\\/'
-    );
+    // <script> is parsed in raw-text mode in HTML5 — entities are NOT decoded
+    // by the parser, so HTML-escaping the JSON would break JSON.parse on the
+    // client. We only need to escape `</` to prevent premature script close.
+    const manifestJson = JSON.stringify(manifest).replaceAll('</', '<\\/');
+
+    // Raw <script> tag bypasses kitajs/html child-escaping. Entities inside
+    // <script> are not decoded by the HTML5 parser, so escaping the JSON would
+    // break JSON.parse on the client side.
+    const manifestScript =
+        `<script type="application/json" data-cdx-stackblitz-manifest-data="${blockId}">` +
+        `${manifestJson}</script>`;
+    const escapedTitle = Html.escapeHtml(props.block.title) as string;
 
     return (
-        <section class="cdx-content-section" data-compodoc="block-playground" id={blockId}>
-            <h3 class="cdx-section-heading" id={titleId}>
-                {props.block.title}
-            </h3>
-            <div class="cdx-playground-snippet">{highlighted}</div>
-            <button
-                type="button"
-                class="cdx-playground-launch"
-                data-cdx-stackblitz-manifest={blockId}
-                aria-describedby={titleId}
-            >
-                Open in StackBlitz
-            </button>
-            <script
-                type="application/json"
-                data-cdx-stackblitz-manifest-data={blockId}
-            >{`${manifestJson}`}</script>
-        </section>
-    ) as string;
+        `<section class="cdx-content-section" data-compodoc="block-playground" id="${blockId}">` +
+        `<h3 class="cdx-section-heading" id="${titleId}">${escapedTitle}</h3>` +
+        `<div class="cdx-playground-snippet">${highlighted}</div>` +
+        `<button type="button" class="cdx-playground-launch" data-cdx-stackblitz-manifest="${blockId}" aria-describedby="${titleId}">Open in StackBlitz</button>` +
+        manifestScript +
+        `</section>`
+    );
 }

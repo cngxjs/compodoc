@@ -4,6 +4,11 @@ import { Component, input } from '@angular/core';
  * Global loading spinner overlay.
  *
  * @since 1.0.0
+ *
+ * @playground Default
+ * ```html
+ * <app-loading-spinner [active]="true"></app-loading-spinner>
+ * ```
  */
 @Component({
     selector: 'app-loading-spinner',
