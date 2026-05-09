@@ -3,6 +3,7 @@ import type { ComponentPlaygroundBlock } from '../../../templates/helpers/jsdoc'
 import { STACKBLITZ_TEMPLATE } from './constants';
 import { emitFileContent } from './format-files';
 import { detectMaterialImports, type MaterialImport } from './material-imports';
+import type { FileRefBundle } from './read-file-ref';
 import {
     type DepGraphNode,
     type DepGraphResolver,
@@ -493,6 +494,8 @@ const buildAppComponentTs = (
     return lines.join('\n');
 };
 
+const APP_COMPONENT_PATH = 'src/app/app.component.ts';
+
 /**
  * Pure builder. Result-typed (F14) — caller decides how to surface failure
  * (typically: render a static "project assembly failed" fallback and route
@@ -502,13 +505,26 @@ const buildAppComponentTs = (
  * `npm start` → `ng serve`, angular.json wired to `@angular-devkit/build-angular:application`,
  * tsconfig pair, polyfills via the builder, and a single `AppComponent`
  * that hosts the user's snippet and imports the consumed component.
+ *
+ * Three input modes (mutually exclusive, dispatched by `block.fileRef` upstream):
+ *  1. inline (no `fileBundle`): existing behaviour — `block.snippet` becomes the
+ *     AppComponent template.
+ *  2. HTML-mode `fileBundle` (`htmlSnippet` set): synthesizes an inline-block
+ *     from the file body so the rest of the pipeline (Material auto-detect,
+ *     AppComponent template) stays unchanged.
+ *  3. TS-mode `fileBundle` (`replacesAppComponent: true`): the entry source
+ *     IS the AppComponent — read-file-ref already rewrote relative imports
+ *     and decorator urls, packed siblings + transitive imports into
+ *     `fileBundle.files` under flat `src/app/<basename>` paths. Merge wins
+ *     over the dep-graph walked copy on collision.
  */
 export function buildPlaygroundManifest(
     componentName: string,
     block: ComponentPlaygroundBlock,
     resolve: DepGraphResolver,
     workspaceManifest?: ConsumerPackageJson,
-    options: BuildOptions = {}
+    options: BuildOptions = {},
+    fileBundle?: FileRefBundle
 ): BuildResult {
     const sourceRoot = (options.sourceRoot ?? DEFAULT_SOURCE_ROOT).replaceAll('\\', '/');
 
@@ -516,6 +532,16 @@ export function buildPlaygroundManifest(
     if (!walk.ok) {
         return walk;
     }
+
+    // HTML-mode fileBundle re-uses the inline-block code path. TS-mode
+    // fileBundle sidesteps `buildAppComponentTs` entirely; the entry source
+    // pre-rewritten by read-file-ref lives at `src/app/app.component.ts`
+    // inside `fileBundle.files`.
+    const replacesAppComponent = fileBundle?.replacesAppComponent === true;
+    const effectiveBlock: ComponentPlaygroundBlock =
+        fileBundle?.htmlSnippet !== undefined
+            ? { ...block, snippet: fileBundle.htmlSnippet, language: 'html' }
+            : block;
 
     // The class identifier and the file basename rarely match —
     // `ButtonComponent` lives at `button.component.ts`, so the AppComponent
@@ -525,12 +551,12 @@ export function buildPlaygroundManifest(
 
     const { dependencies, devDependencies } = collectAllDeps(workspaceManifest);
 
-    // Auto-detect Material modules referenced in the snippet. When any are
-    // detected we force-pin `@angular/material` + `@angular/cdk` runtime peers
-    // (in case the consumer's package.json didn't declare them) so the
-    // resulting StackBlitz project actually compiles. The prebuilt theme is
-    // added to angular.json's styles list so default Material widgets render.
-    const materialImports = detectMaterialImports(block.snippet);
+    // Auto-detect Material modules. For TS-mode fileBundle scan the entry
+    // (which is the actual AppComponent body); otherwise scan the snippet.
+    const materialScanSource = replacesAppComponent
+        ? (fileBundle?.files[APP_COMPONENT_PATH] ?? '')
+        : (effectiveBlock.snippet ?? '');
+    const materialImports = detectMaterialImports(materialScanSource);
     const hasMaterial = materialImports.length > 0;
     if (hasMaterial) {
         const angularRef = dependencies['@angular/core'] ?? ANGULAR_FALLBACK_VERSION;
@@ -543,10 +569,10 @@ export function buildPlaygroundManifest(
     }
 
     // Auto-forward consumer-declared third-party packages referenced in the
-    // inlined source or the snippet itself. The consumer's `package.json`
-    // dictates the version — if the package isn't declared, we skip it
-    // silently (their build is already broken). User overrides via
-    // `options.extraDependencies` win over the auto-forwarded value.
+    // inlined source, the snippet itself, and any fileBundle bare-specifier
+    // discovered by read-file-ref's BFS walk. The consumer's `package.json`
+    // dictates the version — packages it doesn't declare are skipped silently
+    // (their build is already broken). `options.extraDependencies` overrides.
     const consumerDeps: Record<string, string> = {
         ...(workspaceManifest?.dependencies ?? {}),
         ...(workspaceManifest?.peerDependencies ?? {})
@@ -557,8 +583,15 @@ export function buildPlaygroundManifest(
             importedSpecs.add(spec);
         }
     }
-    for (const spec of extractBareSpecifiers(block.snippet)) {
-        importedSpecs.add(spec);
+    if (effectiveBlock.snippet) {
+        for (const spec of extractBareSpecifiers(effectiveBlock.snippet)) {
+            importedSpecs.add(spec);
+        }
+    }
+    if (fileBundle?.bareSpecifiers) {
+        for (const spec of fileBundle.bareSpecifiers) {
+            importedSpecs.add(spec);
+        }
     }
     for (const spec of importedSpecs) {
         if (AUTO_FORWARD_SKIP.has(spec)) {
@@ -583,19 +616,40 @@ export function buildPlaygroundManifest(
     files['src/styles.css'] = emitFileContent(buildStylesCss());
     files['src/main.ts'] = emitFileContent(buildMainTs());
     files['src/app/app.config.ts'] = emitFileContent(buildAppConfigTs());
-    files['src/app/app.component.ts'] = emitFileContent(
-        buildAppComponentTs(
-            componentName,
-            componentImportPath,
-            block.snippet,
-            block.language,
-            materialImports
-        )
-    );
 
+    if (replacesAppComponent && fileBundle) {
+        // Entry source pre-rewritten by read-file-ref — relative imports +
+        // decorator urls already flattened. Just emit-format and ship.
+        files[APP_COMPONENT_PATH] = emitFileContent(fileBundle.files[APP_COMPONENT_PATH] ?? '');
+    } else {
+        files[APP_COMPONENT_PATH] = emitFileContent(
+            buildAppComponentTs(
+                componentName,
+                componentImportPath,
+                effectiveBlock.snippet ?? '',
+                effectiveBlock.language ?? 'html',
+                materialImports
+            )
+        );
+    }
+
+    // Dep-graph walked sources land at flat `src/app/<basename>` paths.
     for (const node of walk.value) {
         const path = fileNameForNode(node, sourceRoot);
         files[path] = emitFileContent(node.sourceCode);
+    }
+
+    // fileBundle's siblings + transitive imports come last so they win on
+    // collision (e.g. when the example imports the documented component, the
+    // BFS-walked rewritten copy supersedes the dep-graph copy at the same key).
+    // The AppComponent is already handled above; skip here to avoid double-emit.
+    if (fileBundle) {
+        for (const [path, content] of Object.entries(fileBundle.files)) {
+            if (path === APP_COMPONENT_PATH) {
+                continue;
+            }
+            files[path] = emitFileContent(content);
+        }
     }
 
     return {

@@ -477,4 +477,187 @@ describe('buildPlaygroundManifest', () => {
             expect(path).not.to.contain('\\');
         }
     });
+
+    describe('file-bundle modes', () => {
+        const fileRefBlock: ComponentPlaygroundBlock = {
+            title: 'External example',
+            line: 0,
+            fileRef: './examples/full.component.ts'
+        };
+
+        it('HTML-mode fileBundle: htmlSnippet becomes the AppComponent template', () => {
+            const fileBundle = {
+                entry: '/repo/src/app/examples/inline.html',
+                files: {},
+                bareSpecifiers: new Set<string>(),
+                replacesAppComponent: false,
+                htmlSnippet: '<mat-card>Hello</mat-card>'
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                fileRefBlock,
+                resolverFor([rootNode]),
+                consumerPkg,
+                {},
+                fileBundle
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            // The AppComponent template carries the html-mode body
+            expect(result.value.files['src/app/app.component.ts']).to.contain(
+                '<mat-card>Hello</mat-card>'
+            );
+            // Material auto-detected → @angular/material force-pinned
+            expect(result.value.dependencies).to.have.property('@angular/material');
+            expect(result.value.dependencies).to.have.property('@angular/cdk');
+        });
+
+        it('TS-mode fileBundle: entry source replaces the AppComponent verbatim', () => {
+            const entrySource =
+                "import { Component } from '@angular/core';\n" +
+                "import { MyButton } from './my-button.component';\n" +
+                '@Component({\n' +
+                "    selector: 'app-root',\n" +
+                '    standalone: true,\n' +
+                '    imports: [MyButton],\n' +
+                "    template: '<my-button>Hi</my-button>'\n" +
+                '})\n' +
+                'export class AppEntry {}\n';
+            const fileBundle = {
+                entry: '/repo/src/app/examples/full.component.ts',
+                files: {
+                    'src/app/app.component.ts': entrySource,
+                    'src/app/extra.helper.ts': 'export const x = 1;\n'
+                },
+                bareSpecifiers: new Set<string>(['@angular/core']),
+                replacesAppComponent: true
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                fileRefBlock,
+                resolverFor([rootNode]),
+                consumerPkg,
+                {},
+                fileBundle
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            expect(result.value.files['src/app/app.component.ts']).to.contain('class AppEntry');
+            // BFS-walked sibling shipped flat
+            expect(result.value.files['src/app/extra.helper.ts']).to.contain('export const x = 1');
+        });
+
+        it('TS-mode fileBundle: bareSpecifiers feed auto-forward', () => {
+            const consumerWithUiKit = {
+                dependencies: {
+                    '@angular/core': '^21.0.0',
+                    '@my-org/ui-kit': '^2.5.0'
+                }
+            };
+            const fileBundle = {
+                entry: '/repo/src/app/examples/full.component.ts',
+                files: { 'src/app/app.component.ts': 'export class AppEntry {}' },
+                bareSpecifiers: new Set<string>(['@my-org/ui-kit', '@angular/core']),
+                replacesAppComponent: true
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                fileRefBlock,
+                resolverFor([rootNode]),
+                consumerWithUiKit,
+                {},
+                fileBundle
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            expect(result.value.dependencies['@my-org/ui-kit']).to.equal('^2.5.0');
+        });
+
+        it('TS-mode fileBundle: dep-graph copy of documented component is overridden by bundle copy', () => {
+            const fileBundle = {
+                entry: '/repo/src/app/examples/full.component.ts',
+                files: {
+                    'src/app/app.component.ts': 'export class AppEntry {}',
+                    // Same key as the dep-graph walked node — this rewritten
+                    // copy must win (last write wins on collision).
+                    'src/app/my-button.component.ts': 'export class MyButton { /* rewritten */ }\n'
+                },
+                bareSpecifiers: new Set<string>(),
+                replacesAppComponent: true
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                fileRefBlock,
+                resolverFor([rootNode]),
+                consumerPkg,
+                {},
+                fileBundle
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            expect(result.value.files['src/app/my-button.component.ts']).to.contain(
+                '/* rewritten */'
+            );
+        });
+
+        it('HTML-mode + extraDependencies: override still wins', () => {
+            const fileBundle = {
+                entry: '/repo/src/app/examples/inline.html',
+                files: {},
+                bareSpecifiers: new Set<string>(),
+                replacesAppComponent: false,
+                htmlSnippet: '<my-button>Hi</my-button>'
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                fileRefBlock,
+                resolverFor([rootNode]),
+                consumerPkg,
+                { extraDependencies: { 'random-other-pkg': '^9.9.9' } },
+                fileBundle
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            expect(result.value.dependencies['random-other-pkg']).to.equal('^9.9.9');
+        });
+
+        it('TS-mode fileBundle: file-cap on individual files still applies', () => {
+            const oversized = 'x'.repeat(STACKBLITZ_FILE_CAP + 200);
+            const fileBundle = {
+                entry: '/repo/src/app/examples/full.component.ts',
+                files: {
+                    'src/app/app.component.ts': 'export class AppEntry {}',
+                    'src/app/big.helper.ts': oversized
+                },
+                bareSpecifiers: new Set<string>(),
+                replacesAppComponent: true
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                fileRefBlock,
+                resolverFor([rootNode]),
+                consumerPkg,
+                {},
+                fileBundle
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            // emitFileContent applies the cap → truncated copy under file cap
+            expect(result.value.files['src/app/big.helper.ts'].length).to.be.lessThan(
+                oversized.length
+            );
+        });
+    });
 });
