@@ -219,6 +219,16 @@ export class Application {
                     ...parsedData.devDependencies
                 };
                 Configuration.mainData.hasZoneJs = 'zone.js' in allDeps;
+
+                // Surface the runtime + peer dep tables to the StackBlitz
+                // manifest builder so consumer-declared third-party libraries
+                // (incl. user-authored ones) are auto-forwarded into
+                // `@playground` projects with the right version.
+                Configuration.mainData.workspacePackage = {
+                    dependencies: parsedData.dependencies ?? {},
+                    peerDependencies: parsedData.peerDependencies ?? {}
+                };
+
                 logger.info('package.json file found');
 
                 if (!Configuration.mainData.disableDependencies) {

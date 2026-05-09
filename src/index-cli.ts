@@ -490,6 +490,13 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             Configuration.mainData.themingTabSections = configFile.themingTabSections;
         }
 
+        if (
+            configFile.playgroundDependencies &&
+            typeof configFile.playgroundDependencies === 'object'
+        ) {
+            Configuration.mainData.playgroundDependencies = configFile.playgroundDependencies;
+        }
+
         if (configFile.includes) {
             Configuration.mainData.includes = configFile.includes;
         }

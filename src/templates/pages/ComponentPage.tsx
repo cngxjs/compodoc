@@ -713,9 +713,12 @@ export const ComponentPage = (data: any): string => {
                     >
                         {PlaygroundContent({
                             componentName: c.name,
+                            componentFile: c.file,
+                            componentSourceCode: c.sourceCode,
                             playgrounds: c.playgrounds,
                             resolve: data.playgroundResolver,
-                            workspacePackage: data.workspacePackage
+                            workspacePackage: data.workspacePackage,
+                            extraDependencies: data.playgroundDependencies
                         })}
                     </div>
                 )}

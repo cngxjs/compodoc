@@ -113,6 +113,8 @@ export class Configuration implements ConfigurationInterface {
         themingTabSections: [],
         stackblitz: false,
         stackblitzTemplate: '',
+        workspacePackage: {},
+        playgroundDependencies: {},
         appConfig: [],
         categorizedComponents: {},
         categorizedDirectives: {},

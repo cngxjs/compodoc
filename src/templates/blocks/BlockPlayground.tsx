@@ -18,21 +18,29 @@ const slugifyId = (raw: string): string =>
 
 export type BlockPlaygroundProps = {
     readonly componentName: string;
+    /** Real on-disk path of the component file. Drives the manifest import. */
+    readonly componentFile?: string;
+    /** Full source of the component file. Inlined into the StackBlitz project. */
+    readonly componentSourceCode?: string;
     readonly block: ComponentPlaygroundBlock;
     readonly index: number;
     readonly resolve?: DepGraphResolver;
     readonly workspacePackage?: ConsumerPackageJson;
+    /** Config-file `playgroundDependencies` — wins over consumer-pkg auto-forward. */
+    readonly extraDependencies?: Record<string, string>;
 };
 
 const buildFallbackResolver =
-    (componentName: string): DepGraphResolver =>
+    (componentName: string, file?: string, sourceCode?: string): DepGraphResolver =>
     (name: string): DepGraphNode | null =>
         name === componentName
             ? {
                   name,
-                  file: `src/app/${slugifyId(name)}.component.ts`,
+                  file: file && file.length > 0 ? file : `src/app/${slugifyId(name)}.component.ts`,
                   sourceCode:
-                      "// Source not available — open the component's Source tab on the doc page.",
+                      sourceCode && sourceCode.length > 0
+                          ? sourceCode
+                          : "// Source not available — open the component's Source tab on the doc page.",
                   imports: []
               }
             : null;
@@ -48,12 +56,15 @@ export function BlockPlayground(props: BlockPlaygroundProps): string {
         return custom;
     }
 
-    const resolve = props.resolve ?? buildFallbackResolver(props.componentName);
+    const resolve =
+        props.resolve ??
+        buildFallbackResolver(props.componentName, props.componentFile, props.componentSourceCode);
     const built = buildPlaygroundManifest(
         props.componentName,
         props.block,
         resolve,
-        props.workspacePackage
+        props.workspacePackage,
+        props.extraDependencies ? { extraDependencies: props.extraDependencies } : undefined
     );
 
     const blockId = `playground-${slugifyId(props.componentName)}-${props.index}`;
@@ -97,11 +108,20 @@ export function BlockPlayground(props: BlockPlaygroundProps): string {
         `${manifestJson}</script>`;
     const escapedTitle = Html.escapeHtml(props.block.title) as string;
 
+    // StackBlitz brand glyph (lightning bolt). Inline SVG so it inherits the
+    // button's `currentColor` and ships zero extra requests.
+    const stackblitzIcon =
+        '<svg viewBox="0 0 28 28" fill="currentColor" aria-hidden="true">' +
+        '<path d="M11.65 16.85H5.62l11.13-13.4-2.4 10.7h6.03L9.25 27.55l2.4-10.7Z" />' +
+        '</svg>';
+
     return (
         `<section class="cdx-content-section" data-compodoc="block-playground" id="${blockId}">` +
         `<h3 class="cdx-section-heading" id="${titleId}">${escapedTitle}</h3>` +
         `<div class="cdx-playground-snippet">${highlighted}</div>` +
-        `<button type="button" class="cdx-playground-launch" data-cdx-stackblitz-manifest="${blockId}" aria-describedby="${titleId}">Open in StackBlitz</button>` +
+        `<button type="button" class="cdx-playground-launch" data-cdx-stackblitz-manifest="${blockId}" aria-describedby="${titleId}">` +
+        `${stackblitzIcon}<span>Open in StackBlitz</span>` +
+        `</button>` +
         manifestScript +
         `</section>`
     );

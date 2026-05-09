@@ -127,6 +127,24 @@ export interface MainDataInterface {
     themingTabSections: string[];
     stackblitz: boolean;
     stackblitzTemplate: string;
+    /**
+     * Subset of the consumer's `package.json` (`dependencies` +
+     * `peerDependencies`) used to pin third-party deps in `@playground`
+     * StackBlitz manifests. Set in `application.ts` after the workspace
+     * `package.json` is loaded; left as `{}` when no manifest is reachable.
+     */
+    workspacePackage: {
+        dependencies?: Record<string, string>;
+        peerDependencies?: Record<string, string>;
+    };
+    /**
+     * Config-only override map for `@playground` manifests. Wins over the
+     * consumer-`package.json` auto-forward — use it for libraries the
+     * consumer hosts but doesn't `npm install` directly (peer-only CSS
+     * themes, dev-time-only deps), or to pin a specific version per build.
+     * No CLI flag — this surfaces only via `compodocx.config.json`.
+     */
+    playgroundDependencies: Record<string, string>;
     appConfig: any[];
     categorizedComponents: Record<string, unknown[]>;
     categorizedDirectives: Record<string, unknown[]>;

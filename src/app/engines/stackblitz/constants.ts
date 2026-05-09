@@ -14,8 +14,14 @@ export const STACKBLITZ_FILE_COUNT_CAP = 25;
 /** Per-file character cap applied at the file-content emitter bottleneck. */
 export const STACKBLITZ_FILE_CAP = 8000;
 
-/** StackBlitz `template` value passed to `openProject`. */
-export const STACKBLITZ_TEMPLATE = 'angular-cli' as const;
+/**
+ * StackBlitz `template` value passed to `openProject`. We deliberately use
+ * `'node'` (WebContainer-based) rather than `'angular-cli'`: the latter has
+ * a pinned Angular version baked into StackBlitz's runtime, which conflicts
+ * with the consumer's `@angular/core` spec and crashes the dev server. With
+ * `'node'`, our `package.json` and `angular.json` drive everything fresh.
+ */
+export const STACKBLITZ_TEMPLATE = 'node' as const;
 
 /** Footer appended to truncated file contents. */
 export const STACKBLITZ_TRUNCATION_FOOTER =

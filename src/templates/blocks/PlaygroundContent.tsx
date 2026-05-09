@@ -6,9 +6,12 @@ import { BlockPlayground } from './BlockPlayground';
 
 export type PlaygroundContentProps = {
     readonly componentName: string;
+    readonly componentFile?: string;
+    readonly componentSourceCode?: string;
     readonly playgrounds: ComponentPlaygroundBlock[];
     readonly resolve?: DepGraphResolver;
     readonly workspacePackage?: ConsumerPackageJson;
+    readonly extraDependencies?: Record<string, string>;
 };
 
 /**
@@ -36,10 +39,13 @@ export function PlaygroundContent(props: PlaygroundContentProps): string {
             {blocks.map((block, index) =>
                 BlockPlayground({
                     componentName: props.componentName,
+                    componentFile: props.componentFile,
+                    componentSourceCode: props.componentSourceCode,
                     block,
                     index,
                     resolve: props.resolve,
-                    workspacePackage: props.workspacePackage
+                    workspacePackage: props.workspacePackage,
+                    extraDependencies: props.extraDependencies
                 })
             )}
         </div>
