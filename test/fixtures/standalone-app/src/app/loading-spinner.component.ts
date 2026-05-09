@@ -9,6 +9,9 @@ import { Component, input } from '@angular/core';
  * ```html
  * <app-loading-spinner [active]="true"></app-loading-spinner>
  * ```
+ *
+ * @playground Multiple ./playground-examples/spinner-multiple.html
+ * @playground Toggle ./playground-examples/spinner-toggle.component.ts
  */
 @Component({
     selector: 'app-loading-spinner',
