@@ -27,5 +27,12 @@ export const STACKBLITZ_TEMPLATE = 'node' as const;
 export const STACKBLITZ_TRUNCATION_FOOTER =
     '\n// ... [truncated by compodocx, view full source on the doc page]';
 
-/** Tag pattern for the JSDoc parser. Title is required after the tag name. */
+/**
+ * Tag pattern for the JSDoc parser. Title is required after the tag name;
+ * an optional trailing `.html` / `.ts` relative path token switches the block
+ * into file-ref mode (handled by `extractJsdocPlaygroundBlocks`). The actual
+ * parsing lives in `src/templates/helpers/jsdoc.ts` — this regex stays as a
+ * coarse documentation-grade matcher; downstream consumers should not rely on
+ * its capture group for file-ref detection.
+ */
 export const PLAYGROUND_TAG_PATTERN = /^@playground\s+(.+?)$/m;

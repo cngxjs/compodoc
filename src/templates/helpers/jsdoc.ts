@@ -128,16 +128,33 @@ export const extractJsdocExamples = (jsdocTags: any[]): JsdocTag[] => {
  * One runnable playground block parsed from a `@playground <title>` JSDoc tag.
  * Surfaced on `IComponentDep.playgrounds` and consumed by the StackBlitz
  * project-builder. The `line` field is a zero-based offset relative to the
- * start of the source `tag.comment` text, pointing at the fence-open line.
+ * start of the source `tag.comment` text, pointing at the fence-open line
+ * (inline mode) or the title line (file-ref mode).
+ *
+ * Two mutually-exclusive payload modes:
+ *  - inline:    `snippet` + `language` set, `fileRef` undefined.
+ *  - file-ref:  `fileRef` set (relative `.html` or `.ts` path), `snippet` and
+ *               `language` undefined. The builder pipeline resolves the path
+ *               against the host file before manifest assembly.
  */
 export type ComponentPlaygroundBlock = {
     title: string;
-    snippet: string;
-    language: string;
+    snippet?: string;
+    language?: string;
     line: number;
+    fileRef?: string;
 };
 
 const FENCE_BLOCK_REGEX = /```(\w+)?[ \t]*\r?\n([\s\S]*?)```/;
+
+/**
+ * Path-suffix detector for the file-ref form. Matches when the title line
+ * ends with a relative `.html`/`.ts` token preceded by whitespace OR start
+ * of line. `(?:^|\s)` lets a path-only title (`@playground ./foo.html`) be
+ * detected so it can be reported as missing-title rather than silently
+ * sliding into the inline path and warning about a missing fenced body.
+ */
+const PLAYGROUND_PATH_SUFFIX = /(?:^|\s)(\.\.?\/[^\s]+\.(?:html|ts))\s*$/;
 
 const readTagComment = (tag: any): string => {
     const c = tag?.comment;
@@ -188,8 +205,31 @@ export const extractJsdocPlaygroundBlocks = (
             continue;
         }
 
-        const title = lines[titleLine].trim();
+        const rawTitleLine = lines[titleLine].trim();
         const fenceSearch = lines.slice(titleLine + 1).join('\n');
+
+        // File-ref form: trailing `.html` / `.ts` path token on the title line.
+        // Mutually exclusive with a fenced body — having both is ambiguous and
+        // dropped with a warning so the author can pick one.
+        const pathMatch = rawTitleLine.match(PLAYGROUND_PATH_SUFFIX);
+        if (pathMatch) {
+            const fileRef = pathMatch[1];
+            const titleBeforePath = rawTitleLine.slice(0, pathMatch.index ?? 0).trim();
+            if (!titleBeforePath) {
+                warnings.push('@playground block dropped: missing title');
+                continue;
+            }
+            if (FENCE_BLOCK_REGEX.test(fenceSearch)) {
+                warnings.push(
+                    `@playground block "${titleBeforePath}" dropped: fileRef and fenced body are mutually exclusive`
+                );
+                continue;
+            }
+            blocks.push({ title: titleBeforePath, fileRef, line: titleLine });
+            continue;
+        }
+
+        const title = rawTitleLine;
         const fenceMatch = fenceSearch.match(FENCE_BLOCK_REGEX);
         if (!fenceMatch) {
             warnings.push(`@playground block "${title}" dropped: no fenced code body`);
