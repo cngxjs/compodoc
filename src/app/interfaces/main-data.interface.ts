@@ -61,6 +61,12 @@ export interface MainDataInterface {
     disableSearch: boolean;
     disableDependencies: boolean;
     disableDependenciesTab: boolean;
+    /**
+     * When true, suppresses the Playground tab on component pages even if
+     * `@playground` blocks were parsed. Default false. Independent of
+     * `disableDependenciesTab` — that flag only controls the dependency graph.
+     */
+    disablePlaygroundTab: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
     disableOverview: boolean;

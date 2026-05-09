@@ -144,6 +144,7 @@ export const TRANSLATION_ZH_TW = {
     'peer-dependencies': 'Peer Dependencies',
     pipe: '管道',
     pipes: '管道列表',
+    playground: 'Playground',
     prefix: '前置詞',
     'project-health': '專案健康度',
     'project-overview': '專案概覽',

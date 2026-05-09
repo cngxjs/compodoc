@@ -146,6 +146,7 @@ export const TRANSLATION_JA_JP = {
     'peer-dependencies': 'Peer dependencies',
     pipe: 'パイプ',
     pipes: 'パイプ',
+    playground: 'Playground',
     prefix: '接頭辞',
     'project-health': 'プロジェクトの健全性',
     'project-overview': 'プロジェクト概要',

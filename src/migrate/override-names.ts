@@ -54,10 +54,12 @@ export const BLOCK_LEVEL_OVERRIDES: readonly string[] = [
     'block-input',
     'block-method',
     'block-output',
+    'block-playground',
     'block-property',
     'block-theming',
     'block-theming-token',
     'block-typealias',
+    'playground-content',
     'version-switcher'
 ];
 

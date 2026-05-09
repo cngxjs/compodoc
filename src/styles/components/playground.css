@@ -1,0 +1,58 @@
+.cdx-playground-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-cdx-xl);
+}
+
+[data-compodoc='block-playground'] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-cdx-md);
+}
+
+.cdx-playground-snippet {
+    background: var(--color-cdx-bg-code);
+    color: var(--color-cdx-text);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    padding: var(--spacing-cdx-md);
+}
+
+.cdx-playground-snippet pre {
+    margin: 0;
+    background: transparent !important;
+}
+
+.cdx-playground-launch {
+    align-self: flex-start;
+    background: var(--color-cdx-accent);
+    border: 1px solid var(--color-cdx-accent);
+    border-radius: var(--radius-cdx-md);
+    color: var(--color-cdx-on-accent, #fff);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-lg);
+    transition: filter var(--cdx-transition-fast, 120ms) ease;
+}
+
+.cdx-playground-launch:hover {
+    filter: brightness(1.05);
+}
+
+.cdx-playground-launch:focus-visible {
+    outline: 2px solid var(--color-cdx-focus-ring);
+    outline-offset: 2px;
+}
+
+.cdx-playground-fallback {
+    background: var(--color-cdx-bg-alt);
+    border: 1px dashed var(--color-cdx-border);
+    border-radius: var(--radius-cdx-md);
+    color: var(--color-cdx-text-muted);
+    padding: var(--spacing-cdx-md);
+    font-size: 0.875rem;
+}

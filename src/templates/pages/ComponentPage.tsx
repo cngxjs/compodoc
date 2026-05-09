@@ -23,6 +23,7 @@ import {
     MetadataHostDirectivesRow,
     MetadataSection
 } from '../blocks/MetadataRow';
+import { PlaygroundContent } from '../blocks/PlaygroundContent';
 import { ProvidersSection } from '../blocks/ProvidersSection';
 import { RouteChip } from '../blocks/RouteChip';
 import { SourceViewer } from '../blocks/SourceViewer';
@@ -700,6 +701,22 @@ export const ComponentPage = (data: any): string => {
                             {GraphZoomControls({ prefix: 'dep-' })}
                         </div>
                         {GraphLegend({ items: DEPENDENCY_LEGEND_ITEMS })}
+                    </div>
+                )}
+
+                {isTabEnabled(navTabs, 'playground') && c.playgrounds?.length > 0 && (
+                    <div
+                        class={`cdx-tab-panel${isInitialTab(navTabs, 'playground') ? ' active' : ''}`}
+                        id="playground"
+                        role="tabpanel"
+                        aria-labelledby="playground-tab"
+                    >
+                        {PlaygroundContent({
+                            componentName: c.name,
+                            playgrounds: c.playgrounds,
+                            resolve: data.playgroundResolver,
+                            workspacePackage: data.workspacePackage
+                        })}
                     </div>
                 )}
 

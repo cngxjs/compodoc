@@ -1426,6 +1426,14 @@ export class Application {
             ) {
                 return;
             }
+            if (customTab.id === 'playground') {
+                if (Configuration.mainData.disablePlaygroundTab) {
+                    return;
+                }
+                if (!dependency.playgrounds || dependency.playgrounds.length === 0) {
+                    return;
+                }
+            }
 
             // API tab: drop it in legacy single-tab mode, or when the
             // dependency has no member content to populate it.

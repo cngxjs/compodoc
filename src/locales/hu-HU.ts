@@ -146,6 +146,7 @@ export const TRANSLATION_HU_HU = {
     'peer-dependencies': 'Peer függőségek',
     pipe: 'Pipe',
     pipes: 'Pipe-ok',
+    playground: 'Playground',
     prefix: 'Előtag',
     'project-health': 'Projekt egészség',
     'project-overview': 'Projekt áttekintés',

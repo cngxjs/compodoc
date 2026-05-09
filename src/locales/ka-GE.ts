@@ -145,6 +145,7 @@ export const TRANSLATION_KA_GE = {
     'peer-dependencies': 'თანატოლებთან დამოკიდებულებები',
     pipe: 'მილი',
     pipes: 'მილები',
+    playground: 'Playground',
     prefix: 'პრეფიქსი',
     'project-health': 'პროექტის ჯანმრთელობა',
     'project-overview': 'პროექტის მიმოხილვა',

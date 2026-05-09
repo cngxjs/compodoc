@@ -144,6 +144,7 @@ export const TRANSLATION_KO_KR = {
     'peer-dependencies': '상호 의존성',
     pipe: '파이프',
     pipes: '파이프',
+    playground: 'Playground',
     prefix: '접두어',
     'project-health': '프로젝트 건강도',
     'project-overview': '프로젝트 개요',
