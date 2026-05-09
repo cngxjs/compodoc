@@ -115,6 +115,7 @@ export class Configuration implements ConfigurationInterface {
         stackblitzTemplate: '',
         workspacePackage: {},
         playgroundDependencies: {},
+        playgroundFiles: {},
         appConfig: [],
         categorizedComponents: {},
         categorizedDirectives: {},

@@ -1,6 +1,10 @@
 import Html from '@kitajs/html';
 import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
-import type { ConsumerPackageJson, DepGraphResolver } from '../../app/engines/stackblitz';
+import type {
+    ConsumerPackageJson,
+    DepGraphResolver,
+    FileRefBundle
+} from '../../app/engines/stackblitz';
 import type { ComponentPlaygroundBlock } from '../helpers/jsdoc';
 import { BlockPlayground } from './BlockPlayground';
 
@@ -12,6 +16,12 @@ export type PlaygroundContentProps = {
     readonly resolve?: DepGraphResolver;
     readonly workspacePackage?: ConsumerPackageJson;
     readonly extraDependencies?: Record<string, string>;
+    /**
+     * Pre-resolved file-ref bundles, keyed by block index in
+     * `props.playgrounds`. Populated by `application.ts:resolvePlaygroundFiles`
+     * for blocks that carry `fileRef`; absent for inline blocks.
+     */
+    readonly fileBundles?: Record<number, FileRefBundle>;
 };
 
 /**
@@ -45,7 +55,8 @@ export function PlaygroundContent(props: PlaygroundContentProps): string {
                     index,
                     resolve: props.resolve,
                     workspacePackage: props.workspacePackage,
-                    extraDependencies: props.extraDependencies
+                    extraDependencies: props.extraDependencies,
+                    fileBundle: props.fileBundles?.[index]
                 })
             )}
         </div>

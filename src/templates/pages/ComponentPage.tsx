@@ -711,15 +711,29 @@ export const ComponentPage = (data: any): string => {
                         role="tabpanel"
                         aria-labelledby="playground-tab"
                     >
-                        {PlaygroundContent({
-                            componentName: c.name,
-                            componentFile: c.file,
-                            componentSourceCode: c.sourceCode,
-                            playgrounds: c.playgrounds,
-                            resolve: data.playgroundResolver,
-                            workspacePackage: data.workspacePackage,
-                            extraDependencies: data.playgroundDependencies
-                        })}
+                        {(() => {
+                            // Pick out this component's pre-resolved file
+                            // bundles (keyed `${name}:${idx}` in mainData) and
+                            // fold to a {idx → bundle} map for the block stack.
+                            const all = data.playgroundFiles ?? {};
+                            const fileBundles: Record<number, unknown> = {};
+                            for (let i = 0; i < c.playgrounds.length; i++) {
+                                const bundle = all[`${c.name}:${i}`];
+                                if (bundle) {
+                                    fileBundles[i] = bundle;
+                                }
+                            }
+                            return PlaygroundContent({
+                                componentName: c.name,
+                                componentFile: c.file,
+                                componentSourceCode: c.sourceCode,
+                                playgrounds: c.playgrounds,
+                                resolve: data.playgroundResolver,
+                                workspacePackage: data.workspacePackage,
+                                extraDependencies: data.playgroundDependencies,
+                                fileBundles: fileBundles as never
+                            });
+                        })()}
                     </div>
                 )}
 

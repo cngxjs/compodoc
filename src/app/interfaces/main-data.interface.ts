@@ -1,3 +1,4 @@
+import type { FileRefBundle } from '../engines/stackblitz';
 import type { CoverageData } from './coverageData.interface';
 
 export interface MainDataInterface {
@@ -145,6 +146,15 @@ export interface MainDataInterface {
      * No CLI flag — this surfaces only via `compodocx.config.json`.
      */
     playgroundDependencies: Record<string, string>;
+    /**
+     * Resolved file-ref bundles per playground block. Key format:
+     * `${componentName}:${blockIndex}`. Populated in `application.ts` after
+     * the dep-graph build by walking every component/directive/etc with at
+     * least one `@playground` block carrying `fileRef`. Failed reads warn via
+     * `logger.warn` and the entry is skipped — the manifest builder then
+     * surfaces a "Project assembly failed" fallback for that block.
+     */
+    playgroundFiles: Record<string, FileRefBundle>;
     appConfig: any[];
     categorizedComponents: Record<string, unknown[]>;
     categorizedDirectives: Record<string, unknown[]>;

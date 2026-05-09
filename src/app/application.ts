@@ -32,6 +32,7 @@ import I18nEngine from './engines/i18n.engine';
 import MarkdownEngine, { type markdownReadedDatas } from './engines/markdown.engine';
 import NgdEngine from './engines/ngd.engine';
 import { runPagefindIndex } from './engines/search-indexer.engine';
+import { type FileRefBundle, type FsReader, readFileRef } from './engines/stackblitz';
 import { initHighlighter } from './engines/syntax-highlight.engine';
 import { updateVersionsManifest } from './engines/versions-manifest.engine';
 import type { AdditionalNode } from './interfaces/additional-node.interface';
@@ -586,6 +587,11 @@ export class Application {
             actions.push(() => this.prepareCoverage());
         }
 
+        // Resolve `@playground` file refs after every dependency kind has
+        // been prepared (so `dependency.playgrounds` is fully populated) and
+        // before page rendering reads `data.playgroundFiles`.
+        actions.push(() => Promise.resolve(this.resolvePlaygroundFiles()));
+
         promiseSequential(actions)
             .then(_res => {
                 if (Configuration.mainData.exportFormat !== COMPODOC_DEFAULTS.exportFormat) {
@@ -767,6 +773,10 @@ export class Application {
                 return this.prepareExternalIncludes();
             });
         }
+
+        // Resolve `@playground` file refs after every prepare* step has
+        // populated `Configuration.mainData.<kind>.playgrounds`.
+        actions.push(() => Promise.resolve(this.resolvePlaygroundFiles()));
 
         promiseSequential(actions)
             .then(_res => {
@@ -2321,6 +2331,83 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 resolve(true);
             }
         });
+    }
+
+    /**
+     * Walk every entity kind that may carry `@playground fileRef` blocks
+     * (components/directives/injectables/etc) and resolve each fileRef into
+     * a `FileRefBundle` keyed by `${entityName}:${blockIndex}`. Read failures
+     * surface as `logger.warn` and skip that block — the manifest builder
+     * then falls back to its "Project assembly failed" path. Inline-only
+     * playgrounds never enter this loop.
+     */
+    public resolvePlaygroundFiles(): void {
+        const fsReader: FsReader = {
+            readFile: (p: string): string | null => {
+                try {
+                    return fs.readFileSync(p, 'utf8');
+                } catch {
+                    return null;
+                }
+            },
+            exists: (p: string): boolean => {
+                try {
+                    return fs.existsSync(p);
+                } catch {
+                    return false;
+                }
+            }
+        };
+
+        const out: Record<string, FileRefBundle> = {};
+        const entitySources = [
+            Configuration.mainData.components,
+            Configuration.mainData.directives,
+            Configuration.mainData.injectables,
+            Configuration.mainData.guards,
+            Configuration.mainData.interceptors,
+            Configuration.mainData.pipes,
+            Configuration.mainData.classes,
+            Configuration.mainData.interfaces,
+            Configuration.mainData.entities
+        ];
+
+        for (const list of entitySources) {
+            if (!Array.isArray(list)) {
+                continue;
+            }
+            for (const entity of list) {
+                const playgrounds = entity?.playgrounds as
+                    | Array<{ title?: string; fileRef?: string }>
+                    | undefined;
+                if (!playgrounds || playgrounds.length === 0) {
+                    continue;
+                }
+                for (let i = 0; i < playgrounds.length; i++) {
+                    const block = playgrounds[i];
+                    if (!block?.fileRef) {
+                        continue;
+                    }
+                    const hostFile = entity.file;
+                    if (typeof hostFile !== 'string' || hostFile.length === 0) {
+                        logger.warn(
+                            `Playground "${block.title ?? '<untitled>'}" on ${entity.name}: missing host file path`
+                        );
+                        continue;
+                    }
+                    const result = readFileRef(block.fileRef, hostFile, fsReader);
+                    if (!result.ok) {
+                        logger.warn(
+                            `Playground "${block.title ?? '<untitled>'}" on ${entity.name}: ${result.error}`
+                        );
+                        continue;
+                    }
+                    out[`${entity.name}:${i}`] = result.value;
+                }
+            }
+        }
+
+        Configuration.mainData.playgroundFiles = out;
     }
 
     public prepareUnitTestCoverage() {
