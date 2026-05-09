@@ -1,11 +1,13 @@
 import * as crypto from 'node:crypto';
 import { SyntaxKind, ts } from 'ts-morph';
+import { extractJsdocPlaygroundBlocks } from '../../../../../templates/helpers/jsdoc';
 import { isIgnore } from '../../../../../utils';
 import AngularVersionUtil from '../../../../..//utils/angular-version.util';
 import { StringifyArrowFunction } from '../../../../../utils/arrow-function.util';
 import BasicTypeUtil from '../../../../../utils/basic-type.util';
 import { JsdocParserUtil } from '../../../../../utils/jsdoc-parser.util';
 import { kindToType } from '../../../../../utils/kind-to-type';
+import { logger } from '../../../../../utils/logger';
 import { markedAcl } from '../../../../../utils/marked.acl';
 import { getNodeDecorators, nodeHasDecorator } from '../../../../../utils/node.util';
 import { StringifyObjectLiteralExpression } from '../../../../../utils/object-literal-expression.util';
@@ -136,11 +138,23 @@ export class ClassHelper {
         if (jsdoctags && jsdoctags.length >= 1) {
             const jsdoc = jsdoctags[0];
             if (jsdoc?.tags) {
-                this.checkForDeprecation(jsdoc.tags as unknown as any[], result);
+                const tags = jsdoc.tags as unknown as any[];
+                this.checkForDeprecation(tags, result);
+                this.collectPlaygroundBlocks(tags, result);
                 if (includeTagsArray) {
-                    result.jsdoctags = markedtags(jsdoc.tags as unknown as any[]);
+                    result.jsdoctags = markedtags(tags);
                 }
             }
+        }
+    }
+
+    private collectPlaygroundBlocks(tags: any[], result: { [key: string]: any }): void {
+        const { blocks, warnings } = extractJsdocPlaygroundBlocks(tags);
+        if (blocks.length > 0) {
+            result.playgrounds = blocks;
+        }
+        for (const w of warnings) {
+            logger.warn(w);
         }
     }
 

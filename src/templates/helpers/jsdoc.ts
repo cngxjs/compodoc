@@ -124,6 +124,96 @@ export const extractJsdocExamples = (jsdocTags: any[]): JsdocTag[] => {
     return tags;
 };
 
+/**
+ * One runnable playground block parsed from a `@playground <title>` JSDoc tag.
+ * Surfaced on `IComponentDep.playgrounds` and consumed by the StackBlitz
+ * project-builder. The `line` field is a zero-based offset relative to the
+ * start of the source `tag.comment` text, pointing at the fence-open line.
+ */
+export type ComponentPlaygroundBlock = {
+    title: string;
+    snippet: string;
+    language: string;
+    line: number;
+};
+
+const FENCE_BLOCK_REGEX = /```(\w+)?[ \t]*\r?\n([\s\S]*?)```/;
+
+const readTagComment = (tag: any): string => {
+    const c = tag?.comment;
+    if (typeof c === 'string') {
+        return c;
+    }
+    if (Array.isArray(c)) {
+        return c.map((part: any) => part?.text ?? '').join('');
+    }
+    return '';
+};
+
+/**
+ * Parse `@playground <title>` JSDoc blocks. Each block becomes one runnable
+ * section on the Playground tab. Title is required; missing titles or unfenced
+ * bodies produce a warning and the block is silently dropped.
+ *
+ * Returns the parsed blocks plus a list of warnings the caller can route to
+ * `logger.warn`. No `console.log` inside this helper (build-path discipline).
+ */
+export const extractJsdocPlaygroundBlocks = (
+    jsdocTags: any[]
+): { blocks: ComponentPlaygroundBlock[]; warnings: string[] } => {
+    const blocks: ComponentPlaygroundBlock[] = [];
+    const warnings: string[] = [];
+    if (!Array.isArray(jsdocTags)) {
+        return { blocks, warnings };
+    }
+
+    for (const jt of jsdocTags) {
+        if (jt?.tagName?.text !== 'playground') {
+            continue;
+        }
+        const raw = readTagComment(jt);
+        const lines = raw.split(/\r?\n/);
+
+        // Title is the first non-empty line (TS strips the @tag prefix and
+        // leaves everything after `@playground ` in `comment`).
+        let titleLine = -1;
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].trim().length > 0) {
+                titleLine = i;
+                break;
+            }
+        }
+        if (titleLine === -1 || lines[titleLine].trim().startsWith('```')) {
+            warnings.push('@playground block dropped: missing title');
+            continue;
+        }
+
+        const title = lines[titleLine].trim();
+        const fenceSearch = lines.slice(titleLine + 1).join('\n');
+        const fenceMatch = fenceSearch.match(FENCE_BLOCK_REGEX);
+        if (!fenceMatch) {
+            warnings.push(`@playground block "${title}" dropped: no fenced code body`);
+            continue;
+        }
+
+        let language = (fenceMatch[1] || 'html').toLowerCase();
+        if (language === 'js') {
+            language = 'javascript';
+        }
+        if (language === 'ts') {
+            language = 'typescript';
+        }
+        const snippet = fenceMatch[2].replaceAll('___COMPODOC_EMPTY_LINE___', '\n').trimEnd();
+
+        // Fence-open line, zero-indexed against the start of `tag.comment`.
+        const fenceOffset = fenceSearch.slice(0, fenceMatch.index ?? 0).split('\n').length - 1;
+        const line = titleLine + 1 + fenceOffset;
+
+        blocks.push({ title, snippet, language, line });
+    }
+    return { blocks, warnings };
+};
+
 /** Get the comment from the first @returns/@return tag. */
 export const jsdocReturnsComment = (jsdocTags: any[]): string => {
     for (const jt of jsdocTags) {
