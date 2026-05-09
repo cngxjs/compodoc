@@ -113,6 +113,7 @@ The rest of the document only matters if you fall into one of these buckets:
 | `--coverageTest`, `--coverageMinimumPerFile`, `--coverageTestThresholdFail` | unchanged | |
 | `--disableSourceCode`, `--disableDomTree`, `--disableTemplateTab`, `--disableGraph`, `--disableCoverage`, `--disablePrivate`, `--disableProtected`, `--disableInternal`, `--disableLifeCycleHooks`, `--disableConstructors`, `--disableFilePath` | unchanged | |
 | `--disableDependenciesTab` | **new** | Hides the per-component standalone-import graph independently from `--disableGraph`. |
+| `--disablePlaygroundTab` | **new** (opt-in, default `false`) | Hides the per-component Playground tab even when `@playground` blocks are present in the source. |
 | `--customFavicon`, `--customLogo` | unchanged | |
 | `--hideGenerator`, `--hideDarkModeToggle` | unchanged | |
 | `--toggleMenuItems`, `--navTabConfig` | unchanged | |
@@ -140,6 +141,44 @@ Config-file (`.compodocrc.json`, `.compodocrc.yaml`, `.compodocrc.js`) keys mirr
 ### Changed
 
 - **Default JSON indent dropped from `4` → `0`.** The new `documentation.json` is single-line by default — substantially smaller. Pass `--jsonIndent 2` (or any value 0–8) to restore human-readable formatting. Tools that read the file with `jq` are unaffected; tools that depend on whitespace-sensitive regexes should opt into `--jsonIndent 2` or migrate to a JSON parser.
+
+## Adding runnable `@playground` blocks
+
+Components can now ship author-curated, runnable demos. Add one or more `@playground <title>` JSDoc blocks to a component class:
+
+```ts
+/**
+ * Reusable button.
+ *
+ * @example                              // unchanged — static, on the Info tab
+ * ```html
+ * <my-button label="Click me" />
+ * ```
+ *
+ * @playground Default state             // new — runnable, on the Playground tab
+ * ```html
+ * <my-button label="Click me" />
+ * ```
+ *
+ * @playground Disabled state
+ * ```html
+ * <my-button label="Click me" [disabled]="true" />
+ * ```
+ */
+@Component({ /* ... */ })
+export class MyButton { /* ... */ }
+```
+
+Each `@playground` block becomes one section on a dedicated **Playground** tab on the component page, with an "Open in StackBlitz" button. Clicking the button opens a new StackBlitz tab seeded with the consumed component source plus a minimal Angular workspace — no library publication required.
+
+- The tag is **opt-in**. Components without `@playground` blocks render exactly as before.
+- The title (everything after `@playground`) is required. Blocks with a missing title or no fenced code body are dropped with a build-time warning.
+- `@example` rendering on the Info tab is unchanged. `@example` and `@playground` can coexist.
+- `<example-url>` (live external iframes) keeps working — the existing **Examples** tab is untouched.
+- Disable the tab globally with `--disablePlaygroundTab` (config key `disablePlaygroundTab: true`).
+- Multiple blocks on the same component are rendered in source order.
+
+For very large components, the project assembler caps inline file size at 8000 chars per file, walks at most 25 transitive sources, and stops at depth 3. When those caps are hit the section renders a static fallback instead of the launcher; the build log surfaces the reason.
 
 ## Themes
 

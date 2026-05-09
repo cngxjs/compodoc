@@ -120,6 +120,7 @@ These flags disable entire features, tabs, or pages. Unlike visibility filters w
 | disableGraph | `--disableGraph` | boolean | `false` | Remove all dependency graphs -- both the overview page graph and per-component dependency tabs |
 | disableMainGraph | `--disableMainGraph` | boolean | `false` | Remove only the main overview dependency graph. Per-component dependency tabs remain |
 | disableDependenciesTab | `--disableDependenciesTab` | boolean | `false` | Remove the per-component Dependencies tab that shows the standalone import graph. The overview graph and other graphs are not affected |
+| disablePlaygroundTab | `--disablePlaygroundTab` | boolean | `false` | Remove the per-component Playground tab even when `@playground` JSDoc blocks are present in the source |
 | disableRoutesGraph | `--disableRoutesGraph` | boolean | `false` | Remove the routes graph page. The page visualizes the Angular router configuration as a tree |
 | disableSearch | `--disableSearch` | boolean | `false` | Remove the Pagefind search functionality. Disables the command palette (Ctrl+K), the search input, and skips Pagefind index generation at build time |
 | disableCoverage | `--disableCoverage` | boolean | `false` | Remove the documentation coverage report page. Coverage measures how many public members have JSDoc descriptions |
