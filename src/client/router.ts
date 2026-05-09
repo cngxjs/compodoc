@@ -6,43 +6,47 @@ declare function gtag(...args: unknown[]): void;
  * and swaps the content area without full page reload.
  */
 
-import { initAnimations } from './animate';
-import { initCodeBlocks } from './code-blocks';
-import { initCoverage } from './coverage';
-import { initGraphs } from './graphs';
-import { applyHashTarget, resolveHash } from './hash-router';
-import { resetKeyboardState } from './keyboard';
-import { expandToActive } from './sidebar';
-import { initTabs } from './tabs';
+import { initAnimations } from "./animate";
+import { initCodeBlocks } from "./code-blocks";
+import { initCoverage } from "./coverage";
+import { initGraphs } from "./graphs";
+import { applyHashTarget, resolveHash } from "./hash-router";
+import { resetKeyboardState } from "./keyboard";
+import { expandToActive } from "./sidebar";
+import { initStackblitz } from "./stackblitz";
+import { initTabs } from "./tabs";
 
-// import { initToc } from './toc';
-
-const CONTENT_SELECTOR = '.content-data';
+const CONTENT_SELECTOR = ".content-data";
 
 /** Strip any existing relative prefix from a path */
-const stripPrefix = (path: string): string => path.replace(/^(\.\/|\.\.\/)+/, '');
+const stripPrefix = (path: string): string =>
+    path.replace(/^(\.\/|\.\.\/)+/, "");
 
 /** Rewrite relative sidebar links based on current page depth */
 const fixMenuLinks = () => {
     const depth = (globalThis as any).COMPODOC_CURRENT_PAGE_DEPTH ?? 0;
-    const prefix = depth === 0 ? './' : '../'.repeat(depth);
+    const prefix = depth === 0 ? "./" : "../".repeat(depth);
 
-    document.querySelectorAll<HTMLAnchorElement>('.menu a[data-type]').forEach(a => {
-        const href = a.getAttribute('href');
-        if (!href || href.startsWith('/') || href.startsWith('http')) {
-            return;
-        }
-        a.setAttribute('href', prefix + stripPrefix(href));
-    });
+    document
+        .querySelectorAll<HTMLAnchorElement>(".menu a[data-type]")
+        .forEach((a) => {
+            const href = a.getAttribute("href");
+            if (!href || href.startsWith("/") || href.startsWith("http")) {
+                return;
+            }
+            a.setAttribute("href", prefix + stripPrefix(href));
+        });
 
     // Fix logo images
-    document.querySelectorAll<HTMLImageElement>('.menu img[data-src]').forEach(img => {
-        const src = img.getAttribute('data-src');
-        if (!src || src.startsWith('/') || src.startsWith('http')) {
-            return;
-        }
-        img.src = prefix + stripPrefix(src);
-    });
+    document
+        .querySelectorAll<HTMLImageElement>(".menu img[data-src]")
+        .forEach((img) => {
+            const src = img.getAttribute("data-src");
+            if (!src || src.startsWith("/") || src.startsWith("http")) {
+                return;
+            }
+            img.src = prefix + stripPrefix(src);
+        });
 };
 
 /** Execute script tags found in the content area after SPA swap.
@@ -55,10 +59,25 @@ const executeContentScripts = (): Promise<void> => {
     }
 
     const promises: Promise<void>[] = [];
-    content.querySelectorAll('script').forEach(oldScript => {
-        const newScript = document.createElement('script');
+    content.querySelectorAll("script").forEach((oldScript) => {
+        // Skip data scripts (application/json, application/ld+json, importmap, …).
+        // Re-cloning them as a default-type <script> would execute their JSON
+        // body as JavaScript and crash with "Unexpected token ':'".
+        const type = oldScript.getAttribute("type") ?? "";
+        const isExecutable =
+            type === "" ||
+            type === "module" ||
+            /^(?:text|application)\/(?:javascript|ecmascript)/i.test(type);
+        if (!isExecutable) {
+            return;
+        }
+        const newScript = document.createElement("script");
+        // Preserve type so module scripts stay modules.
+        if (type) {
+            newScript.type = type;
+        }
         if (oldScript.src) {
-            const p = new Promise<void>(resolve => {
+            const p = new Promise<void>((resolve) => {
                 newScript.onload = () => resolve();
                 newScript.onerror = () => resolve();
             });
@@ -81,66 +100,89 @@ const reinitPage = async () => {
     initGraphs();
     initCoverage();
     initAnimations();
+    // Re-bind StackBlitz launchers — `<button class="cdx-playground-launch">`
+    // tags from the swapped page need a fresh click handler. WeakSet guards
+    // inside `initStackblitz` make this idempotent for already-bound buttons.
+    initStackblitz();
     // initToc();
 };
 
 /** Update sidebar active state */
-const updateActiveLink = (url: string, clickedAnchor: HTMLAnchorElement | null = null) => {
-    document.querySelectorAll('.menu a.active').forEach(a => {
-        a.classList.remove('active');
-        a.removeAttribute('aria-current');
+const updateActiveLink = (
+    url: string,
+    clickedAnchor: HTMLAnchorElement | null = null,
+) => {
+    document.querySelectorAll(".menu a.active").forEach((a) => {
+        a.classList.remove("active");
+        a.removeAttribute("aria-current");
     });
 
     // If we know exactly which sidebar link was clicked, use it directly
-    if (clickedAnchor?.closest('.menu')) {
-        clickedAnchor.classList.add('active');
-        clickedAnchor.setAttribute('aria-current', 'page');
+    if (clickedAnchor?.closest(".menu")) {
+        clickedAnchor.classList.add("active");
+        clickedAnchor.setAttribute("aria-current", "page");
         return;
     }
 
     const pathname = new URL(url, window.location.origin).pathname;
     // Normalize: "/" -> "index.html", "/components/Foo.html" -> "components/Foo.html"
-    let normalizedPath = pathname.replace(/^\//, '').toLowerCase();
-    if (normalizedPath === '' || normalizedPath.endsWith('/')) {
-        normalizedPath += 'index.html';
+    let normalizedPath = pathname.replace(/^\//, "").toLowerCase();
+    if (normalizedPath === "" || normalizedPath.endsWith("/")) {
+        normalizedPath += "index.html";
     }
 
     let bestMatch: HTMLAnchorElement | null = null;
     let bestScore = -1;
 
-    document.querySelectorAll<HTMLAnchorElement>('.menu a[data-type]').forEach(a => {
-        const href = a.getAttribute('href') || '';
-        const cleaned = href.replace(/^(\.\/|\.\.\/)+/, '').toLowerCase();
+    document
+        .querySelectorAll<HTMLAnchorElement>(".menu a[data-type]")
+        .forEach((a) => {
+            const href = a.getAttribute("href") || "";
+            const cleaned = href.replace(/^(\.\/|\.\.\/)+/, "").toLowerCase();
 
-        if (normalizedPath.endsWith(cleaned)) {
-            // Prefer entity-link (3) > chapter-link (2) > index-link (1)
-            const type = a.getAttribute('data-type');
-            const score = type === 'entity-link' ? 3 : type === 'chapter-link' ? 2 : 1;
-            if (score > bestScore) {
-                bestScore = score;
-                bestMatch = a;
+            if (normalizedPath.endsWith(cleaned)) {
+                // Prefer entity-link (3) > chapter-link (2) > index-link (1)
+                const type = a.getAttribute("data-type");
+                const score =
+                    type === "entity-link"
+                        ? 3
+                        : type === "chapter-link"
+                          ? 2
+                          : 1;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMatch = a;
+                }
             }
-        }
-    });
+        });
 
     if (bestMatch) {
-        (bestMatch as HTMLAnchorElement).classList.add('active');
-        (bestMatch as HTMLAnchorElement).setAttribute('aria-current', 'page');
+        (bestMatch as HTMLAnchorElement).classList.add("active");
+        (bestMatch as HTMLAnchorElement).setAttribute("aria-current", "page");
     }
 };
 
 /** Update page globals that templates depend on */
 const updateGlobals = (doc: Document) => {
-    const scripts = doc.querySelectorAll('script:not([src])');
-    scripts.forEach(script => {
-        const text = script.textContent || '';
-        const depthMatch = text.match(/COMPODOC_CURRENT_PAGE_DEPTH\s*=\s*(\d+)/);
-        const contextMatch = text.match(/COMPODOC_CURRENT_PAGE_CONTEXT\s*=\s*'([^']*)'/);
-        const urlMatch = text.match(/COMPODOC_CURRENT_PAGE_URL\s*=\s*'([^']*)'/);
+    const scripts = doc.querySelectorAll("script:not([src])");
+    scripts.forEach((script) => {
+        const text = script.textContent || "";
+        const depthMatch = text.match(
+            /COMPODOC_CURRENT_PAGE_DEPTH\s*=\s*(\d+)/,
+        );
+        const contextMatch = text.match(
+            /COMPODOC_CURRENT_PAGE_CONTEXT\s*=\s*'([^']*)'/,
+        );
+        const urlMatch = text.match(
+            /COMPODOC_CURRENT_PAGE_URL\s*=\s*'([^']*)'/,
+        );
         const maxSearchMatch = text.match(/MAX_SEARCH_RESULTS\s*=\s*(\d+)/);
 
         if (depthMatch) {
-            (window as any).COMPODOC_CURRENT_PAGE_DEPTH = parseInt(depthMatch[1], 10);
+            (window as any).COMPODOC_CURRENT_PAGE_DEPTH = parseInt(
+                depthMatch[1],
+                10,
+            );
         }
         if (contextMatch) {
             (window as any).COMPODOC_CURRENT_PAGE_CONTEXT = contextMatch[1];
@@ -149,7 +191,10 @@ const updateGlobals = (doc: Document) => {
             (window as any).COMPODOC_CURRENT_PAGE_URL = urlMatch[1];
         }
         if (maxSearchMatch) {
-            (window as any).MAX_SEARCH_RESULTS = parseInt(maxSearchMatch[1], 10);
+            (window as any).MAX_SEARCH_RESULTS = parseInt(
+                maxSearchMatch[1],
+                10,
+            );
         }
     });
 };
@@ -159,20 +204,20 @@ const notifyParentFrame = () => {
     if (window.parent && window.parent !== window) {
         window.parent.postMessage(
             {
-                type: 'compodoc-iframe-navigate',
-                url: window.location.pathname + window.location.hash
+                type: "compodoc-iframe-navigate",
+                url: window.location.pathname + window.location.hash,
             },
-            '*'
+            "*",
         );
     }
 };
 
 /** Check if a URL is internal (same origin, not a hash-only link) */
 const isInternalLink = (anchor: HTMLAnchorElement): boolean => {
-    if (anchor.target === '_blank') {
+    if (anchor.target === "_blank") {
         return false;
     }
-    if (anchor.hasAttribute('download')) {
+    if (anchor.hasAttribute("download")) {
         return false;
     }
     if (anchor.origin !== window.location.origin) {
@@ -186,14 +231,15 @@ const isInternalLink = (anchor: HTMLAnchorElement): boolean => {
 };
 
 /** Progress bar helpers */
-const progressBar = () => document.querySelector<HTMLElement>('.cdx-progress-bar');
+const progressBar = () =>
+    document.querySelector<HTMLElement>(".cdx-progress-bar");
 
 const showProgress = () => {
     const bar = progressBar();
     if (!bar) {
         return;
     }
-    bar.className = 'cdx-progress-bar cdx-progress--loading';
+    bar.className = "cdx-progress-bar cdx-progress--loading";
 };
 
 const completeProgress = () => {
@@ -201,11 +247,11 @@ const completeProgress = () => {
     if (!bar) {
         return;
     }
-    bar.className = 'cdx-progress-bar cdx-progress--done';
+    bar.className = "cdx-progress-bar cdx-progress--done";
     setTimeout(() => {
-        bar.classList.add('cdx-progress--hide');
+        bar.classList.add("cdx-progress--hide");
         setTimeout(() => {
-            bar.className = 'cdx-progress-bar';
+            bar.className = "cdx-progress-bar";
         }, 200);
     }, 300);
 };
@@ -214,7 +260,7 @@ const completeProgress = () => {
 const navigate = async (
     url: string,
     pushState = true,
-    clickedAnchor: HTMLAnchorElement | null = null
+    clickedAnchor: HTMLAnchorElement | null = null,
 ) => {
     try {
         showProgress();
@@ -228,11 +274,11 @@ const navigate = async (
 
         const html = await response.text();
         const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
+        const doc = parser.parseFromString(html, "text/html");
 
         // Swap content area (including the wrapper's context class)
-        const newContentWrapper = doc.querySelector('.content');
-        const currentContentWrapper = document.querySelector('.content');
+        const newContentWrapper = doc.querySelector(".content");
+        const currentContentWrapper = document.querySelector(".content");
         if (newContentWrapper && currentContentWrapper) {
             currentContentWrapper.className = newContentWrapper.className;
         }
@@ -241,9 +287,9 @@ const navigate = async (
         if (newContent && currentContent) {
             currentContent.innerHTML = newContent.innerHTML;
             // Trigger content fade animation
-            currentContent.classList.remove('cdx-fade-in');
+            currentContent.classList.remove("cdx-fade-in");
             void (currentContent as HTMLElement).offsetWidth; // force reflow
-            currentContent.classList.add('cdx-fade-in');
+            currentContent.classList.add("cdx-fade-in");
         }
 
         completeProgress();
@@ -259,13 +305,13 @@ const navigate = async (
 
         // Update URL
         if (pushState) {
-            history.pushState({ path: url }, '', url);
+            history.pushState({ path: url }, "", url);
         }
 
         // Send GA4 pageview on SPA navigation
-        if (typeof gtag === 'function') {
-            gtag('event', 'page_view', {
-                page_path: new URL(url, window.location.origin).pathname
+        if (typeof gtag === "function") {
+            gtag("event", "page_view", {
+                page_path: new URL(url, window.location.origin).pathname,
             });
         }
 
@@ -285,7 +331,7 @@ const navigate = async (
         if (hash) {
             applyHashTarget(resolveHash(hash));
         } else {
-            document.querySelector('.content')?.scrollTo(0, 0);
+            document.querySelector(".content")?.scrollTo(0, 0);
         }
 
         // Notify parent frame
@@ -302,8 +348,8 @@ export const initRouter = () => {
     updateActiveLink(window.location.href);
 
     // Intercept link clicks
-    document.addEventListener('click', e => {
-        const anchor = (e.target as HTMLElement).closest('a');
+    document.addEventListener("click", (e) => {
+        const anchor = (e.target as HTMLElement).closest("a");
         if (!anchor) {
             return;
         }
@@ -312,18 +358,18 @@ export const initRouter = () => {
         }
 
         const href = anchor.href;
-        if (!href || href === '#') {
+        if (!href || href === "#") {
             return;
         }
 
         e.preventDefault();
         // If clicked link is in sidebar, pass it as the active hint
-        const sidebarAnchor = anchor.closest('.menu') ? anchor : null;
+        const sidebarAnchor = anchor.closest(".menu") ? anchor : null;
         navigate(href, true, sidebarAnchor as HTMLAnchorElement | null);
     });
 
     // Handle browser back/forward
-    window.addEventListener('popstate', () => {
+    window.addEventListener("popstate", () => {
         navigate(window.location.href, false);
     });
 };
