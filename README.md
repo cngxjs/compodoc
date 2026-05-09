@@ -54,6 +54,18 @@ If you maintain a modern Angular library or app and want documentation that look
 npm install --save-dev @cngxjs/compodocx
 ```
 
+Inside an Angular workspace you can use the schematic, which seeds `tsconfig.doc.json`, registers the `compodocx:*` npm scripts, and (if you are coming from `@compodoc/compodoc`) migrates your existing artefacts in the same pass:
+
+```bash
+ng add @cngxjs/compodocx
+```
+
+Useful flags:
+
+- `--skip-migration` — leave existing `@compodoc/compodoc` dependency and `compodoc:*` scripts in place.
+- `--project <name>` — required in workspaces where `angular.json` declares more than one project.
+- `--script-prefix compodoc` — generate the legacy `compodoc:*` script names instead of the default `compodocx:*`.
+
 ## Quick start
 
 ```bash

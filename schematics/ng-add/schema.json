@@ -1,0 +1,24 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "CompodocxNgAdd",
+    "title": "Compodocx ng-add Schema",
+    "type": "object",
+    "properties": {
+        "skipMigration": {
+            "type": "boolean",
+            "default": false,
+            "description": "Skip detection and migration of legacy @compodoc/compodoc artefacts."
+        },
+        "project": {
+            "type": "string",
+            "default": "",
+            "description": "Angular CLI project name. Required when angular.json defines multiple projects."
+        },
+        "scriptPrefix": {
+            "type": "string",
+            "default": "compodocx",
+            "description": "Prefix used for the generated package.json scripts. Must match [a-z][a-z0-9-]*."
+        }
+    },
+    "required": []
+}

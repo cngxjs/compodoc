@@ -6,6 +6,7 @@
         "declaration": false,
         "removeComments": true,
         "strictNullChecks": true,
+        "noImplicitAny": true,
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "lib": ["es2015", "dom", "es2015.promise", "es2015.collection", "es2015.iterable"],
@@ -15,5 +16,5 @@
         "module": "commonjs",
         "outDir": "../dist/schematics"
     },
-    "files": ["ng-add/index.ts"]
+    "include": ["ng-add/**/*.ts"]
 }
