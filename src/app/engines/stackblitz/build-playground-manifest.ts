@@ -47,6 +47,11 @@ const DEFAULT_SOURCE_ROOT = 'src/app/';
 
 const ANGULAR_FALLBACK = '*';
 
+// Public Angular peers always present in the manifest's dependencies map.
+// Material + CDK are included unconditionally because most consumers either
+// extend Material directives/components or rely on its theming primitives;
+// omitting them breaks StackBlitz compilation for any playground whose
+// snippet references a `<mat-*>` selector or imports from `@angular/cdk/*`.
 const ANGULAR_PEERS = [
     '@angular/core',
     '@angular/common',
@@ -54,7 +59,9 @@ const ANGULAR_PEERS = [
     '@angular/router',
     '@angular/animations',
     '@angular/platform-browser',
-    '@angular/platform-browser-dynamic'
+    '@angular/platform-browser-dynamic',
+    '@angular/cdk',
+    '@angular/material'
 ];
 
 const ESCAPE_SELECTOR = (selector: string): string => selector.replaceAll(/[^a-zA-Z0-9-]/g, '');

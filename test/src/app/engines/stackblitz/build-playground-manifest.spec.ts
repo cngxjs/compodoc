@@ -106,6 +106,33 @@ describe('buildPlaygroundManifest', () => {
         expect(result.value.dependencies['@angular/common']).to.equal('*');
     });
 
+    it('includes @angular/material and @angular/cdk so Material consumers compile', () => {
+        const pkg = {
+            dependencies: {
+                '@angular/core': '^21.0.0',
+                '@angular/material': '^21.0.0',
+                '@angular/cdk': '^21.0.0'
+            }
+        };
+        const result = buildPlaygroundManifest('MyButton', block, resolverFor([rootNode]), pkg);
+        expect(result.ok).to.be.true;
+        if (!result.ok) {
+            return;
+        }
+        expect(result.value.dependencies['@angular/material']).to.equal('^21.0.0');
+        expect(result.value.dependencies['@angular/cdk']).to.equal('^21.0.0');
+    });
+
+    it('falls back to "*" for Material/CDK when the consumer package.json omits them', () => {
+        const result = buildPlaygroundManifest('MyButton', block, resolverFor([rootNode]), {});
+        expect(result.ok).to.be.true;
+        if (!result.ok) {
+            return;
+        }
+        expect(result.value.dependencies['@angular/material']).to.equal('*');
+        expect(result.value.dependencies['@angular/cdk']).to.equal('*');
+    });
+
     it('preserves the snippet language inside the demo component template', () => {
         const tsBlock: ComponentPlaygroundBlock = {
             ...block,
