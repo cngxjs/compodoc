@@ -248,29 +248,50 @@ const navigate = async (
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        // Swap content area (including the wrapper's context class)
+        // Sidebar is NOT swapped -- menu structure is identical across pages.
+        // Only link prefixes and active state need updating.
         const newContentWrapper = doc.querySelector('.content');
         const currentContentWrapper = document.querySelector('.content');
-        if (newContentWrapper && currentContentWrapper) {
-            currentContentWrapper.className = newContentWrapper.className;
-        }
         const newContent = doc.querySelector(CONTENT_SELECTOR);
         const currentContent = document.querySelector(CONTENT_SELECTOR);
-        if (newContent && currentContent) {
-            currentContent.innerHTML = newContent.innerHTML;
-            // Trigger content fade animation
-            currentContent.classList.remove('cdx-fade-in');
-            void (currentContent as HTMLElement).offsetWidth; // force reflow
-            currentContent.classList.add('cdx-fade-in');
+
+        // Single function that performs every visible-DOM mutation. Wrapped
+        // in `document.startViewTransition` when the browser supports it, so
+        // the user sees a native crossfade instead of an instant swap. The
+        // older `cdx-fade-in` CSS animation is retained as a fallback for
+        // browsers without View Transitions support (Firefox as of 2026-05).
+        const applySwap = () => {
+            if (newContentWrapper && currentContentWrapper) {
+                currentContentWrapper.className = newContentWrapper.className;
+            }
+            if (newContent && currentContent) {
+                currentContent.innerHTML = newContent.innerHTML;
+            }
+            document.title = doc.title;
+        };
+
+        const supportsViewTransition = typeof (document as any).startViewTransition === 'function';
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (supportsViewTransition && !prefersReducedMotion) {
+            const transition = (
+                document as unknown as {
+                    startViewTransition: (cb: () => void) => { finished: Promise<void> };
+                }
+            ).startViewTransition(applySwap);
+            // Continue regardless of whether the transition was cancelled
+            // (e.g. another navigation interrupted it).
+            await transition.finished.catch(() => {});
+        } else {
+            applySwap();
+            if (currentContent) {
+                currentContent.classList.remove('cdx-fade-in');
+                void (currentContent as HTMLElement).offsetWidth; // force reflow
+                currentContent.classList.add('cdx-fade-in');
+            }
         }
 
         completeProgress();
-
-        // Sidebar is NOT swapped -- menu structure is identical across pages.
-        // Only link prefixes and active state need updating.
-
-        // Update page title
-        document.title = doc.title;
 
         // Update globals from inline scripts
         updateGlobals(doc);

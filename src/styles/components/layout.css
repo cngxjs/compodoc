@@ -95,6 +95,25 @@ body,
     }
 }
 
+/*
+ * View Transitions API — applied by the SPA router on navigation when the
+ * browser supports `document.startViewTransition()` (Chrome / Edge 111+,
+ * Safari 18+; Firefox falls back to `cdx-fade-in` above). Tunes the default
+ * crossfade to the same 220ms ease-out feel as the fallback animation.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 220ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation: none !important;
+    }
+}
+
 .cdx-skip-link {
     @apply absolute z-[100] px-4 py-2 text-sm font-semibold;
     top: -100%;
