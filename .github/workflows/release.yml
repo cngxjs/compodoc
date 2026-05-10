@@ -108,3 +108,25 @@ jobs:
 
             - name: Publish to npm (OIDC via Trusted Publisher)
               run: npm publish --access public --provenance
+
+            # After publish, kick the marketing site so its npm-version badge,
+            # release-date pill and weekly-downloads counter pick up the new
+            # version on next paint. The website's deploy.yml also re-runs
+            # `sync:tokens` against the new tag so the vendored CSS tracks the
+            # released library version (auto-commits with `[skip ci]`).
+            #
+            # Requires repo secret WEBSITE_DISPATCH_TOKEN — a PAT with
+            # `repo` scope (classic) or `Actions: write` + `Contents: write`
+            # (fine-grained, scoped to cngxjs/compodocx-website only).
+            - name: Trigger compodocx-website rebuild
+              if: success()
+              uses: peter-evans/repository-dispatch@v3
+              with:
+                  token: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
+                  repository: cngxjs/compodocx-website
+                  event-type: compodocx-released
+                  client-payload: |
+                      {
+                        "version": "${{ github.ref_name }}",
+                        "sha": "${{ github.sha }}"
+                      }
