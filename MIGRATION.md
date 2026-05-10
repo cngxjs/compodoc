@@ -1,51 +1,12 @@
 # Migrating from compodoc to compodocx
 
-This guide walks through everything that changed between the upstream `@compodoc/compodoc` and `@cngxjs/compodocx`. The CLI flags and config-file shape are intentionally backwards-compatible, so a typical project switches with a one-line `package.json` edit. The rest of this document covers what is honestly different and what to do about it.
-
-## Breaking change in 0.3.0: multi-version output is the default
-
-Starting with `@cngxjs/compodocx@0.3.0`, `compodocx -d <output>` writes the generated HTML to `<output>/<versionLabel>/` instead of `<output>/`, and maintains a small `<output>/versions.json` manifest next to it. A topbar version-switcher widget reads the manifest at runtime and lets readers jump between built versions.
-
-For any deploy script that uploads `<output>/` to a docs host this means two things:
-
-- The HTML now lives one folder deeper. Update any path the script points at — for example a `gh-pages` deploy that copied `docs/index.html` should copy from `docs/<versionLabel>/index.html`, or copy the whole `docs/` so the manifest goes with it.
-- A new `versions.json` file is emitted alongside the version subfolder. It is an append-only manifest — re-running a build for the same label updates `builtAt` in place, never deletes neighbours — so safe to commit if the deploy lives in git.
-
-Two ways to react:
-
-```diff
-# 1. Embrace the new layout (recommended)
-- compodocx -p tsconfig.json -d docs
-+ compodocx -p tsconfig.json -d docs           # writes docs/<version>/ + docs/versions.json
-+ # update deploy to upload docs/ as the deploy root
-```
-
-```diff
-# 2. Keep the previous flat layout exactly as before
-- compodocx -p tsconfig.json -d docs
-+ compodocx -p tsconfig.json -d docs --no-multiVersion
-```
-
-The new flags involved (full descriptions in the CLI table and `docs/configuration.md`):
-
-| Flag | Default | Purpose |
-|-|-|-|
-| `--multiVersion` / `--no-multiVersion` | `true` | Toggles the layout. `--no-multiVersion` restores `<output>/` as the document root. |
-| `--versionLabel <label>` | (auto) | Override the subfolder name. Auto-detected from the nearest `package.json` `version`, prefixed with `v` if not already (`1.2.3` → `v1.2.3`). Use `main`, `next`, `unreleased` for non-package builds. |
-| `--versionsRoot <path>` | the `-d` folder | Where `versions.json` is read from / written to. Override when CI builds each version separately and stitches the deploys together later. |
-| `--maxVersionsShown <n>` | `10` | Cap on how many entries the switcher dropdown shows. `0` is unlimited. The manifest is always written in full — this is presentation-only. |
-
-If `--multiVersion` is on (the default) but no version label can be resolved (no `package.json` and no `--versionLabel` flag), the build fails fast with exit code 2 and a hint pointing at the two opt-outs.
-
-For a longer walkthrough including deployment recipes (GitHub Pages, Netlify/Vercel, plain nginx), see `docs/versioned-docs.md`.
+CLI flags and config-file shape stay backwards-compatible. A typical project switches with a one-line `package.json` edit. This document covers what differs and what to do about it.
 
 ## Quick switch
 
-In your `package.json`:
-
 ```diff
 - "@compodoc/compodoc": "^1.1.32"
-+ "@cngxjs/compodocx": "^0.0.1"
++ "@cngxjs/compodocx": "^0.4.0"
 ```
 
 ```diff
@@ -65,176 +26,104 @@ ng add @cngxjs/compodocx
 
 What the schematic does on a project that previously used `@compodoc/compodoc`:
 
-- Removes `@compodoc/compodoc` from `dependencies` and `devDependencies` (the install task that runs at the end of the schematic reconciles `package-lock.json`).
+- Removes `@compodoc/compodoc` from `dependencies` and `devDependencies`.
 - Renames any `compodoc:<suffix>` script to `compodocx:<suffix>`. If a `compodocx:<suffix>` already exists with a different value, the source script is renamed to `compodoc:<suffix>-legacy` instead — never overwritten.
-- Rewrites the standalone `compodoc` token in any script value (covers `compodoc -p ...`, `npx compodoc ...`, `node_modules/.bin/compodoc ...`) to use the new bin.
+- Rewrites the standalone `compodoc` token in any script value to use the new bin.
 - Adds the three default scripts: `compodocx:build`, `compodocx:build-and-serve`, `compodocx:serve`.
-- Creates `tsconfig.doc.json` if it does not already exist (existing files are left intact).
+- Creates `tsconfig.doc.json` if it does not already exist.
 
 Useful flags:
 
-- `--skip-migration` — leave the legacy dependency and `compodoc:*` scripts in place. The new `compodocx:*` scripts and `tsconfig.doc.json` are still added.
-- `--project <name>` — required when `angular.json` declares more than one project; the schematic exits with a list of available project names if it is missing.
-- `--script-prefix compodoc` — produce `compodoc:*` script names instead of the default `compodocx:*`. Useful for teams that prefer the legacy naming.
+- `--skip-migration` — leave the legacy dependency and `compodoc:*` scripts in place.
+- `--project <name>` — required when `angular.json` declares more than one project.
+- `--script-prefix compodoc` — produce `compodoc:*` script names instead of the default.
 
-Re-running `ng add @cngxjs/compodocx` on the same workspace is a no-op — the schematic is idempotent and produces zero diff in the second pass.
+Re-running `ng add @cngxjs/compodocx` is idempotent (zero diff on the second pass). CI workflow files that invoke `compodoc -p ...` directly are not rewritten — update those manually, or rely on the `compodoc` bin alias the new package still ships.
 
-CI workflow files (GitHub Actions, GitLab CI, Jenkinsfiles) that invoke `compodoc -p ...` directly are not rewritten by the schematic. Update those manually, or rely on the `compodoc` bin alias the new package still ships, which keeps `compodoc -p ...` resolvable at runtime.
-
-The rest of the document only matters if you fall into one of these buckets:
+The rest of this document only matters if:
 
 - You shipped a custom Handlebars template directory via `--templates`.
 - You used a built-in compodoc theme other than the new bundled set.
 - Your CSS or downstream tooling targets compodoc's emitted class names.
 - You scraped or post-processed the generated HTML.
 
+## Breaking change in 0.3.0: multi-version output is the default
+
+Starting with `@cngxjs/compodocx@0.3.0`, `compodocx -d <output>` writes the generated HTML to `<output>/<versionLabel>/` instead of `<output>/`, and maintains a small `<output>/versions.json` manifest next to it.
+
+For deploy scripts that upload `<output>/`:
+
+- The HTML now lives one folder deeper. Update any path the script points at.
+- A new `versions.json` file is emitted alongside the version subfolder.
+
+Two ways to react:
+
+```diff
+# 1. Embrace the new layout (recommended)
+- compodocx -p tsconfig.json -d docs
++ compodocx -p tsconfig.json -d docs           # writes docs/<version>/ + docs/versions.json
++ # update deploy to upload docs/ as the deploy root
+```
+
+```diff
+# 2. Keep the previous flat layout
+- compodocx -p tsconfig.json -d docs
++ compodocx -p tsconfig.json -d docs --no-multiVersion
+```
+
+Full pattern, deployment recipes, and version-switcher reference: [`docs/versioned-docs.md`](docs/versioned-docs.md).
+
 ## CLI flag compatibility
 
 | Flag | Status | Notes |
 |-|-|-|
-| `-p`, `--tsconfig` | unchanged | Same path semantics. |
+| `-p`, `--tsconfig` | unchanged | |
 | `-d`, `--output` | unchanged | |
 | `-s`, `--serve` | unchanged | |
 | `-r`, `--port` | unchanged | |
 | `-w`, `--watch` | unchanged | |
 | `-o`, `--open` | unchanged | |
-| `-e`, `--exportFormat` | unchanged | `json` and `html` are still the supported formats. The JSON shape gained typed `Export*` interfaces and three new header fields (`schemaVersion`, `generatedAt`, `compodocxVersion`) — see "JSON export" below. |
-| `--jsonIndent` | **new** (default `0`) | Indent size (0–8) for `documentation.json` produced by `--exportFormat json`. Default dropped from compodoc's hardcoded `4` to `0` (single-line output, smaller files). Pass `--jsonIndent 2` to restore human-readable formatting. Out-of-range values fail fast with a clear error. |
-| `--multiVersion` / `--no-multiVersion` | **new** (default `true`, BREAKING) | When on, output is written to `<output>/<versionLabel>/` and a `versions.json` manifest is maintained next to it. Pass `--no-multiVersion` to restore the previous flat layout. See "Breaking change in 0.3.0" above. |
-| `--versionLabel <label>` | **new** | Override the version-subfolder name. Defaults to the nearest `package.json` `version`, prefixed with `v` (`1.2.3` → `v1.2.3`). Use `main`, `next`, `unreleased` for non-package builds. Hard error if missing while `--multiVersion` is on. |
-| `--versionsRoot <path>` | **new** | Folder where `versions.json` is read/written. Defaults to the `-d` folder so the deploy is self-contained; override when CI builds each version separately. |
-| `--maxVersionsShown <n>` | **new** (default `10`, range 0–1000) | Cap on the switcher dropdown. `0` means unlimited. The manifest is always written in full — this is presentation-only. |
+| `-e`, `--exportFormat` | unchanged | `json` and `html` still supported. JSON shape gained typed `Export*` interfaces — see "JSON export" below. |
+| `--jsonIndent` | new (default `0`) | Indent for `documentation.json`. Default dropped from `4` to `0` (smaller files). Pass `--jsonIndent 2` to restore human-readable formatting. |
+| `--multiVersion` / `--no-multiVersion` | new (default `true`, BREAKING) | See "Breaking change in 0.3.0" above. |
+| `--versionLabel`, `--versionsRoot`, `--maxVersionsShown` | new | Multi-version controls. See `docs/versioned-docs.md`. |
 | `-n`, `--name` | unchanged | |
 | `-a`, `--assetsFolder` | unchanged | |
-| `-y`, `--extTheme` | unchanged | Still accepts a path to a custom CSS file. |
-| `--theme` | **new theme set** | Built-in theme names changed — see "Themes" below. |
-| `--templates` | **breaking** | Now expects JavaScript files (CommonJS modules), not Handlebars partials — see "Custom templates" below. |
-| `--includes`, `--includesName` | unchanged | Additional Markdown pages folded into the sidebar. |
+| `-y`, `--extTheme` | unchanged | |
+| `--theme` | new theme set | See "Themes" below. |
+| `--templates` | breaking | Now expects JavaScript files (CommonJS modules), not Handlebars partials. See "Custom templates" below. |
+| `--includes`, `--includesName` | unchanged | |
 | `--coverageTest`, `--coverageMinimumPerFile`, `--coverageTestThresholdFail` | unchanged | |
 | `--disableSourceCode`, `--disableDomTree`, `--disableTemplateTab`, `--disableGraph`, `--disableCoverage`, `--disablePrivate`, `--disableProtected`, `--disableInternal`, `--disableLifeCycleHooks`, `--disableConstructors`, `--disableFilePath` | unchanged | |
-| `--disableDependenciesTab` | **new** | Hides the per-component standalone-import graph independently from `--disableGraph`. |
-| `--disablePlaygroundTab` | **new** (opt-in, default `false`) | Hides the per-component Playground tab even when `@playground` blocks are present in the source. |
+| `--disableDependenciesTab` | new | Hides the per-component standalone-import graph independently from `--disableGraph`. |
 | `--customFavicon`, `--customLogo` | unchanged | |
 | `--hideGenerator`, `--hideDarkModeToggle` | unchanged | |
 | `--toggleMenuItems`, `--navTabConfig` | unchanged | |
-| `--gaID` | replaces `--gaSite` | Universal Analytics is gone — only GA4 measurement IDs (`G-XXXXXXXXXX`) are supported. SPA pageviews are tracked automatically. |
-| `--gaSite` | **removed** | Universal Analytics tracker name no longer accepted. |
-| `--showEffects` | **new** (opt-in, default `false`) | Renders Angular `effect()` blocks in a dedicated Effects section on the API tab. |
-| `--publicApiOnly` | **new** | Restricts processing to symbols re-exported from a project's public entry. |
-| `--minimal` | unchanged | |
-| `--silent`, `--language`, `--maxSearchResults` | unchanged | |
-| `--templatePlayground` | **removed in v0.4.0** | The Handlebars-based template playground was deprecated in v0.3.0 and removed in v0.4.0. Authors who relied on it should switch to the JS template override path (`--templates`) — see [Custom Templates](custom-templates.md). The companion `compodocx migrate` sub-CLI converts existing Handlebars partials to JS overrides automatically. |
+| `--gaID` | replaces `--gaSite` | GA4 measurement IDs only (`G-XXXXXXXXXX`). SPA pageviews tracked automatically. |
+| `--gaSite` | removed | Universal Analytics is end-of-life. |
+| `--showEffects` | new (default `false`) | Renders Angular `effect()` blocks in a dedicated section on the API tab. |
+| `--publicApiOnly` | new | Restricts processing to symbols re-exported from a project's public entry. |
+| `--minimal`, `--silent`, `--language`, `--maxSearchResults` | unchanged | |
+| `--templatePlayground` | removed in v0.4.0 | Deprecated in v0.3.0, removed in v0.4.0. Switch to the JS template override path (`--templates`). The `compodocx migrate` sub-CLI converts existing Handlebars partials automatically. |
 
 Config-file (`.compodocrc.json`, `.compodocrc.yaml`, `.compodocrc.js`) keys mirror the CLI flags one-to-one. Existing config files keep working unchanged.
 
-## JSON export (`--exportFormat json`)
+## JSON export shape
 
-`compodocx --exportFormat json -d <out>` writes `documentation.json`, the structured snapshot consumers like API Diff (`compodocx diff`) and the LLM context export (`--exportFormat llm-md`) read.
+`documentation.json` produced by `compodocx --exportFormat json` gained:
 
-### New
-
-- **Typed shape.** `ExportData` and every per-entity field (`ExportComponent`, `ExportModule`, `ExportInjectable`, `ExportPipe`, `ExportClass`, `ExportInterface`, `ExportGuard`, `ExportInterceptor`, `ExportDirective`, `ExportRoute`, `ExportCoverage`, `ExportMiscellaneous`) are exported from `@cngxjs/compodocx`. Downstream tooling can import and narrow without `any`.
-- **`schemaVersion: 1`.** Single source of truth: `EXPORT_SCHEMA_VERSION` in `src/app/interfaces/export-data.interface.ts`. Bumped on every breaking shape change with a corresponding note in this file. Pre-v0.3.0 outputs had no field — consumers should treat a missing `schemaVersion` as version 0.
-- **`generatedAt`** — ISO 8601 timestamp of when the snapshot was written. Useful for time-travel diffs and stale-cache detection. Non-deterministic by design; snapshot tests must either fix the clock or strip the field before comparing.
-- **`compodocxVersion`** — `package.json` version of the producing CLI, for consumer telemetry and cross-version diff handling.
-
-### Changed
-
-- **Default JSON indent dropped from `4` → `0`.** The new `documentation.json` is single-line by default — substantially smaller. Pass `--jsonIndent 2` (or any value 0–8) to restore human-readable formatting. Tools that read the file with `jq` are unaffected; tools that depend on whitespace-sensitive regexes should opt into `--jsonIndent 2` or migrate to a JSON parser.
-
-## Adding runnable `@playground` blocks
-
-Components can now ship author-curated, runnable demos. Add one or more `@playground <title>` JSDoc blocks to a component class:
-
-```ts
-/**
- * Reusable button.
- *
- * @example                              // unchanged — static, on the Info tab
- * ```html
- * <my-button label="Click me" />
- * ```
- *
- * @playground Default state             // new — runnable, on the Playground tab
- * ```html
- * <my-button label="Click me" />
- * ```
- *
- * @playground Disabled state
- * ```html
- * <my-button label="Click me" [disabled]="true" />
- * ```
- */
-@Component({ /* ... */ })
-export class MyButton { /* ... */ }
-```
-
-Each `@playground` block becomes one section on a dedicated **Playground** tab on the component page, with an "Open in StackBlitz" button. Clicking the button opens a new StackBlitz tab seeded with the consumed component source plus a minimal Angular workspace — no library publication required.
-
-- The tag is **opt-in**. Components without `@playground` blocks render exactly as before.
-- The title (everything after `@playground`) is required. Blocks with a missing title or no fenced code body are dropped with a build-time warning.
-- `@example` rendering on the Info tab is unchanged. `@example` and `@playground` can coexist.
-- `<example-url>` (live external iframes) keeps working — the existing **Examples** tab is untouched.
-- Disable the tab globally with `--disablePlaygroundTab` (config key `disablePlaygroundTab: true`).
-- Multiple blocks on the same component are rendered in source order.
-
-For very large components, the project assembler caps inline file size at 8000 chars per file, walks at most 25 transitive sources, and stops at depth 3. When those caps are hit the section renders a static fallback instead of the launcher; the build log surfaces the reason.
-
-### `@playground` file references (v0.4.0+)
-
-The tag now accepts a trailing relative path token. Long demos and stateful demos move out of the JSDoc comment into real files on disk that you author with full editor support:
-
-```ts
-/**
- * Reusable button.
- *
- * @playground Inline snippet
- * ```html
- * <my-button>Click</my-button>
- * ```
- *
- * @playground HTML file ./examples/showcase.html
- * @playground Full component ./examples/full/full-example.component.ts
- */
-@Component({ /* ... */ })
-export class MyButton {}
-```
-
-| Mode | Tag form | What ships in the StackBlitz |
-|-|-|-|
-| Inline (existing) | `@playground <title>` + fenced body | Generated AppComponent with the snippet as its `template: \`...\`` literal |
-| HTML file | `@playground <title> ./path.html` | Generated AppComponent with the file's body as its template |
-| TS component | `@playground <title> ./path.component.ts` | The entry's `@Component` class IS the AppComponent. `templateUrl` / `styleUrl` / `styleUrls` siblings and relative imports are walked and packed automatically |
-
-Authoring rules:
-
-- File paths must start with `./` or `../` and end in `.html` or `.ts`.
-- Path detection: only a trailing token preceded by whitespace at end-of-line triggers file-ref mode. Titles can contain slashes (`A / B comparison ./demo.html` parses to title `A / B comparison`, fileRef `./demo.html`).
-- Mutual exclusion: a tag with both a fileRef AND a fenced body is dropped with a `mutually exclusive` warning.
-- For TS mode: use `selector: 'app-root'` on the entry. The class name itself can be anything — compodocx appends `export { YourClass as AppComponent }` automatically so the scaffold's `src/main.ts` resolves.
-- `templateUrl` / `styleUrl` / `styleUrls` must use string literals (template literals are not parsed by the regex resolver).
-
-New config-only key for library authors who need to pin extra runtime dependencies in the StackBlitz manifest:
-
-```jsonc
-// compodocx.config.json
-{
-    "playgroundDependencies": {
-        "@my-org/ui-kit": "^1.0.0"
-    }
-}
-```
-
-`playgroundDependencies` wins over the consumer-`package.json` auto-forward and over any auto-detected version (e.g. Material). No CLI flag.
+- **Typed shape.** `ExportData` and every per-entity field are exported from `@cngxjs/compodocx`. Downstream tooling can import and narrow without `any`.
+- **Header fields.** `schemaVersion: 1`, `generatedAt` (ISO 8601), `compodocxVersion`. Pre-v0.3.0 outputs had no `schemaVersion` — consumers should treat its absence as version 0.
+- **Indent default `0`.** Single-line by default. Pass `--jsonIndent 2` to restore the previous human-readable formatting. `jq` consumers are unaffected.
 
 ## Themes
 
-The bundled theme set is different. Pick one of the new names, or supply your own CSS file via `--extTheme` / `theme: "./path/to/theme.css"`.
+The bundled theme set is different.
 
 | Old compodoc theme | Closest replacement |
 |-|-|
 | `gitbook` | `gitbook` (compat theme — preserved) |
-| `material` | `default` (Slate Noir, neutral) or `ocean` |
+| `material` | `default` or `ocean` |
 | `original` | `default` |
 | `postmark` | `nord` |
 | `readthedocs` | `default` |
@@ -242,26 +131,15 @@ The bundled theme set is different. Pick one of the new names, or supply your ow
 | `vagrant` | `midnight` |
 | `laravel` | `ember` |
 
-The eight bundled compodocx themes:
+Eight bundled compodocx themes: `default`, `ocean`, `midnight`, `nord`, `rose-pine`, `ember`, `neon`, `brutalist`. Plus `gitbook` as compat.
 
-- `default` — Slate Noir, pure neutral greyscale (light + dark)
-- `ocean` — blue-cyan, paired with the `github-light:github-dark` Shiki theme
-- `midnight` — purple sky-gradient, paired with `tokyo-night`
-- `nord` — Nord Polar/Frost palette
-- `rose-pine` — Rosé Pine Dawn / Moon
-- `ember` — warm amber-orange, paired with `vitesse`
-- `neon` — synthwave (single-theme dark, paired with `synthwave-84`)
-- `brutalist` — sharp, high-contrast, hard shadows
-
-Plus `gitbook` as a compat theme.
-
-Each theme is a single CSS file overriding the design tokens defined in `src/styles/compodocx.css`. To author your own, copy `src/themes/theme-template.css`, set the tokens, and pass the path via `--theme`.
+Each theme is a single CSS file overriding the design tokens defined in `src/styles/compodocx.css`. Author your own by copying `src/themes/theme-template.css`, setting tokens, and passing the path via `--theme`.
 
 ## Custom templates: HBS → JS
 
-This is the biggest behavioral break. compodocx ships a JavaScript-based template override system that replaces compodoc's Handlebars partials. The old `<templatePath>/page.hbs`, `<templatePath>/partials/*.hbs` layout no longer applies.
+The biggest behavioral break. compodocx ships a JavaScript-based template override system that replaces compodoc's Handlebars partials.
 
-### New layout
+### Layout
 
 ```text
 my-templates/
@@ -273,11 +151,9 @@ my-templates/
     └── menu.js
 ```
 
-Pass that directory via `--templates ./my-templates` (or `templates: "./my-templates"` in the config file). compodocx loads every `.js` file under `partials/` into a `name → fn` map at boot.
+Pass that directory via `--templates ./my-templates`.
 
-### The contract
-
-Every override file exports a single function:
+### Contract
 
 ```js
 module.exports = function (data, helpers) {
@@ -287,13 +163,9 @@ module.exports = function (data, helpers) {
 };
 ```
 
-The returned string is inserted raw — no escaping. If your function returns `null` or `undefined`, compodocx falls back to the built-in TSX rendering for that name.
-
-The override is consulted **before** the built-in renderer. If a registered override exists for a given name, the built-in path is skipped entirely.
+The returned string is inserted raw — no escaping. `null` / `undefined` falls back to the built-in TSX rendering. Overrides are consulted before the built-in renderer.
 
 ### HBS → JS cookbook
-
-Six common Handlebars constructs and their JavaScript equivalents:
 
 ```handlebars
 {{!-- 1. Expression --}}
@@ -301,7 +173,6 @@ Six common Handlebars constructs and their JavaScript equivalents:
 ```
 
 ```js
-// JS equivalent
 `${data.name}`
 ```
 
@@ -311,7 +182,6 @@ Six common Handlebars constructs and their JavaScript equivalents:
 ```
 
 ```js
-// JS equivalent
 data.deprecated ? `<span class="deprecated">${data.deprecationMessage}</span>` : ''
 ```
 
@@ -323,7 +193,6 @@ data.deprecated ? `<span class="deprecated">${data.deprecationMessage}</span>` :
 ```
 
 ```js
-// JS equivalent
 data.methods.map(m => `<li>${m.name}</li>`).join('')
 ```
 
@@ -333,7 +202,6 @@ data.methods.map(m => `<li>${m.name}</li>`).join('')
 ```
 
 ```js
-// JS equivalent
 helpers.linkTypeHtml(data.returnType)
 ```
 
@@ -343,7 +211,6 @@ helpers.linkTypeHtml(data.returnType)
 ```
 
 ```js
-// JS equivalent — call out to your own JS module:
 const blockMethod = require('./block-method.js');
 return blockMethod({ methods: data.instanceMethods, file: data.file }, helpers);
 ```
@@ -354,124 +221,94 @@ return blockMethod({ methods: data.instanceMethods, file: data.file }, helpers);
 ```
 
 ```js
-// JS equivalent — the JS API never escapes, so this is implicit:
 data.rawHtml
 ```
 
 ### Reference templates
 
-Two copy-paste-ready overrides live at `test/fixtures/test-templates/partials/`:
+Two copy-paste-ready overrides under `test/fixtures/test-templates/partials/`:
 
-- `component.js` overrides the `component` page-level template and exercises `data.component.*`, `helpers.parseDescription()`, `helpers.functionSignature()`, `helpers.extractJsdocParams()`, and `helpers.linkTypeHtml()`. It is the override used by the `cli-templates` CLI integration spec, so it stays a working example over time.
-- `block-method.js` overrides the `block-method` block-level template and exercises iteration, conditional rendering, `helpers.t()`, `helpers.linkTypeHtml()`, `helpers.parseDescription()`, and section composition.
+- `component.js` — overrides the `component` page-level template, exercises `data.component.*` plus `helpers.parseDescription()`, `functionSignature()`, `extractJsdocParams()`, `linkTypeHtml()`.
+- `block-method.js` — overrides the `block-method` block-level template, exercises iteration, `helpers.t()`, conditional rendering.
 
-Use either as a starting point for your own template directory.
+Both are wired into the `cli-templates` integration spec and stay working examples over time.
 
 ## Override names
 
-Every name compodocx exposes for `--templates` overrides. The names are the stable contract; the data shape passed to each is documented in the corresponding TSX source file under `src/templates/`.
+Stable contract for `--templates`. Data shapes documented inline in the corresponding TSX source under `src/templates/`.
 
-### Page-level (27)
+### Page-level
 
 `overview`, `markdown`, `modules`, `module`, `component`, `component-detail`, `controller`, `entity`, `directive`, `injectable`, `interceptor`, `guard`, `pipe`, `class`, `interface`, `routes`, `miscellaneous-functions`, `miscellaneous-variables`, `miscellaneous-typealiases`, `miscellaneous-enumerations`, `additional-page`, `package-dependencies`, `package-properties`, `coverage-report`, `unit-test-report`, `menu`, `app-config`
 
-### Block-level (17)
+### Block-level
 
-`block-theming`, `block-theming-token`, `block-method`, `block-property`, `block-input`, `block-output`, `block-accessors`, `block-host-listener`, `block-host-listeners`, `block-host-bindings`, `block-derived-state`, `block-constructor`, `block-enum`, `block-typealias`, `block-index`, `block-index-signatures`, `version-switcher`
+`block-theming`, `block-theming-token`, `block-method`, `block-property`, `block-input`, `block-output`, `block-accessors`, `block-host-listener`, `block-host-listeners`, `block-host-bindings`, `block-derived-state`, `block-constructor`, `block-enum`, `block-typealias`, `block-index`, `block-index-signatures`, `block-playground`, `playground-content`, `version-switcher`
 
-`version-switcher` is the override name for the multi-version dropdown widget. The override receives `{ currentLabel, depth, maxVersionsShown }` and returns a string of HTML inserted into the topbar/sidebar slot. Returning an empty string hides the widget while still leaving the rest of the multi-version pipeline (`versions.json`, version subfolder layout) intact.
+### Removed / not overridable
 
-### Intentionally not overridable for 0.0.1
-
-- `block-relationships` — no downstream demand. Easy to add back if requested.
-- `index`, `index-misc` — compodoc's old "API Index" partials. The equivalent functionality is now inline in the relevant block components.
-- `link-type` — was a compodoc Handlebars helper, not a partial. The equivalent is `helpers.linkTypeHtml(typeName)` available inside any JS override.
-
-### Removed (NOT re-added)
-
-- `search-results`, `search-input` — Pagefind replaces Lunr and ships its own UI shell. There is nothing to override here anymore.
-- `breadcrumbs` — replaced by inline rendering in the entity hero. Override the page-level template (e.g. `component`) if you need to change breadcrumb markup.
+- `search-results`, `search-input` — Pagefind replaces Lunr and ships its own UI shell. No override hook.
+- `breadcrumbs` — replaced by inline rendering in the entity hero. Override the page-level template if you need to change breadcrumb markup.
+- `block-relationships`, `index`, `index-misc`, `link-type` — not overridable. `link-type` was a Handlebars helper, available now as `helpers.linkTypeHtml(typeName)` inside any JS override.
 
 ## Helper API
 
-Every override receives a `helpers` object as its second argument. It is the full export of `src/templates/helpers/index.ts`. The list below stays in sync with that file — if it grows out of date, the source is authoritative.
+Every override receives a `helpers` object as its second argument — the full export of `src/templates/helpers/index.ts`. The source is authoritative; key entries:
 
-| Helper | Signature | What it does |
-|-|-|-|
-| `t(key, opts?)` | `(string, object?) => string` | i18n lookup. Same key set as compodoc plus a few new keys (`see`, `theming`, `host`, `effects`, `derived-state`, …). |
-| `capitalize(str)` | `(string) => string` | First-letter uppercase. |
-| `linkTypeHtml(type)` | `(string) => string` | Renders a TypeScript type as a clickable HTML chip linking to the relevant docs page when known. |
-| `resolveType(name)` | `(string) => { href, target } \| null` | Lower-level: looks up an entity name and returns the link target without rendering. |
-| `parseDescription(desc, depth?)` | `(string, number?) => string` | Renders a JSDoc description through the Markdown engine, resolving `{@link}` tags relative to the entity's depth. |
-| `parseProperty(propName, model)` | helper for prop-table rendering | Compodoc-compat. |
-| `functionSignature(method)` | `(any) => string` | Returns a code-formatted parameter list for a method. |
-| `indexableSignature(idx)` | `(any) => string` | Returns a code-formatted index-signature snippet. |
-| `signalKindLabel(kind)` | `(string) => string` | Maps `'computed' \| 'linked-signal' \| 'effect' \| ...` to a human label. |
-| `modifKind(k)` / `modifSlug(k)` | `(number) => string` | Map a TypeScript SyntaxKind modifier number to its label / CSS slug. |
-| `modifIcon(k)` / `modifIconFromArray(arr)` | `(number) => string` | Same but returns the modifier icon SVG. |
-| `oneParameterHas(args, key)` | `(any[], string) => boolean` | Checks whether any parameter has a given JSDoc tag set. |
-| `relativeUrl(path)` | `(string) => string` | Compodoc-compat URL resolver. |
-| `shortPath(path)` / `shortUrl(url)` | `(string) => string` | Truncates long paths / URLs for sidebar display. |
-| `codeWrap(html)` | `(unknown) => string` | Wraps content in `<code>` (single-line) or `<pre>` (multi-line). |
-| `highlightedCodeWrap(value)` | `(unknown) => string` | Same as `codeWrap` but routes through Shiki for syntax highlighting. |
-| `extractJsdocParams(tags)` / `hasJsdocParams(tags)` | jsdoc helpers | |
-| `extractJsdocExamples(tags)` / `extractJsdocCodeExamples(tags)` | jsdoc helpers | |
-| `jsdocReturnsComment(tags)` | `(any[]) => string` | Pulls the `@returns` comment text. |
-| `isApiSection(id)` / `isInfoSection(id)` / `isThemingSection(id)` | `(string) => boolean` | Honor the user's `--apiTabSections` / `--infoTabSections` / `themingTabSections` config when deciding what to render. |
-| `isTabEnabled(navTabs, id)` | `(any[], string) => boolean` | Same idea for top-level tabs. |
-| `isInitialTab(navTabs, id)` | `(any[], string) => boolean` | True if a tab is the default initial tab. |
-| `hasAnyApiSections(...)` | helper for the API tab gate | |
-| `isInternalMember(modifierKind?)` | `(number[]?) => boolean` | True if a member has `private` or `protected` modifiers. |
-| `isReadmeEmpty(readme?)` | `(string?) => boolean` | True if the readme is whitespace or only headings. |
-| `extractReadmeHeadings(readme?)` | `(string?) => string` | Returns the heading HTML from a readme, used in the empty state. |
-| `computeCoverageStats(model)` | `(any) => CoverageStats` | Runs the documentation-coverage analysis on a model. |
-
-Every helper is also reachable from outside the override system as a normal ES import — see `src/templates/helpers/index.ts` for canonical names.
+| Helper | What it does |
+|-|-|
+| `t(key, opts?)` | i18n lookup |
+| `linkTypeHtml(type)` | Renders a TypeScript type as a clickable HTML chip |
+| `resolveType(name)` | Looks up an entity name and returns the link target |
+| `parseDescription(desc, depth?)` | Renders a JSDoc description through the Markdown engine |
+| `functionSignature(method)` | Code-formatted parameter list for a method |
+| `extractJsdocParams(tags)` / `hasJsdocParams(tags)` | JSDoc helpers |
+| `extractJsdocExamples(tags)` / `extractJsdocCodeExamples(tags)` | JSDoc helpers |
+| `jsdocReturnsComment(tags)` | Pulls the `@returns` comment text |
+| `signalKindLabel(kind)` | Maps signal kinds to human labels |
+| `modifKind(k)` / `modifSlug(k)` / `modifIcon(k)` | TypeScript SyntaxKind modifier mappers |
+| `relativeUrl(path)` / `shortPath(path)` / `shortUrl(url)` | URL / path utilities |
+| `codeWrap(html)` / `highlightedCodeWrap(value)` | Wrap content in `<code>` / `<pre>`, optionally Shiki-highlighted |
+| `isApiSection(id)` / `isInfoSection(id)` / `isThemingSection(id)` / `isTabEnabled(navTabs, id)` | Honor user tab/section configuration |
+| `computeCoverageStats(model)` | Runs the documentation-coverage analysis |
 
 ## CSS class rename cheatsheet
 
-compodoc emitted a mix of Bootstrap classes (`card`, `card-block`, `panel`, `nav-tabs`) and ad-hoc compodoc-prefixed names. compodocx prefixes everything with `cdx-` and drops the Bootstrap markup entirely.
-
-If your custom CSS targets generated class names, this is the rough shape of the rename. Not exhaustive — search-and-replace your stylesheet against the generated HTML to be sure.
+compodoc emitted Bootstrap classes plus ad-hoc `compodoc-` names. compodocx prefixes everything with `cdx-` and drops Bootstrap markup entirely.
 
 | compodoc class | compodocx replacement |
 |-|-|
 | `.card`, `.card-block`, `.panel` | `.cdx-member-card`, `.cdx-member-body`, `.cdx-content-section` |
 | `.nav.nav-tabs`, `.nav-link`, `.tab-content`, `.tab-pane` | `.cdx-tab-bar`, `.cdx-tab`, `.cdx-tab-panel` |
-| `.menu`, `.chapter`, `.link`, `.collapse` | `.cdx-sidebar`, `.cdx-sidebar-chapter`, `.cdx-sidebar-link` (legacy `.menu` and `.collapse` are still emitted for the menu's accordion JS — see CLAUDE.md note) |
-| `.compodoc-icon-*` | `.cdx-icon` (Lucide-style inline SVGs in `Icons.tsx`) |
-| Bootstrap badges (`.badge`, `.badge-primary`) | `.cdx-badge`, `.cdx-badge--<kind>` (one badge kind per CSS token, see `src/styles/components/badges.css`) |
+| `.menu`, `.chapter`, `.link`, `.collapse` | `.cdx-sidebar`, `.cdx-sidebar-chapter`, `.cdx-sidebar-link` (legacy `.menu` and `.collapse` are still emitted for the menu's accordion JS) |
+| `.compodoc-icon-*` | `.cdx-icon` (Lucide-style inline SVGs) |
+| Bootstrap badges (`.badge`, `.badge-primary`) | `.cdx-badge`, `.cdx-badge--<kind>` |
 | `.alert` | `.cdx-callout`, `.cdx-callout--<variant>` |
 | `.coverage-*` | `.cdx-coverage-*` |
-| `.col-md-*`, `.row` (Bootstrap grid) | gone — replaced by CSS Grid + Flexbox in `src/styles/components/layout.css` |
+| `.col-md-*`, `.row` (Bootstrap grid) | gone — replaced by CSS Grid + Flexbox |
 | `.modal` | `.cdx-cp-panel` (used for the command palette) |
 
-The full set of `cdx-*` class names emitted by the renderer is documented inline in `src/templates/blocks/*.tsx` and `src/templates/pages/*.tsx`. `data-compodoc="<block-name>"` attributes are also emitted on every section to make CSS targeting and downstream scraping stable across versions.
-
-## Template Playground (removed in v0.4.0)
-
-The compodoc-era browser-based Template Playground (`--templatePlayground`) was deprecated in v0.3.0 and removed in v0.4.0. It generated Handlebars templates which are no longer compatible with `compodocx --templates`.
-
-Authors who used it should switch to the JS template override path (`--templates`). The companion `compodocx migrate` sub-CLI converts existing Handlebars partials to JS overrides automatically — see [Custom Templates](custom-templates.md).
+`data-compodoc="<block-name>"` attributes are emitted on every section to make CSS targeting and downstream scraping stable across versions.
 
 ## Unsupported migrations
 
-Be honest about what does not migrate cleanly:
+What does NOT migrate cleanly:
 
-- **Custom Handlebars helpers.** compodoc's `loadHelpers` extension point is gone. If you wrote your own `{{myHelper foo bar}}` partials, port them as plain JavaScript functions and call them inline from your `partials/*.js` overrides.
-- **`search-results` / `search-input` overrides.** Pagefind owns the search UI shell now. There is no override hook because the markup is rendered client-side from the index. Style adjustments are still possible via CSS — Pagefind's classes are documented at <https://pagefind.app/>.
+- **Custom Handlebars helpers.** compodoc's `loadHelpers` extension point is gone. Port your `{{myHelper foo bar}}` partials as plain JavaScript functions and call them inline from your `partials/*.js` overrides.
+- **`search-results` / `search-input` overrides.** Pagefind owns the search UI shell now. Style adjustments are still possible via CSS.
 - **Block-level data-shape changes.** Several block templates received structured data in compodocx where compodoc passed strings:
-    - `providers` and `viewProviders` are now `ProviderEntry[]` (objects with `name`, `useExisting`, `useFactory`, `multi`, `deps`, `strategy`) instead of stringified arrays.
-    - `host` is now `hostStructured`, an array of `{ kind, name, value }` records instead of a flat object.
+    - `providers` and `viewProviders` are `ProviderEntry[]` (objects) instead of stringified arrays.
+    - `host` is `hostStructured`, an array of `{ kind, name, value }` records.
     - `signalDeps` is a new `string[]` on `computed`/`linked-signal` properties.
-    Templates that interpolated the raw strings need to walk the structured shape instead. The corresponding TSX block files (`HostSection.tsx`, `ProvidersSection.tsx`, `BlockDerivedState.tsx`) are the canonical reference.
-- **`--gaSite` flag.** Universal Analytics is end-of-life. Use `--gaID G-XXXXXXXXXX` (GA4 measurement ID). SPA pageview tracking is wired automatically — no per-page beacon needed.
-- **Bootstrap markup contract.** Downstream tooling that scraped specific Bootstrap selectors from compodoc's output (e.g. `.card.text-center`, `.panel-default`, `.navbar`) needs an update — those classes are no longer emitted. Use the `cdx-*` selectors or the stable `data-compodoc="<block-name>"` attributes instead.
-- **Lunr search index.** Replaced by Pagefind. The `js/search/` and `pageinfo.json` files compodoc emitted are gone. Pagefind writes its index to `pagefind/` next to the HTML output.
+
+  Templates that interpolated the raw strings need to walk the structured shape. Reference TSX: `HostSection.tsx`, `ProvidersSection.tsx`, `BlockDerivedState.tsx`.
+- **`--gaSite` flag.** Use `--gaID G-XXXXXXXXXX` (GA4 measurement ID).
+- **Bootstrap markup contract.** Downstream tooling that scraped specific Bootstrap selectors (e.g. `.card.text-center`, `.panel-default`) needs an update — those classes are no longer emitted. Use the `cdx-*` selectors or the stable `data-compodoc="<block-name>"` attributes instead.
+- **Lunr search index.** Replaced by Pagefind. The `js/search/` and `pageinfo.json` files are gone. Pagefind writes its index to `pagefind/` next to the HTML output.
 
 ## `compodocx migrate` CLI
 
-Available since 0.3.0. Automates the mechanical 80% of the migration: HBS → JS template conversion, CSS class renames, and a project-level audit that points at the next step for every finding.
+Available since 0.3.0. Automates the mechanical 80% of the migration: HBS → JS template conversion, CSS class renames, project-level audit.
 
 ```text
 compodocx migrate inspect <project-path>                    # audit, no writes
@@ -480,245 +317,53 @@ compodocx migrate templates <hbs-dir> --out <js-dir>        # directory
 compodocx migrate css <file-or-dir> [--aggressive]          # CSS class renames
 ```
 
-Common flags across every subcommand:
+Common flags: `--dry-run`, `--json`, `--no-warnings`.
 
-- `--dry-run` — preview output, do not write to disk
-- `--json` — machine-readable report (default: human console summary)
-- `--no-warnings` — suppress fidelity warnings in console output (still in JSON)
-
-### Recommended workflow
+### Workflow
 
 ```bash
-# 1. Audit the project — see what's migrate-able vs blocked.
+# 1. Audit the project
 compodocx migrate inspect ./my-compodoc-project
 
-# 2. Convert overrideable templates.
+# 2. Convert templates
 compodocx migrate templates ./my-compodoc-project/templates --out ./templates-js
 
-# 3. Rewrite stylesheets (conservative).
+# 3. Rewrite stylesheets (conservative)
 compodocx migrate css ./src/styles
 
-# 4. Run compodocx with the new templates dir.
+# 4. Run compodocx with the new templates dir
 compodocx -p tsconfig.json -d docs --templates ./templates-js
 ```
 
 ### Fidelity scoring
 
-Every conversion gets a per-file score that maps to a CLI exit code:
-
 | Score | Meaning | Exit code |
 |-|-|-|
-| green | Every node mapped, no warnings. Output is mechanical, ready to use. | 0 |
+| green | Every node mapped, no warnings. Mechanical, ready to use. | 0 |
 | yellow | Mapped, but at least one lossy transformation. Manual review recommended. | 1 |
-| red | At least one unknown helper, unsupported block, or partial with no target. Output emitted with TODO comments; user MUST review before using. | 2 |
+| red | Unknown helper, unsupported block, or partial with no target. Output emitted with TODO comments; user MUST review before using. | 2 |
 
 CI pipelines can fail-fast on red migrations.
 
-### Hard limits — what does NOT migrate
+### Hard limits
 
 The CLI rejects two cases instead of emitting broken output:
 
-1. **`page.hbs` (full-page layout).** compodocx's outer `Layout.tsx` is not in `CONTEXT_TEMPLATE_MAP` and is not overridable. The converter detects `page.hbs` filenames and any input starting with `<!doctype html>` and exits with code 2. Workarounds:
-   - Custom CSS via `--extTheme path/to/theme.css`
-   - Analytics via `--gaID G-XXXXXXXXXX` (GA4 only — Universal Analytics is gone)
-   - Extra Markdown pages via `--includes path/to/pages-dir --includesName "User Guide"`
-
-2. **Override names not in the wiring map.** Anything not matching `CONTEXT_TEMPLATE_MAP`, the `menu` special case, or a wired `block-*` name (see § Override names above). The converter exits with code 2 and points at the canonical name list. Custom user partials must be inlined into the surrounding override by hand.
-
-### Custom Handlebars helpers
-
-compodoc's `loadHelpers` extension point is gone. The migrate CLI cannot rewrite calls to user-authored `{{myHelper foo}}` invocations — they emit a `// TODO(migrate): unknown helper "myHelper"` and the file's score drops to red. Port the helper as a plain JavaScript function and call it inline from your `partials/*.js` override.
+1. **`page.hbs` (full-page layout).** compodocx's outer `Layout.tsx` is not overridable. Workarounds: custom CSS via `--extTheme`, analytics via `--gaID`, extra Markdown pages via `--includes`.
+2. **Override names not in the wiring map.** Anything not matching the page-level / block-level lists above. Custom user partials must be inlined into the surrounding override by hand.
 
 ### CSS rewrites
 
 Conservative mode (default) rewrites class names in `.css` / `.scss` / `.sass` only. Aggressive mode (`--aggressive`) also rewrites `.html` / `.ts` / `.tsx` / `.js` — risky against string-literal class names, so the recommended workflow is `--dry-run --aggressive` first.
 
-`data-compodoc="<block-name>"` attributes are intentionally preserved in both modes. They are the stable downstream-scraping selector.
+`data-compodoc="<block-name>"` attributes are intentionally preserved.
 
 ### ESM-package corner case
 
-If your project's `package.json` has `"type": "module"`, the `.js` overrides emitted by the converter will fail to load — the loader at `src/app/engines/custom-template.engine.ts:52` calls `require()`. Workarounds:
+If your project's `package.json` has `"type": "module"`, the `.js` overrides emitted by the converter will fail to load — the loader calls `require()`. Workarounds:
 
-- Rename converted outputs to `.cjs` after the conversion, OR
+- Rename converted outputs to `.cjs`, OR
 - Remove the `"type": "module"` declaration in the templates directory (if your overrides live in a sub-folder), OR
 - Keep the templates directory outside the ESM package boundary entirely.
 
 `compodocx migrate inspect` flags this case automatically.
-
-### Issues
-
-If the converter mishandles a real-world `.hbs` partial, please open an issue with the input file at <https://github.com/cngxjs/compodocx/issues>. Manual cookbook fallbacks are the cookbook section above.
-
-## `compodocx diff` CLI
-
-Available since 0.3.0. Compares two `documentation.json` snapshots produced by `compodocx --exportFormat json` and reports added / removed / changed symbols, classified by severity (`breaking` / `additive` / `docs-only`). Built for CI bots, release-notes generators, and changelog automation.
-
-```bash
-compodocx diff --old v1.json --new v2.json                 # human console
-compodocx diff --old v1.json --new v2.json --json          # machine-readable
-compodocx diff --old v1.json --new v2.json --md            # markdown for changelogs
-compodocx diff --old v1.json --new v2.json --no-warnings   # breaking-only console
-```
-
-### Severity rules
-
-| Change | Severity |
-|-|-|
-| Component / module / pipe / class removed | breaking |
-| Component selector changed | breaking |
-| Required input added (no default value) | breaking |
-| Optional input added (with default value) | additive |
-| Input removed or its type changed | breaking |
-| Public method / property removed | breaking |
-| Public method / property added | additive |
-| Theme token removed or its type changed | breaking |
-| Theme token added | additive |
-| New entity added | additive |
-| `@deprecated` toggled | additive |
-| Description / JSDoc text changed | docs-only |
-| `signalDeps` shifted (internal derivation) | docs-only |
-
-The classifier folds the rule table over each entity's field-level shifts and picks the worst severity (breaking > additive > docs-only) per entity.
-
-### Exit codes
-
-| Exit | Meaning | CI behavior |
-|-|-|-|
-| 0 | No breaking, no additive (pure docs-only or unchanged) | Pass |
-| 1 | Additive only (warning territory) | Surface but don't block merge |
-| 2 | At least one breaking, OR a fatal error (parse / schemaVersion mismatch) | Block merge |
-
-CI pipelines fail-fast on exit 2:
-
-```bash
-compodocx --exportFormat json -d /tmp/new-snapshot
-compodocx diff --old ./baseline/documentation.json --new /tmp/new-snapshot/documentation.json --json > diff.json
-# exit code carries the verdict; diff.json is the audit trail
-```
-
-### Schema-version gate
-
-The diff runs against `schemaVersion: 1` only — the contract introduced in 0.3.0 (see § JSON export above). Pre-0.3.0 outputs have no `schemaVersion` field and fail the gate with:
-
-```text
-diff: <file> has no schemaVersion — re-export with compodocx ≥ 0.3.0
-```
-
-Re-export both sides with the same compodocx version and re-run.
-
-### Volatile fields
-
-`generatedAt` and `compodocxVersion` change on every export run regardless of source code; the comparator strips both before counting `unchanged`. The list lives in `VOLATILE_EXPORT_FIELDS` (exported from `@cngxjs/compodocx`); future fields added to the export header become volatile by being added to that constant.
-
-### Output formats
-
-- **Default (console).** Severity-sorted, colored tags, `--no-warnings` collapses to breaking-only.
-- **`--json`.** Envelope: `{ schemaVersion, comparedAt, from, to, summary, changes[] }`. Pipe to `jq` for transformation.
-- **`--md`.** CHANGELOG-ready section. Empty severity sections are dropped. Heading uses `compodocxVersion` from each snapshot's header.
-
-### Limits — what does NOT diff
-
-- **Cross-schema comparison.** When `schemaVersion` differs between `--old` and `--new`, the gate fails. Manual migration is required (re-export the older snapshot with the newer compodocx version).
-- **Semantic-versioning recommendation.** The diff classifies changes; it does NOT advise "bump major" — leaves that to the consumer.
-- **Diff against last git tag.** Both `--old` and `--new` are required file paths. No magic resolution.
-
-## LLM context export (`--exportFormat llm-md`)
-
-`compodocx --exportFormat llm-md` emits a single flat markdown file that captures the project's public API surface in a token-dense form. The intended use case is pasting the file into an AI context window so a model can answer questions about the project without re-discovering the codebase.
-
-### Quick start
-
-```bash
-# Stream to stdout (cat/sed/awk convention — no -d)
-compodocx -p tsconfig.json --exportFormat llm-md > my-project.md
-
-# Write to <out>/llm-context.md when -d is provided
-compodocx -p tsconfig.json --exportFormat llm-md -d ./ai-context
-
-# Pipe straight into the clipboard
-compodocx -p tsconfig.json --exportFormat llm-md | pbcopy
-```
-
-When `-d` is omitted, the markdown payload streams to stdout and every progress log routes to stderr. The Compodoc banner is suppressed unconditionally so `> file.md` redirects produce a clean payload.
-
-### Output shape
-
-A single document with the structure:
-
-```markdown
-# {project name}
-
-> {package.json description}
-
-> Generated by compodocx {version} at {ISO timestamp}, llm-md export.
-
-## Modules
-### AppModule
-File: `src/app/app.module.ts`
-declarations: `AppComponent`
-imports: `BrowserModule`
-
-## Components
-### FooComponent
-File: `src/app/foo.component.ts`
-Selector: `app-foo`
-
-Description: …
-
-Inputs:
-- `name: string` — required display name
-- `disabled?: boolean = false` — when true, blocks interaction
-
-Outputs:
-- `selected: EventEmitter<FooEvent>`
-
-Methods:
-- `refresh(): Promise<void>` — reload from upstream
-
-## Directives
-## Pipes
-## Services / Injectables
-## Guards
-## Interceptors
-## Classes
-## Interfaces
-## Public functions
-## Public type aliases
-## Public enumerations
-## Public variables
-```
-
-Empty sections are dropped. Inputs / outputs / properties / methods are bulleted lists with inline-coded signatures, not markdown tables — tables waste tokens for no model-comprehension gain.
-
-### What is rendered
-
-- Hero: heading, file path, framework metadata (selector, standalone, change detection, exportAs, providedIn, …).
-- Description: collapsed to one line (newlines and HTML stripped, `{@link Foo}` flattened to `Foo`).
-- Inputs / outputs / methods / properties: signatures via `name: type = default`, with optional `?` and `(deprecated: msg)` tail.
-- Theme tokens (components only): inline list with type, default, and group tag.
-- `@deprecated` markers on entities AND members.
-
-### What is NOT rendered
-
-- Source code, template HTML, style content (intentionally — too noisy for an LLM context).
-- JSDoc trivia: `@since`, `@author`, `@example`. The `@example` content is dropped because fenced code in the middle of a context window confuses some models.
-- HTML output. Pure markdown.
-- Custom output templates. The format is fixed at v0.3.0 — file an issue if the surface needs a knob.
-
-### Token-density safeguards
-
-- Long signature values (types, default values, return types) are truncated at 160 characters with an ellipsis. Embedded base64 images and giant union literals would otherwise blow the file to multiple megabytes; for context, todomvc renders to ~35 KB with the cap, ~2 MB without.
-- Multi-paragraph descriptions collapse to single sentences.
-- Backticks and asterisks in user-provided strings are escaped before embedding so the markdown stays valid even when JSDoc contains literal markup.
-
-### Limits — what does NOT export
-
-- **Multi-file split.** A single document is the entire point — splitting defeats clipboard / paste workflows.
-- **Token-budget enforcement.** Model context windows vary (8 K → 200 K+); trimming is the consumer's responsibility.
-- **AI-assistant-specific dialects.** One neutral form ships; downstream tooling can transform via `marked` if a model prefers a different shape.
-
-## Multi-version documentation
-
-compodocx supports publishing documentation for multiple library versions side-by-side out of the box. Every URL in the generated output is relative, so running the CLI N times into N subdirectories under one deploy root produces a working multi-version site with no rewrite step or extra flag.
-
-See [docs/versioned-docs.md](docs/versioned-docs.md) for the full pattern, deployment recipes (GitHub Pages, Netlify, Vercel, plain nginx), a drop-in version-switcher snippet, and current limitations.
