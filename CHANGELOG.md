@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.4.1] — 2026-05-10
+
+UX polish.
+
+### Added
+
+- **Native page transitions on SPA navigation.** The client router now wraps every doc-page swap in `document.startViewTransition()` when the browser supports it (Chrome / Edge 111+, Safari 18+ — ~94% of global users). The crossfade is tuned to 220ms with a `cubic-bezier(0.22, 1, 0.36, 1)` ease-out so it matches the existing `cdx-fade-in` keyframe feel. Browsers without the API (Firefox as of 2026-05) fall back to the previous CSS keyframe path automatically. `prefers-reduced-motion: reduce` disables the transition completely on both paths.
+
 ## [0.4.0] — 2026-05-09
 
 Runtime UX and schematics. Two headline features land together: a modern `ng add` composer that scaffolds compodocx into any Angular workspace and migrates existing compodoc artefacts in one go, and a runnable `@playground` JSDoc tag with three authoring modes that produces fresh StackBlitz projects per block — assembled at build time, lazy-loaded on click, no library publication required. The deprecated Handlebars template-playground browser UI is removed; existing template work moves to the JS override path covered by `compodocx migrate`.
