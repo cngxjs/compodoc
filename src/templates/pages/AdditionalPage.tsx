@@ -5,4 +5,4 @@ type AdditionalPageProps = {
 };
 
 export const AdditionalPage = (props: AdditionalPageProps): string =>
-    (props.additionalPage ?? '') as string;
+    (<div class="content-data cdx-readme">{(props.additionalPage ?? '') as string}</div>) as string;

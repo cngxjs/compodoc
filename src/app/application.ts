@@ -831,7 +831,7 @@ export class Application {
         // Scan include folder for files detailed in summary.json
         // For each file, add to Configuration.mainData.additionalPages
         // Each file will be converted to html page, inside COMPODOC_DEFAULTS.additionalEntryPath
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             FileEngine.get(this.getIncludedPathForFile('summary.json')).then(
                 summaryData => {
                     logger.info('Additional documentation: summary.json file found');
@@ -926,9 +926,8 @@ export class Application {
 
                     resolve(true);
                 },
-                errorMessage => {
-                    logger.error(errorMessage);
-                    reject('Error during Additional documentation generation');
+                () => {
+                    resolve(true);
                 }
             );
         });

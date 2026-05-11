@@ -32,11 +32,11 @@ describe('CLI silent flag', () => {
     });
 });
 
-describe('CLI silent flag - error', () => {
-    let exitCode = 0;
+describe('CLI with missing additional-doc directory', () => {
+    let exitCode: number | null = null;
     let stdoutString = '';
 
-    const distFolder = `${tmp.name}-silent-error`;
+    const distFolder = `${tmp.name}-missing-additional-doc`;
 
     beforeAll(() => {
         tmp.create(distFolder);
@@ -67,8 +67,8 @@ describe('CLI silent flag - error', () => {
     });
     afterAll(() => tmp.clean(distFolder));
 
-    it('should exit with code 1 and log error', () => {
-        expect(exitCode).to.equal(1);
-        expect(stdoutString).to.contain('Error during Additional documentation generation');
+    it('should exit cleanly and skip the missing summary.json without error', () => {
+        expect(exitCode).to.equal(0);
+        expect(stdoutString).not.to.contain('Error during Additional documentation generation');
     });
 });
