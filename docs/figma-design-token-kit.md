@@ -49,28 +49,28 @@ Use slash-separated names so Figma groups them clearly. Keep CSS names in each v
 
 | Variable | Light value | CSS token |
 |-|-|-|
-| `surface/bg` | `hsl(220 16% 98%)` | `--color-cdx-bg` |
-| `surface/bg-alt` | `hsl(220 16% 96%)` | `--color-cdx-bg-alt` |
+| `surface/bg` | `hsl(0 0% 96%)` | `--color-cdx-bg` |
+| `surface/bg-alt` | `hsl(0 0% 93%)` | `--color-cdx-bg-alt` |
 | `surface/elevated` | `hsl(0 0% 100%)` | `--color-cdx-bg-elevated` |
-| `surface/code` | `hsl(220 16% 95%)` | `--color-cdx-bg-code` |
-| `surface/code-block` | `hsl(225 16% 16%)` | `--color-cdx-bg-code-block` |
+| `surface/code` | `hsl(0 0% 93%)` | `--color-cdx-bg-code` |
+| `surface/code-block` | `hsl(0 0% 14%)` | `--color-cdx-bg-code-block` |
 
 ### Text
 
 | Variable | Light value | CSS token |
 |-|-|-|
-| `text/default` | `hsl(220 20% 14%)` | `--color-cdx-text` |
-| `text/secondary` | `hsl(220 12% 44%)` | `--color-cdx-text-secondary` |
-| `text/muted` | `hsl(220 10% 45%)` | `--color-cdx-text-muted` |
-| `text/inverse` | `hsl(220 16% 96%)` | `--color-cdx-text-inverse` |
+| `text/default` | `hsl(0 0% 12%)` | `--color-cdx-text` |
+| `text/secondary` | `hsl(0 0% 40%)` | `--color-cdx-text-secondary` |
+| `text/muted` | `hsl(0 0% 48%)` | `--color-cdx-text-muted` |
+| `text/inverse` | `hsl(0 0% 96%)` | `--color-cdx-text-inverse` |
 
 ### Primary
 
 | Variable | Light value | CSS token |
 |-|-|-|
-| `primary/default` | `hsl(222 68% 52%)` | `--color-cdx-primary` |
-| `primary/hover` | `hsl(222 68% 44%)` | `--color-cdx-primary-hover` |
-| `primary/subtle` | `hsl(222 68% 96%)` | `--color-cdx-primary-subtle` |
+| `primary/default` | `hsl(0 0% 15%)` | `--color-cdx-primary` |
+| `primary/hover` | `hsl(0 0% 30%)` | `--color-cdx-primary-hover` |
+| `primary/subtle` | `hsl(0 0% 84%)` | `--color-cdx-primary-subtle` |
 
 ### Entity Accents
 
@@ -135,7 +135,7 @@ Badge text, borders, and fills are derived in CSS with `color-mix()`. Model only
 | `status/pass` | `#16a34a` | `--color-cdx-status-pass` |
 | `status/fail` | `#ef4444` | `--color-cdx-status-fail` |
 | `status/warning` | `#ca8a04` | `--color-cdx-status-warning` |
-| `overlay/default` | `hsl(220 20% 14% / 0.4)` | `--color-cdx-overlay` |
+| `overlay/default` | `hsl(0 0% 14% / 0.4)` | `--color-cdx-overlay` |
 | `feedback/deprecated` | `hsl(38 92% 32.5%)` | `--color-cdx-deprecated` |
 | `feedback/danger` | `hsl(0 72% 51%)` | `--color-cdx-danger` |
 
@@ -143,22 +143,22 @@ Badge text, borders, and fills are derived in CSS with `color-mix()`. Model only
 
 | Variable | Light value | CSS token |
 |-|-|-|
-| `border/default` | `hsl(220 14% 90%)` | `--color-cdx-border` |
-| `border/strong` | `hsl(220 14% 59%)` | `--color-cdx-border-strong` |
-| `border/focus` | `hsl(222 68% 52%)` | `--color-cdx-border-focus` |
-| `shadow/sm` | `0 1px 2px hsl(220 20% 14% / 0.06)` | `--shadow-cdx-sm` |
-| `shadow/md` | `0 4px 12px hsl(220 20% 14% / 0.08)` | `--shadow-cdx-md` |
-| `shadow/lg` | `0 12px 32px hsl(220 20% 14% / 0.12)` | `--shadow-cdx-lg` |
+| `border/default` | `hsl(0 0% 86%)` | `--color-cdx-border` |
+| `border/strong` | `hsl(0 0% 60%)` | `--color-cdx-border-strong` |
+| `border/focus` | `hsl(0 0% 15%)` | `--color-cdx-border-focus` |
+| `shadow/sm` | `0 1px 3px hsl(0 0% 0% / 0.08)` | `--shadow-cdx-sm` |
+| `shadow/md` | `0 4px 14px hsl(0 0% 0% / 0.1)` | `--shadow-cdx-md` |
+| `shadow/lg` | `0 16px 36px hsl(0 0% 0% / 0.14)` | `--shadow-cdx-lg` |
 
 ### Typography
 
 | Variable | Light value | CSS token |
 |-|-|-|
-| `font/heading` | `Instrument Sans, system-ui, sans-serif` | `--font-heading` |
-| `font/body` | `Source Sans 3, system-ui, sans-serif` | `--font-body` |
-| `font/code` | `ui-monospace, Cascadia Code, SF Mono, Menlo, Consolas, monospace` | `--font-code` |
-| `font/sans` | `Source Sans 3, system-ui, sans-serif` | `--font-sans` |
-| `font/mono` | `ui-monospace, SF Mono, Menlo, monospace` | `--font-mono` |
+| `font/heading` | `"Instrument Sans", system-ui, sans-serif` | `--font-heading` |
+| `font/body` | `"Source Sans 3", system-ui, sans-serif` | `--font-body` |
+| `font/code` | `ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace` | `--font-code` |
+| `font/sans` | `"Source Sans 3", system-ui, sans-serif` | `--font-sans` |
+| `font/mono` | `ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace` | `--font-mono` |
 
 ### Radii And Spacing
 
@@ -167,10 +167,11 @@ Badge text, borders, and fills are derived in CSS with `color-mix()`. Model only
 | `radius/sm` | `4px` | `--radius-cdx-sm` |
 | `radius/md` | `8px` | `--radius-cdx-md` |
 | `radius/lg` | `12px` | `--radius-cdx-lg` |
-| `radius/tw-sm` | `{radius/sm}` | `--radius-sm` |
-| `radius/tw-md` | `{radius/md}` | `--radius-md` |
-| `radius/tw-lg` | `{radius/lg}` | `--radius-lg` |
-| `radius/tw-2xl` | `{radius/lg}` | `--radius-2xl` |
+| `radius/tw-sm` | `4px` | `--radius-sm` |
+| `radius/tw-md` | `8px` | `--radius-md` |
+| `radius/tw-lg` | `12px` | `--radius-lg` |
+| `radius/tw-2xl` | `12px` | `--radius-2xl` |
+| `density/default` | `1` | `--cdx-density` |
 | `spacing/xs` | `4px` | `--spacing-cdx-xs` |
 | `spacing/sm` | `8px` | `--spacing-cdx-sm` |
 | `spacing/md` | `12px` | `--spacing-cdx-md` |
@@ -183,23 +184,23 @@ Badge text, borders, and fills are derived in CSS with `color-mix()`. Model only
 
 | Variable | Light value | CSS token |
 |-|-|-|
-| `code/snippet-bg` | `hsl(220 14% 96%)` | `--color-cdx-snippet-bg` |
+| `code/snippet-bg` | `hsl(0 0% 93%)` | `--color-cdx-snippet-bg` |
 | `code/snippet-border` | `transparent` | `--color-cdx-snippet-border` |
-| `code/snippet-radius` | `{radius/md}` | `--color-cdx-snippet-radius` |
+| `code/snippet-radius` | `var(--radius-cdx-md)` | `--color-cdx-snippet-radius` |
 | `code/inline` | `#c2185b` | `--color-cdx-code-inline` |
-| `code/dark-surface` | `hsl(225 16% 14%)` | `--color-cdx-code-dark-surface` |
-| `code/scrollbar` | `hsl(220 10% 50% / 0.4)` | `--color-cdx-scrollbar` |
-| `code/line-number` | `hsl(220 10% 50% / 0.5)` | `--color-cdx-line-number` |
-| `code/line-hover` | `hsl(220 20% 14% / 0.06)` | `--color-cdx-line-hover` |
+| `code/dark-surface` | `hsl(0 0% 14%)` | `--color-cdx-code-dark-surface` |
+| `code/scrollbar` | `hsl(0 0% 50% / 0.4)` | `--color-cdx-scrollbar` |
+| `code/line-number` | `hsl(0 0% 50% / 0.5)` | `--color-cdx-line-number` |
+| `code/line-hover` | `hsl(0 0% 0% / 0.06)` | `--color-cdx-line-hover` |
 | `code/line-highlight` | `hsl(48 96% 53% / 0.25)` | `--color-cdx-line-highlight` |
 | `code/line-highlight-flash` | `hsl(48 96% 53% / 0.3)` | `--color-cdx-line-highlight-flash` |
 | `code/copy-success` | `hsl(142 50% 40%)` | `--color-cdx-copy-success` |
-| `code/lang-chip` | `hsl(220 10% 60%)` | `--color-cdx-lang-chip` |
-| `code/lang-chip-bg` | `hsl(220 10% 50% / 0.1)` | `--color-cdx-lang-chip-bg` |
-| `graph/bg` | `{surface/bg-alt}` | `--color-cdx-graph-bg` |
+| `code/lang-chip` | `hsl(0 0% 60%)` | `--color-cdx-lang-chip` |
+| `code/lang-chip-bg` | `hsl(0 0% 50% / 0.1)` | `--color-cdx-lang-chip-bg` |
+| `graph/bg` | `var(--color-cdx-bg-alt)` | `--color-cdx-graph-bg` |
 | `graph/border` | `transparent` | `--color-cdx-graph-border` |
 | `graph/border-width` | `0` | `--color-cdx-graph-border-width` |
-| `graph/radius` | `{radius/md}` | `--color-cdx-graph-radius` |
+| `graph/radius` | `var(--radius-cdx-md)` | `--color-cdx-graph-radius` |
 | `transition/fast` | `120ms ease` | `--cdx-transition-fast` |
 | `transition/base` | `200ms ease` | `--cdx-transition-base` |
 
