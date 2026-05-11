@@ -24,6 +24,7 @@
         "angularexpo": "npm run pretest && node tools/tests-angularexpo.js",
         "download-api-list": "node tools/download-api-list.js",
         "export:figma-kit-theme": "node tools/figma/export-token-kit-theme.mjs",
+        "prove:figma-kit-theme": "node tools/figma/prove-token-kit-theme.mjs",
         "validate:figma-kit": "node tools/figma/validate-token-kit.mjs",
         "madge": "./node_modules/.bin/madge --warning -i dist/madge.png src/index-cli.ts",
         "*********TEST********": "*******************",
