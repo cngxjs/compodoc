@@ -6,6 +6,40 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.4.4] — 2026-05-12
+
+Bug fix release.
+
+### Fixed
+
+- **`@playground` ts-mode no longer ships the documented component's source as dead weight in the StackBlitz file tree.** When a `@playground` block uses the `.ts` file-reference form (`@playground <title> ./examples/foo.component.ts`), the referenced file replaces the AppComponent and imports the documented component via a bare specifier — the package is auto-forwarded into `dependencies`, so the documented component's source already lives in `node_modules` at runtime. The dep-graph walked emit loop is now skipped when the playground entry replaces the AppComponent, removing the dead file (e.g. `src/app/mat-stepper.component.ts` for a `CngxMatStepper` playground) from the StackBlitz sidebar. Inline and HTML-mode playgrounds are unaffected — their generated AppComponent imports the documented component locally and still needs the walked source on disk.
+
+## [0.4.3] — 2026-05-12
+
+Maintenance release. One additional-page regression follow-up, a dev-watcher fix, and lint coverage expanded across tooling.
+
+### Fixed
+
+- **Additional pages rendered with nested `content-data` wrappers.** v0.4.2 added a wrapper div with `class="content-data cdx-readme"` for SPA fade-in + prose styling, but `Layout.tsx` already emits the outer `<div class="content-data">` as the page container. Two stacked `content-data` divs caused double padding and broke the additional-page layout. The inner wrapper now uses `class="cdx-readme"` only.
+
+- **`npm run dev` failed immediately with "Initial build failed".** The dev-watcher's cold-build entry called `buildRollup()` after the tsdown migration replaced Rollup. The actual symbol in the same file is `buildLib()`; calling that restores a working dev server on `:8081` for every fixture.
+
+### Internal
+
+- **Biome lint scope extended to `tools/**/*.{js,mjs}` and `scripts/**/*.mjs`.** Existing tooling already followed the 4-space + single-quote convention; future tooling PRs that drift now fail lint instead of merging silently.
+
+- **Removed the dead `tools/tests-angularexpo.js` runner.** Required a `test/dist/test/src/helpers.js` path that has never existed in this repo and crashed with "Cannot find module" on invocation. Backing repo list was a 2016–2018 corpus of Angular 2.x demos that no longer build against modern Angular.
+
+## [0.4.2] — 2026-05-12
+
+Additional-page polish.
+
+### Fixed
+
+- **Missing `--includes` directory now silently skipped instead of aborting.** Pointing `--includes` at a non-existent path or a directory without a `summary.json` previously logged a fatal error and exited non-zero, even though the documented contract is to skip cleanly. `prepareExternalIncludes()` now resolves with no extra pages when the directory is missing, matching the "silently skipped" behaviour for missing `summary.json` files.
+
+- **Additional pages render inside a styled prose container.** Pages emitted via `--includes` previously inherited only the outer layout styles, so long-form markdown looked unformatted compared to the README. `AdditionalPage.tsx` now wraps the page body in `<div class="cdx-readme">` so additional pages get the same prose + SPA fade-in treatment as the README.
+
 ## [0.4.1] — 2026-05-10
 
 UX polish.

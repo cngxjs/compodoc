@@ -1,0 +1,16 @@
+[
+    {
+        "title": "Getting Started",
+        "file": "getting-started.md"
+    },
+    {
+        "title": "Guides",
+        "file": "guides/overview.md",
+        "children": [
+            {
+                "title": "Signals & Reactivity",
+                "file": "guides/signals.md"
+            }
+        ]
+    }
+]
