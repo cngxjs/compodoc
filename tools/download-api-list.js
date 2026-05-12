@@ -1,5 +1,5 @@
-const https = require('https');
-const fs = require('fs');
+const https = require('node:https');
+const fs = require('node:fs');
 
 const MANIFEST_URL = 'https://angular.dev/assets/api/manifest.json';
 const OUTPUT_PATH = 'src/data/api-list.json';
@@ -18,13 +18,19 @@ const TYPE_MAP = {
     pipe: 'pipe',
     ng_module: 'ngmodule',
     type_alias: 'type-alias',
-    initializer_api_function: 'function',
+    initializer_api_function: 'function'
 };
 
 function getStability(entry) {
-    if (entry.deprecated) return 'deprecated';
-    if (entry.developerPreview) return 'experimental';
-    if (entry.experimental) return 'experimental';
+    if (entry.deprecated) {
+        return 'deprecated';
+    }
+    if (entry.developerPreview) {
+        return 'experimental';
+    }
+    if (entry.experimental) {
+        return 'experimental';
+    }
     return 'stable';
 }
 
@@ -51,34 +57,40 @@ function convertManifest(manifest) {
                 path: `api/${packagePath}/${entry.name}`,
                 docType: TYPE_MAP[entry.type] || entry.type,
                 stability: getStability(entry),
-                securityRisk: false,
-            })),
+                securityRisk: false
+            }))
         };
     });
 }
 
-https.get(MANIFEST_URL, res => {
-    if (res.statusCode !== 200) {
-        console.error(`Download failed: ${res.statusCode}`);
-        process.exit(1);
-    }
-
-    let data = '';
-    res.on('data', chunk => { data += chunk; });
-    res.on('end', () => {
-        try {
-            const manifest = JSON.parse(data);
-            const apiList = convertManifest(manifest);
-            const totalEntries = apiList.reduce((sum, pkg) => sum + pkg.items.length, 0);
-
-            fs.writeFileSync(OUTPUT_PATH, JSON.stringify(apiList, null, 2));
-            console.log(`Written ${apiList.length} packages with ${totalEntries} entries to ${OUTPUT_PATH}`);
-        } catch (err) {
-            console.error('Failed to parse manifest:', err.message);
+https
+    .get(MANIFEST_URL, res => {
+        if (res.statusCode !== 200) {
+            console.error(`Download failed: ${res.statusCode}`);
             process.exit(1);
         }
+
+        let data = '';
+        res.on('data', chunk => {
+            data += chunk;
+        });
+        res.on('end', () => {
+            try {
+                const manifest = JSON.parse(data);
+                const apiList = convertManifest(manifest);
+                const totalEntries = apiList.reduce((sum, pkg) => sum + pkg.items.length, 0);
+
+                fs.writeFileSync(OUTPUT_PATH, JSON.stringify(apiList, null, 2));
+                console.log(
+                    `Written ${apiList.length} packages with ${totalEntries} entries to ${OUTPUT_PATH}`
+                );
+            } catch (err) {
+                console.error('Failed to parse manifest:', err.message);
+                process.exit(1);
+            }
+        });
+    })
+    .on('error', err => {
+        console.error('Download error:', err.message);
+        process.exit(1);
     });
-}).on('error', err => {
-    console.error('Download error:', err.message);
-    process.exit(1);
-});

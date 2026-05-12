@@ -22,7 +22,8 @@ const CLI = './bin/index-cli.js';
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
-const TOGGLE = 'modules,components,directives,classes,injectables,interceptors,guards,pipes,interfaces,miscellaneous';
+const TOGGLE =
+    'modules,components,directives,classes,injectables,interceptors,guards,pipes,interfaces,miscellaneous';
 
 const buildV1 = spawnSync(
     'node',
@@ -66,9 +67,7 @@ if (buildV2.status !== 0) {
 
 // Serve the parent (no -p, only -d + -s) — the CLI uses sirv on the folder
 // and the manifest + version subdirs are reachable side-by-side.
-const serve = spawn(
-    'node',
-    [CLI, '-d', OUT, '-s', '--port', PORT, '--no-multiVersion'],
-    { stdio: 'inherit' }
-);
+const serve = spawn('node', [CLI, '-d', OUT, '-s', '--port', PORT, '--no-multiVersion'], {
+    stdio: 'inherit'
+});
 serve.on('exit', code => process.exit(code ?? 0));
