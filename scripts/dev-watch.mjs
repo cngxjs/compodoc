@@ -230,7 +230,7 @@ console.log(`  out     : ${c.yellow(outDir)}`);
 console.log(`  port    : ${c.yellow(port)} (Reload: :${reloadPort})\n`);
 
 try {
-    await buildRollup();
+    await buildLib();
     await Promise.all([buildClient(), buildCss()]);
     await generateFixture();
     if (reloadEnabled) {
