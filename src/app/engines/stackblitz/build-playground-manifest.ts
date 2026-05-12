@@ -634,9 +634,15 @@ export function buildPlaygroundManifest(
     }
 
     // Dep-graph walked sources land at flat `src/app/<basename>` paths.
-    for (const node of walk.value) {
-        const path = fileNameForNode(node, sourceRoot);
-        files[path] = emitFileContent(node.sourceCode);
+    // Skipped in ts-mode: the fileBundle entry IS the AppComponent, imports
+    // the documented component via bare specifier (auto-forwarded as an npm
+    // dependency), and never references the walked sources. Emitting them
+    // would only litter the StackBlitz file tree with dead code.
+    if (!replacesAppComponent) {
+        for (const node of walk.value) {
+            const path = fileNameForNode(node, sourceRoot);
+            files[path] = emitFileContent(node.sourceCode);
+        }
     }
 
     // fileBundle's siblings + transitive imports come last so they win on

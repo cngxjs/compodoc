@@ -579,13 +579,44 @@ describe('buildPlaygroundManifest', () => {
             expect(result.value.dependencies['@my-org/ui-kit']).to.equal('^2.5.0');
         });
 
-        it('TS-mode fileBundle: dep-graph copy of documented component is overridden by bundle copy', () => {
+        it('TS-mode fileBundle: dep-graph walked nodes are NOT emitted', () => {
+            // The entry source replaces AppComponent and imports the
+            // documented component via bare specifier — the walked
+            // `my-button.component.ts` source would be dead weight in the
+            // StackBlitz file tree, so the emit loop is skipped entirely.
+            const fileBundle = {
+                entry: '/repo/src/app/examples/full.component.ts',
+                files: {
+                    'src/app/app.component.ts': 'export class AppEntry {}'
+                },
+                bareSpecifiers: new Set<string>(),
+                replacesAppComponent: true
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                fileRefBlock,
+                resolverFor([rootNode]),
+                consumerPkg,
+                {},
+                fileBundle
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            expect(result.value.files).to.not.have.property('src/app/my-button.component.ts');
+        });
+
+        it('TS-mode fileBundle: a bundle file at the walked-node key still ships', () => {
+            // Pre-fix the bundle copy "overrode" the walked copy on the same
+            // key. Post-fix the walked emit is skipped, but a bundle entry
+            // under the same path still lands in the output — when the
+            // example happens to import the documented component via a
+            // relative path that read-file-ref packed flat.
             const fileBundle = {
                 entry: '/repo/src/app/examples/full.component.ts',
                 files: {
                     'src/app/app.component.ts': 'export class AppEntry {}',
-                    // Same key as the dep-graph walked node — this rewritten
-                    // copy must win (last write wins on collision).
                     'src/app/my-button.component.ts': 'export class MyButton { /* rewritten */ }\n'
                 },
                 bareSpecifiers: new Set<string>(),
@@ -606,6 +637,45 @@ describe('buildPlaygroundManifest', () => {
             expect(result.value.files['src/app/my-button.component.ts']).to.contain(
                 '/* rewritten */'
             );
+        });
+
+        it('inline + HTML-mode still emit dep-graph walked nodes', () => {
+            // Regression guard for the `!replacesAppComponent` branch — the
+            // inline (no fileBundle) and HTML-mode paths must still inline
+            // the documented component so the AppComponent's
+            // `import { MyButton } from './my-button.component'` resolves.
+            const inlineResult = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg
+            );
+            expect(inlineResult.ok).to.be.true;
+            if (!inlineResult.ok) {
+                return;
+            }
+            expect(inlineResult.value.files).to.have.property('src/app/my-button.component.ts');
+
+            const htmlBundle = {
+                entry: '/repo/src/app/examples/inline.html',
+                files: {},
+                bareSpecifiers: new Set<string>(),
+                replacesAppComponent: false,
+                htmlSnippet: '<my-button>Hi</my-button>'
+            };
+            const htmlResult = buildPlaygroundManifest(
+                'MyButton',
+                fileRefBlock,
+                resolverFor([rootNode]),
+                consumerPkg,
+                {},
+                htmlBundle
+            );
+            expect(htmlResult.ok).to.be.true;
+            if (!htmlResult.ok) {
+                return;
+            }
+            expect(htmlResult.value.files).to.have.property('src/app/my-button.component.ts');
         });
 
         it('HTML-mode + extraDependencies: override still wins', () => {
