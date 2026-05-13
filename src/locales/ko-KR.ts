@@ -87,6 +87,7 @@ export const TRANSLATION_KO_KR = {
     examples: '예',
     exports: '내보내기',
     extends: 'Extends',
+    features: '기능',
     file: '파일',
     'filter-coverage-results': '커버리지 결과 필터링',
     'filter-entities': '엔티티 필터링...',

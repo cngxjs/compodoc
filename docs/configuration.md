@@ -133,7 +133,7 @@ Controls sidebar behavior and entity page tab configuration.
 
 | Option | CLI | Type | Default | Description |
 |-|-|-|-|-|
-| toggleMenuItems | `--toggleMenuItems` | string[] | `['all']` | Sidebar sections that start collapsed. Pass `'all'` to collapse everything, or a comma-separated list of specific sections: `modules`, `components`, `directives`, `entities`, `classes`, `injectables`, `guards`, `interfaces`, `interceptors`, `pipes`, `miscellaneous`, `additionalPages` |
+| toggleMenuItems | `--toggleMenuItems` | string[] | `['all']` | Sidebar sections that start collapsed. Pass `'all'` to collapse everything, or a comma-separated list of specific sections: `modules`, `components`, `directives`, `entities`, `classes`, `injectables`, `guards`, `interfaces`, `interceptors`, `pipes`, `miscellaneous`, `additionalPages`, `features` (only used when `menuLayout: 'feature'`) |
 | navTabConfig | `--navTabConfig` | object[] | `[]` | Customize the order and labels of entity page tabs. Array of `{ id, label }` objects. Available tab IDs: `info` (overview/metadata), `readme` (component README), `source` (source code), `templateData` (component template), `styleData` (component styles), `tree` (DOM tree), `example` (live examples). Tabs not listed are hidden. If empty (default), all applicable tabs are shown in their default order |
 
 ## Coverage
@@ -167,6 +167,8 @@ Controls how entities are organized in the sidebar. By default, compodocx auto-d
 |-|-|-|-|-|
 | groupBy | `--groupBy` | string | auto-detect | Sidebar grouping strategy. `folder` groups entities by their directory path (e.g. `users/components`). `category` groups by the `@category` JSDoc tag. `none` shows a flat alphabetical list. When omitted, compodocx auto-detects: projects with NgModules default to `none`, standalone projects default to `folder` |
 | groupDepth | `--groupDepth` | string | `'2'` | Maximum folder depth for group names when using `folder` grouping. A depth of `2` turns `src/app/users/components/user-card.component.ts` into the group `users/components`. Increase for deeply nested projects |
+| menuLayout | _config-only_ | `'type' \| 'feature'` | `'type'` | Whole-sidebar layout. `'type'` keeps the default per-kind chapters (Components / Directives / Injectables / ...). `'feature'` replaces them with one **Features** chapter that mixes every kind together by folder (or `@category`), so a `button/` folder shows the component, directive, and service side-by-side. `@category` overrides folder keys. Modules / Routes / Miscellaneous / Additional Pages stay top-level in both modes. Folder depth is controlled by `groupDepth` (use `>= 2` in multi-project workspaces). `toggleMenuItems` gains one new key `features` to collapse/expand the cross-kind chapter |
+| collapsedAll | _config-only_ | boolean | `false` | Force every sidebar chapter AND every nested folder group to start collapsed on first load. Overrides `toggleMenuItems` (which only controls top-level chapters) and the `groupDepth`-driven nested-group expansion. Useful for large codebases where the default produces a wall of expanded links. Works under both `menuLayout` modes |
 
 ## Analytics
 
@@ -336,7 +338,7 @@ Compodocx recognizes these custom JSDoc tags on any entity or member:
 | `@beta` | Adds a "Beta" badge |
 | `@breaking <version>` | Adds a "Breaking" badge with version |
 | `@internal` | Hides the member when `--disableInternal` is set |
-| `@category <name>` | Groups the entity under this category when `--groupBy category` |
+| `@category <name>` | Groups the entity under this category when `--groupBy category`. Also overrides the folder-derived key under `menuLayout: 'feature'` |
 | `@storybook <url>` | Adds a Storybook link in the entity hero |
 | `@figma <url>` | Adds a Figma link in the entity hero |
 | `@stackblitz <url>` | Adds a StackBlitz link in the entity hero |

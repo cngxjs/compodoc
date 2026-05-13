@@ -87,6 +87,7 @@ export const TRANSLATION_ZH_TW = {
     examples: '範例',
     exports: '匯出',
     extends: '繼承',
+    features: '功能',
     file: '檔案',
     'filter-coverage-results': '篩選覆蓋率結果',
     'filter-entities': '篩選實體...',

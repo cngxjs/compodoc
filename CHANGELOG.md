@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## Unreleased
+
+### Added
+
+- **`collapsedAll: true` config option to start every sidebar chapter AND every nested folder group collapsed on first load.** Config-only — no CLI flag. Defaults to `false` (no behavior change). Overrides both `toggleMenuItems` (which only controls top-level chapters) and the `groupDepth`-driven nested-group expansion. Useful for large codebases where the default expansion produces a wall of links on page load. Works under both `menuLayout: "type"` and `menuLayout: "feature"`.
+
+- **`menuLayout: "feature"` config option for cross-kind sidebar grouping.** Setting `menuLayout: "feature"` in `.compodocxrc.json` (or any cosmiconfig-discovered config form) flips the sidebar from the default per-kind chapters (Components / Directives / Injectables / Pipes / Classes / Interfaces / Guards / Interceptors / Entities) into a single **Features** chapter that mixes every kind together by folder. A `button/` folder containing `ButtonComponent`, `RippleDirective`, and `ButtonService` now appears as one expandable group with all three side-by-side, each link tagged with its kind icon. `@category` JSDoc tags still override the folder-derived key. Modules, Routes, Miscellaneous, and Additional Pages chapters stay at the top level in both layouts. Folder depth is controlled by the existing `groupDepth` config (default `2`). Config-only — no CLI flag — and defaults to `"type"`, so existing builds are byte-identical. `toggleMenuItems` adds one new key `features` to collapse/expand the cross-kind chapter.
+
 ## [0.4.5] — 2026-05-13
 
 Directives can now ship a Playground tab.

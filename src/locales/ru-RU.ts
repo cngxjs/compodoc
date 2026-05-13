@@ -90,6 +90,7 @@ export const TRANSLATION_RU_RU = {
     examples: 'Примеры',
     exports: 'Экспорт',
     extends: 'Расширяет',
+    features: 'Функции',
     file: 'Файл',
     'filter-coverage-results': 'Фильтровать результаты покрытия',
     'filter-entities': 'Фильтровать сущности...',

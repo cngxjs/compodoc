@@ -977,6 +977,25 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             Configuration.mainData.groupDepth = Number(programOptions.groupDepth);
         }
 
+        if (configFile.menuLayout !== undefined) {
+            const layout = configFile.menuLayout;
+            if (layout !== 'type' && layout !== 'feature') {
+                logger.error(`Invalid menuLayout value "${layout}". Expected "type" or "feature".`);
+                process.exit(2);
+            }
+            Configuration.mainData.menuLayout = layout;
+        }
+
+        if (configFile.collapsedAll !== undefined) {
+            if (typeof configFile.collapsedAll !== 'boolean') {
+                logger.error(
+                    `Invalid collapsedAll value "${configFile.collapsedAll}". Expected boolean.`
+                );
+                process.exit(2);
+            }
+            Configuration.mainData.collapsedAll = configFile.collapsedAll;
+        }
+
         if (configFile.files) {
             scannedFiles = configFile.files;
         }

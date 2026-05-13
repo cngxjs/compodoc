@@ -130,7 +130,7 @@ compodocx logs `Additional documentation: summary.json file found` during genera
 
 - Link to additional pages from a custom template without knowing the slug — there is no helper for resolving a title to its output URL yet.
 - Change the Markdown pipeline per page — it is the same `marked` instance used for JSDoc.
-- Interleave additional pages inside the API groups — they live in their own sidebar section.
+- Interleave additional pages inside the API groups — they live in their own sidebar section. This holds under both `menuLayout: 'type'` (default) and `menuLayout: 'feature'`: the Features chapter only mixes code entities, never additional pages.
 
 ## Licensing
 

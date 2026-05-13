@@ -88,6 +88,7 @@ export const TRANSLATION_BG_BG = {
     examples: 'Примери',
     exports: 'Exports',
     extends: 'Extends',
+    features: 'Функции',
     file: 'Файл',
     'filter-coverage-results': 'Филтриране на резултатите за покритие',
     'filter-entities': 'Филтриране на обекти...',

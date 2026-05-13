@@ -88,6 +88,7 @@ export const TRANSLATION_SK_SK = {
     examples: 'Príklady',
     exports: 'Exporty',
     extends: 'Rozširuje',
+    features: 'Funkcie',
     file: 'Súbor',
     'filter-coverage-results': 'Filtrovať výsledky pokrytia',
     'filter-entities': 'Filtrovať entity...',

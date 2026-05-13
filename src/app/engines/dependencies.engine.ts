@@ -28,6 +28,38 @@ export interface GroupNode {
     children: GroupNode[];
 }
 
+/** Discriminator for cross-kind feature grouping. */
+export type EntityKind =
+    | 'component'
+    | 'directive'
+    | 'injectable'
+    | 'pipe'
+    | 'class'
+    | 'interface'
+    | 'guard'
+    | 'interceptor'
+    | 'entity';
+
+/** Entity decorated with its kind + href prefix for cross-kind sidebar rendering. */
+export interface EntityWithKind {
+    kind: EntityKind;
+    hrefPrefix: string;
+    name: string;
+    file?: string;
+    category?: string;
+    deprecated?: boolean;
+    standalone?: boolean;
+    isToken?: boolean;
+    beta?: boolean;
+    factoryKind?: string;
+    selector?: string;
+    duplicateName?: string;
+    description?: string;
+    inputsClass?: unknown[];
+    outputsClass?: unknown[];
+    [key: string]: unknown;
+}
+
 function deriveGroupKey(filePath: string, maxDepth: number): string {
     if (!filePath) {
         return '';
@@ -146,6 +178,7 @@ export class DependenciesEngine {
     public categorizedGuards: Record<string, IGuardDep[]> = {};
     public categorizedInterceptors: Record<string, IInterceptorDep[]> = {};
     public categorizedEntities: Record<string, IDep[]> = {};
+    public categorizedByFeature: Record<string, EntityWithKind[]> = {};
     public appConfig: any[] = [];
     public rawStandaloneComponents: IComponentDep[] = [];
     public rawStandaloneDirectives: IDirectiveDep[] = [];
@@ -269,6 +302,7 @@ export class DependenciesEngine {
         this.manageDuplicatesName();
         this.cleanRawModulesNames();
         this.prepareCategoryGroups();
+        this.prepareFeatureGroups();
     }
 
     private inferStandaloneStatus() {
@@ -676,6 +710,45 @@ export class DependenciesEngine {
             depth
         );
         this.categorizedEntities = this.groupByStrategy(this.entities as any[], strategy, depth);
+    }
+
+    /**
+     * Flat, cross-kind grouping for `menuLayout: 'feature'` mode.
+     * One bucket per folder (or `@category`) — mixing components, directives,
+     * injectables, etc. from the same folder.
+     */
+    private prepareFeatureGroups(): void {
+        const groups: Record<string, EntityWithKind[]> = {};
+        const depth = Configuration.mainData.groupDepth;
+        const kinds: Array<{ list: any[]; kind: EntityKind; hrefPrefix: string }> = [
+            { list: this.components, kind: 'component', hrefPrefix: 'components' },
+            { list: this.directives, kind: 'directive', hrefPrefix: 'directives' },
+            { list: this.injectables, kind: 'injectable', hrefPrefix: 'injectables' },
+            { list: this.pipes, kind: 'pipe', hrefPrefix: 'pipes' },
+            { list: this.classes, kind: 'class', hrefPrefix: 'classes' },
+            { list: this.interfaces, kind: 'interface', hrefPrefix: 'interfaces' },
+            { list: this.guards, kind: 'guard', hrefPrefix: 'guards' },
+            { list: this.interceptors, kind: 'interceptor', hrefPrefix: 'interceptors' },
+            { list: this.entities, kind: 'entity', hrefPrefix: 'entities' }
+        ];
+        for (const { list, kind, hrefPrefix } of kinds) {
+            for (const item of list ?? []) {
+                const explicit = (item as any).category;
+                const key =
+                    explicit && explicit !== ''
+                        ? explicit
+                        : deriveGroupKey((item as any).file, depth);
+                if (!key) {
+                    continue;
+                }
+                (groups[key] ??= []).push({
+                    ...(item as Record<string, unknown>),
+                    kind,
+                    hrefPrefix
+                } as EntityWithKind);
+            }
+        }
+        this.categorizedByFeature = groups;
     }
 
     public getModule(name: string) {

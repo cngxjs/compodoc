@@ -1,6 +1,11 @@
 import Html from '@kitajs/html';
 import Configuration from '../../app/configuration';
-import { buildGroupTree, type GroupNode } from '../../app/engines/dependencies.engine';
+import {
+    buildGroupTree,
+    type EntityKind,
+    type EntityWithKind,
+    type GroupNode
+} from '../../app/engines/dependencies.engine';
 import { t } from '../helpers';
 import { getAloneElements, isToggled } from '../helpers/menu-helpers';
 import {
@@ -12,6 +17,7 @@ import {
     IconCube,
     IconDirective,
     IconEntity,
+    IconFolder,
     IconGitBranch,
     IconGrid,
     IconGuard,
@@ -42,6 +48,13 @@ type MenuProps = {
 
 /** Chevron icon — CSS rotation handles open/closed state */
 const chevron = (): string => IconChevronRight('cdx-chevron');
+
+/** Config-only `collapsedAll: true` forces every chapter AND every nested folder
+ * group to start collapsed, regardless of `toggleMenuItems` or `groupDepth`. */
+const isCollapsedAll = (): boolean => Configuration.mainData.collapsedAll === true;
+
+/** Whether a top-level chapter should render expanded on first load. */
+const chapterOpen = (type: string): boolean => !isCollapsedAll() && isToggled(type);
 
 /** Entity link href with duplicateName fallback */
 const entityHref = (prefix: string, item: any): string =>
@@ -131,8 +144,9 @@ const GroupTree = (props: {
     }
 
     const id = `${props.type}-group-${props.node.fullPath}`;
-    // Groups shallower than groupDepth start expanded, deeper start collapsed
-    const startExpanded = props.depth < props.groupDepth;
+    // Groups shallower than groupDepth start expanded, deeper start collapsed.
+    // `collapsedAll: true` forces every nested group closed.
+    const startExpanded = !isCollapsedAll() && props.depth < props.groupDepth;
 
     return (
         <li class="chapter inner" style={`--depth: ${props.depth}`}>
@@ -183,6 +197,153 @@ const GroupTree = (props: {
     ) as string;
 };
 
+/** Per-kind Lucide icon for the feature-layout sidebar. */
+const kindIconHtml = (kind: EntityKind): string => {
+    switch (kind) {
+        case 'component':
+            return IconComponent();
+        case 'directive':
+            return IconDirective();
+        case 'injectable':
+            return IconInjectable();
+        case 'pipe':
+            return IconPipe();
+        case 'class':
+            return IconClass();
+        case 'interface':
+            return IconInterface();
+        case 'guard':
+            return IconGuard();
+        case 'interceptor':
+            return IconInterceptor();
+        case 'entity':
+            return IconEntity();
+    }
+};
+
+/** Render a kind-tagged entity link inside a feature folder. */
+const FeatureEntityLink = (item: EntityWithKind): string =>
+    (
+        <li class="link cdx-feature-link" data-cdx-kind={item.kind}>
+            <a
+                href={entityHref(item.hrefPrefix, item as any)}
+                data-type="entity-link"
+                data-cdx-entity-type={item.kind}
+                data-cdx-selector={item.selector || undefined}
+                data-cdx-io={
+                    item.inputsClass?.length || item.outputsClass?.length
+                        ? `${item.inputsClass?.length || 0}/${item.outputsClass?.length || 0}`
+                        : undefined
+                }
+                data-cdx-desc={previewDesc(item.description)}
+                class={item.deprecated ? 'cdx-member-name--deprecated' : ''}
+            >
+                <span class="cdx-feature-kind-icon" aria-hidden="true">
+                    {kindIconHtml(item.kind)}
+                </span>
+                {item.name}
+                {item.deprecated ? Badge({ label: 'D', cssClass: 'cdx-badge--deprecated' }) : ''}
+                {item.standalone && Configuration.mainData.hasNgModules
+                    ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' })
+                    : ''}
+                {item.isToken ? Badge({ label: 'T', cssClass: 'cdx-badge--token' }) : ''}
+                {item.beta ? Badge({ label: 'B', cssClass: 'cdx-badge--beta' }) : ''}
+                {item.factoryKind
+                    ? Badge({
+                          label: item.factoryKind.charAt(0).toUpperCase(),
+                          cssClass: 'cdx-badge--factory'
+                      })
+                    : ''}
+            </a>
+        </li>
+    ) as string;
+
+/** Recursive tree node for the cross-kind feature layout. */
+const FeatureGroupTree = (props: {
+    node: GroupNode;
+    depth: number;
+    groupDepth: number;
+}): string => {
+    const hasContent = props.node.items.length > 0 || props.node.children.length > 0;
+    if (!hasContent) {
+        return '';
+    }
+    const id = `features-group-${props.node.fullPath}`;
+    const startExpanded = !isCollapsedAll() && props.depth < props.groupDepth;
+    return (
+        <li class="chapter inner" style={`--depth: ${props.depth}`}>
+            <button
+                class="simple menu-toggler"
+                type="button"
+                data-cdx-toggle="collapse"
+                data-cdx-target={`#${id}`}
+                aria-expanded={startExpanded ? 'true' : 'false'}
+                aria-controls={id}
+            >
+                <span class="link-name">
+                    {props.node.name.charAt(0).toUpperCase() + props.node.name.slice(1)}
+                </span>
+                {props.node.items.length > 0 && (
+                    <span class="cdx-badge cdx-badge--count">{props.node.items.length}</span>
+                )}
+                {IconChevronRight('cdx-chevron')}
+            </button>
+            <ul class={`links collapse${startExpanded ? ' in' : ''}`} id={id}>
+                {props.node.children.map(child =>
+                    FeatureGroupTree({
+                        node: child,
+                        depth: props.depth + 1,
+                        groupDepth: props.groupDepth
+                    })
+                )}
+                {props.node.items.map((item: EntityWithKind) => FeatureEntityLink(item))}
+            </ul>
+        </li>
+    ) as string;
+};
+
+/**
+ * Cross-kind feature chapter — replaces every per-kind EntitySection when
+ * `menuLayout: 'feature'`. Renders nothing when no folder groups exist.
+ */
+const FeatureSection = (props: {
+    groups?: Record<string, EntityWithKind[]>;
+    groupDepth: number;
+}): string => {
+    const groups = props.groups ?? {};
+    const keys = Object.keys(groups);
+    if (keys.length === 0) {
+        return '';
+    }
+    const id = 'features-links';
+    const tree = buildGroupTree(groups as unknown as Record<string, any[]>);
+    return (
+        <li class="chapter features">
+            <button
+                class="simple menu-toggler"
+                type="button"
+                data-cdx-toggle="collapse"
+                data-cdx-target={`#${id}`}
+                aria-expanded={chapterOpen('features') ? 'true' : 'false'}
+                aria-controls={id}
+            >
+                {IconFolder()}
+                <span>{t('features')}</span>
+                {chevron()}
+            </button>
+            <ul class={`links collapse${chapterOpen('features') ? ' in' : ''}`} id={id}>
+                {tree.map(node =>
+                    FeatureGroupTree({
+                        node,
+                        depth: 0,
+                        groupDepth: props.groupDepth
+                    })
+                )}
+            </ul>
+        </li>
+    ) as string;
+};
+
 /**
  * A collapsible chapter section with hierarchical folder grouping.
  */
@@ -209,14 +370,14 @@ const EntitySection = (props: {
                 type="button"
                 data-cdx-toggle="collapse"
                 data-cdx-target={`#${id}`}
-                aria-expanded={isToggled(props.type) ? 'true' : 'false'}
+                aria-expanded={chapterOpen(props.type) ? 'true' : 'false'}
                 aria-controls={id}
             >
                 {props.iconHtml}
                 <span>{t(props.labelKey)}</span>
                 {chevron()}
             </button>
-            <ul class={`links collapse${isToggled(props.type) ? ' in' : ''}`} id={id}>
+            <ul class={`links collapse${chapterOpen(props.type) ? ' in' : ''}`} id={id}>
                 {hasCats
                     ? (() => {
                           const tree = buildGroupTree(props.categorized!);
@@ -412,7 +573,7 @@ export const Menu = (props: MenuProps): string => {
                             type="button"
                             data-cdx-toggle="collapse"
                             data-cdx-target="#additional-pages"
-                            aria-expanded={isToggled('additionalPages') ? 'true' : 'false'}
+                            aria-expanded={chapterOpen('additionalPages') ? 'true' : 'false'}
                             aria-controls="additional-pages"
                         >
                             {IconBook()}
@@ -420,7 +581,7 @@ export const Menu = (props: MenuProps): string => {
                             {chevron()}
                         </button>
                         <ul
-                            class={`links collapse${isToggled('additionalPages') ? ' in' : ''}`}
+                            class={`links collapse${chapterOpen('additionalPages') ? ' in' : ''}`}
                             id="additional-pages"
                         >
                             {d.additionalPages.map((page: any) =>
@@ -494,7 +655,7 @@ export const Menu = (props: MenuProps): string => {
                                 role="button"
                                 data-cdx-toggle="collapse"
                                 data-cdx-target="#modules-links"
-                                aria-expanded={isToggled('modules') ? 'true' : 'false'}
+                                aria-expanded={chapterOpen('modules') ? 'true' : 'false'}
                                 aria-controls="modules-links"
                             >
                                 {IconModule()}
@@ -503,7 +664,7 @@ export const Menu = (props: MenuProps): string => {
                             </div>
                         </a>
                         <ul
-                            class={`links collapse${isToggled('modules') ? ' in' : ''}`}
+                            class={`links collapse${chapterOpen('modules') ? ' in' : ''}`}
                             id="modules-links"
                         >
                             {d.modules.map((mod: any) => (
@@ -559,96 +720,106 @@ export const Menu = (props: MenuProps): string => {
                     </li>
                 )}
 
-                {/* Standalone entity sections */}
-                {aloneComponents.length > 0 &&
-                    EntitySection({
-                        items: aloneComponents,
-                        categorized: d.categorizedComponents,
-                        type: 'components',
-                        iconHtml: IconComponent(),
-                        labelKey: 'components',
-                        hrefPrefix: 'components',
+                {/* Feature-folder layout swaps all per-kind chapters for one cross-kind tree. */}
+                {(d.menuLayout ?? 'type') === 'feature' ? (
+                    FeatureSection({
+                        groups: d.categorizedByFeature,
                         groupDepth: d.groupDepth
-                    })}
-                {aloneEntities.length > 0 &&
-                    EntitySection({
-                        items: aloneEntities,
-                        type: 'entities',
-                        iconHtml: IconEntity(),
-                        labelKey: 'entities',
-                        hrefPrefix: 'entities',
-                        groupDepth: d.groupDepth
-                    })}
-                {aloneDirectives.length > 0 &&
-                    EntitySection({
-                        items: aloneDirectives,
-                        categorized: d.categorizedDirectives,
-                        type: 'directives',
-                        iconHtml: IconDirective(),
-                        labelKey: 'directives',
-                        hrefPrefix: 'directives',
-                        groupDepth: d.groupDepth
-                    })}
-                {d.classes?.length > 0 &&
-                    EntitySection({
-                        items: d.classes,
-                        categorized: d.categorizedClasses,
-                        type: 'classes',
-                        iconHtml: IconClass(),
-                        labelKey: 'classes',
-                        hrefPrefix: 'classes',
-                        groupDepth: d.groupDepth
-                    })}
-                {aloneInjectables.length > 0 &&
-                    EntitySection({
-                        items: aloneInjectables,
-                        categorized: d.categorizedInjectables,
-                        type: 'injectables',
-                        iconHtml: IconInjectable(),
-                        labelKey: 'injectables',
-                        hrefPrefix: 'injectables',
-                        groupDepth: d.groupDepth
-                    })}
-                {d.interceptors?.length > 0 &&
-                    EntitySection({
-                        items: d.interceptors,
-                        categorized: d.categorizedInterceptors,
-                        type: 'interceptors',
-                        iconHtml: IconInterceptor(),
-                        labelKey: 'interceptors',
-                        hrefPrefix: 'interceptors',
-                        groupDepth: d.groupDepth
-                    })}
-                {d.guards?.length > 0 &&
-                    EntitySection({
-                        items: d.guards,
-                        categorized: d.categorizedGuards,
-                        type: 'guards',
-                        iconHtml: IconGuard(),
-                        labelKey: 'guards',
-                        hrefPrefix: 'guards',
-                        groupDepth: d.groupDepth
-                    })}
-                {d.interfaces?.length > 0 &&
-                    EntitySection({
-                        items: d.interfaces,
-                        categorized: d.categorizedInterfaces,
-                        type: 'interfaces',
-                        iconHtml: IconInterface(),
-                        labelKey: 'interfaces',
-                        hrefPrefix: 'interfaces',
-                        groupDepth: d.groupDepth
-                    })}
-                {alonePipes.length > 0 &&
-                    EntitySection({
-                        items: alonePipes,
-                        categorized: d.categorizedPipes,
-                        type: 'pipes',
-                        iconHtml: IconPipe(),
-                        labelKey: 'pipes',
-                        hrefPrefix: 'pipes',
-                        groupDepth: d.groupDepth
-                    })}
+                    })
+                ) : (
+                    <>
+                        {/* Standalone entity sections */}
+                        {aloneComponents.length > 0 &&
+                            EntitySection({
+                                items: aloneComponents,
+                                categorized: d.categorizedComponents,
+                                type: 'components',
+                                iconHtml: IconComponent(),
+                                labelKey: 'components',
+                                hrefPrefix: 'components',
+                                groupDepth: d.groupDepth
+                            })}
+                        {aloneEntities.length > 0 &&
+                            EntitySection({
+                                items: aloneEntities,
+                                type: 'entities',
+                                iconHtml: IconEntity(),
+                                labelKey: 'entities',
+                                hrefPrefix: 'entities',
+                                groupDepth: d.groupDepth
+                            })}
+                        {aloneDirectives.length > 0 &&
+                            EntitySection({
+                                items: aloneDirectives,
+                                categorized: d.categorizedDirectives,
+                                type: 'directives',
+                                iconHtml: IconDirective(),
+                                labelKey: 'directives',
+                                hrefPrefix: 'directives',
+                                groupDepth: d.groupDepth
+                            })}
+                        {d.classes?.length > 0 &&
+                            EntitySection({
+                                items: d.classes,
+                                categorized: d.categorizedClasses,
+                                type: 'classes',
+                                iconHtml: IconClass(),
+                                labelKey: 'classes',
+                                hrefPrefix: 'classes',
+                                groupDepth: d.groupDepth
+                            })}
+                        {aloneInjectables.length > 0 &&
+                            EntitySection({
+                                items: aloneInjectables,
+                                categorized: d.categorizedInjectables,
+                                type: 'injectables',
+                                iconHtml: IconInjectable(),
+                                labelKey: 'injectables',
+                                hrefPrefix: 'injectables',
+                                groupDepth: d.groupDepth
+                            })}
+                        {d.interceptors?.length > 0 &&
+                            EntitySection({
+                                items: d.interceptors,
+                                categorized: d.categorizedInterceptors,
+                                type: 'interceptors',
+                                iconHtml: IconInterceptor(),
+                                labelKey: 'interceptors',
+                                hrefPrefix: 'interceptors',
+                                groupDepth: d.groupDepth
+                            })}
+                        {d.guards?.length > 0 &&
+                            EntitySection({
+                                items: d.guards,
+                                categorized: d.categorizedGuards,
+                                type: 'guards',
+                                iconHtml: IconGuard(),
+                                labelKey: 'guards',
+                                hrefPrefix: 'guards',
+                                groupDepth: d.groupDepth
+                            })}
+                        {d.interfaces?.length > 0 &&
+                            EntitySection({
+                                items: d.interfaces,
+                                categorized: d.categorizedInterfaces,
+                                type: 'interfaces',
+                                iconHtml: IconInterface(),
+                                labelKey: 'interfaces',
+                                hrefPrefix: 'interfaces',
+                                groupDepth: d.groupDepth
+                            })}
+                        {alonePipes.length > 0 &&
+                            EntitySection({
+                                items: alonePipes,
+                                categorized: d.categorizedPipes,
+                                type: 'pipes',
+                                iconHtml: IconPipe(),
+                                labelKey: 'pipes',
+                                hrefPrefix: 'pipes',
+                                groupDepth: d.groupDepth
+                            })}
+                    </>
+                )}
 
                 {/* Miscellaneous */}
                 {d.miscellaneous && (
@@ -658,7 +829,7 @@ export const Menu = (props: MenuProps): string => {
                             type="button"
                             data-cdx-toggle="collapse"
                             data-cdx-target="#miscellaneous-links"
-                            aria-expanded={isToggled('miscellaneous') ? 'true' : 'false'}
+                            aria-expanded={chapterOpen('miscellaneous') ? 'true' : 'false'}
                             aria-controls="miscellaneous-links"
                         >
                             {IconCube()}
@@ -666,7 +837,7 @@ export const Menu = (props: MenuProps): string => {
                             {chevron()}
                         </button>
                         <ul
-                            class={`links collapse${isToggled('miscellaneous') ? ' in' : ''}`}
+                            class={`links collapse${chapterOpen('miscellaneous') ? ' in' : ''}`}
                             id="miscellaneous-links"
                         >
                             {d.miscellaneous.enumerations?.length > 0 && (
