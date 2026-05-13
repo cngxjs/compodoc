@@ -1,7 +1,14 @@
 import Html from '@kitajs/html';
+import type {
+    ConsumerPackageJson,
+    DepGraphResolver,
+    FileRefBundle
+} from '../../app/engines/stackblitz';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconBook, EmptyIconFile } from '../components/EmptyStateIcons';
 import { extractReadmeHeadings, isInitialTab, isReadmeEmpty, isTabEnabled, t } from '../helpers';
+import type { ComponentPlaygroundBlock } from '../helpers/jsdoc';
+import { PlaygroundContent } from './PlaygroundContent';
 import { SourceViewer } from './SourceViewer';
 
 type Tab = {
@@ -19,6 +26,14 @@ type EntityTabsProps = {
     readonly sourceCode?: string;
     readonly filePath?: string;
     readonly exampleUrls?: string[];
+    readonly entityName?: string;
+    readonly entityFile?: string;
+    readonly entitySourceCode?: string;
+    readonly playgrounds?: ComponentPlaygroundBlock[];
+    readonly playgroundFiles?: Record<string, FileRefBundle>;
+    readonly playgroundResolver?: DepGraphResolver;
+    readonly workspacePackage?: ConsumerPackageJson;
+    readonly playgroundDependencies?: Record<string, string>;
 };
 
 /** Render the tab bar + tab panels for entity detail pages. */
@@ -127,6 +142,38 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                         ))}
                     </div>
                 )}
+
+                {isTabEnabled(props.navTabs, 'playground') &&
+                    props.playgrounds?.length &&
+                    props.entityName && (
+                        <div
+                            class={`cdx-tab-panel${isInitialTab(props.navTabs, 'playground') ? ' active' : ''}`}
+                            id="playground"
+                            role="tabpanel"
+                            aria-labelledby="playground-tab"
+                        >
+                            {(() => {
+                                const all = props.playgroundFiles ?? {};
+                                const fileBundles: Record<number, FileRefBundle> = {};
+                                for (let i = 0; i < props.playgrounds!.length; i++) {
+                                    const bundle = all[`${props.entityName}:${i}`];
+                                    if (bundle) {
+                                        fileBundles[i] = bundle;
+                                    }
+                                }
+                                return PlaygroundContent({
+                                    componentName: props.entityName,
+                                    componentFile: props.entityFile,
+                                    componentSourceCode: props.entitySourceCode,
+                                    playgrounds: props.playgrounds!,
+                                    resolve: props.playgroundResolver,
+                                    workspacePackage: props.workspacePackage,
+                                    extraDependencies: props.playgroundDependencies,
+                                    fileBundles
+                                });
+                            })()}
+                        </div>
+                    )}
             </div>
         </>
     ) as string;

@@ -1,5 +1,10 @@
 import Html from '@kitajs/html';
 import Configuration from '../../app/configuration';
+import type {
+    ConsumerPackageJson,
+    DepGraphResolver,
+    FileRefBundle
+} from '../../app/engines/stackblitz';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
 import { BlockDerivedState } from '../blocks/BlockDerivedState';
@@ -18,6 +23,7 @@ import { ExternalLinks } from '../blocks/ExternalLinks';
 import { HostSection } from '../blocks/HostSection';
 import { ImportStatement } from '../blocks/ImportStatement';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
+import { PlaygroundContent } from '../blocks/PlaygroundContent';
 import { ProvidersSection } from '../blocks/ProvidersSection';
 import { RouteChip } from '../blocks/RouteChip';
 import { EmptyState } from '../components/EmptyState';
@@ -35,7 +41,16 @@ import {
     IconModule,
     IconPipe
 } from '../components/Icons';
-import { isApiSection, isInfoSection, linkTypeHtml, parseDescription, t } from '../helpers';
+import {
+    isApiSection,
+    isInfoSection,
+    isInitialTab,
+    isTabEnabled,
+    linkTypeHtml,
+    parseDescription,
+    t
+} from '../helpers';
+import type { ComponentPlaygroundBlock } from '../helpers/jsdoc';
 
 /** Map entity key to CSS color variable, badge class, and watermark icon */
 const entityMeta: Record<
@@ -151,6 +166,11 @@ export type EntityInfoProps = {
             subtype?: string;
         }>;
     };
+    readonly playgrounds?: ComponentPlaygroundBlock[];
+    readonly playgroundFiles?: Record<string, FileRefBundle>;
+    readonly playgroundResolver?: DepGraphResolver;
+    readonly workspacePackage?: ConsumerPackageJson;
+    readonly playgroundDependencies?: Record<string, string>;
 };
 
 const hasMembers = (e: any): boolean =>
@@ -579,7 +599,15 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 readme: e.readme,
                 sourceCode: e.sourceCode,
                 filePath: e.file,
-                exampleUrls: e.exampleUrls
+                exampleUrls: e.exampleUrls,
+                entityName: e.name,
+                entityFile: e.file,
+                entitySourceCode: e.sourceCode,
+                playgrounds: props.playgrounds,
+                playgroundFiles: props.playgroundFiles,
+                playgroundResolver: props.playgroundResolver,
+                workspacePackage: props.workspacePackage,
+                playgroundDependencies: props.playgroundDependencies
             })}
         </>
     ) as string;

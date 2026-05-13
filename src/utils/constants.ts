@@ -79,7 +79,7 @@ export const COMPODOC_CONSTANTS = {
             href: '#playground',
             'data-link': 'playground',
             label: 'playground',
-            depTypes: ['component']
+            depTypes: ['component', 'directive']
         }
     ]
 };
