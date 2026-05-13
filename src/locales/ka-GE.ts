@@ -88,6 +88,7 @@ export const TRANSLATION_KA_GE = {
     examples: 'მაგალითები',
     exports: 'ექსპორტი',
     extends: 'აგრძელებს',
+    features: 'ფუნქციები',
     file: 'ფაილი',
     'filter-coverage-results': 'გაშუქების შედეგების ფილტრაცია',
     'filter-entities': 'ერთეულების ფილტრაცია...',

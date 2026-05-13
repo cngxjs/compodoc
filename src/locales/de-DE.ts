@@ -89,6 +89,7 @@ export const TRANSLATION_DE_DE = {
     examples: 'Beispiele',
     exports: 'Exportiert',
     extends: 'Erweitert',
+    features: 'Features',
     file: 'Datei',
     'filter-coverage-results': 'Abdeckungsergebnisse filtern',
     'filter-entities': 'Entitäten filtern...',

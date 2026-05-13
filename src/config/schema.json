@@ -424,6 +424,21 @@
             "default": 2,
             "examples": [2]
         },
+        "menuLayout": {
+            "$id": "/properties/menuLayout",
+            "type": "string",
+            "enum": ["type", "feature"],
+            "title": "Sidebar layout (config-only, no CLI flag). 'type' groups by Angular artefact kind (default), 'feature' groups every kind together by folder/@category",
+            "default": "type",
+            "examples": ["type", "feature"]
+        },
+        "collapsedAll": {
+            "$id": "/properties/collapsedAll",
+            "type": "boolean",
+            "title": "Force every sidebar chapter AND every nested folder group to start collapsed on first load (config-only). Overrides toggleMenuItems and groupDepth-driven expansion.",
+            "default": false,
+            "examples": [false]
+        },
         "publicApiOnly": {
             "$id": "/properties/publicApiOnly",
             "type": "string",

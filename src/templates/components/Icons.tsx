@@ -140,6 +140,10 @@ export const IconSettings = () =>
     );
 export const IconCube = () =>
     svg('<path d="m21 16-9 5-9-5V8l9-5 9 5Z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v9"/>'); // box/cube
+export const IconFolder = () =>
+    svg(
+        '<path d="M4 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 9.93 3z"/>'
+    ); // feature folder chapter header
 export const IconGitBranch = () =>
     svg(
         '<line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>'

@@ -87,6 +87,7 @@ export const TRANSLATION_ZH_CN = {
     examples: '例子',
     exports: '导出',
     extends: '继承',
+    features: '功能',
     file: '文件',
     'filter-coverage-results': '筛选覆盖率结果',
     'filter-entities': '筛选实体...',

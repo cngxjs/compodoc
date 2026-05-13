@@ -91,6 +91,7 @@ export const TRANSLATION_EN_US = {
     examples: 'Examples',
     exports: 'Exports',
     extends: 'Extends',
+    features: 'Features',
     file: 'File',
     'filter-coverage-results': 'Filter coverage results',
     'filter-entities': 'Filter entities...',

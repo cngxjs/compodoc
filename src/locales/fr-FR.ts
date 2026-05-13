@@ -88,6 +88,7 @@ export const TRANSLATION_FR_FR = {
     examples: 'Examples',
     exports: 'Exports',
     extends: 'Etend',
+    features: 'Fonctionnalités',
     file: 'Fichier',
     'filter-coverage-results': 'Filtrer les résultats de couverture',
     'filter-entities': 'Filtrer les entités...',

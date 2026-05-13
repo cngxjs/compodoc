@@ -143,7 +143,7 @@ data.component.sourceCode // source code string
 // ... etc.
 ```
 
-For the menu override, `data` contains the full main data with all modules, components, directives, etc.
+For the menu override, `data` contains the full main data with all modules, components, directives, etc. `data.menuLayout` reflects the configured sidebar layout (`'type'` or `'feature'`); when `'feature'`, `data.categorizedByFeature` is a `Record<string, EntityWithKind[]>` keyed by folder/`@category`, where each item carries `kind` (e.g. `'component'`, `'directive'`, `'injectable'`) and `hrefPrefix` (the URL segment for its detail page). A `menu.js` override that wants to honor the feature layout can branch on `data.menuLayout` and render either the per-kind chapters or the cross-kind feature tree.
 
 ## Migrating from Handlebars templates
 

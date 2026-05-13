@@ -164,7 +164,10 @@ export interface MainDataInterface {
     categorizedGuards: Record<string, unknown[]>;
     categorizedInterceptors: Record<string, unknown[]>;
     categorizedEntities: Record<string, unknown[]>;
+    categorizedByFeature: Record<string, unknown[]>;
     groupBy: 'folder' | 'category' | 'none' | '';
     groupDepth: number;
+    menuLayout: 'type' | 'feature';
+    collapsedAll: boolean;
     generatedAt: string;
 }

@@ -108,6 +108,15 @@ Full pattern, deployment recipes, and version-switcher reference: [`docs/version
 
 Config-file (`.compodocrc.json`, `.compodocrc.yaml`, `.compodocrc.js`) keys mirror the CLI flags one-to-one. Existing config files keep working unchanged.
 
+A handful of options are **config-only** (no matching CLI flag) — they only take effect when set in a config file:
+
+| Key | Default | Notes |
+|-|-|-|
+| `themingTabSections` | `[]` | Subset of `['overview','index','tokens','source']` to render on the Theming tab. |
+| `playgroundDependencies` | `{}` | Extra packages forwarded to every `@playground` StackBlitz manifest. |
+| `menuLayout` | `"type"` | `"type"` keeps the per-kind sidebar chapters (default); `"feature"` collapses every kind into one cross-kind Features chapter grouped by folder. Use `groupDepth >= 2` for the feature mode to feel right in multi-project workspaces. Non-breaking — the default is byte-identical to v0.4.5. |
+| `collapsedAll` | `false` | Force every chapter AND every nested folder group to start collapsed on first load. Overrides `toggleMenuItems` and `groupDepth`-driven expansion. Useful for large codebases. Non-breaking — default off. |
+
 ## JSON export shape
 
 `documentation.json` produced by `compodocx --exportFormat json` gained:

@@ -125,8 +125,11 @@ export class Configuration implements ConfigurationInterface {
         categorizedGuards: {},
         categorizedInterceptors: {},
         categorizedEntities: {},
+        categorizedByFeature: {},
         groupBy: '',
         groupDepth: 2,
+        menuLayout: 'type',
+        collapsedAll: false,
         generatedAt: ''
     };
 

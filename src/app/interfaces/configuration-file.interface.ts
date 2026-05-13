@@ -65,5 +65,7 @@ export interface ConfigurationFileInterface {
     stackblitzTemplate: string;
     groupBy: 'folder' | 'category' | 'none';
     groupDepth: number;
+    menuLayout: 'type' | 'feature';
+    collapsedAll: boolean;
     shikiTheme: string;
 }

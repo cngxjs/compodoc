@@ -88,6 +88,7 @@ export const TRANSLATION_HU_HU = {
     examples: 'Példák',
     exports: 'Exportok',
     extends: 'Ősosztály',
+    features: 'Funkciók',
     file: 'File',
     'filter-coverage-results': 'Lefedettségi eredmények szűrése',
     'filter-entities': 'Entitások szűrése...',

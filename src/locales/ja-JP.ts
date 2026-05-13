@@ -89,6 +89,7 @@ export const TRANSLATION_JA_JP = {
     examples: '例',
     exports: 'エクスポート',
     extends: '継承',
+    features: '機能',
     file: 'ファイル',
     'filter-coverage-results': 'カバレッジ結果をフィルター',
     'filter-entities': 'エンティティをフィルター...',

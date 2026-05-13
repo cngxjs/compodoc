@@ -408,3 +408,56 @@ button.menu-toggler:focus-visible {
         opacity: 1;
     }
 }
+
+/* ─── Feature layout — per-kind icon next to each entity name ─── */
+
+/* Force the anchor into a flex row so the kind icon, name, and trailing
+   badges line up. The default `.link a` rule above only applies to module
+   sub-sections — feature-layout links live directly under `.chapter .links`. */
+.menu ul.list li.link.cdx-feature-link > a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cdx-feature-kind-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    /* Each kind paints with its existing sidebar/graph entity color so the
+       icon doubles as a colour code. Falls back to the muted text colour
+       for `entity` / any kind without a dedicated token. */
+    color: var(--color-cdx-text-muted);
+}
+.cdx-feature-kind-icon .cdx-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.cdx-feature-link[data-cdx-kind='component'] .cdx-feature-kind-icon {
+    color: var(--color-cdx-entity-component);
+}
+.cdx-feature-link[data-cdx-kind='directive'] .cdx-feature-kind-icon {
+    color: var(--color-cdx-entity-directive);
+}
+.cdx-feature-link[data-cdx-kind='injectable'] .cdx-feature-kind-icon {
+    color: var(--color-cdx-entity-service);
+}
+.cdx-feature-link[data-cdx-kind='pipe'] .cdx-feature-kind-icon {
+    color: var(--color-cdx-entity-pipe);
+}
+.cdx-feature-link[data-cdx-kind='class'] .cdx-feature-kind-icon {
+    color: var(--color-cdx-entity-class);
+}
+.cdx-feature-link[data-cdx-kind='interface'] .cdx-feature-kind-icon {
+    color: var(--color-cdx-entity-interface);
+}
+.cdx-feature-link[data-cdx-kind='guard'] .cdx-feature-kind-icon {
+    color: var(--color-cdx-entity-guard);
+}
+.cdx-feature-link[data-cdx-kind='interceptor'] .cdx-feature-kind-icon {
+    color: var(--color-cdx-entity-interceptor);
+}
