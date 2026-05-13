@@ -6,13 +6,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
-## Unreleased
+## [0.4.6] — 2026-05-13
+
+Configurable sidebar layout. Two new config-only options, both default off, both fully backwards compatible.
 
 ### Added
 
+- **`menuLayout: "feature"` config option for cross-kind sidebar grouping.** Setting `menuLayout: "feature"` in `.compodocxrc.json` (or any cosmiconfig-discovered config form) flips the sidebar from the default per-kind chapters (Components / Directives / Injectables / Pipes / Classes / Interfaces / Guards / Interceptors / Entities) into a single **Features** chapter that mixes every kind together by folder. A `button/` folder containing `ButtonComponent`, `RippleDirective`, and `ButtonService` now appears as one expandable group with all three side-by-side, each link tagged with its kind icon. `@category` JSDoc tags still override the folder-derived key. Modules, Routes, Miscellaneous, and Additional Pages chapters stay at the top level in both layouts. Folder depth is controlled by the existing `groupDepth` config (default `2`). Config-only — no CLI flag — and defaults to `"type"`, so existing builds are byte-identical. `toggleMenuItems` adds one new key `features` to collapse/expand the cross-kind chapter.
+
 - **`collapsedAll: true` config option to start every sidebar chapter AND every nested folder group collapsed on first load.** Config-only — no CLI flag. Defaults to `false` (no behavior change). Overrides both `toggleMenuItems` (which only controls top-level chapters) and the `groupDepth`-driven nested-group expansion. Useful for large codebases where the default expansion produces a wall of links on page load. Works under both `menuLayout: "type"` and `menuLayout: "feature"`.
 
-- **`menuLayout: "feature"` config option for cross-kind sidebar grouping.** Setting `menuLayout: "feature"` in `.compodocxrc.json` (or any cosmiconfig-discovered config form) flips the sidebar from the default per-kind chapters (Components / Directives / Injectables / Pipes / Classes / Interfaces / Guards / Interceptors / Entities) into a single **Features** chapter that mixes every kind together by folder. A `button/` folder containing `ButtonComponent`, `RippleDirective`, and `ButtonService` now appears as one expandable group with all three side-by-side, each link tagged with its kind icon. `@category` JSDoc tags still override the folder-derived key. Modules, Routes, Miscellaneous, and Additional Pages chapters stay at the top level in both layouts. Folder depth is controlled by the existing `groupDepth` config (default `2`). Config-only — no CLI flag — and defaults to `"type"`, so existing builds are byte-identical. `toggleMenuItems` adds one new key `features` to collapse/expand the cross-kind chapter.
+### Internal
+
+- **Workflow `peter-evans/repository-dispatch` bumped to `@v4`** (Node 24 runtime; v3 emits a Node 20 deprecation warning that becomes a hard failure on 2026-09-16). No behaviour change in the dispatch payload.
+- **`cli-export.spec.ts` assertions rewritten against the current `--jsonIndent 0` default output** — 8 stale specs that asserted on the pre-v0.3.0 `"key": "value"` (with space after the colon) shape are now green. No production-code change.
 
 ## [0.4.5] — 2026-05-13
 
