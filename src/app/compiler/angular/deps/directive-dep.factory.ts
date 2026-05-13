@@ -1,4 +1,5 @@
 import * as crypto from 'node:crypto';
+import type { ComponentPlaygroundBlock } from '../../../../templates/helpers/jsdoc';
 import { cleanLifecycleHooksFromMethods } from '../../../../utils';
 import Configuration from '../../../configuration';
 import type { IDep } from '../dependencies.interfaces';
@@ -52,6 +53,7 @@ export class DirectiveDepFactory {
 
             propertiesClass: IO.properties,
             methodsClass: IO.methods,
+            playgrounds: IO.playgrounds || [],
             exampleUrls: this.helper.getComponentExampleUrls(srcFile.getText())
         };
 
@@ -162,6 +164,7 @@ export interface IDirectiveDep extends IDep {
 
     propertiesClass: any;
     methodsClass: any;
+    playgrounds?: ComponentPlaygroundBlock[];
     exampleUrls: Array<string>;
 
     constructorObj?: Object;
