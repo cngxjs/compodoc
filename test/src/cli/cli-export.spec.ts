@@ -37,82 +37,82 @@ describe('CLI Export', () => {
             const file = read(`${distFolder}/documentation.json`, 'utf8');
 
             // property
-            expect(file).to.contain('"rawdescription": "\\n\\nThe current time');
-            expect(file).to.contain('"description": "<p>The current time</p>\\n');
+            expect(file).to.contain('"rawdescription":"\\n\\nThe current time');
+            expect(file).to.contain('"description":"<p>The current time</p>\\n');
 
             // method
-            expect(file).to.contain('"rawdescription": "\\n\\nthe transform function');
-            expect(file).to.contain('"description": "<p>the transform function</p>\\n');
+            expect(file).to.contain('"rawdescription":"\\n\\nthe transform function');
+            expect(file).to.contain('"description":"<p>the transform function</p>\\n');
 
             // pipe
             expect(file).to.contain(
-                '"rawdescription": "\\n\\nUppercase the first letter of the string\\n\\n__Usage :__\\n  value | firstUpper'
+                '"rawdescription":"\\n\\nUppercase the first letter of the string\\n\\n__Usage :__\\n  value | firstUpper'
             );
             expect(file).to.contain(
-                '"description": "<p>Uppercase the first letter of the string</p>\\n<p><strong>Usage :</strong>\\n  value | firstUpper</p>\\n'
+                '"description":"<p>Uppercase the first letter of the string</p>\\n<p><strong>Usage :</strong>\\n  value | firstUpper</p>\\n'
             );
 
             // interface
             expect(file).to.contain(
-                '"rawdescription": "\\n\\nAn interface just for documentation purpose'
+                '"rawdescription":"\\n\\nAn interface just for documentation purpose'
             );
             expect(file).to.contain(
-                '"description": "<p>An interface just for documentation purpose</p>\\n'
+                '"description":"<p>An interface just for documentation purpose</p>\\n'
             );
 
             // service
             expect(file).to.contain(
-                '"rawdescription": "\\n\\nThis service is a todo store\\n\\nSee {@link Todo} for details about the main data of this store'
+                '"rawdescription":"\\n\\nThis service is a todo store\\n\\nSee {@link Todo} for details about the main data of this store'
             );
             expect(file).to.contain(
-                '"description": "<p>This service is a todo store</p>\\n<p>See {@link Todo} for details about the main data of this store</p>\\n'
+                '"description":"<p>This service is a todo store</p>\\n<p>See {@link Todo} for details about the main data of this store</p>\\n'
             );
 
             // accessor (setter)
             expect(file).to.contain(
-                '"rawdescription": "\\n\\nSetter of _fullName ore link to {@link Todo}\\n'
+                '"rawdescription":"\\n\\nSetter of _fullName ore link to {@link Todo}\\n'
             );
             expect(file).to.contain(
-                '"description": "<p>Setter of _fullName ore link to {@link Todo}</p>\\n'
+                '"description":"<p>Setter of _fullName ore link to {@link Todo}</p>\\n'
             );
 
             // accessor (getter)
             expect(file).to.contain(
-                '"rawdescription": "\\n\\nGetter of _fullName or link to {@link Todo}\\n'
+                '"rawdescription":"\\n\\nGetter of _fullName or link to {@link Todo}\\n'
             );
             expect(file).to.contain(
-                '"description": "<p>Getter of _fullName or link to {@link Todo}</p>\\n'
+                '"description":"<p>Getter of _fullName or link to {@link Todo}</p>\\n'
             );
         });
 
         it('should display deprecated and deprecation messages', () => {
             const file = read(`${distFolder}/documentation.json`, 'utf8');
 
-            expect(file).to.contain('"deprecated": true');
-            expect(file).to.contain('"deprecated": false');
+            expect(file).to.contain('"deprecated":true');
+            expect(file).to.contain('"deprecated":false');
 
             // property
             expect(file).to.contain(
-                '"deprecationMessage": "The current time property is deprecated"'
+                '"deprecationMessage":"The current time property is deprecated"'
             );
 
             // method
-            expect(file).to.contain('"deprecationMessage": "the transform function is deprecated"');
+            expect(file).to.contain('"deprecationMessage":"the transform function is deprecated"');
 
             // pipe
-            expect(file).to.contain('"deprecationMessage": "This pipe is deprecated"');
+            expect(file).to.contain('"deprecationMessage":"This pipe is deprecated"');
 
             // interface
-            expect(file).to.contain('"deprecationMessage": "This interface is deprecated"');
+            expect(file).to.contain('"deprecationMessage":"This interface is deprecated"');
 
             // service
-            expect(file).to.contain('"deprecationMessage": "This service is deprecated"');
+            expect(file).to.contain('"deprecationMessage":"This service is deprecated"');
 
             // accessor (setter)
-            expect(file).to.contain('"deprecationMessage": "This setter is deprecated"');
+            expect(file).to.contain('"deprecationMessage":"This setter is deprecated"');
 
             // accessor (getter)
-            expect(file).to.contain('"deprecationMessage": "This getter is deprecated"');
+            expect(file).to.contain('"deprecationMessage":"This getter is deprecated"');
         });
 
         it('should create json file', () => {
@@ -160,109 +160,109 @@ describe('CLI Export', () => {
             const file = read(`${distFolder}/documentation.json`);
 
             // Property
-            expect(file).to.contain('"comment": "<p>component property</p>');
+            expect(file).to.contain('"comment":"<p>component property</p>');
 
             // Input
-            expect(file).to.contain('"comment": "<p>component input</p>');
+            expect(file).to.contain('"comment":"<p>component input</p>');
 
             // Accessor
-            expect(file).to.contain('"comment": "<p>component accessor</p>');
+            expect(file).to.contain('"comment":"<p>component accessor</p>');
 
             // HostBinding
-            expect(file).to.contain('"comment": "<p>component hostBinding</p>');
+            expect(file).to.contain('"comment":"<p>component hostBinding</p>');
 
             // HostListener
-            expect(file).to.contain('"comment": "<p>component hostListener</p>');
+            expect(file).to.contain('"comment":"<p>component hostListener</p>');
 
             // Output
-            expect(file).to.contain('"comment": "<p>component output</p>');
+            expect(file).to.contain('"comment":"<p>component output</p>');
 
             // Method
-            expect(file).to.contain('"comment": "<p>component method param</p>');
-            expect(file).to.contain('"comment": "<p>component method return</p>');
+            expect(file).to.contain('"comment":"<p>component method param</p>');
+            expect(file).to.contain('"comment":"<p>component method return</p>');
         });
 
         it('should get jsdoctags in directive', () => {
             const file = read(`${distFolder}/documentation.json`);
 
             // Property
-            expect(file).to.contain('"comment": "<p>directive property</p>');
+            expect(file).to.contain('"comment":"<p>directive property</p>');
 
             // Input
-            expect(file).to.contain('"comment": "<p>directive input</p>');
+            expect(file).to.contain('"comment":"<p>directive input</p>');
 
             // Accessor
-            expect(file).to.contain('"comment": "<p>directive accessor</p>');
+            expect(file).to.contain('"comment":"<p>directive accessor</p>');
 
             // HostBinding
-            expect(file).to.contain('"comment": "<p>directive hostBinding</p>');
+            expect(file).to.contain('"comment":"<p>directive hostBinding</p>');
 
             // HostListener
-            expect(file).to.contain('"comment": "<p>directive hostListener</p>');
+            expect(file).to.contain('"comment":"<p>directive hostListener</p>');
 
             // Output
-            expect(file).to.contain('"comment": "<p>directive output</p>');
+            expect(file).to.contain('"comment":"<p>directive output</p>');
 
             // Method
-            expect(file).to.contain('"comment": "<p>directive method param</p>');
-            expect(file).to.contain('"comment": "<p>directive method return</p>');
+            expect(file).to.contain('"comment":"<p>directive method param</p>');
+            expect(file).to.contain('"comment":"<p>directive method return</p>');
         });
 
         it('should get jsdoctags in pipe', () => {
             const file = read(`${distFolder}/documentation.json`);
 
             // Property
-            expect(file).to.contain('"comment": "<p>pipe property</p>');
+            expect(file).to.contain('"comment":"<p>pipe property</p>');
 
             // Method
-            expect(file).to.contain('"comment": "<p>pipe method param</p>');
-            expect(file).to.contain('"comment": "<p>pipe method return</p>');
+            expect(file).to.contain('"comment":"<p>pipe method param</p>');
+            expect(file).to.contain('"comment":"<p>pipe method return</p>');
         });
 
         it('should get jsdoctags in interface', () => {
             const file = read(`${distFolder}/documentation.json`);
 
             // Property
-            expect(file).to.contain('"comment": "<p>interface property</p>');
+            expect(file).to.contain('"comment":"<p>interface property</p>');
 
             // Method
-            expect(file).to.contain('"comment": "<p>interface method</p>');
+            expect(file).to.contain('"comment":"<p>interface method</p>');
         });
 
         it('should get jsdoctags in class', () => {
             const file = read(`${distFolder}/documentation.json`);
 
             // Property
-            expect(file).to.contain('"comment": "<p>class property</p>');
+            expect(file).to.contain('"comment":"<p>class property</p>');
 
             // Input
-            expect(file).to.contain('"comment": "<p>class input</p>');
+            expect(file).to.contain('"comment":"<p>class input</p>');
 
             // Accessor
-            expect(file).to.contain('"comment": "<p>class accessor</p>');
+            expect(file).to.contain('"comment":"<p>class accessor</p>');
 
             // HostBinding
-            expect(file).to.contain('"comment": "<p>class hostBinding</p>');
+            expect(file).to.contain('"comment":"<p>class hostBinding</p>');
 
             // HostListener
-            expect(file).to.contain('"comment": "<p>class hostListener</p>');
+            expect(file).to.contain('"comment":"<p>class hostListener</p>');
 
             // Output
-            expect(file).to.contain('"comment": "<p>class output</p>');
+            expect(file).to.contain('"comment":"<p>class output</p>');
 
             // Method
-            expect(file).to.contain('"comment": "<p>class method param</p>');
-            expect(file).to.contain('"comment": "<p>class method return</p>');
+            expect(file).to.contain('"comment":"<p>class method param</p>');
+            expect(file).to.contain('"comment":"<p>class method return</p>');
         });
 
         it('should get modules informations', () => {
             const file = read(`${distFolder}/documentation.json`);
 
             // Description
-            expect(file).to.contain('"description": "<p>The list of todos module');
+            expect(file).to.contain('"description":"<p>The list of todos module');
 
             // Sourcecode
-            expect(file).to.contain('"sourceCode": "import { NgModule } from');
+            expect(file).to.contain('"sourceCode":"import { NgModule } from');
         });
     });
 
