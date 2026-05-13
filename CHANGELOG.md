@@ -6,6 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.4.5] — 2026-05-13
+
+Directives can now ship a Playground tab.
+
+### Added
+
+- **`@playground` JSDoc blocks now surface on directive detail pages.** `DirectiveDepFactory` propagates `IO.playgrounds` onto the directive dep (defaulting to `[]`), the same way components have done since the Playground feature shipped. Directives that declare one or more `@playground <title>` blocks render a runnable Playground tab next to Info / API, gated by `--disablePlaygroundTab` and a non-empty block list. Components are unaffected.
+
+### Changed
+
+- **Playground tab logic moved into `EntityTabs`.** Previously component-only and inlined in `ComponentPage.tsx`; now lives in the shared `EntityTabs` block so component and directive pages render it from the same code path. The `playground` nav-tab definition in `COMPODOC_CONSTANTS.navTabDefinitions` adds `directive` to its `depTypes`, so `getNavTabs()` keeps the tab when a directive ships blocks.
+
+### Internal
+
+- **Flaky `Sidebar > desktop: expand/collapse persists to localStorage` Playwright test marked `test.fixme()` across every engine.** The webkit-only skip from v0.4.4 was insufficient — the same `localStorage.getItem` race surfaces intermittently on Chromium. Re-enable once the test waits on a deterministic sync signal (storage event, `MutationObserver`, or polled getItem) instead of `waitForTimeout(300)`. Not a regression in the persistence layer.
+
 ## [0.4.4] — 2026-05-12
 
 Bug fix release.
