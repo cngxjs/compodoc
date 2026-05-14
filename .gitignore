@@ -26,6 +26,8 @@ doc
 coverage
 .nyc_output
 coverage.*
+!src/app/services/coverage.ts
+!test/src/app/services/coverage.spec.ts
 
 .dockerignore
 

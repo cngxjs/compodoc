@@ -2,10 +2,7 @@ import * as crypto from 'node:crypto';
 import * as path from 'node:path';
 import * as fs from 'fs-extra';
 import traverse from 'neotraverse/legacy';
-import polka from 'polka';
-import sirv from 'sirv';
 
-import { SyntaxKind } from 'ts-morph';
 import { hasAnyApiSections } from '../templates/helpers/tab-helpers';
 import AngularVersionUtil from '../utils/angular-version.util';
 import { COMPODOC_CONSTANTS } from '../utils/constants';
@@ -22,7 +19,6 @@ import {
     findMainSourceFolder
 } from '../utils/utils';
 import type { IComponentDep } from './compiler/angular/deps/component-dep.factory';
-import { AngularDependencies } from './compiler/angular-dependencies';
 import Configuration from './configuration';
 import DependenciesEngine from './engines/dependencies.engine';
 import ExportEngine from './engines/export.engine';
@@ -37,6 +33,13 @@ import { initHighlighter } from './engines/syntax-highlight.engine';
 import { updateVersionsManifest } from './engines/versions-manifest.engine';
 import type { AdditionalNode } from './interfaces/additional-node.interface';
 import type { CoverageData } from './interfaces/coverageData.interface';
+import {
+    type CoverageFile,
+    computeDocumentationCoverage,
+    computeUnitTestCoverage
+} from './services/coverage';
+import { crawlDependencies, crawlMicroDependencies } from './services/dependencies';
+import { startWebServer } from './services/serve';
 
 const cwd = process.cwd();
 let startTime = new Date();
@@ -452,11 +455,9 @@ export class Application {
 
         Configuration.mainData.angularProject = true;
 
-        const crawler = new AngularDependencies(this.updatedFiles, {
+        const dependenciesData = crawlMicroDependencies(this.updatedFiles, {
             tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
         });
-
-        const dependenciesData = crawler.getDependencies();
 
         DependenciesEngine.update(dependenciesData);
 
@@ -494,11 +495,9 @@ export class Application {
 
         Configuration.mainData.angularProject = true;
 
-        const crawler = new AngularDependencies(this.files, {
+        const dependenciesData = crawlDependencies(this.files, {
             tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
         });
-
-        const dependenciesData = crawler.getDependencies();
 
         // Auto-detect groupBy if not explicitly set by user
         if (!Configuration.mainData.groupBy) {
@@ -621,7 +620,7 @@ export class Application {
                                 logger.info(
                                     `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${Configuration.mainData.port}`
                                 );
-                                this.runWebServer(Configuration.mainData.output);
+                                this.serveAndStartWatch(Configuration.mainData.output);
                             }
                         });
                     } else {
@@ -807,7 +806,7 @@ export class Application {
                                 logger.info(
                                     `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${Configuration.mainData.port}`
                                 );
-                                this.runWebServer(Configuration.mainData.output);
+                                this.serveAndStartWatch(Configuration.mainData.output);
                             }
                         });
                     } else {
@@ -1839,170 +1838,55 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         logger.info('Process documentation coverage report');
 
         return new Promise((resolve, _reject) => {
-            /*
-             * loop with components, directives, entities, classes, injectables, interfaces, pipes, guards, misc functions variables
-             */
-            let files = [];
-            let totalProjectStatementDocumented = 0;
-            const getStatus = percent => {
-                let status;
-                if (percent <= 25) {
-                    status = 'low';
-                } else if (percent > 25 && percent <= 50) {
-                    status = 'medium';
-                } else if (percent > 50 && percent <= 75) {
-                    status = 'good';
-                } else {
-                    status = 'very-good';
+            const report = computeDocumentationCoverage({
+                components: Configuration.mainData.components,
+                directives: Configuration.mainData.directives,
+                entities: Configuration.mainData.entities,
+                classes: Configuration.mainData.classes,
+                injectables: Configuration.mainData.injectables,
+                interfaces: Configuration.mainData.interfaces,
+                guards: Configuration.mainData.guards,
+                interceptors: Configuration.mainData.interceptors,
+                pipes: Configuration.mainData.pipes,
+                miscellaneous: {
+                    functions: Configuration.mainData.miscellaneous.functions,
+                    variables: Configuration.mainData.miscellaneous.variables,
+                    typealiases: Configuration.mainData.miscellaneous.typealiases
                 }
-                return status;
+            });
+
+            const coverageData = {
+                count: report.count,
+                status: report.status,
+                files: report.files
             };
-            const processComponentsAndDirectivesAndControllersAndEntities = list => {
-                list.forEach((el: any) => {
-                    const element = (Object as any).assign({}, el);
-                    if (!element.propertiesClass) {
-                        element.propertiesClass = [];
-                    }
-                    if (!element.methodsClass) {
-                        element.methodsClass = [];
-                    }
-                    if (!element.hostBindings) {
-                        element.hostBindings = [];
-                    }
-                    if (!element.hostListeners) {
-                        element.hostListeners = [];
-                    }
-                    if (!element.inputsClass) {
-                        element.inputsClass = [];
-                    }
-                    if (!element.outputsClass) {
-                        element.outputsClass = [];
-                    }
-                    const cl: any = {
-                        filePath: element.file,
-                        type: element.type,
-                        linktype: element.type,
-                        name: element.name
-                    };
-                    let totalStatementDocumented = 0;
-                    let totalStatements =
-                        element.propertiesClass.length +
-                        element.methodsClass.length +
-                        element.inputsClass.length +
-                        element.hostBindings.length +
-                        element.hostListeners.length +
-                        element.outputsClass.length +
-                        1; // +1 for element decorator comment
 
-                    if (element.constructorObj) {
-                        totalStatements += 1;
-                        if (
-                            element.constructorObj?.description &&
-                            element.constructorObj.description !== ''
-                        ) {
-                            totalStatementDocumented += 1;
-                        }
-                    }
-                    if (element.description && element.description !== '') {
-                        totalStatementDocumented += 1;
-                    }
+            Configuration.addPage({
+                name: 'coverage',
+                id: 'coverage',
+                context: 'coverage',
+                files: coverageData.files,
+                data: coverageData,
+                depth: 0,
+                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+            });
+            Configuration.mainData.coverageData = coverageData;
+            if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
+                HtmlEngine.generateCoverageBadge(
+                    Configuration.mainData.output,
+                    'documentation',
+                    coverageData
+                );
+            }
 
-                    element.propertiesClass.forEach((property: any) => {
-                        if (property.modifierKind === SyntaxKind.PrivateKeyword) {
-                            // Doesn't handle private for coverage
-                            totalStatements -= 1;
-                        }
-                        if (
-                            property.description &&
-                            property.description !== '' &&
-                            property.modifierKind !== SyntaxKind.PrivateKeyword
-                        ) {
-                            totalStatementDocumented += 1;
-                        }
-                    });
-                    element.methodsClass.forEach((method: any) => {
-                        if (method.modifierKind === SyntaxKind.PrivateKeyword) {
-                            // Doesn't handle private for coverage
-                            totalStatements -= 1;
-                        }
-                        if (
-                            method.description &&
-                            method.description !== '' &&
-                            method.modifierKind !== SyntaxKind.PrivateKeyword
-                        ) {
-                            totalStatementDocumented += 1;
-                        }
-                    });
-                    element.hostBindings.forEach((property: any) => {
-                        if (property.modifierKind === SyntaxKind.PrivateKeyword) {
-                            // Doesn't handle private for coverage
-                            totalStatements -= 1;
-                        }
-                        if (
-                            property.description &&
-                            property.description !== '' &&
-                            property.modifierKind !== SyntaxKind.PrivateKeyword
-                        ) {
-                            totalStatementDocumented += 1;
-                        }
-                    });
-                    element.hostListeners.forEach((method: any) => {
-                        if (method.modifierKind === SyntaxKind.PrivateKeyword) {
-                            // Doesn't handle private for coverage
-                            totalStatements -= 1;
-                        }
-                        if (
-                            method.description &&
-                            method.description !== '' &&
-                            method.modifierKind !== SyntaxKind.PrivateKeyword
-                        ) {
-                            totalStatementDocumented += 1;
-                        }
-                    });
-                    element.inputsClass.forEach((input: any) => {
-                        if (input.modifierKind === SyntaxKind.PrivateKeyword) {
-                            // Doesn't handle private for coverage
-                            totalStatements -= 1;
-                        }
-                        if (
-                            input.description &&
-                            input.description !== '' &&
-                            input.modifierKind !== SyntaxKind.PrivateKeyword
-                        ) {
-                            totalStatementDocumented += 1;
-                        }
-                    });
-                    element.outputsClass.forEach((output: any) => {
-                        if (output.modifierKind === SyntaxKind.PrivateKeyword) {
-                            // Doesn't handle private for coverage
-                            totalStatements -= 1;
-                        }
-                        if (
-                            output.description &&
-                            output.description !== '' &&
-                            output.modifierKind !== SyntaxKind.PrivateKeyword
-                        ) {
-                            totalStatementDocumented += 1;
-                        }
-                    });
-
-                    cl.coveragePercent = Math.floor(
-                        (totalStatementDocumented / totalStatements) * 100
-                    );
-                    if (totalStatements === 0) {
-                        cl.coveragePercent = 0;
-                    }
-                    cl.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
-                    cl.status = getStatus(cl.coveragePercent);
-                    totalProjectStatementDocumented += cl.coveragePercent;
-                    files.push(cl);
-                });
-            };
+            const filesByPercent = [...coverageData.files].sort(
+                (a, b) => a.coveragePercent - b.coveragePercent
+            );
             const processCoveragePerFile = () => {
                 logger.info('Process documentation coverage per file');
                 logger.info('-------------------');
 
-                const overFiles = files.filter(f => {
+                const overFiles = filesByPercent.filter(f => {
                     const overTest =
                         f.coveragePercent >= Configuration.mainData.coverageMinimumPerFile;
                     if (overTest && !Configuration.mainData.coverageTestShowOnlyFailed) {
@@ -2012,7 +1896,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     }
                     return overTest;
                 });
-                const underFiles = files.filter(f => {
+                const underFiles = filesByPercent.filter(f => {
                     const underTest =
                         f.coveragePercent < Configuration.mainData.coverageMinimumPerFile;
                     if (underTest) {
@@ -2029,193 +1913,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     underFiles: underFiles
                 };
             };
-            const processFunctionsAndVariables = (id, type) => {
-                id.forEach((el: any) => {
-                    const cl: any = {
-                        filePath: el.file,
-                        type: type,
-                        linktype: el.type,
-                        linksubtype: el.subtype,
-                        name: el.name
-                    };
-                    if (type === 'variable' || type === 'function' || type === 'type alias') {
-                        cl.linktype = 'miscellaneous';
-                    }
-                    let totalStatementDocumented = 0;
-                    let totalStatements = 1;
-
-                    if (el.modifierKind === SyntaxKind.PrivateKeyword) {
-                        // Doesn't handle private for coverage
-                        totalStatements -= 1;
-                    }
-                    if (
-                        el.description &&
-                        el.description !== '' &&
-                        el.modifierKind !== SyntaxKind.PrivateKeyword
-                    ) {
-                        totalStatementDocumented += 1;
-                    }
-
-                    cl.coveragePercent = Math.floor(
-                        (totalStatementDocumented / totalStatements) * 100
-                    );
-                    cl.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
-                    cl.status = getStatus(cl.coveragePercent);
-                    totalProjectStatementDocumented += cl.coveragePercent;
-                    files.push(cl);
-                });
-            };
-
-            const processClasses = (list, type, linktype) => {
-                list.forEach((cl: any) => {
-                    const element = (Object as any).assign({}, cl);
-                    if (!element.properties) {
-                        element.properties = [];
-                    }
-                    if (!element.methods) {
-                        element.methods = [];
-                    }
-                    const cla: any = {
-                        filePath: element.file,
-                        type: type,
-                        linktype: linktype,
-                        name: element.name
-                    };
-                    let totalStatementDocumented = 0;
-                    let totalStatements = element.properties.length + element.methods.length + 1; // +1 for element itself
-
-                    if (element.constructorObj) {
-                        totalStatements += 1;
-                        if (
-                            element.constructorObj?.description &&
-                            element.constructorObj.description !== ''
-                        ) {
-                            totalStatementDocumented += 1;
-                        }
-                    }
-                    if (element.description && element.description !== '') {
-                        totalStatementDocumented += 1;
-                    }
-
-                    element.properties.forEach((property: any) => {
-                        if (property.modifierKind === SyntaxKind.PrivateKeyword) {
-                            // Doesn't handle private for coverage
-                            totalStatements -= 1;
-                        }
-                        if (
-                            property.description &&
-                            property.description !== '' &&
-                            property.modifierKind !== SyntaxKind.PrivateKeyword
-                        ) {
-                            totalStatementDocumented += 1;
-                        }
-                    });
-                    element.methods.forEach((method: any) => {
-                        if (method.modifierKind === SyntaxKind.PrivateKeyword) {
-                            // Doesn't handle private for coverage
-                            totalStatements -= 1;
-                        }
-                        if (
-                            method.description &&
-                            method.description !== '' &&
-                            method.modifierKind !== SyntaxKind.PrivateKeyword
-                        ) {
-                            totalStatementDocumented += 1;
-                        }
-                    });
-
-                    cla.coveragePercent = Math.floor(
-                        (totalStatementDocumented / totalStatements) * 100
-                    );
-                    if (totalStatements === 0) {
-                        cla.coveragePercent = 0;
-                    }
-                    cla.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
-                    cla.status = getStatus(cla.coveragePercent);
-                    totalProjectStatementDocumented += cla.coveragePercent;
-                    files.push(cla);
-                });
-            };
-
-            processComponentsAndDirectivesAndControllersAndEntities(
-                Configuration.mainData.components
-            );
-            processComponentsAndDirectivesAndControllersAndEntities(
-                Configuration.mainData.directives
-            );
-            processComponentsAndDirectivesAndControllersAndEntities(
-                Configuration.mainData.entities
-            );
-
-            processClasses(Configuration.mainData.classes, 'class', 'classe');
-            processClasses(Configuration.mainData.injectables, 'injectable', 'injectable');
-            processClasses(Configuration.mainData.interfaces, 'interface', 'interface');
-            processClasses(Configuration.mainData.guards, 'guard', 'guard');
-            processClasses(Configuration.mainData.interceptors, 'interceptor', 'interceptor');
-
-            Configuration.mainData.pipes.forEach((pipe: any) => {
-                const cl: any = {
-                    filePath: pipe.file,
-                    type: pipe.type,
-                    linktype: pipe.type,
-                    name: pipe.name
-                };
-                let totalStatementDocumented = 0;
-                const totalStatements = 1;
-                if (pipe.description && pipe.description !== '') {
-                    totalStatementDocumented += 1;
-                }
-
-                cl.coveragePercent = Math.floor((totalStatementDocumented / totalStatements) * 100);
-                cl.coverageCount = `${totalStatementDocumented}/${totalStatements}`;
-                cl.status = getStatus(cl.coveragePercent);
-                totalProjectStatementDocumented += cl.coveragePercent;
-                files.push(cl);
-            });
-
-            processFunctionsAndVariables(
-                Configuration.mainData.miscellaneous.functions,
-                'function'
-            );
-            processFunctionsAndVariables(
-                Configuration.mainData.miscellaneous.variables,
-                'variable'
-            );
-            processFunctionsAndVariables(
-                Configuration.mainData.miscellaneous.typealiases,
-                'type alias'
-            );
-
-            files = [...files].sort((a, b) => a.filePath.localeCompare(b.filePath));
-
-            const coverageData = {
-                count:
-                    files.length > 0
-                        ? Math.floor(totalProjectStatementDocumented / files.length)
-                        : 0,
-                status: '',
-                files
-            };
-            coverageData.status = getStatus(coverageData.count);
-            Configuration.addPage({
-                name: 'coverage',
-                id: 'coverage',
-                context: 'coverage',
-                files: files,
-                data: coverageData,
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-            coverageData.files = files;
-            Configuration.mainData.coverageData = coverageData;
-            if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
-                HtmlEngine.generateCoverageBadge(
-                    Configuration.mainData.output,
-                    'documentation',
-                    coverageData
-                );
-            }
-            files = [...files].sort((a, b) => a.coveragePercent - b.coveragePercent);
 
             let coverageTestPerFileResults;
             if (
@@ -2413,111 +2110,43 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
     public prepareUnitTestCoverage() {
         logger.info('Process unit test coverage report');
         return new Promise((resolve, _reject) => {
-            let covDat, covFileNames;
-
             const coverageData: CoverageData = Configuration.mainData.coverageData;
-
-            if (!coverageData.files) {
+            const coverageFiles = coverageData.files as ReadonlyArray<CoverageFile> | undefined;
+            if (!coverageFiles) {
                 logger.warn('Missing documentation coverage data');
-            } else {
-                covDat = {};
-                covFileNames = coverageData.files.map(el => {
-                    const fileName = path.normalize(el.filePath);
-                    covDat[fileName] = {
-                        type: el.type,
-                        linktype: el.linktype,
-                        linksubtype: el.linksubtype,
-                        name: el.name
-                    };
-                    return fileName;
-                });
             }
-            // read coverage summary file and data
-            let unitTestSummary = {};
+
             const fileDat = FileEngine.getSync(Configuration.mainData.unitTestCoverage);
-            if (fileDat) {
-                unitTestSummary = JSON.parse(fileDat);
-            } else {
+            if (!fileDat) {
                 return Promise.reject('Error reading unit test coverage file');
             }
-            const getCovStatus = (percent, totalLines) => {
-                let status;
-                if (totalLines === 0) {
-                    status = 'uncovered';
-                } else if (percent <= 25) {
-                    status = 'low';
-                } else if (percent > 25 && percent <= 50) {
-                    status = 'medium';
-                } else if (percent > 50 && percent <= 75) {
-                    status = 'good';
-                } else {
-                    status = 'very-good';
-                }
-                return status;
-            };
-            const getCoverageData = (data, fileName) => {
-                let out = {};
-                if (fileName !== 'total') {
-                    if (covDat === undefined) {
-                        // need a name to include in output but this isn't visible
-                        out = { name: fileName, filePath: fileName };
-                    } else {
-                        const findMatch = covFileNames.filter(el => {
-                            const normalizedFilename = path.normalize(fileName).replace(/\\/g, '/');
-                            return el.includes(fileName) || normalizedFilename.includes(el);
-                        });
-                        if (findMatch.length > 0) {
-                            out = { ...covDat[findMatch[0]] };
-                            out['filePath'] = fileName;
-                        }
-                    }
-                }
-                const keysToGet = ['statements', 'branches', 'functions', 'lines'];
-                keysToGet.forEach(key => {
-                    if (data[key]) {
-                        const t = data[key];
-                        out[key] = {
-                            coveragePercent: Math.round(t.pct),
-                            coverageCount: `${t.covered}/${t.total}`,
-                            status: getCovStatus(t.pct, t.total),
-                            total: t.total,
-                            covered: t.covered
-                        };
-                    }
-                });
-                return out;
-            };
+            const unitTestSummary = JSON.parse(fileDat) as Record<string, unknown>;
 
-            const unitTestData = {};
-            const files = [];
-            for (const file in unitTestSummary) {
-                const dat = getCoverageData(unitTestSummary[file], file);
-                if (file === 'total') {
-                    unitTestData['total'] = dat;
-                } else {
-                    files.push(dat);
-                }
-            }
-            unitTestData['files'] = files;
-            unitTestData['idColumn'] = covDat !== undefined; // should we include the id column
+            const report = computeUnitTestCoverage(unitTestSummary, coverageFiles);
+            const unitTestData: Record<string, unknown> = {
+                total: report.total,
+                files: report.files,
+                idColumn: report.idColumn
+            };
             Configuration.mainData.unitTestData = unitTestData;
             Configuration.addPage({
                 name: 'unit-test',
                 id: 'unit-test',
                 context: 'unit-test',
-                files: files,
+                files: report.files,
                 data: unitTestData,
                 depth: 0,
                 pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
             });
 
             if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
-                const keysToGet = ['statements', 'branches', 'functions', 'lines'];
+                const keysToGet = ['statements', 'branches', 'functions', 'lines'] as const;
                 keysToGet.forEach(key => {
-                    if (unitTestData['total'][key]) {
+                    const metric = report.total[key];
+                    if (metric) {
                         HtmlEngine.generateCoverageBadge(Configuration.mainData.output, key, {
-                            count: unitTestData['total'][key]['coveragePercent'],
-                            status: unitTestData['total'][key]['status']
+                            count: metric.coveragePercent,
+                            status: metric.status
                         });
                     }
                 });
@@ -2739,7 +2368,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 logger.info(
                     `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${Configuration.mainData.port}`
                 );
-                this.runWebServer(Configuration.mainData.output);
+                this.serveAndStartWatch(Configuration.mainData.output);
             } else {
                 generationPromiseResolve(true);
                 this.endCallback();
@@ -2976,33 +2605,18 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         }
     }
 
-    public runWebServer(folder) {
+    public serveAndStartWatch(folder: string): void {
         if (!this.isWatching) {
-            const host = Configuration.mainData.host || 'localhost';
-            const port = Configuration.mainData.port;
-            const assets = sirv(folder, { dev: true, single: false });
-
-            polka()
-                .use(assets)
-                .listen(port, host, () => {
-                    logger.info(`Serving on http://${host}:${port}`);
-                    if (Configuration.mainData.open) {
-                        const open = require('node:child_process').exec;
-                        const url = `http://${host}:${port}`;
-                        switch (process.platform) {
-                            case 'darwin':
-                                open(`open "${url}"`);
-                                break;
-                            case 'win32':
-                                open(`start "" "${url}"`);
-                                break;
-                            default:
-                                open(`xdg-open "${url}"`);
-                                break;
-                        }
-                    }
-                });
+            startWebServer(folder, {
+                host: Configuration.mainData.host || 'localhost',
+                port: Configuration.mainData.port,
+                open: Configuration.mainData.open
+            });
         }
+        this.startWatchIfRequested();
+    }
+
+    private startWatchIfRequested(): void {
         if (Configuration.mainData.watch && !this.isWatching) {
             if (typeof this.files === 'undefined') {
                 logger.error('No sources files available, please use -p flag');
