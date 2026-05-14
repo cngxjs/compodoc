@@ -11,6 +11,7 @@ For the upstream compodoc history that predates the cngx fork, see <https://gith
 ### Internal
 
 - **`src/lib/` foundation layer for the Phase 6 refactor.** Adds `Result<T, E>` (`ok`/`err`/`isOk`/`isErr`/`mapResult`), `pipe` + `pipeAsync` (9-arg overloads), `tap` + `tapAsync` (rejection-propagating), and three predicates (`isNonNull`, `isUnique`, `hasProp`). Zero runtime dependencies, additive only — no production code change. Module barrel at `src/lib/index.ts`; specs at `test/src/lib/` (34 cases). `test:unit` script now also covers `test/src/lib`.
+- **Adopt `src/lib/Result` in `src/diff` and validation utils.** `src/diff/parse.ts` and `src/diff/types.ts` no longer define a local `ParseResult` — both now use the shared `Result<T>` and the `ok` / `err` / `isErr` constructors. The same refactor lands in `src/utils/json-indent.util.ts` and `src/utils/max-versions-shown.util.ts`: the local `JsonIndentResult` / `MaxVersionsShownResult` aliases are gone; both helpers return `Result<number>`. Net −53 lines of boilerplate, callsites unchanged, behaviour identical, 870 unit + 657 CLI tests stay green. `src/llm-md` and `src/migrate` were audited for adoption candidates and left untouched — both modules are already idiomatically functional without any duplicate Result-shaped types. The `schematics/ng-add/` build uses its own `tsconfig.json` with a separate `rootDir`, so adopting `src/lib` there is deferred to a later build-topology change.
 
 ## [0.4.6] — 2026-05-13
 

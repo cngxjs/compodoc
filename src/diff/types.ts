@@ -121,12 +121,6 @@ export interface DiffResult {
     changes: EntityChange[];
 }
 
-/**
- * Result type for parser-stage failures. Mirrors `parseJsonIndent` (F14):
- * the util stays test-friendly; the CLI surface decides how to log+exit.
- */
-export type ParseResult<T> = { ok: true; value: T } | { ok: false; message: string };
-
 export type ParsedExport = {
     /** Always-defined post-parse — the gate fills in 0 for legacy exports. */
     schemaVersion: number;
