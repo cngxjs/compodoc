@@ -20,7 +20,6 @@ import {
     findMainSourceFolder
 } from '../utils/utils';
 import type { IComponentDep } from './compiler/angular/deps/component-dep.factory';
-import { AngularDependencies } from './compiler/angular-dependencies';
 import Configuration from './configuration';
 import DependenciesEngine from './engines/dependencies.engine';
 import ExportEngine from './engines/export.engine';
@@ -35,6 +34,7 @@ import { initHighlighter } from './engines/syntax-highlight.engine';
 import { updateVersionsManifest } from './engines/versions-manifest.engine';
 import type { AdditionalNode } from './interfaces/additional-node.interface';
 import type { CoverageData } from './interfaces/coverageData.interface';
+import { crawlDependencies, crawlMicroDependencies } from './services/dependencies';
 import { startWebServer } from './services/serve';
 
 const cwd = process.cwd();
@@ -451,11 +451,9 @@ export class Application {
 
         Configuration.mainData.angularProject = true;
 
-        const crawler = new AngularDependencies(this.updatedFiles, {
+        const dependenciesData = crawlMicroDependencies(this.updatedFiles, {
             tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
         });
-
-        const dependenciesData = crawler.getDependencies();
 
         DependenciesEngine.update(dependenciesData);
 
@@ -493,11 +491,9 @@ export class Application {
 
         Configuration.mainData.angularProject = true;
 
-        const crawler = new AngularDependencies(this.files, {
+        const dependenciesData = crawlDependencies(this.files, {
             tsconfigDirectory: path.dirname(Configuration.mainData.tsconfig)
         });
-
-        const dependenciesData = crawler.getDependencies();
 
         // Auto-detect groupBy if not explicitly set by user
         if (!Configuration.mainData.groupBy) {
