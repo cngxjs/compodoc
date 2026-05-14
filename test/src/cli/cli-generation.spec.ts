@@ -1,6 +1,11 @@
+import * as fs from 'node:fs';
+import * as os from 'node:os';
 import path from 'node:path';
 
 import { exists, hasStderrError, read, shell, temporaryDir } from '../helpers';
+
+const BIN = path.resolve('./bin/index-cli.js');
+const TSCONFIG_SIMPLE = path.resolve('./test/fixtures/sample-files/tsconfig.simple.json');
 
 const tmp = temporaryDir();
 
@@ -504,14 +509,29 @@ describe('CLI simple generation', () => {
     });
 
     describe('when generation without d flag', () => {
+        // The CLI defaults `-d` to `./documentation/` relative to
+        // `process.cwd()`. If this test spawned at the repo root it would
+        // race against cli-serving.spec.ts which also depends on a
+        // `./documentation/` lifecycle. Run inside a fresh tmpdir so the
+        // default-folder generation is sandboxed.
+        //
+        // CLI tsconfig resolution does `path.join(process.cwd(), dirname)`,
+        // which mangles absolute paths against the tmpdir cwd. Pass the
+        // bin and tsconfig as paths relative to that cwd so the CLI's
+        // join math collapses cleanly back to the real location.
         let stdoutString;
+        let cwd: string;
         beforeAll(() => {
-            const ls = shell('node', [
-                './bin/index-cli.js',
-                '--no-multiVersion',
-                '-p',
-                './test/fixtures/sample-files/tsconfig.simple.json'
-            ]);
+            // On macOS `os.tmpdir()` returns the symlink path
+            // (`/var/folders/...`) but `process.cwd()` inside the spawned
+            // child resolves to the real path (`/private/var/folders/...`),
+            // so a relative path computed against the symlink would come
+            // up one segment short. Realpath the tmpdir to match the
+            // depth the CLI will actually see.
+            cwd = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'cdx-cli-gen-default-')));
+            const binRel = path.relative(cwd, BIN);
+            const tsconfigRel = path.relative(cwd, TSCONFIG_SIMPLE);
+            const ls = shell('node', [binRel, '--no-multiVersion', '-p', tsconfigRel], { cwd });
 
             if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
@@ -519,30 +539,34 @@ describe('CLI simple generation', () => {
             }
             stdoutString = ls.stdout.toString();
         });
-        afterAll(() => tmp.clean('documentation'));
+        afterAll(() => {
+            if (cwd && fs.existsSync(cwd)) {
+                fs.rmSync(cwd, { recursive: true, force: true });
+            }
+        });
 
         it('should display generated message', () => {
             expect(stdoutString).to.contain('Documentation generated');
         });
 
         it('should have generated main folder', () => {
-            const isFolderExists = exists('documentation');
+            const isFolderExists = exists(path.join(cwd, 'documentation'));
             expect(isFolderExists).to.be.true;
         });
 
         it('should have generated main pages', () => {
-            const isIndexExists = exists('documentation/index.html');
+            const isIndexExists = exists(path.join(cwd, 'documentation', 'index.html'));
             expect(isIndexExists).to.be.true;
-            const isModulesExists = exists('documentation/modules.html');
+            const isModulesExists = exists(path.join(cwd, 'documentation', 'modules.html'));
             expect(isModulesExists).to.be.true;
         });
 
         it('should have generated resources folder', () => {
-            const isImagesExists = exists('documentation/images');
+            const isImagesExists = exists(path.join(cwd, 'documentation', 'images'));
             expect(isImagesExists).to.be.true;
-            const isJSExists = exists('documentation/js');
+            const isJSExists = exists(path.join(cwd, 'documentation', 'js'));
             expect(isJSExists).to.be.true;
-            const isStylesExists = exists('documentation/styles');
+            const isStylesExists = exists(path.join(cwd, 'documentation', 'styles'));
             expect(isStylesExists).to.be.true;
             // Legacy `fonts/` folder no longer emitted.
         });

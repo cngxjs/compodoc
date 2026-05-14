@@ -11,6 +11,17 @@ describe('CLI serving', () => {
     const distFolder = `${tmp.name}-serving`,
         TIMEOUT = 8000;
 
+    // Each describe block runs an `./bin/index-cli.js -s …` spawn that binds
+    // a port for up to 8 s. Vitest runs spec files in parallel forks, so a
+    // shared default port (8080) would race against cli.spec.ts and any
+    // unrelated dev server. Assign a distinct port per describe to keep the
+    // suite reproducible.
+    const PORT_BASIC = 6700;
+    const PORT_DEFAULT_DIR = 6701;
+    const PORT_DEFAULT_HOST = 6702;
+    const PORT_NO_GENERATION = 6703;
+    const PORT_DEFAULT_NO_FLAG = 6704;
+
     describe('when serving with -s flag in another directory', () => {
         let stdoutString = '',
             child;
@@ -18,7 +29,15 @@ describe('CLI serving', () => {
             tmp.create(distFolder);
             const ls = shell(
                 'node',
-                ['./bin/index-cli.js', '--no-multiVersion', '-s', '-d', distFolder],
+                [
+                    './bin/index-cli.js',
+                    '--no-multiVersion',
+                    '-s',
+                    '-d',
+                    distFolder,
+                    '--port',
+                    String(PORT_BASIC)
+                ],
                 {
                     timeout: TIMEOUT
                 }
@@ -34,7 +53,7 @@ describe('CLI serving', () => {
 
         it('should serve', () => {
             expect(stripAnsi(stdoutString)).to.contain(
-                `Serving documentation from ${distFolder} at http://127.0.0.1:8080`
+                `Serving documentation from ${distFolder} at http://127.0.0.1:${PORT_BASIC}`
             );
         });
     });
@@ -51,7 +70,9 @@ describe('CLI serving', () => {
                     '--no-multiVersion',
                     '-p',
                     './test/fixtures/sample-files/tsconfig.simple.json',
-                    '-s'
+                    '-s',
+                    '--port',
+                    String(PORT_DEFAULT_DIR)
                 ]);
 
                 let output = '';
@@ -103,7 +124,7 @@ describe('CLI serving', () => {
 
         it('should display message', () => {
             expect(stripAnsi(stdoutString)).to.contain(
-                'Serving documentation from ./documentation/ at http://127.0.0.1:8080'
+                `Serving documentation from ./documentation/ at http://127.0.0.1:${PORT_DEFAULT_DIR}`
             );
         });
     });
@@ -122,7 +143,9 @@ describe('CLI serving', () => {
                     './test/fixtures/sample-files/tsconfig.simple.json',
                     '-s',
                     '--host',
-                    '127.0.0.1'
+                    '127.0.0.1',
+                    '--port',
+                    String(PORT_DEFAULT_HOST)
                 ]);
 
                 let output = '';
@@ -182,7 +205,7 @@ describe('CLI serving', () => {
                 return;
             }
             expect(stripAnsi(stdoutString)).to.contain(
-                'Serving documentation from ./documentation/ at http://127.0.0.1:8080'
+                `Serving documentation from ./documentation/ at http://127.0.0.1:${PORT_DEFAULT_HOST}`
             );
         });
     });
@@ -193,7 +216,15 @@ describe('CLI serving', () => {
         beforeAll(() => {
             const ls = shell(
                 'node',
-                ['./bin/index-cli.js', '--no-multiVersion', '-s', '-d', './documentation/'],
+                [
+                    './bin/index-cli.js',
+                    '--no-multiVersion',
+                    '-s',
+                    '-d',
+                    './documentation/',
+                    '--port',
+                    String(PORT_NO_GENERATION)
+                ],
                 {
                     timeout: TIMEOUT
                 }
@@ -208,7 +239,7 @@ describe('CLI serving', () => {
 
         it('should display message', () => {
             expect(stripAnsi(stdoutString)).to.contain(
-                'Serving documentation from ./documentation/ at http://127.0.0.1:8080'
+                `Serving documentation from ./documentation/ at http://127.0.0.1:${PORT_NO_GENERATION}`
             );
         });
     });
@@ -217,9 +248,19 @@ describe('CLI serving', () => {
         let stdoutString = '',
             child;
         beforeAll(() => {
-            const ls = shell('node', ['./bin/index-cli.js', '--no-multiVersion', '-s'], {
-                timeout: TIMEOUT
-            });
+            const ls = shell(
+                'node',
+                [
+                    './bin/index-cli.js',
+                    '--no-multiVersion',
+                    '-s',
+                    '--port',
+                    String(PORT_DEFAULT_NO_FLAG)
+                ],
+                {
+                    timeout: TIMEOUT
+                }
+            );
 
             if (hasStderrError(ls.stderr.toString())) {
                 console.error(`shell error: ${ls.stderr.toString()}`);
@@ -231,7 +272,7 @@ describe('CLI serving', () => {
 
         it('should display message', () => {
             expect(stripAnsi(stdoutString)).to.contain(
-                'Serving documentation from ./documentation/ at http://127.0.0.1:8080'
+                `Serving documentation from ./documentation/ at http://127.0.0.1:${PORT_DEFAULT_NO_FLAG}`
             );
         });
     });

@@ -1,6 +1,12 @@
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+
 import { exists, hasStderrError, read, shell, temporaryDir } from '../helpers';
 
 const tmp = temporaryDir();
+
+const BIN = path.resolve('./bin/index-cli.js');
 
 describe('CLI simple flags', () => {
     const distFolder = `${tmp.name}-simple-flags`;
@@ -58,9 +64,22 @@ describe('CLI simple flags', () => {
     });
 
     describe('when just serving without generation', () => {
+        // The CLI defaults `-d` to `./documentation/`, resolved against
+        // `process.cwd()`. When this spec runs in parallel with
+        // cli-serving.spec.ts (which creates `./documentation/` at the repo
+        // root), the default-folder error path becomes non-deterministic.
+        // Spawn the child in a fresh tmpdir so the default folder is
+        // guaranteed not to exist regardless of what other spec files do.
         let command;
+        let cwd: string;
         beforeEach(() => {
-            command = shell('node', ['./bin/index-cli.js', '--no-multiVersion', '-s']);
+            cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'cdx-cli-serve-noop-'));
+            command = shell('node', [BIN, '--no-multiVersion', '-s'], { cwd });
+        });
+        afterEach(() => {
+            if (cwd && fs.existsSync(cwd)) {
+                fs.rmSync(cwd, { recursive: true, force: true });
+            }
         });
 
         it('should display error message', () => {
