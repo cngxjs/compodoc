@@ -1,20 +1,17 @@
-import os from 'node:os';
 import * as path from 'node:path';
 import { program } from 'commander';
 import { cosmiconfigSync } from 'cosmiconfig';
 import fg from 'fast-glob';
 import * as fs from 'fs-extra';
 import minimist from 'minimist';
-import osName from 'os-name';
-import { ts } from 'ts-morph';
 import pkg from '../package.json';
 import { Application } from './app/application';
+import { printBanner } from './app/cli/banner';
 import { defineFlags } from './app/cli/flags';
 import Configuration from './app/configuration';
 import FileEngine from './app/engines/file.engine';
 import I18nEngine from './app/engines/i18n.engine';
 import type { ConfigurationFileInterface } from './app/interfaces/configuration-file.interface';
-import AngularVersionUtil from './utils/angular-version.util';
 import { parseApiMarkdownExports } from './utils/api-markdown-parser.util';
 import { COMPODOC_DEFAULTS } from './utils/defaults';
 import { parseJsonIndent } from './utils/json-indent.util';
@@ -621,38 +618,14 @@ export class CliApplication extends Application {
             Configuration.mainData.publicApiOnly = programOptions.publicApiOnly;
         }
 
-        if (!this.isWatching && !isLlmMdStdoutMode) {
-            if (!logger.silent) {
-                console.log(`Compodoc v${pkg.version}`);
-            } else {
-                console.log(fs.readFileSync(path.join(__dirname, '../src/banner')).toString());
-                console.log(pkg.version);
-                console.log('');
-                console.log(`TypeScript version used by Compodoc : ${ts.version}`);
-                console.log('');
-
-                if (FileEngine.existsSync(`${cwd + path.sep}package.json`)) {
-                    const packageData = FileEngine.getSync(`${cwd + path.sep}package.json`);
-                    if (packageData) {
-                        const parsedData = JSON.parse(packageData);
-                        const projectDevDependencies = parsedData.devDependencies;
-                        if (projectDevDependencies?.typescript) {
-                            const tsProjectVersion = AngularVersionUtil.cleanVersion(
-                                projectDevDependencies.typescript
-                            );
-                            console.log(
-                                `TypeScript version of current project : ${tsProjectVersion}`
-                            );
-                            console.log('');
-                        }
-                    }
-                }
-                console.log(`Node.js version : ${process.version}`);
-                console.log('');
-                console.log(`Operating system : ${osName(os.platform(), os.release())}`);
-                console.log('');
+        printBanner(
+            { pkgVersion: pkg.version, cwd },
+            {
+                loggerSilent: logger.silent,
+                isWatching: this.isWatching,
+                isLlmMdStdoutMode
             }
-        }
+        );
 
         if (configExplorerResult) {
             if (typeof configExplorerResult.config !== 'undefined') {
