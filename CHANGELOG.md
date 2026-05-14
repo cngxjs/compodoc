@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## Unreleased
+
+### Internal
+
+- **`src/lib/` foundation layer for the Phase 6 refactor.** Adds `Result<T, E>` (`ok`/`err`/`isOk`/`isErr`/`mapResult`), `pipe` + `pipeAsync` (9-arg overloads), `tap` + `tapAsync` (rejection-propagating), and three predicates (`isNonNull`, `isUnique`, `hasProp`). Zero runtime dependencies, additive only — no production code change. Module barrel at `src/lib/index.ts`; specs at `test/src/lib/` (34 cases). `test:unit` script now also covers `test/src/lib`.
+
 ## [0.4.6] — 2026-05-13
 
 Configurable sidebar layout. Two new config-only options, both default off, both fully backwards compatible.
