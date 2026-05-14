@@ -2,8 +2,6 @@ import * as crypto from 'node:crypto';
 import * as path from 'node:path';
 import * as fs from 'fs-extra';
 import traverse from 'neotraverse/legacy';
-import polka from 'polka';
-import sirv from 'sirv';
 
 import { SyntaxKind } from 'ts-morph';
 import { hasAnyApiSections } from '../templates/helpers/tab-helpers';
@@ -37,6 +35,7 @@ import { initHighlighter } from './engines/syntax-highlight.engine';
 import { updateVersionsManifest } from './engines/versions-manifest.engine';
 import type { AdditionalNode } from './interfaces/additional-node.interface';
 import type { CoverageData } from './interfaces/coverageData.interface';
+import { startWebServer } from './services/serve';
 
 const cwd = process.cwd();
 let startTime = new Date();
@@ -621,7 +620,7 @@ export class Application {
                                 logger.info(
                                     `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${Configuration.mainData.port}`
                                 );
-                                this.runWebServer(Configuration.mainData.output);
+                                this.serveAndStartWatch(Configuration.mainData.output);
                             }
                         });
                     } else {
@@ -807,7 +806,7 @@ export class Application {
                                 logger.info(
                                     `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${Configuration.mainData.port}`
                                 );
-                                this.runWebServer(Configuration.mainData.output);
+                                this.serveAndStartWatch(Configuration.mainData.output);
                             }
                         });
                     } else {
@@ -2739,7 +2738,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 logger.info(
                     `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${Configuration.mainData.port}`
                 );
-                this.runWebServer(Configuration.mainData.output);
+                this.serveAndStartWatch(Configuration.mainData.output);
             } else {
                 generationPromiseResolve(true);
                 this.endCallback();
@@ -2976,33 +2975,18 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         }
     }
 
-    public runWebServer(folder) {
+    public serveAndStartWatch(folder: string): void {
         if (!this.isWatching) {
-            const host = Configuration.mainData.host || 'localhost';
-            const port = Configuration.mainData.port;
-            const assets = sirv(folder, { dev: true, single: false });
-
-            polka()
-                .use(assets)
-                .listen(port, host, () => {
-                    logger.info(`Serving on http://${host}:${port}`);
-                    if (Configuration.mainData.open) {
-                        const open = require('node:child_process').exec;
-                        const url = `http://${host}:${port}`;
-                        switch (process.platform) {
-                            case 'darwin':
-                                open(`open "${url}"`);
-                                break;
-                            case 'win32':
-                                open(`start "" "${url}"`);
-                                break;
-                            default:
-                                open(`xdg-open "${url}"`);
-                                break;
-                        }
-                    }
-                });
+            startWebServer(folder, {
+                host: Configuration.mainData.host || 'localhost',
+                port: Configuration.mainData.port,
+                open: Configuration.mainData.open
+            });
         }
+        this.startWatchIfRequested();
+    }
+
+    private startWatchIfRequested(): void {
         if (Configuration.mainData.watch && !this.isWatching) {
             if (typeof this.files === 'undefined') {
                 logger.error('No sources files available, please use -p flag');

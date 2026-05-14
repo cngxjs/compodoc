@@ -1028,7 +1028,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 logger.info(
                     `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${programOptions.port}`
                 );
-                super.runWebServer(Configuration.mainData.output);
+                super.serveAndStartWatch(Configuration.mainData.output);
             }
         } else if (
             programOptions.serve &&
@@ -1043,7 +1043,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                 logger.info(
                     `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${programOptions.port}`
                 );
-                super.runWebServer(Configuration.mainData.output);
+                super.serveAndStartWatch(Configuration.mainData.output);
             }
         } else if (Configuration.mainData.hasFilesToCoverage) {
             if (programOptions.coverageMinimumPerFile) {
