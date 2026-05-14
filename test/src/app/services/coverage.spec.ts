@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import { SyntaxKind } from 'ts-morph';
 import { describe, expect, it } from 'vitest';
 import {
@@ -223,12 +224,16 @@ describe('computeUnitTestCoverage', () => {
     });
 
     it('sets idColumn=true and enriches files when coverage-data files are provided', () => {
+        // path.join keeps the summary key and the coverageFile.filePath on the
+        // platform's native separator so `path.normalize` inside the matcher
+        // does not mutate one side into a different shape on Windows.
+        const filePath = path.join('src', 'app', 'a.ts');
         const summary = {
-            'src/app/a.ts': { statements: { pct: 80, covered: 4, total: 5 } }
+            [filePath]: { statements: { pct: 80, covered: 4, total: 5 } }
         };
         const coverageFiles: CoverageFile[] = [
             {
-                filePath: 'src/app/a.ts',
+                filePath,
                 type: 'component',
                 linktype: 'component',
                 name: 'AComponent',
@@ -241,7 +246,7 @@ describe('computeUnitTestCoverage', () => {
         expect(report.idColumn).toBe(true);
         expect(report.files[0].name).toBe('AComponent');
         expect(report.files[0].type).toBe('component');
-        expect(report.files[0].filePath).toBe('src/app/a.ts');
+        expect(report.files[0].filePath).toBe(filePath);
     });
 
     it('reports uncovered status when total=0', () => {
