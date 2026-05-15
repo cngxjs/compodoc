@@ -17,7 +17,6 @@ import RouterParserUtil from '../../utils/router-parser.util';
 import { cleanLifecycleHooksFromMethods, markedtags, mergeTagsAndArgs } from '../../utils/utils';
 import Configuration from '../configuration';
 import ComponentsTreeEngine from '../engines/components-tree.engine';
-import { CodeGenerator } from './angular/code-generator';
 import type {
     IDep,
     IEnumDecDep,
@@ -36,8 +35,10 @@ import { ModuleHelper } from './angular/deps/helpers/module-helper';
 import { SymbolHelper } from './angular/deps/helpers/symbol-helper';
 import { ModuleDepFactory } from './angular/deps/module-dep.factory';
 import { ExpressionFinder } from './angular-dependencies/expression-finder';
+import { IoExtractor } from './angular-dependencies/io-extractor';
 import { JsdocTags } from './angular-dependencies/jsdoc-tags';
 import { MetadataPredicates } from './angular-dependencies/metadata-predicates';
+import { ProviderDetector } from './angular-dependencies/provider-detector';
 import { PublicApiFilter } from './angular-dependencies/public-api-filter';
 import { FrameworkDependencies } from './framework-dependencies';
 
@@ -55,9 +56,12 @@ export class AngularDependencies extends FrameworkDependencies {
     private jsdocTags = new JsdocTags(this.jsdocParserUtil);
     private publicApiFilter = new PublicApiFilter();
     private expressionFinder = new ExpressionFinder();
+    private providerDetector = new ProviderDetector();
+    private ioExtractor: IoExtractor;
 
     constructor(files: string[], options: any) {
         super(files, options);
+        this.ioExtractor = new IoExtractor(this.classHelper);
         this.publicApiFilter.initializePublicApiFiltering();
     }
 
@@ -222,7 +226,7 @@ export class AngularDependencies extends FrameworkDependencies {
 
     private processClass(node, file, srcFile, outputSymbols, fileBody, astFile) {
         const name = this.expressionFinder.getSymboleName(node);
-        const IO = this.getClassIO(file, srcFile, node, fileBody, astFile);
+        const IO = this.ioExtractor.getClassIO(file, srcFile, node, fileBody, astFile);
         const sourceCode = srcFile.getText();
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
         const deps: any = {
@@ -678,7 +682,13 @@ export class AngularDependencies extends FrameworkDependencies {
                             return;
                         }
 
-                        const IO = this.getInterfaceIO(file, srcFile, node, fileBody, astFile);
+                        const IO = this.ioExtractor.getInterfaceIO(
+                            file,
+                            srcFile,
+                            node,
+                            fileBody,
+                            astFile
+                        );
                         const interfaceDeps: IInterfaceDep = {
                             name,
                             id: `interface-${name}-${hash}`,
@@ -742,12 +752,12 @@ export class AngularDependencies extends FrameworkDependencies {
                             description: this.visitEnumTypeAliasFunctionDeclarationDescription(node)
                         };
                         // Detect factory function kind by naming convention
-                        const factoryKind = this.detectFactoryKind(name);
+                        const factoryKind = this.providerDetector.detectFactoryKind(name);
                         if (factoryKind) {
                             functionDep.factoryKind = factoryKind;
                         }
                         // Detect functional guard/resolver/interceptor from return type
-                        const functionalKind = this.detectFunctionalAngularKind(
+                        const functionalKind = this.providerDetector.detectFunctionalAngularKind(
                             infos.returnType,
                             name
                         );
@@ -876,7 +886,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         }
                     }
                 } else {
-                    const IO = this.getRouteIO(file, srcFile, node);
+                    const IO = this.ioExtractor.getRouteIO(file, srcFile, node);
                     if (IO.routes) {
                         let newRoutes;
                         try {
@@ -963,7 +973,7 @@ export class AngularDependencies extends FrameworkDependencies {
                     if (ts.isVariableStatement(node)) {
                         const isRoutesVariable = RouterParserUtil.isVariableRoutes(node);
                         // Process all variables, including exported routes variables for miscellaneous
-                        if (!isRoutesVariable || this.isExportedVariable(node)) {
+                        if (!isRoutesVariable || this.ioExtractor.isExportedVariable(node)) {
                             let isDestructured = false;
                             // Check for destructuring array
                             const nodeVariableDeclarations = node.declarationList.declarations;
@@ -1015,9 +1025,10 @@ export class AngularDependencies extends FrameworkDependencies {
                                     }
                                     // Detect ApplicationConfig declarations
                                     if (infos.type === 'ApplicationConfig' && infos.initializer) {
-                                        const providers = this.extractProviderCalls(
-                                            infos.initializer
-                                        );
+                                        const providers =
+                                            this.providerDetector.extractProviderCalls(
+                                                infos.initializer
+                                            );
                                         // Zoneless detection: if zone.js is not in package.json
                                         // dependencies, the app is zoneless — regardless of
                                         // which provider function is used.
@@ -1053,7 +1064,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                     }
 
                                     // Detect InjectionToken declarations
-                                    if (this.isInjectionToken(infos.initializer)) {
+                                    if (this.providerDetector.isInjectionToken(infos.initializer)) {
                                         const tokenDep: IInjectableDep = {
                                             name,
                                             id:
@@ -1075,12 +1086,13 @@ export class AngularDependencies extends FrameworkDependencies {
                                             rawdescription: deps.rawdescription || '',
                                             sourceCode: '',
                                             isToken: true,
-                                            tokenType: this.getInjectionTokenType(
+                                            tokenType: this.providerDetector.getInjectionTokenType(
                                                 infos.initializer
                                             ),
-                                            providedIn: this.getInjectionTokenProvidedIn(
-                                                infos.initializer
-                                            )
+                                            providedIn:
+                                                this.providerDetector.getInjectionTokenProvidedIn(
+                                                    infos.initializer
+                                                )
                                         };
                                         if (!isIgnore(variableNode)) {
                                             if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
@@ -1096,10 +1108,11 @@ export class AngularDependencies extends FrameworkDependencies {
                                     }
 
                                     // Detect functional guard/interceptor from type annotation
-                                    const functionalKind = this.detectFunctionalAngularKind(
-                                        infos.type,
-                                        name
-                                    );
+                                    const functionalKind =
+                                        this.providerDetector.detectFunctionalAngularKind(
+                                            infos.type,
+                                            name
+                                        );
                                     if (functionalKind && !isIgnore(variableNode)) {
                                         if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
                                             logger.debug(
@@ -1370,141 +1383,6 @@ export class AngularDependencies extends FrameworkDependencies {
         }
     }
 
-    /**
-     * Extract provider function calls from an ApplicationConfig initializer.
-     * Walks the `providers` array in the object literal and extracts call expressions.
-     */
-    private extractProviderCalls(initializer: any): Array<{ name: string; features: string[] }> {
-        const providers: Array<{ name: string; features: string[] }> = [];
-        if (!initializer || !ts.isObjectLiteralExpression(initializer)) {
-            return providers;
-        }
-
-        const providersProp = initializer.properties.find(
-            (p: any) =>
-                ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === 'providers'
-        );
-        if (!providersProp || !ts.isPropertyAssignment(providersProp)) {
-            return providers;
-        }
-        const arr = providersProp.initializer;
-        if (!ts.isArrayLiteralExpression(arr)) {
-            return providers;
-        }
-
-        for (const element of arr.elements) {
-            if (ts.isCallExpression(element)) {
-                const callName = element.expression.getText();
-                const features: string[] = [];
-
-                // Extract feature functions from arguments (e.g. withComponentInputBinding())
-                for (const arg of element.arguments) {
-                    if (ts.isCallExpression(arg)) {
-                        features.push(arg.expression.getText());
-                    }
-                }
-
-                providers.push({ name: callName, features });
-            } else if (ts.isSpreadElement(element) && ts.isCallExpression(element.expression)) {
-                providers.push({
-                    name: element.expression.expression.getText(),
-                    features: []
-                });
-            }
-        }
-        return providers;
-    }
-
-    private isInjectionToken(initializer: any): boolean {
-        if (!initializer) {
-            return false;
-        }
-        // Match: new InjectionToken(...)
-        if (ts.isNewExpression(initializer)) {
-            const expr = initializer.expression;
-            if (expr && ts.isIdentifier(expr) && expr.text === 'InjectionToken') {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private getInjectionTokenType(initializer: any): string {
-        if (!initializer || !ts.isNewExpression(initializer)) {
-            return '';
-        }
-        // Extract generic type argument: InjectionToken<SomeType>
-        if (initializer.typeArguments && initializer.typeArguments.length > 0) {
-            return initializer.typeArguments[0].getText();
-        }
-        return '';
-    }
-
-    private getInjectionTokenProvidedIn(initializer: any): string {
-        if (!initializer || !ts.isNewExpression(initializer)) {
-            return '';
-        }
-        // Second argument to InjectionToken constructor is the options object
-        const args = initializer.arguments;
-        if (args && args.length >= 2 && ts.isObjectLiteralExpression(args[1])) {
-            const providedInProp = args[1].properties.find(
-                (p: any) =>
-                    ts.isPropertyAssignment(p) &&
-                    ts.isIdentifier(p.name) &&
-                    p.name.text === 'providedIn'
-            );
-            if (providedInProp && ts.isPropertyAssignment(providedInProp)) {
-                return providedInProp.initializer.getText();
-            }
-        }
-        return '';
-    }
-
-    private detectFunctionalAngularKind(
-        returnType: string | undefined,
-        name: string
-    ): string | undefined {
-        if (!returnType) {
-            return undefined;
-        }
-        const rt = returnType.trim();
-        // Check return type annotations
-        if (
-            /CanActivateFn|CanActivate|CanDeactivate|CanMatch|CanLoad|boolean\s*\|\s*UrlTree/.test(
-                rt
-            )
-        ) {
-            return 'guard';
-        }
-        if (/ResolveFn|Resolve</.test(rt)) {
-            return 'resolver';
-        }
-        if (/HttpInterceptorFn|HttpHandlerFn/.test(rt)) {
-            return 'interceptor';
-        }
-        // Check variable type annotations (for arrow function exports)
-        if (/Guard/i.test(name) && /boolean|Observable<boolean>|Promise<boolean>/.test(rt)) {
-            return 'guard';
-        }
-        return undefined;
-    }
-
-    private detectFactoryKind(name: string): IFunctionDecDep['factoryKind'] | undefined {
-        if (/^provide[A-Z]/.test(name)) {
-            return 'provider';
-        }
-        if (/^with[A-Z]/.test(name)) {
-            return 'feature';
-        }
-        if (/^inject[A-Z]/.test(name)) {
-            return 'inject';
-        }
-        if (/^create[A-Z]/.test(name)) {
-            return 'factory';
-        }
-        return undefined;
-    }
-
     private visitTypeDeclaration(node: ts.TypeAliasDeclaration) {
         const result: any = {
             deprecated: false,
@@ -1766,104 +1644,5 @@ export class AngularDependencies extends FrameworkDependencies {
             this.jsdocTags.checkForDeprecation((jsdoctags[0] as any).tags, result);
         }
         return result;
-    }
-
-    private visitEnumDeclarationForRoutes(fileName, node) {
-        const decl = node.declarationList?.declarations?.[0];
-        if (decl) {
-            const routesInitializer = decl.initializer;
-            const data = new CodeGenerator().generate(routesInitializer);
-            RouterParserUtil.addRoute({
-                name: decl.name.text,
-                data: RouterParserUtil.cleanRawRoute(data),
-                filename: fileName
-            });
-            return [{ routes: data }];
-        }
-        return [];
-    }
-
-    private getRouteIO(filename: string, sourceFile: ts.SourceFile, node: ts.Node) {
-        let res;
-        if (sourceFile.statements) {
-            res = sourceFile.statements.reduce((directive, statement) => {
-                if (RouterParserUtil.isVariableRoutes(statement)) {
-                    if (statement.pos === node.pos && statement.end === node.end) {
-                        return directive.concat(
-                            this.visitEnumDeclarationForRoutes(filename, statement)
-                        );
-                    }
-                }
-
-                return directive;
-            }, []);
-            return res[0] || {};
-        } else {
-            return {};
-        }
-    }
-
-    private getClassIO(
-        filename: string,
-        sourceFile: ts.SourceFile,
-        node: ts.Node,
-        fileBody,
-        astFile
-    ) {
-        /**
-         * Copyright https://github.com/ng-bootstrap/ng-bootstrap
-         */
-        const reducedSource = fileBody ? fileBody.statements : sourceFile.statements;
-        const res = reducedSource.reduce((directive, statement) => {
-            if (ts.isClassDeclaration(statement)) {
-                if (statement.pos === node.pos && statement.end === node.end) {
-                    return directive.concat(
-                        this.classHelper.visitClassDeclaration(
-                            filename,
-                            statement,
-                            sourceFile,
-                            astFile
-                        )
-                    );
-                }
-            }
-
-            return directive;
-        }, []);
-
-        return res[0] || {};
-    }
-
-    private getInterfaceIO(filename: string, sourceFile, node, fileBody, astFile) {
-        /**
-         * Copyright https://github.com/ng-bootstrap/ng-bootstrap
-         */
-        const reducedSource = fileBody ? fileBody.statements : sourceFile.statements;
-        const res = reducedSource.reduce((directive, statement) => {
-            if (ts.isInterfaceDeclaration(statement)) {
-                if (statement.pos === node.pos && statement.end === node.end) {
-                    return directive.concat(
-                        this.classHelper.visitClassDeclaration(
-                            filename,
-                            statement,
-                            sourceFile,
-                            astFile
-                        )
-                    );
-                }
-            }
-
-            return directive;
-        }, []);
-
-        return res[0] || {};
-    }
-
-    /**
-     * Check if a variable statement is exported
-     */
-    private isExportedVariable(node: any): boolean {
-        // Check if the node has export modifiers
-        return !!node.modifiers?.some(modifier => modifier.kind === SyntaxKind.ExportKeyword);
     }
 }
