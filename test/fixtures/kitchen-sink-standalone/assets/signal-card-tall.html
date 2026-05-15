@@ -4,15 +4,32 @@
         <meta charset="utf-8" />
         <title>Signal Card — tall example</title>
         <style>
+            :root {
+                --bg: #fff8f0;
+                --card-bg: #fff;
+                --card-border: #ffd3a8;
+                --text: #1f2328;
+                --text-muted: #5b3f1f;
+                --code-bg: #fff1d6;
+            }
+            html.dark {
+                --bg: #1f1a14;
+                --card-bg: #2a241c;
+                --card-border: #5c422a;
+                --text: #f1e7d8;
+                --text-muted: #d5b58a;
+                --code-bg: #3a2a18;
+            }
             html,
             body {
                 margin: 0;
                 padding: 0;
                 font-family: system-ui, sans-serif;
+                color: var(--text);
             }
             body {
                 padding: 16px;
-                background: #fff8f0;
+                background: var(--bg);
             }
             .stack {
                 display: flex;
@@ -20,9 +37,9 @@
                 gap: 12px;
             }
             .card {
-                border: 1px solid #ffd3a8;
+                border: 1px solid var(--card-border);
                 border-radius: 8px;
-                background: #fff;
+                background: var(--card-bg);
                 padding: 16px 20px;
             }
             h2 {
@@ -31,10 +48,10 @@
             }
             p {
                 margin: 0 0 8px;
-                color: #5b3f1f;
+                color: var(--text-muted);
             }
             code {
-                background: #fff1d6;
+                background: var(--code-bg);
                 padding: 1px 6px;
                 border-radius: 4px;
                 font-size: 0.85rem;

@@ -4,20 +4,35 @@
         <meta charset="utf-8" />
         <title>Signal Card — medium example</title>
         <style>
+            :root {
+                --bg: #f0f4ff;
+                --card-bg: #fff;
+                --card-border: #c3d0ff;
+                --text: #1f2328;
+                --text-list: #34405b;
+            }
+            html.dark {
+                --bg: #181c2a;
+                --card-bg: #23283c;
+                --card-border: #3a4670;
+                --text: #e6e8f3;
+                --text-list: #b6bdd5;
+            }
             html,
             body {
                 margin: 0;
                 padding: 0;
                 font-family: system-ui, sans-serif;
+                color: var(--text);
             }
             body {
                 padding: 16px;
-                background: #f0f4ff;
+                background: var(--bg);
             }
             .card {
-                border: 1px solid #c3d0ff;
+                border: 1px solid var(--card-border);
                 border-radius: 8px;
-                background: #fff;
+                background: var(--card-bg);
                 padding: 16px 20px;
             }
             h2 {
@@ -27,7 +42,7 @@
             ul {
                 margin: 0;
                 padding-left: 1.25rem;
-                color: #34405b;
+                color: var(--text-list);
             }
             li {
                 margin-bottom: 6px;

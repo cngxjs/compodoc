@@ -1,4 +1,5 @@
 const BOUND = new WeakSet<HTMLIFrameElement>();
+const TRACKED: HTMLIFrameElement[] = [];
 
 const measureContentHeight = (doc: Document): number => {
     const body = doc.body;
@@ -44,13 +45,39 @@ const observeContent = (iframe: HTMLIFrameElement): void => {
     }
 };
 
+const isParentDark = (): boolean => document.documentElement.classList.contains('dark');
+
+const applyThemeToIframe = (iframe: HTMLIFrameElement): void => {
+    const dark = isParentDark();
+    // Same-origin path: toggle .dark on the iframe's <html> + <body> so the
+    // example HTML can react via plain CSS (`.dark` selector or
+    // `@media (prefers-color-scheme: dark)` fallback).
+    try {
+        const doc = iframe.contentDocument;
+        if (doc?.documentElement) {
+            doc.documentElement.classList.toggle('dark', dark);
+            doc.body?.classList.toggle('dark', dark);
+        }
+    } catch {
+        // cross-origin — fall through to postMessage
+    }
+    // Cross-origin or opt-in subscribers: postMessage protocol.
+    try {
+        iframe.contentWindow?.postMessage({ type: 'cdx-iframe-theme', dark }, '*');
+    } catch {
+        // contentWindow can throw on detached frames
+    }
+};
+
 const bind = (iframe: HTMLIFrameElement): void => {
     if (BOUND.has(iframe)) {
         return;
     }
     BOUND.add(iframe);
+    TRACKED.push(iframe);
 
     iframe.addEventListener('load', () => {
+        applyThemeToIframe(iframe);
         resizeIframe(iframe);
         observeContent(iframe);
     });
@@ -58,6 +85,7 @@ const bind = (iframe: HTMLIFrameElement): void => {
     // Already-loaded iframes (cached / SPA-restored)
     try {
         if (iframe.contentDocument?.readyState === 'complete') {
+            applyThemeToIframe(iframe);
             resizeIframe(iframe);
             observeContent(iframe);
         }
@@ -66,6 +94,26 @@ const bind = (iframe: HTMLIFrameElement): void => {
     }
 };
 
+let themeObserver: MutationObserver | null = null;
+
+const ensureThemeObserver = (): void => {
+    if (themeObserver) {
+        return;
+    }
+    themeObserver = new MutationObserver(() => {
+        for (const iframe of TRACKED) {
+            if (iframe.isConnected) {
+                applyThemeToIframe(iframe);
+            }
+        }
+    });
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+};
+
 export const initExamples = (): void => {
     document.querySelectorAll<HTMLIFrameElement>('iframe.cdx-example-container').forEach(bind);
+    ensureThemeObserver();
 };
