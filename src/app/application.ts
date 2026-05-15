@@ -33,7 +33,11 @@ import type { AdditionalNode } from './interfaces/additional-node.interface';
 import type { CoverageData } from './interfaces/coverageData.interface';
 import {
     ClassPageGenerator,
+    DirectivePageGenerator,
     EntityPageGenerator,
+    GuardPageGenerator,
+    InjectablePageGenerator,
+    InterceptorPageGenerator,
     InterfacePageGenerator,
     NavTabsResolver,
     PipePageGenerator
@@ -79,6 +83,10 @@ export class Application {
     private readonly classPageGenerator: ClassPageGenerator;
     private readonly interfacePageGenerator: InterfacePageGenerator;
     private readonly entityPageGenerator: EntityPageGenerator;
+    private readonly directivePageGenerator: DirectivePageGenerator;
+    private readonly injectablePageGenerator: InjectablePageGenerator;
+    private readonly interceptorPageGenerator: InterceptorPageGenerator;
+    private readonly guardPageGenerator: GuardPageGenerator;
 
     /**
      * Create a new compodocx application instance.
@@ -105,6 +113,10 @@ export class Application {
         this.classPageGenerator = new ClassPageGenerator(this.navTabs);
         this.interfacePageGenerator = new InterfacePageGenerator(this.navTabs);
         this.entityPageGenerator = new EntityPageGenerator(this.navTabs);
+        this.directivePageGenerator = new DirectivePageGenerator(this.navTabs);
+        this.injectablePageGenerator = new InjectablePageGenerator(this.navTabs);
+        this.interceptorPageGenerator = new InterceptorPageGenerator(this.navTabs);
+        this.guardPageGenerator = new GuardPageGenerator(this.navTabs);
     }
 
     /**
@@ -564,19 +576,19 @@ export class Application {
         }
 
         if (diffCrawledData.directives.length > 0) {
-            actions.push(() => this.prepareDirectives());
+            actions.push(() => this.directivePageGenerator.prepare());
         }
 
         if (diffCrawledData.injectables.length > 0) {
-            actions.push(() => this.prepareInjectables());
+            actions.push(() => this.injectablePageGenerator.prepare());
         }
 
         if (diffCrawledData.interceptors.length > 0) {
-            actions.push(() => this.prepareInterceptors());
+            actions.push(() => this.interceptorPageGenerator.prepare());
         }
 
         if (diffCrawledData.guards.length > 0) {
-            actions.push(() => this.prepareGuards());
+            actions.push(() => this.guardPageGenerator.prepare());
         }
 
         if (diffCrawledData.pipes.length > 0) {
@@ -710,7 +722,7 @@ export class Application {
 
         if (DependenciesEngine.directives.length > 0) {
             actions.push(() => {
-                return this.prepareDirectives();
+                return this.directivePageGenerator.prepare();
             });
         }
 
@@ -722,19 +734,19 @@ export class Application {
 
         if (DependenciesEngine.injectables.length > 0) {
             actions.push(() => {
-                return this.prepareInjectables();
+                return this.injectablePageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.interceptors.length > 0) {
             actions.push(() => {
-                return this.prepareInterceptors();
+                return this.interceptorPageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.guards.length > 0) {
             actions.push(() => {
-                return this.prepareGuards();
+                return this.guardPageGenerator.prepare();
             });
         }
 
@@ -1377,172 +1389,6 @@ export class Application {
                     });
                 } else {
                     mainPrepareComponentResolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
-    public prepareDirectives(someDirectives?) {
-        logger.info('Prepare directives');
-
-        Configuration.mainData.directives = someDirectives
-            ? someDirectives
-            : DependenciesEngine.getDirectives();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.directives.length;
-            const loop = () => {
-                if (i < len) {
-                    const directive = Configuration.mainData.directives[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(directive.file)) {
-                        logger.info(` ${directive.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(directive.file);
-                        directive.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'directives',
-                        name: directive.name,
-                        id: directive.id,
-                        navTabs: this.navTabs.resolve(directive),
-                        context: 'directive',
-                        directive: directive,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (directive.isDuplicate) {
-                        page.name += `-${directive.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
-    public prepareInjectables(someInjectables?): Promise<void> {
-        logger.info('Prepare injectables');
-
-        Configuration.mainData.injectables = someInjectables
-            ? someInjectables
-            : DependenciesEngine.getInjectables();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.injectables.length;
-            const loop = () => {
-                if (i < len) {
-                    const injec = Configuration.mainData.injectables[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(injec.file)) {
-                        logger.info(` ${injec.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(injec.file);
-                        injec.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'injectables',
-                        name: injec.name,
-                        id: injec.id,
-                        navTabs: this.navTabs.resolve(injec),
-                        context: 'injectable',
-                        injectable: injec,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (injec.isDuplicate) {
-                        page.name += `-${injec.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve();
-                }
-            };
-            loop();
-        });
-    }
-
-    public prepareInterceptors(someInterceptors?): Promise<void> {
-        logger.info('Prepare interceptors');
-
-        Configuration.mainData.interceptors = someInterceptors
-            ? someInterceptors
-            : DependenciesEngine.getInterceptors();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.interceptors.length;
-            const loop = () => {
-                if (i < len) {
-                    const interceptor = Configuration.mainData.interceptors[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(interceptor.file)) {
-                        logger.info(` ${interceptor.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(interceptor.file);
-                        interceptor.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'interceptors',
-                        name: interceptor.name,
-                        id: interceptor.id,
-                        navTabs: this.navTabs.resolve(interceptor),
-                        context: 'interceptor',
-                        injectable: interceptor,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (interceptor.isDuplicate) {
-                        page.name += `-${interceptor.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve();
-                }
-            };
-            loop();
-        });
-    }
-
-    public prepareGuards(someGuards?): Promise<void> {
-        logger.info('Prepare guards');
-
-        Configuration.mainData.guards = someGuards ? someGuards : DependenciesEngine.getGuards();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.guards.length;
-            const loop = () => {
-                if (i < len) {
-                    const guard = Configuration.mainData.guards[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(guard.file)) {
-                        logger.info(` ${guard.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(guard.file);
-                        guard.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'guards',
-                        name: guard.name,
-                        id: guard.id,
-                        navTabs: this.navTabs.resolve(guard),
-                        context: 'guard',
-                        injectable: guard,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (guard.isDuplicate) {
-                        page.name += `-${guard.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve();
                 }
             };
             loop();
