@@ -1,54 +1,53 @@
-import * as crypto from 'node:crypto';
 import * as path from 'node:path';
-import * as fs from 'fs-extra';
-import traverse from 'neotraverse/legacy';
 
-import { hasAnyApiSections } from '../templates/helpers/tab-helpers';
 import AngularVersionUtil from '../utils/angular-version.util';
-import { COMPODOC_CONSTANTS } from '../utils/constants';
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
-import { buildEntityIndex } from '../utils/entity-index.util';
 import { logger } from '../utils/logger';
-import { markedAcl } from '../utils/marked.acl';
 import { promiseSequential } from '../utils/promise-sequential';
 import RouterParserUtil from '../utils/router-parser.util';
-import { collectThemeTokens } from '../utils/theme-doc-parser';
-import {
-    cleanNameWithoutSpaceAndToLowerCase,
-    cleanSourcesForWatch,
-    findMainSourceFolder
-} from '../utils/utils';
-import type { IComponentDep } from './compiler/angular/deps/component-dep.factory';
+import { cleanSourcesForWatch, findMainSourceFolder } from '../utils/utils';
 import Configuration from './configuration';
 import DependenciesEngine from './engines/dependencies.engine';
 import ExportEngine from './engines/export.engine';
 import FileEngine from './engines/file.engine';
 import HtmlEngine from './engines/html.engine';
 import I18nEngine from './engines/i18n.engine';
-import MarkdownEngine, { type markdownReadedDatas } from './engines/markdown.engine';
-import NgdEngine from './engines/ngd.engine';
-import { runPagefindIndex } from './engines/search-indexer.engine';
-import { type FileRefBundle, type FsReader, readFileRef } from './engines/stackblitz';
+import MarkdownEngine from './engines/markdown.engine';
 import { initHighlighter } from './engines/syntax-highlight.engine';
-import { updateVersionsManifest } from './engines/versions-manifest.engine';
-import type { AdditionalNode } from './interfaces/additional-node.interface';
-import type { CoverageData } from './interfaces/coverageData.interface';
 import {
-    type CoverageFile,
-    computeDocumentationCoverage,
-    computeUnitTestCoverage
-} from './services/coverage';
+    generationPromise,
+    rejectGenerationPromise,
+    resolveGenerationPromise
+} from './generation-promise';
+import {
+    AdditionalPageGenerator,
+    AppConfigPageGenerator,
+    AssetCopier,
+    ClassPageGenerator,
+    ComponentPageGenerator,
+    CoveragePageGenerator,
+    DirectivePageGenerator,
+    EntityPageGenerator,
+    GraphGenerator,
+    GuardPageGenerator,
+    InjectablePageGenerator,
+    InterceptorPageGenerator,
+    InterfacePageGenerator,
+    MiscellaneousPageGenerator,
+    ModulePageGenerator,
+    NavTabsResolver,
+    OverviewPageGenerator,
+    PackageDependenciesPageGenerator,
+    PageWriter,
+    PipePageGenerator,
+    PlaygroundFileResolver,
+    RoutesPageGenerator
+} from './page-generator';
 import { crawlDependencies, crawlMicroDependencies } from './services/dependencies';
 import { startWebServer } from './services/serve';
 
 const cwd = process.cwd();
 let startTime = new Date();
-let generationPromiseResolve;
-let generationPromiseReject;
-const generationPromise = new Promise((resolve, reject) => {
-    generationPromiseResolve = resolve;
-    generationPromiseReject = reject;
-});
 
 export class Application {
     /**
@@ -69,6 +68,29 @@ export class Application {
      */
     public isWatching: boolean = false;
 
+    private readonly navTabs: NavTabsResolver;
+    private readonly pipePageGenerator: PipePageGenerator;
+    private readonly classPageGenerator: ClassPageGenerator;
+    private readonly interfacePageGenerator: InterfacePageGenerator;
+    private readonly entityPageGenerator: EntityPageGenerator;
+    private readonly directivePageGenerator: DirectivePageGenerator;
+    private readonly injectablePageGenerator: InjectablePageGenerator;
+    private readonly interceptorPageGenerator: InterceptorPageGenerator;
+    private readonly guardPageGenerator: GuardPageGenerator;
+    private readonly componentPageGenerator: ComponentPageGenerator;
+    private readonly modulePageGenerator: ModulePageGenerator;
+    private readonly miscellaneousPageGenerator: MiscellaneousPageGenerator;
+    private readonly appConfigPageGenerator: AppConfigPageGenerator;
+    private readonly routesPageGenerator: RoutesPageGenerator;
+    private readonly overviewPageGenerator: OverviewPageGenerator;
+    private readonly additionalPageGenerator: AdditionalPageGenerator;
+    private readonly packageDependenciesPageGenerator: PackageDependenciesPageGenerator;
+    private readonly playgroundFileResolver: PlaygroundFileResolver;
+    private readonly coveragePageGenerator: CoveragePageGenerator;
+    private readonly assetCopier: AssetCopier;
+    private readonly pageWriter: PageWriter;
+    private readonly graphGenerator: GraphGenerator;
+
     /**
      * Create a new compodocx application instance.
      *
@@ -88,6 +110,33 @@ export class Application {
                 logger.silent = false;
             }
         }
+
+        this.navTabs = new NavTabsResolver();
+        this.pipePageGenerator = new PipePageGenerator(this.navTabs);
+        this.classPageGenerator = new ClassPageGenerator(this.navTabs);
+        this.interfacePageGenerator = new InterfacePageGenerator(this.navTabs);
+        this.entityPageGenerator = new EntityPageGenerator(this.navTabs);
+        this.directivePageGenerator = new DirectivePageGenerator(this.navTabs);
+        this.injectablePageGenerator = new InjectablePageGenerator(this.navTabs);
+        this.interceptorPageGenerator = new InterceptorPageGenerator(this.navTabs);
+        this.guardPageGenerator = new GuardPageGenerator(this.navTabs);
+        this.componentPageGenerator = new ComponentPageGenerator(this.navTabs);
+        this.modulePageGenerator = new ModulePageGenerator(this.navTabs);
+        this.miscellaneousPageGenerator = new MiscellaneousPageGenerator();
+        this.appConfigPageGenerator = new AppConfigPageGenerator();
+        this.routesPageGenerator = new RoutesPageGenerator();
+        this.overviewPageGenerator = new OverviewPageGenerator();
+        this.additionalPageGenerator = new AdditionalPageGenerator();
+        this.packageDependenciesPageGenerator = new PackageDependenciesPageGenerator();
+        this.playgroundFileResolver = new PlaygroundFileResolver();
+        this.coveragePageGenerator = new CoveragePageGenerator();
+        this.assetCopier = new AssetCopier({
+            onServe: folder => this.serveAndStartWatch(folder),
+            onDone: () => this.endCallback(),
+            getElapsedTime: () => this.getElapsedTime()
+        });
+        this.pageWriter = new PageWriter(this.additionalPageGenerator, this.assetCopier);
+        this.graphGenerator = new GraphGenerator(this.pageWriter);
     }
 
     /**
@@ -237,10 +286,14 @@ export class Application {
 
                 if (!Configuration.mainData.disableDependencies) {
                     if (typeof parsedData.dependencies !== 'undefined') {
-                        this.processPackageDependencies(parsedData.dependencies);
+                        this.packageDependenciesPageGenerator.processDependencies(
+                            parsedData.dependencies
+                        );
                     }
                     if (typeof parsedData.peerDependencies !== 'undefined') {
-                        this.processPackagePeerDependencies(parsedData.peerDependencies);
+                        this.packageDependenciesPageGenerator.processPeerDependencies(
+                            parsedData.peerDependencies
+                        );
                     }
                 }
 
@@ -273,7 +326,7 @@ export class Application {
                     }
                 }
 
-                this.processMarkdowns().then(
+                this.overviewPageGenerator.processMarkdowns().then(
                     () => {
                         this.getDependenciesData();
                     },
@@ -286,7 +339,7 @@ export class Application {
             errorMessage => {
                 logger.error(errorMessage);
                 logger.error('Continuing without package.json file');
-                this.processMarkdowns().then(
+                this.overviewPageGenerator.processMarkdowns().then(
                     () => {
                         this.getDependenciesData();
                     },
@@ -299,131 +352,6 @@ export class Application {
         );
     }
 
-    private processPackagePeerDependencies(dependencies): void {
-        logger.info('Processing package.json peerDependencies');
-        Configuration.mainData.packagePeerDependencies = dependencies;
-        if (!Configuration.hasPage('dependencies')) {
-            Configuration.addPage({
-                name: 'dependencies',
-                id: 'packageDependencies',
-                context: 'package-dependencies',
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-        }
-    }
-
-    private processPackageDependencies(dependencies): void {
-        logger.info('Processing package.json dependencies');
-        Configuration.mainData.packageDependencies = dependencies;
-        Configuration.addPage({
-            name: 'dependencies',
-            id: 'packageDependencies',
-            context: 'package-dependencies',
-            depth: 0,
-            pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-        });
-    }
-
-    private processMarkdowns(): Promise<any> {
-        logger.info(
-            'Searching README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE.md, TODO.md files'
-        );
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const markdowns = ['readme', 'changelog', 'contributing', 'license', 'todo'];
-            const numberOfMarkdowns = 5;
-            const loop = () => {
-                if (i < numberOfMarkdowns) {
-                    MarkdownEngine.getTraditionalMarkdown(markdowns[i].toUpperCase())
-                        .then((readmeData: markdownReadedDatas) => {
-                            logger.info(`${markdowns[i].toUpperCase()}.md file found`);
-                            if (markdowns[i] === 'readme') {
-                                Configuration.mainData.readme = true;
-                                // Always create index.html as main page with README content
-                                Configuration.addPage({
-                                    name: 'index',
-                                    context: 'readme',
-                                    id: 'index',
-                                    markdown: readmeData.markdown,
-                                    data: readmeData.rawData,
-                                    depth: 0,
-                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                });
-
-                                // If overview is not disabled, also create separate overview page
-                                if (!Configuration.mainData.disableOverview) {
-                                    Configuration.addPage({
-                                        name: 'overview',
-                                        context: 'overview',
-                                        id: 'overview',
-                                        depth: 0,
-                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                    });
-                                }
-                            } else {
-                                // For other markdown files (changelog, contributing, etc.)
-                                Configuration.addPage({
-                                    name: markdowns[i],
-                                    context: markdowns[i],
-                                    id: markdowns[i],
-                                    markdown: readmeData.markdown,
-                                    data: readmeData.rawData,
-                                    depth: 0,
-                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                });
-                                Configuration.mainData.markdowns.push({
-                                    name: markdowns[i],
-                                    uppername: markdowns[i].toUpperCase(),
-                                    depth: 0,
-                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                });
-                            }
-                            i++;
-                            loop();
-                        })
-                        .catch(errorMessage => {
-                            logger.warn(errorMessage);
-                            logger.warn(`Continuing without ${markdowns[i].toUpperCase()}.md file`);
-                            if (markdowns[i] === 'readme') {
-                                if (!Configuration.mainData.disableOverview) {
-                                    Configuration.addPage({
-                                        name: 'index',
-                                        id: 'index',
-                                        context: 'overview',
-                                        depth: 0,
-                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                    });
-                                } else {
-                                    // When README doesn't exist and overview is disabled,
-                                    // generate overview page anyway but show warning
-                                    logger.warn(
-                                        'No README.md found and --disableOverview is enabled.'
-                                    );
-                                    logger.warn(
-                                        'Generating overview page as landing page. Consider adding a README.md file.'
-                                    );
-                                    Configuration.addPage({
-                                        name: 'index',
-                                        id: 'index',
-                                        context: 'overview',
-                                        depth: 0,
-                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                    });
-                                }
-                            }
-                            i++;
-                            loop();
-                        });
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
     private rebuildRootMarkdowns(): void {
         logger.info(
             'Regenerating README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE.md, TODO.md pages'
@@ -434,12 +362,12 @@ export class Application {
         Configuration.resetRootMarkdownPages();
 
         actions.push(() => {
-            return this.processMarkdowns();
+            return this.overviewPageGenerator.processMarkdowns();
         });
 
         promiseSequential(actions)
             .then(_res => {
-                this.processPages();
+                this.pageWriter.processPages();
                 this.clearUpdatedFiles();
             })
             .catch(errorMessage => {
@@ -476,13 +404,13 @@ export class Application {
 
         if (Configuration.mainData.includes !== '') {
             actions.push(() => {
-                return this.prepareExternalIncludes();
+                return this.additionalPageGenerator.prepareExternalIncludes();
             });
         }
 
         promiseSequential(actions)
             .then(_res => {
-                this.processPages();
+                this.pageWriter.processPages();
                 this.clearUpdatedFiles();
             })
             .catch(errorMessage => {
@@ -533,46 +461,48 @@ export class Application {
         Configuration.resetPages();
 
         if (!Configuration.mainData.disableRoutesGraph) {
-            actions.push(() => this.prepareRoutes());
+            actions.push(() => this.routesPageGenerator.prepare());
         }
 
         if (diffCrawledData.components.length > 0) {
-            actions.push(() => this.prepareComponents());
+            actions.push(() => this.componentPageGenerator.prepare());
         }
         if (diffCrawledData.entities.length > 0) {
-            actions.push(() => this.prepareEntities());
+            actions.push(() => this.entityPageGenerator.prepare());
         }
         if (diffCrawledData.modules.length > 0) {
-            actions.push(() => this.prepareModules());
+            actions.push(() => this.modulePageGenerator.prepare());
         }
 
         if (diffCrawledData.directives.length > 0) {
-            actions.push(() => this.prepareDirectives());
+            actions.push(() => this.directivePageGenerator.prepare());
         }
 
         if (diffCrawledData.injectables.length > 0) {
-            actions.push(() => this.prepareInjectables());
+            actions.push(() => this.injectablePageGenerator.prepare());
         }
 
         if (diffCrawledData.interceptors.length > 0) {
-            actions.push(() => this.prepareInterceptors());
+            actions.push(() => this.interceptorPageGenerator.prepare());
         }
 
         if (diffCrawledData.guards.length > 0) {
-            actions.push(() => this.prepareGuards());
+            actions.push(() => this.guardPageGenerator.prepare());
         }
 
         if (diffCrawledData.pipes.length > 0) {
-            actions.push(() => this.preparePipes());
+            actions.push(() => this.pipePageGenerator.prepare());
         }
 
         if (diffCrawledData.classes.length > 0) {
-            actions.push(() => this.prepareClasses());
+            actions.push(() => this.classPageGenerator.prepare());
         }
 
         if (diffCrawledData.interfaces.length > 0) {
-            actions.push(() => this.prepareInterfaces());
+            actions.push(() => this.interfacePageGenerator.prepare());
         }
+
+        actions.push(() => this.appConfigPageGenerator.prepare());
 
         if (
             diffCrawledData.miscellaneous.variables.length > 0 ||
@@ -580,17 +510,17 @@ export class Application {
             diffCrawledData.miscellaneous.typealiases.length > 0 ||
             diffCrawledData.miscellaneous.enumerations.length > 0
         ) {
-            actions.push(() => this.prepareMiscellaneous());
+            actions.push(() => this.miscellaneousPageGenerator.prepare());
         }
 
         if (!Configuration.mainData.disableCoverage) {
-            actions.push(() => this.prepareCoverage());
+            actions.push(() => this.coveragePageGenerator.prepareDocumentation());
         }
 
         // Resolve `@playground` file refs after every dependency kind has
         // been prepared (so `dependency.playgrounds` is fully populated) and
         // before page rendering reads `data.playgroundFiles`.
-        actions.push(() => Promise.resolve(this.resolvePlaygroundFiles()));
+        actions.push(() => Promise.resolve(this.playgroundFileResolver.resolve()));
 
         promiseSequential(actions)
             .then(_res => {
@@ -607,7 +537,7 @@ export class Application {
                             Configuration.mainData.output,
                             Configuration.mainData
                         ).then(() => {
-                            generationPromiseResolve(true);
+                            resolveGenerationPromise(true);
                             this.endCallback();
                             logger.info(
                                 'Documentation generated in ' +
@@ -627,7 +557,7 @@ export class Application {
                         logger.warn(`Exported format not supported`);
                     }
                 } else {
-                    this.processGraphs();
+                    this.graphGenerator.processGraphs();
                     this.clearUpdatedFiles();
                 }
             })
@@ -685,65 +615,69 @@ export class Application {
         const actions = [];
 
         actions.push(() => {
-            return this.prepareComponents();
+            return this.componentPageGenerator.prepare();
         });
         actions.push(() => {
-            return this.prepareModules();
+            return this.modulePageGenerator.prepare();
         });
 
         if (DependenciesEngine.directives.length > 0) {
             actions.push(() => {
-                return this.prepareDirectives();
+                return this.directivePageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.entities.length > 0) {
             actions.push(() => {
-                return this.prepareEntities();
+                return this.entityPageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.injectables.length > 0) {
             actions.push(() => {
-                return this.prepareInjectables();
+                return this.injectablePageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.interceptors.length > 0) {
             actions.push(() => {
-                return this.prepareInterceptors();
+                return this.interceptorPageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.guards.length > 0) {
             actions.push(() => {
-                return this.prepareGuards();
+                return this.guardPageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.routes && !Configuration.mainData.disableRoutesGraph) {
             actions.push(() => {
-                return this.prepareRoutes();
+                return this.routesPageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.pipes.length > 0) {
             actions.push(() => {
-                return this.preparePipes();
+                return this.pipePageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.classes.length > 0) {
             actions.push(() => {
-                return this.prepareClasses();
+                return this.classPageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.interfaces.length > 0) {
             actions.push(() => {
-                return this.prepareInterfaces();
+                return this.interfacePageGenerator.prepare();
             });
         }
+
+        actions.push(() => {
+            return this.appConfigPageGenerator.prepare();
+        });
 
         if (
             DependenciesEngine.miscellaneous.variables.length > 0 ||
@@ -752,31 +686,31 @@ export class Application {
             DependenciesEngine.miscellaneous.enumerations.length > 0
         ) {
             actions.push(() => {
-                return this.prepareMiscellaneous();
+                return this.miscellaneousPageGenerator.prepare();
             });
         }
 
         if (!Configuration.mainData.disableCoverage) {
             actions.push(() => {
-                return this.prepareCoverage();
+                return this.coveragePageGenerator.prepareDocumentation();
             });
         }
 
         if (Configuration.mainData.unitTestCoverage !== '') {
             actions.push(() => {
-                return this.prepareUnitTestCoverage();
+                return this.coveragePageGenerator.prepareUnitTest();
             });
         }
 
         if (Configuration.mainData.includes !== '') {
             actions.push(() => {
-                return this.prepareExternalIncludes();
+                return this.additionalPageGenerator.prepareExternalIncludes();
             });
         }
 
         // Resolve `@playground` file refs after every prepare* step has
         // populated `Configuration.mainData.<kind>.playgrounds`.
-        actions.push(() => Promise.resolve(this.resolvePlaygroundFiles()));
+        actions.push(() => Promise.resolve(this.playgroundFileResolver.resolve()));
 
         promiseSequential(actions)
             .then(_res => {
@@ -793,7 +727,7 @@ export class Application {
                             Configuration.mainData.output,
                             Configuration.mainData
                         ).then(() => {
-                            generationPromiseResolve(true);
+                            resolveGenerationPromise(true);
                             this.endCallback();
                             logger.info(
                                 'Documentation generated in ' +
@@ -813,1689 +747,13 @@ export class Application {
                         logger.warn(`Exported format not supported`);
                     }
                 } else {
-                    this.processGraphs();
+                    this.graphGenerator.processGraphs();
                 }
             })
             .catch(errorMessage => {
                 logger.error(errorMessage);
                 process.exit(1);
             });
-    }
-
-    private getIncludedPathForFile(file) {
-        return path.join(Configuration.mainData.includes, file);
-    }
-
-    private prepareExternalIncludes() {
-        logger.info('Adding external markdown files');
-        // Scan include folder for files detailed in summary.json
-        // For each file, add to Configuration.mainData.additionalPages
-        // Each file will be converted to html page, inside COMPODOC_DEFAULTS.additionalEntryPath
-        return new Promise(resolve => {
-            FileEngine.get(this.getIncludedPathForFile('summary.json')).then(
-                summaryData => {
-                    logger.info('Additional documentation: summary.json file found');
-
-                    const parsedSummaryData = JSON.parse(summaryData);
-
-                    const that = this;
-                    let lastLevelOnePage;
-
-                    traverse(parsedSummaryData).forEach(function () {
-                        // tslint:disable-next-line:no-invalid-this
-                        if (this.notRoot && typeof this.node === 'object') {
-                            // tslint:disable-next-line:no-invalid-this
-                            const rawPath = this.path;
-                            // tslint:disable-next-line:no-invalid-this
-                            const additionalNode: AdditionalNode = this.node;
-                            const file = additionalNode.file;
-                            const title = additionalNode.title;
-                            let finalPath = Configuration.mainData.includesFolder;
-
-                            const finalDepth = rawPath.filter(el => {
-                                return !Number.isNaN(parseInt(String(el), 10));
-                            });
-
-                            if (typeof file !== 'undefined' && typeof title !== 'undefined') {
-                                const url = cleanNameWithoutSpaceAndToLowerCase(title);
-
-                                /**
-                                 * Id created with title + file path hash, seems to be hypothetically unique here
-                                 */
-                                const id = crypto
-                                    .createHash('sha512')
-                                    .update(title + file)
-                                    .digest('hex');
-
-                                // tslint:disable-next-line:no-invalid-this
-                                this.node.id = id;
-
-                                let lastElementRootTree;
-                                finalDepth.forEach(el => {
-                                    let elementTree =
-                                        typeof lastElementRootTree === 'undefined'
-                                            ? parsedSummaryData
-                                            : lastElementRootTree;
-                                    if (typeof elementTree.children !== 'undefined') {
-                                        elementTree = elementTree.children[el];
-                                    } else {
-                                        elementTree = elementTree[el];
-                                    }
-                                    finalPath +=
-                                        '/' +
-                                        cleanNameWithoutSpaceAndToLowerCase(elementTree.title);
-                                    lastElementRootTree = elementTree;
-                                });
-
-                                finalPath = finalPath.replace(`/${url}`, '');
-                                const markdownFile = MarkdownEngine.getTraditionalMarkdownSync(
-                                    that.getIncludedPathForFile(file)
-                                );
-
-                                if (finalDepth.length > 5) {
-                                    logger.error('Only 5 levels of depth are supported');
-                                } else {
-                                    const _page = {
-                                        name: title,
-                                        id: id,
-                                        filename: url,
-                                        context: 'additional-page',
-                                        path: finalPath,
-                                        additionalPage: markdownFile,
-                                        depth: finalDepth.length,
-                                        childrenLength: additionalNode.children
-                                            ? additionalNode.children.length
-                                            : 0,
-                                        children: [],
-                                        lastChild: false,
-                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                                    };
-                                    if (finalDepth.length === 1) {
-                                        lastLevelOnePage = _page;
-                                    }
-                                    if (finalDepth.length > 1) {
-                                        // store all child pages of the last root level 1 page inside it
-                                        lastLevelOnePage.children.push(_page);
-                                    } else {
-                                        Configuration.addAdditionalPage(_page);
-                                    }
-                                }
-                            }
-                        }
-                    });
-
-                    resolve(true);
-                },
-                () => {
-                    resolve(true);
-                }
-            );
-        });
-    }
-
-    public prepareModules(someModules?): Promise<any> {
-        logger.info('Prepare modules');
-        let i = 0;
-        const _modules = someModules ? someModules : DependenciesEngine.getModules();
-
-        return new Promise((resolve, _reject) => {
-            Configuration.mainData.modules = _modules.map(ngModule => {
-                ngModule.compodocxLinks = {
-                    components: [],
-                    directives: [],
-                    injectables: [],
-                    pipes: []
-                };
-                ['declarations', 'bootstrap', 'imports', 'exports'].forEach(metadataType => {
-                    ngModule[metadataType] = ngModule[metadataType].filter(metaDataItem => {
-                        switch (metaDataItem.type) {
-                            case 'directive':
-                                return DependenciesEngine.getDirectives().some(directive => {
-                                    let selectedDirective;
-                                    if (typeof metaDataItem.id !== 'undefined') {
-                                        selectedDirective =
-                                            (directive as any).id === metaDataItem.id;
-                                    } else {
-                                        selectedDirective =
-                                            (directive as any).name === metaDataItem.name;
-                                    }
-                                    if (
-                                        selectedDirective &&
-                                        !ngModule.compodocxLinks.directives.includes(directive)
-                                    ) {
-                                        ngModule.compodocxLinks.directives.push(directive);
-                                    }
-                                    return selectedDirective;
-                                });
-
-                            case 'component':
-                                return DependenciesEngine.getComponents().some(
-                                    (component: IComponentDep) => {
-                                        let selectedComponent;
-                                        if (typeof metaDataItem.id !== 'undefined') {
-                                            selectedComponent =
-                                                (component as any).id === metaDataItem.id;
-                                        } else {
-                                            selectedComponent =
-                                                (component as any).name === metaDataItem.name;
-                                        }
-                                        if (
-                                            selectedComponent &&
-                                            !ngModule.compodocxLinks.components.includes(component)
-                                        ) {
-                                            if (!component.standalone) {
-                                                ngModule.compodocxLinks.components.push(component);
-                                            }
-                                        }
-                                        return selectedComponent;
-                                    }
-                                );
-
-                            case 'module':
-                                return DependenciesEngine.getModules().some(
-                                    module => (module as any).name === metaDataItem.name
-                                );
-
-                            case 'pipe':
-                                return DependenciesEngine.getPipes().some(pipe => {
-                                    let selectedPipe;
-                                    if (typeof metaDataItem.id !== 'undefined') {
-                                        selectedPipe = (pipe as any).id === metaDataItem.id;
-                                    } else {
-                                        selectedPipe = (pipe as any).name === metaDataItem.name;
-                                    }
-                                    if (
-                                        selectedPipe &&
-                                        !ngModule.compodocxLinks.pipes.includes(pipe)
-                                    ) {
-                                        ngModule.compodocxLinks.pipes.push(pipe);
-                                    }
-                                    return selectedPipe;
-                                });
-
-                            default:
-                                return true;
-                        }
-                    });
-                });
-                ngModule.providers = ngModule.providers.filter(provider => {
-                    return (
-                        DependenciesEngine.getInjectables().some(injectable => {
-                            const selectedInjectable = (injectable as any).name === provider.name;
-                            if (
-                                selectedInjectable &&
-                                !ngModule.compodocxLinks.injectables.includes(injectable)
-                            ) {
-                                ngModule.compodocxLinks.injectables.push(injectable);
-                            }
-                            return selectedInjectable;
-                        }) ||
-                        DependenciesEngine.getInterceptors().some(
-                            interceptor => (interceptor as any).name === provider.name
-                        )
-                    );
-                });
-                // Try fixing type undefined for each providers
-                ngModule.providers.forEach(provider => {
-                    if (
-                        DependenciesEngine.getInjectables().find(
-                            injectable => (injectable as any).name === provider.name
-                        )
-                    ) {
-                        provider.type = 'injectable';
-                    }
-                    if (
-                        DependenciesEngine.getInterceptors().find(
-                            interceptor => (interceptor as any).name === provider.name
-                        )
-                    ) {
-                        provider.type = 'interceptor';
-                    }
-                });
-                // Order things
-                ngModule.compodocxLinks.components = [...ngModule.compodocxLinks.components].sort(
-                    (a, b) => a.name.localeCompare(b.name)
-                );
-                ngModule.compodocxLinks.directives = [...ngModule.compodocxLinks.directives].sort(
-                    (a, b) => a.name.localeCompare(b.name)
-                );
-                ngModule.compodocxLinks.injectables = [...ngModule.compodocxLinks.injectables].sort(
-                    (a, b) => a.name.localeCompare(b.name)
-                );
-                ngModule.compodocxLinks.pipes = [...ngModule.compodocxLinks.pipes].sort((a, b) =>
-                    a.name.localeCompare(b.name)
-                );
-
-                ngModule.declarations = [...ngModule.declarations].sort((a, b) =>
-                    a.name.localeCompare(b.name)
-                );
-                ngModule.entryComponents = [...ngModule.entryComponents].sort((a, b) =>
-                    a.name.localeCompare(b.name)
-                );
-                ngModule.providers = [...ngModule.providers].sort((a, b) =>
-                    a.name.localeCompare(b.name)
-                );
-                ngModule.imports = [...ngModule.imports].sort((a, b) =>
-                    a.name.localeCompare(b.name)
-                );
-                ngModule.exports = [...ngModule.exports].sort((a, b) =>
-                    a.name.localeCompare(b.name)
-                );
-
-                return ngModule;
-            });
-
-            Configuration.addPage({
-                name: 'modules',
-                id: 'modules',
-                context: 'modules',
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-
-            const len = Configuration.mainData.modules.length;
-            const loop = () => {
-                if (i < len) {
-                    if (
-                        MarkdownEngine.hasNeighbourReadmeFile(
-                            Configuration.mainData.modules[i].file
-                        )
-                    ) {
-                        logger.info(
-                            ` ${Configuration.mainData.modules[i].name} has a README file, include it`
-                        );
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(
-                            Configuration.mainData.modules[i].file
-                        );
-                        Configuration.mainData.modules[i].readme = markedAcl(readme);
-                    }
-                    Configuration.addPage({
-                        path: 'modules',
-                        name: Configuration.mainData.modules[i].name,
-                        id: Configuration.mainData.modules[i].id,
-                        navTabs: this.getNavTabs(Configuration.mainData.modules[i]),
-                        context: 'module',
-                        module: Configuration.mainData.modules[i],
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    });
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
-    public preparePipes = (somePipes?) => {
-        logger.info('Prepare pipes');
-        Configuration.mainData.pipes = somePipes ? somePipes : DependenciesEngine.getPipes();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.pipes.length;
-            const loop = () => {
-                if (i < len) {
-                    const pipe = Configuration.mainData.pipes[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(pipe.file)) {
-                        logger.info(` ${pipe.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(pipe.file);
-                        pipe.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'pipes',
-                        name: pipe.name,
-                        id: pipe.id,
-                        navTabs: this.getNavTabs(pipe),
-                        context: 'pipe',
-                        pipe: pipe,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (pipe.isDuplicate) {
-                        page.name += `-${pipe.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    };
-
-    public prepareClasses = (someClasses?) => {
-        logger.info('Prepare classes');
-        Configuration.mainData.classes = someClasses
-            ? someClasses
-            : DependenciesEngine.getClasses();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.classes.length;
-            const loop = () => {
-                if (i < len) {
-                    const classe = Configuration.mainData.classes[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(classe.file)) {
-                        logger.info(` ${classe.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(classe.file);
-                        classe.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'classes',
-                        name: classe.name,
-                        id: classe.id,
-                        navTabs: this.getNavTabs(classe),
-                        context: 'class',
-                        class: classe,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (classe.isDuplicate) {
-                        page.name += `-${classe.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    };
-
-    public prepareInterfaces(someInterfaces?) {
-        logger.info('Prepare interfaces');
-        Configuration.mainData.interfaces = someInterfaces
-            ? someInterfaces
-            : DependenciesEngine.getInterfaces();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.interfaces.length;
-            const loop = () => {
-                if (i < len) {
-                    const interf = Configuration.mainData.interfaces[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(interf.file)) {
-                        logger.info(` ${interf.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(interf.file);
-                        interf.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'interfaces',
-                        name: interf.name,
-                        id: interf.id,
-                        navTabs: this.getNavTabs(interf),
-                        context: 'interface',
-                        interface: interf,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (interf.isDuplicate) {
-                        page.name += `-${interf.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
-    public prepareMiscellaneous(someMisc?) {
-        // Generate app-config page if ApplicationConfig found
-        Configuration.mainData.appConfig = DependenciesEngine.appConfig;
-        if (Configuration.mainData.appConfig?.length > 0) {
-            Configuration.addPage({
-                name: 'app-config',
-                id: 'app-config',
-                context: 'app-config',
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-        }
-
-        logger.info('Prepare miscellaneous');
-        Configuration.mainData.miscellaneous = someMisc
-            ? someMisc
-            : DependenciesEngine.getMiscellaneous();
-
-        return new Promise((resolve, _reject) => {
-            if (Configuration.mainData.miscellaneous.functions.length > 0) {
-                Configuration.addPage({
-                    path: 'miscellaneous',
-                    name: 'functions',
-                    id: 'miscellaneous-functions',
-                    context: 'miscellaneous-functions',
-                    depth: 1,
-                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                });
-            }
-            if (Configuration.mainData.miscellaneous.variables.length > 0) {
-                Configuration.addPage({
-                    path: 'miscellaneous',
-                    name: 'variables',
-                    id: 'miscellaneous-variables',
-                    context: 'miscellaneous-variables',
-                    depth: 1,
-                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                });
-            }
-            if (Configuration.mainData.miscellaneous.typealiases.length > 0) {
-                Configuration.addPage({
-                    path: 'miscellaneous',
-                    name: 'typealiases',
-                    id: 'miscellaneous-typealiases',
-                    context: 'miscellaneous-typealiases',
-                    depth: 1,
-                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                });
-            }
-            if (Configuration.mainData.miscellaneous.enumerations.length > 0) {
-                Configuration.addPage({
-                    path: 'miscellaneous',
-                    name: 'enumerations',
-                    id: 'miscellaneous-enumerations',
-                    context: 'miscellaneous-enumerations',
-                    depth: 1,
-                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                });
-            }
-
-            resolve(true);
-        });
-    }
-
-    private handleTemplateurl(component): Promise<any> {
-        const dirname = path.dirname(component.file);
-        const templatePath = path.resolve(dirname + path.sep + component.templateUrl);
-
-        if (!FileEngine.existsSync(templatePath)) {
-            const err = `Cannot read template for ${component.name}`;
-            logger.error(err);
-            return new Promise((_resolve, _reject) => {});
-        }
-
-        return FileEngine.get(templatePath).then(
-            data => (component.templateData = data),
-            err => {
-                logger.error(err);
-                return Promise.reject('');
-            }
-        );
-    }
-
-    private handleStyles(component): Promise<any> {
-        const styles = component.styles;
-        component.stylesData = '';
-        return new Promise((resolveStyles, _rejectStyles) => {
-            styles.forEach(style => {
-                component.stylesData = `${component.stylesData + style}\n`;
-            });
-            resolveStyles(true);
-        });
-    }
-
-    private handleStyleurls(component): Promise<any> {
-        const dirname = path.dirname(component.file);
-
-        const styleDataPromise = component.styleUrls.map(styleUrl => {
-            const stylePath = path.resolve(dirname + path.sep + styleUrl);
-
-            if (!FileEngine.existsSync(stylePath)) {
-                const err = `Cannot read style url ${stylePath} for ${component.name}`;
-                logger.error(err);
-                return Promise.resolve(null);
-            }
-
-            return new Promise((resolve, _reject) => {
-                FileEngine.get(stylePath).then(data => {
-                    resolve({
-                        data,
-                        styleUrl
-                    });
-                });
-            });
-        });
-
-        return Promise.all(styleDataPromise).then(
-            data => (component.styleUrlsData = data.filter(item => item !== null)),
-            err => {
-                logger.error(err);
-                return Promise.reject('');
-            }
-        );
-    }
-
-    private getNavTabs(dependency): Array<any> {
-        let navTabConfig = Configuration.mainData.navTabConfig;
-        const hasCustomNavTabConfig = navTabConfig.length !== 0;
-        navTabConfig =
-            navTabConfig.length === 0
-                ? structuredClone(COMPODOC_CONSTANTS.navTabDefinitions)
-                : navTabConfig;
-        const matchDepType = (depType: string) => {
-            return depType === 'all' || depType === dependency.type;
-        };
-
-        const navTabs = [];
-        navTabConfig.forEach(customTab => {
-            const navTab = COMPODOC_CONSTANTS.navTabDefinitions.find(t => t.id === customTab.id);
-            if (!navTab) {
-                throw new Error(`Invalid tab ID '${customTab.id}' specified in tab configuration`);
-            }
-
-            navTab.label = customTab.label;
-
-            if (hasCustomNavTabConfig) {
-                (navTab as any).custom = true;
-            }
-
-            // is tab applicable to target dependency?
-            if (-1 === navTab.depTypes.findIndex(matchDepType)) {
-                return;
-            }
-
-            // global config
-            if (customTab.id === 'tree' && Configuration.mainData.disableDomTree) {
-                return;
-            }
-            if (customTab.id === 'source' && Configuration.mainData.disableSourceCode) {
-                return;
-            }
-            if (customTab.id === 'templateData' && Configuration.mainData.disableTemplateTab) {
-                return;
-            }
-            if (customTab.id === 'styleData' && Configuration.mainData.disableStyleTab) {
-                return;
-            }
-
-            // per dependency config
-            if (customTab.id === 'readme' && !dependency.readme) {
-                return;
-            }
-            if (customTab.id === 'example' && !dependency.exampleUrls) {
-                return;
-            }
-            if (
-                customTab.id === 'templateData' &&
-                (!dependency.templateUrl || dependency.templateUrl.length === 0)
-            ) {
-                return;
-            }
-            if (
-                customTab.id === 'styleData' &&
-                (!dependency.styleUrls || dependency.styleUrls.length === 0) &&
-                (!dependency.styles || dependency.styles.length === 0)
-            ) {
-                return;
-            }
-            if (
-                customTab.id === 'theming' &&
-                (!dependency.themeTokens || dependency.themeTokens.length === 0) &&
-                !dependency.themeOverview
-            ) {
-                return;
-            }
-            if (customTab.id === 'playground') {
-                if (Configuration.mainData.disablePlaygroundTab) {
-                    return;
-                }
-                if (!dependency.playgrounds || dependency.playgrounds.length === 0) {
-                    return;
-                }
-            }
-
-            // API tab: drop it in legacy single-tab mode, or when the
-            // dependency has no member content to populate it.
-            if (customTab.id === 'api') {
-                if (!hasAnyApiSections()) {
-                    return;
-                }
-                const hasApiMembers = !!(
-                    dependency.constructorObj ||
-                    dependency.inputsClass?.length ||
-                    dependency.outputsClass?.length ||
-                    dependency.hostBindings?.length ||
-                    dependency.hostListeners?.length ||
-                    (dependency.methodsClass ?? dependency.methods)?.length ||
-                    (dependency.propertiesClass ?? dependency.properties)?.length ||
-                    dependency.indexSignatures?.length ||
-                    (dependency.accessors && Object.keys(dependency.accessors).length)
-                );
-                if (!hasApiMembers) {
-                    return;
-                }
-            }
-
-            navTabs.push(navTab);
-        });
-
-        if (navTabs.length === 0) {
-            throw new Error(`No valid navigation tabs have been defined for dependency type '${dependency.type}'. Specify \
-at least one config for the 'info' or 'source' tab in --navTabConfig.`);
-        }
-
-        return navTabs;
-    }
-
-    public prepareEntities(someEntities?) {
-        logger.info('Prepare entities');
-        Configuration.mainData.entities = someEntities
-            ? someEntities
-            : DependenciesEngine.getEntities();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.entities.length;
-            const loop = () => {
-                if (i < len) {
-                    const entity = Configuration.mainData.entities[i];
-                    const page = {
-                        path: 'entities',
-                        name: entity.name,
-                        id: entity.id,
-                        navTabs: this.getNavTabs(entity),
-                        context: 'entity',
-                        entity: entity,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (entity.isDuplicate) {
-                        page.name += `-${entity.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
-    public prepareComponents(someComponents?) {
-        logger.info('Prepare components');
-        Configuration.mainData.components = someComponents
-            ? someComponents
-            : DependenciesEngine.getComponents();
-
-        return new Promise((mainPrepareComponentResolve, _mainPrepareComponentReject) => {
-            let i = 0;
-            const len = Configuration.mainData.components.length;
-            const loop = () => {
-                if (i <= len - 1) {
-                    const component = Configuration.mainData.components[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(component.file)) {
-                        logger.info(` ${component.name} has a README file, include it`);
-                        const readmeFile = MarkdownEngine.readNeighbourReadmeFile(component.file);
-                        component.readme = markedAcl(readmeFile);
-                    }
-                    const themeResult = collectThemeTokens({
-                        entityFile: component.file,
-                        styleUrls: component.styleUrls,
-                        styles: component.styles
-                    });
-                    component.themeTokens = themeResult.tokens;
-                    component.themeStyleSources = themeResult.sources;
-                    component.themeOverview = themeResult.overview;
-                    const page = {
-                        path: 'components',
-                        name: component.name,
-                        id: component.id,
-                        navTabs: this.getNavTabs(component),
-                        context: 'component',
-                        component: component,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-
-                    if (component.isDuplicate) {
-                        page.name += `-${component.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-
-                    const componentTemplateUrlPromise = new Promise(
-                        (componentTemplateUrlResolve, componentTemplateUrlReject) => {
-                            if (component.templateUrl.length > 0) {
-                                logger.info(` ${component.name} has a templateUrl, include it`);
-                                this.handleTemplateurl(component).then(
-                                    () => {
-                                        componentTemplateUrlResolve(true);
-                                    },
-                                    e => {
-                                        logger.error(e);
-                                        componentTemplateUrlReject();
-                                    }
-                                );
-                            } else {
-                                componentTemplateUrlResolve(true);
-                            }
-                        }
-                    );
-                    const componentStyleUrlsPromise = new Promise(
-                        (componentStyleUrlsResolve, componentStyleUrlsReject) => {
-                            if (component.styleUrls.length > 0) {
-                                logger.info(` ${component.name} has styleUrls, include them`);
-                                this.handleStyleurls(component).then(
-                                    () => {
-                                        componentStyleUrlsResolve(true);
-                                    },
-                                    e => {
-                                        logger.error(e);
-                                        componentStyleUrlsReject();
-                                    }
-                                );
-                            } else {
-                                componentStyleUrlsResolve(true);
-                            }
-                        }
-                    );
-                    const componentStylesPromise = new Promise(
-                        (componentStylesResolve, componentStylesReject) => {
-                            if (component.styles.length > 0) {
-                                logger.info(` ${component.name} has styles, include them`);
-                                this.handleStyles(component).then(
-                                    () => {
-                                        componentStylesResolve(true);
-                                    },
-                                    e => {
-                                        logger.error(e);
-                                        componentStylesReject();
-                                    }
-                                );
-                            } else {
-                                componentStylesResolve(true);
-                            }
-                        }
-                    );
-
-                    Promise.all([
-                        componentTemplateUrlPromise,
-                        componentStyleUrlsPromise,
-                        componentStylesPromise
-                    ]).then(() => {
-                        i++;
-                        loop();
-                    });
-                } else {
-                    mainPrepareComponentResolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
-    public prepareDirectives(someDirectives?) {
-        logger.info('Prepare directives');
-
-        Configuration.mainData.directives = someDirectives
-            ? someDirectives
-            : DependenciesEngine.getDirectives();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.directives.length;
-            const loop = () => {
-                if (i < len) {
-                    const directive = Configuration.mainData.directives[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(directive.file)) {
-                        logger.info(` ${directive.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(directive.file);
-                        directive.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'directives',
-                        name: directive.name,
-                        id: directive.id,
-                        navTabs: this.getNavTabs(directive),
-                        context: 'directive',
-                        directive: directive,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (directive.isDuplicate) {
-                        page.name += `-${directive.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
-    public prepareInjectables(someInjectables?): Promise<void> {
-        logger.info('Prepare injectables');
-
-        Configuration.mainData.injectables = someInjectables
-            ? someInjectables
-            : DependenciesEngine.getInjectables();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.injectables.length;
-            const loop = () => {
-                if (i < len) {
-                    const injec = Configuration.mainData.injectables[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(injec.file)) {
-                        logger.info(` ${injec.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(injec.file);
-                        injec.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'injectables',
-                        name: injec.name,
-                        id: injec.id,
-                        navTabs: this.getNavTabs(injec),
-                        context: 'injectable',
-                        injectable: injec,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (injec.isDuplicate) {
-                        page.name += `-${injec.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve();
-                }
-            };
-            loop();
-        });
-    }
-
-    public prepareInterceptors(someInterceptors?): Promise<void> {
-        logger.info('Prepare interceptors');
-
-        Configuration.mainData.interceptors = someInterceptors
-            ? someInterceptors
-            : DependenciesEngine.getInterceptors();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.interceptors.length;
-            const loop = () => {
-                if (i < len) {
-                    const interceptor = Configuration.mainData.interceptors[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(interceptor.file)) {
-                        logger.info(` ${interceptor.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(interceptor.file);
-                        interceptor.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'interceptors',
-                        name: interceptor.name,
-                        id: interceptor.id,
-                        navTabs: this.getNavTabs(interceptor),
-                        context: 'interceptor',
-                        injectable: interceptor,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (interceptor.isDuplicate) {
-                        page.name += `-${interceptor.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve();
-                }
-            };
-            loop();
-        });
-    }
-
-    public prepareGuards(someGuards?): Promise<void> {
-        logger.info('Prepare guards');
-
-        Configuration.mainData.guards = someGuards ? someGuards : DependenciesEngine.getGuards();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.guards.length;
-            const loop = () => {
-                if (i < len) {
-                    const guard = Configuration.mainData.guards[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(guard.file)) {
-                        logger.info(` ${guard.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(guard.file);
-                        guard.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'guards',
-                        name: guard.name,
-                        id: guard.id,
-                        navTabs: this.getNavTabs(guard),
-                        context: 'guard',
-                        injectable: guard,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (guard.isDuplicate) {
-                        page.name += `-${guard.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve();
-                }
-            };
-            loop();
-        });
-    }
-
-    public prepareRoutes(): Promise<void> {
-        logger.info('Process routes');
-        Configuration.mainData.routes = DependenciesEngine.getRoutes();
-
-        return new Promise((resolve, reject) => {
-            Configuration.addPage({
-                name: 'routes',
-                id: 'routes',
-                context: 'routes',
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-
-            if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
-                RouterParserUtil.generateRoutesIndex(
-                    Configuration.mainData.output,
-                    Configuration.mainData.routes
-                ).then(
-                    () => {
-                        logger.info(' Routes index generated');
-                        resolve();
-                    },
-                    e => {
-                        logger.error(e);
-                        reject();
-                    }
-                );
-            } else {
-                resolve();
-            }
-        });
-    }
-
-    public prepareCoverage() {
-        logger.info('Process documentation coverage report');
-
-        return new Promise((resolve, _reject) => {
-            const report = computeDocumentationCoverage({
-                components: Configuration.mainData.components,
-                directives: Configuration.mainData.directives,
-                entities: Configuration.mainData.entities,
-                classes: Configuration.mainData.classes,
-                injectables: Configuration.mainData.injectables,
-                interfaces: Configuration.mainData.interfaces,
-                guards: Configuration.mainData.guards,
-                interceptors: Configuration.mainData.interceptors,
-                pipes: Configuration.mainData.pipes,
-                miscellaneous: {
-                    functions: Configuration.mainData.miscellaneous.functions,
-                    variables: Configuration.mainData.miscellaneous.variables,
-                    typealiases: Configuration.mainData.miscellaneous.typealiases
-                }
-            });
-
-            const coverageData = {
-                count: report.count,
-                status: report.status,
-                files: report.files
-            };
-
-            Configuration.addPage({
-                name: 'coverage',
-                id: 'coverage',
-                context: 'coverage',
-                files: coverageData.files,
-                data: coverageData,
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-            Configuration.mainData.coverageData = coverageData;
-            if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
-                HtmlEngine.generateCoverageBadge(
-                    Configuration.mainData.output,
-                    'documentation',
-                    coverageData
-                );
-            }
-
-            const filesByPercent = [...coverageData.files].sort(
-                (a, b) => a.coveragePercent - b.coveragePercent
-            );
-            const processCoveragePerFile = () => {
-                logger.info('Process documentation coverage per file');
-                logger.info('-------------------');
-
-                const overFiles = filesByPercent.filter(f => {
-                    const overTest =
-                        f.coveragePercent >= Configuration.mainData.coverageMinimumPerFile;
-                    if (overTest && !Configuration.mainData.coverageTestShowOnlyFailed) {
-                        logger.info(
-                            `${f.coveragePercent} % for file ${f.filePath} - ${f.name} - over minimum per file`
-                        );
-                    }
-                    return overTest;
-                });
-                const underFiles = filesByPercent.filter(f => {
-                    const underTest =
-                        f.coveragePercent < Configuration.mainData.coverageMinimumPerFile;
-                    if (underTest) {
-                        logger.error(
-                            `${f.coveragePercent} % for file ${f.filePath} - ${f.name} - under minimum per file`
-                        );
-                    }
-                    return underTest;
-                });
-
-                logger.info('-------------------');
-                return {
-                    overFiles: overFiles,
-                    underFiles: underFiles
-                };
-            };
-
-            let coverageTestPerFileResults;
-            if (
-                Configuration.mainData.coverageTest &&
-                !Configuration.mainData.coverageTestPerFile
-            ) {
-                // Global coverage test and not per file
-                if (coverageData.count >= Configuration.mainData.coverageTestThreshold) {
-                    logger.info(
-                        `Documentation coverage (${coverageData.count}%) is over threshold (${Configuration.mainData.coverageTestThreshold}%)`
-                    );
-                    generationPromiseResolve(true);
-                    process.exit(0);
-                } else {
-                    const message = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`;
-                    generationPromiseReject();
-                    if (Configuration.mainData.coverageTestThresholdFail) {
-                        logger.error(message);
-                        process.exit(1);
-                    } else {
-                        logger.warn(message);
-                        process.exit(0);
-                    }
-                }
-            } else if (
-                !Configuration.mainData.coverageTest &&
-                Configuration.mainData.coverageTestPerFile
-            ) {
-                coverageTestPerFileResults = processCoveragePerFile();
-                // Per file coverage test and not global
-                if (coverageTestPerFileResults.underFiles.length > 0) {
-                    const message = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
-                    generationPromiseReject();
-                    if (Configuration.mainData.coverageTestThresholdFail) {
-                        logger.error(message);
-                        process.exit(1);
-                    } else {
-                        logger.warn(message);
-                        process.exit(0);
-                    }
-                } else {
-                    logger.info(
-                        `Documentation coverage per file is over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`
-                    );
-                    generationPromiseResolve(true);
-                    process.exit(0);
-                }
-            } else if (
-                Configuration.mainData.coverageTest &&
-                Configuration.mainData.coverageTestPerFile
-            ) {
-                // Per file coverage test and global
-                coverageTestPerFileResults = processCoveragePerFile();
-                if (
-                    coverageData.count >= Configuration.mainData.coverageTestThreshold &&
-                    coverageTestPerFileResults.underFiles.length === 0
-                ) {
-                    logger.info(
-                        `Documentation coverage (${coverageData.count}%) is over threshold (${Configuration.mainData.coverageTestThreshold}%)`
-                    );
-                    logger.info(
-                        `Documentation coverage per file is over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`
-                    );
-                    generationPromiseResolve(true);
-                    process.exit(0);
-                } else if (
-                    coverageData.count >= Configuration.mainData.coverageTestThreshold &&
-                    coverageTestPerFileResults.underFiles.length > 0
-                ) {
-                    logger.info(
-                        `Documentation coverage (${coverageData.count}%) is over threshold (${Configuration.mainData.coverageTestThreshold}%)`
-                    );
-                    const message = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
-                    generationPromiseReject();
-                    if (Configuration.mainData.coverageTestThresholdFail) {
-                        logger.error(message);
-                        process.exit(1);
-                    } else {
-                        logger.warn(message);
-                        process.exit(0);
-                    }
-                } else if (
-                    coverageData.count < Configuration.mainData.coverageTestThreshold &&
-                    coverageTestPerFileResults.underFiles.length > 0
-                ) {
-                    const messageGlobal = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`,
-                        messagePerFile = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
-                    generationPromiseReject();
-                    if (Configuration.mainData.coverageTestThresholdFail) {
-                        logger.error(messageGlobal);
-                        logger.error(messagePerFile);
-                        process.exit(1);
-                    } else {
-                        logger.warn(messageGlobal);
-                        logger.warn(messagePerFile);
-                        process.exit(0);
-                    }
-                } else {
-                    const message = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`,
-                        messagePerFile = `Documentation coverage per file is over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
-                    generationPromiseReject();
-                    if (Configuration.mainData.coverageTestThresholdFail) {
-                        logger.error(message);
-                        logger.info(messagePerFile);
-                        process.exit(1);
-                    } else {
-                        logger.warn(message);
-                        logger.info(messagePerFile);
-                        process.exit(0);
-                    }
-                }
-            } else {
-                resolve(true);
-            }
-        });
-    }
-
-    /**
-     * Walk every entity kind that may carry `@playground fileRef` blocks
-     * (components/directives/injectables/etc) and resolve each fileRef into
-     * a `FileRefBundle` keyed by `${entityName}:${blockIndex}`. Read failures
-     * surface as `logger.warn` and skip that block — the manifest builder
-     * then falls back to its "Project assembly failed" path. Inline-only
-     * playgrounds never enter this loop.
-     */
-    public resolvePlaygroundFiles(): void {
-        const fsReader: FsReader = {
-            readFile: (p: string): string | null => {
-                try {
-                    return fs.readFileSync(p, 'utf8');
-                } catch {
-                    return null;
-                }
-            },
-            exists: (p: string): boolean => {
-                try {
-                    return fs.existsSync(p);
-                } catch {
-                    return false;
-                }
-            }
-        };
-
-        const out: Record<string, FileRefBundle> = {};
-        const entitySources = [
-            Configuration.mainData.components,
-            Configuration.mainData.directives,
-            Configuration.mainData.injectables,
-            Configuration.mainData.guards,
-            Configuration.mainData.interceptors,
-            Configuration.mainData.pipes,
-            Configuration.mainData.classes,
-            Configuration.mainData.interfaces,
-            Configuration.mainData.entities
-        ];
-
-        for (const list of entitySources) {
-            if (!Array.isArray(list)) {
-                continue;
-            }
-            for (const entity of list) {
-                const playgrounds = entity?.playgrounds as
-                    | Array<{ title?: string; fileRef?: string }>
-                    | undefined;
-                if (!playgrounds || playgrounds.length === 0) {
-                    continue;
-                }
-                for (let i = 0; i < playgrounds.length; i++) {
-                    const block = playgrounds[i];
-                    if (!block?.fileRef) {
-                        continue;
-                    }
-                    const hostFile = entity.file;
-                    if (typeof hostFile !== 'string' || hostFile.length === 0) {
-                        logger.warn(
-                            `Playground "${block.title ?? '<untitled>'}" on ${entity.name}: missing host file path`
-                        );
-                        continue;
-                    }
-                    const result = readFileRef(block.fileRef, hostFile, fsReader);
-                    if (!result.ok) {
-                        logger.warn(
-                            `Playground "${block.title ?? '<untitled>'}" on ${entity.name}: ${result.error}`
-                        );
-                        continue;
-                    }
-                    out[`${entity.name}:${i}`] = result.value;
-                }
-            }
-        }
-
-        Configuration.mainData.playgroundFiles = out;
-    }
-
-    public prepareUnitTestCoverage() {
-        logger.info('Process unit test coverage report');
-        return new Promise((resolve, _reject) => {
-            const coverageData: CoverageData = Configuration.mainData.coverageData;
-            const coverageFiles = coverageData.files as ReadonlyArray<CoverageFile> | undefined;
-            if (!coverageFiles) {
-                logger.warn('Missing documentation coverage data');
-            }
-
-            const fileDat = FileEngine.getSync(Configuration.mainData.unitTestCoverage);
-            if (!fileDat) {
-                return Promise.reject('Error reading unit test coverage file');
-            }
-            const unitTestSummary = JSON.parse(fileDat) as Record<string, unknown>;
-
-            const report = computeUnitTestCoverage(unitTestSummary, coverageFiles);
-            const unitTestData: Record<string, unknown> = {
-                total: report.total,
-                files: report.files,
-                idColumn: report.idColumn
-            };
-            Configuration.mainData.unitTestData = unitTestData;
-            Configuration.addPage({
-                name: 'unit-test',
-                id: 'unit-test',
-                context: 'unit-test',
-                files: report.files,
-                data: unitTestData,
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-
-            if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
-                const keysToGet = ['statements', 'branches', 'functions', 'lines'] as const;
-                keysToGet.forEach(key => {
-                    const metric = report.total[key];
-                    if (metric) {
-                        HtmlEngine.generateCoverageBadge(Configuration.mainData.output, key, {
-                            count: metric.coveragePercent,
-                            status: metric.status
-                        });
-                    }
-                });
-            }
-            resolve(true);
-        });
-    }
-
-    private processPage(page): Promise<void> {
-        logger.info('Process page', page.name);
-
-        const htmlData = HtmlEngine.render(Configuration.mainData, page);
-        let finalPath = Configuration.mainData.output;
-
-        if (Configuration.mainData.output.lastIndexOf('/') === -1) {
-            finalPath += '/';
-        }
-        if (page.path) {
-            finalPath += `${page.path}/`;
-        }
-
-        if (page.filename) {
-            finalPath += `${page.filename}.html`;
-        } else {
-            finalPath += `${page.name}.html`;
-        }
-
-        FileEngine.writeSync(finalPath, htmlData);
-        return Promise.resolve();
-    }
-    /**
-     * Build the standalone component dependency graph from all components
-     * that have standalone: true and imports.
-     */
-    private buildDependencyGraph() {
-        const components = (Configuration.mainData.components as any[]) ?? [];
-        const directives = (Configuration.mainData.directives as any[]) ?? [];
-        const pipes = (Configuration.mainData.pipes as any[]) ?? [];
-        const modules = (Configuration.mainData.modules as any[]) ?? [];
-        const injectables = (Configuration.mainData.injectables as any[]) ?? [];
-
-        // Build a name→type+url lookup for all known entities
-        const entityMap = new Map<string, { type: string; url?: string }>();
-        for (const c of components) {
-            entityMap.set(c.name, { type: 'component', url: `./components/${c.name}.html` });
-        }
-        for (const d of directives) {
-            entityMap.set(d.name, { type: 'directive', url: `./directives/${d.name}.html` });
-        }
-        for (const p of pipes) {
-            entityMap.set(p.name, { type: 'pipe', url: `./pipes/${p.name}.html` });
-        }
-        for (const m of modules) {
-            entityMap.set(m.name, { type: 'module', url: `./modules/${m.name}.html` });
-        }
-        for (const s of injectables) {
-            entityMap.set(s.name, { type: 'injectable', url: `./injectables/${s.name}.html` });
-        }
-
-        const nodeSet = new Set<string>();
-        const edges: Array<{ source: string; target: string }> = [];
-
-        for (const comp of components) {
-            if (!comp.standalone || !comp.imports?.length) {
-                continue;
-            }
-            nodeSet.add(comp.name);
-            for (const imp of comp.imports) {
-                const impName = typeof imp === 'string' ? imp : imp.name;
-                if (!impName) {
-                    continue;
-                }
-                nodeSet.add(impName);
-                edges.push({ source: comp.name, target: impName });
-            }
-        }
-
-        const nodes = Array.from(nodeSet).map(name => {
-            const info = entityMap.get(name);
-            return {
-                name,
-                type: info?.type ?? 'module',
-                url: info?.url
-            };
-        });
-
-        Configuration.mainData.dependencyGraph = { nodes, edges };
-    }
-
-    private buildEntityIndex() {
-        const index = buildEntityIndex(
-            Configuration.mainData as unknown as Record<string, unknown>
-        );
-        Configuration.mainData.entityIndex = index;
-    }
-
-    public processPages() {
-        this.buildDependencyGraph();
-        this.buildEntityIndex();
-        Configuration.mainData.generatedAt = new Date().toISOString();
-        const pages = [...Configuration.pages].sort((a, b) => a.name.localeCompare(b.name));
-
-        logger.info('Process pages');
-        Promise.all(pages.map(page => this.processPage(page)))
-            .then(() => {
-                const callbacksAfterGenerateSearchIndexJson = () => {
-                    if (Configuration.mainData.additionalPages.length > 0) {
-                        this.processAdditionalPages();
-                    } else {
-                        if (Configuration.mainData.assetsFolder !== '') {
-                            this.processAssetsFolder();
-                        }
-                        this.processResources();
-                    }
-                };
-                callbacksAfterGenerateSearchIndexJson();
-            })
-            .catch(e => {
-                logger.error(e);
-            });
-    }
-
-    public processAdditionalPages() {
-        logger.info('Process additional pages');
-        const pages = Configuration.mainData.additionalPages;
-        Promise.all(
-            pages.map(page => {
-                if (page.children.length > 0) {
-                    return Promise.all([
-                        this.processPage(page),
-                        ...page.children.map(childPage => this.processPage(childPage))
-                    ]);
-                } else {
-                    return this.processPage(page);
-                }
-            })
-        )
-            .then(() => {
-                if (Configuration.mainData.assetsFolder !== '') {
-                    this.processAssetsFolder();
-                }
-                this.processResources();
-            })
-            .catch(e => {
-                logger.error(e);
-                return Promise.reject(e);
-            });
-    }
-
-    public processAssetsFolder(): void {
-        logger.info('Copy assets folder');
-
-        if (!FileEngine.existsSync(Configuration.mainData.assetsFolder)) {
-            logger.error(
-                `Provided assets folder ${Configuration.mainData.assetsFolder} did not exist`
-            );
-        } else {
-            let finalOutput = Configuration.mainData.output;
-
-            const testOutputDir = Configuration.mainData.output.match(cwd);
-
-            if (testOutputDir && testOutputDir.length > 0) {
-                finalOutput = Configuration.mainData.output.replace(cwd + path.sep, '');
-            }
-
-            const destination = path.join(
-                finalOutput,
-                path.basename(Configuration.mainData.assetsFolder)
-            );
-            fs.copy(
-                path.resolve(Configuration.mainData.assetsFolder),
-                path.resolve(destination),
-                err => {
-                    if (err) {
-                        logger.error('Error during resources copy ', err);
-                    }
-                }
-            );
-        }
-    }
-
-    public processResources() {
-        logger.info('Copy main resources');
-
-        const onComplete = () => {
-            // Run Pagefind search indexing after all HTML files are written
-            if (!Configuration.mainData.disableSearch) {
-                runPagefindIndex(Configuration.mainData.output);
-            }
-
-            // Multi-version: append/update this version's entry in
-            // <versionsRoot>/versions.json. Runs after Pagefind so an
-            // indexing failure doesn't leave a stale manifest behind. The
-            // manifest stores a URL-relative path with a trailing slash
-            // (the switcher widget concatenates it with the per-page tail).
-            if (Configuration.mainData.multiVersion && Configuration.mainData.versionsRoot) {
-                try {
-                    updateVersionsManifest({
-                        versionsRoot: Configuration.mainData.versionsRoot,
-                        label: Configuration.mainData.versionLabel,
-                        path: `${Configuration.mainData.versionLabel}/`
-                    });
-                } catch (err) {
-                    logger.error(`Failed to update versions.json: ${(err as Error).message}`);
-                    process.exit(1);
-                }
-            }
-
-            logger.info(
-                'Documentation generated in ' +
-                    Configuration.mainData.output +
-                    ' in ' +
-                    this.getElapsedTime() +
-                    ' seconds using ' +
-                    Configuration.mainData.theme +
-                    ' theme'
-            );
-            if (Configuration.mainData.serve) {
-                logger.info(
-                    `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${Configuration.mainData.port}`
-                );
-                this.serveAndStartWatch(Configuration.mainData.output);
-            } else {
-                generationPromiseResolve(true);
-                this.endCallback();
-            }
-        };
-
-        let finalOutput = Configuration.mainData.output;
-
-        const testOutputDir = Configuration.mainData.output.match(cwd);
-
-        if (testOutputDir && testOutputDir.length > 0) {
-            finalOutput = Configuration.mainData.output.replace(cwd + path.sep, '');
-        }
-
-        fs.copy(
-            path.resolve(`${__dirname}/../src/resources/`),
-            path.resolve(finalOutput),
-            errorCopy => {
-                if (errorCopy) {
-                    logger.error('Error during resources copy ', errorCopy);
-                } else {
-                    const extThemePromise = new Promise((extThemeResolve, extThemeReject) => {
-                        if (Configuration.mainData.customThemePath) {
-                            fs.copy(
-                                Configuration.mainData.customThemePath,
-                                path.resolve(`${finalOutput}/styles/custom.css`),
-                                errorCopyTheme => {
-                                    if (errorCopyTheme) {
-                                        logger.error(
-                                            'Error during custom theme copy ',
-                                            errorCopyTheme
-                                        );
-                                        extThemeReject();
-                                    } else {
-                                        logger.info('Custom theme copy succeeded');
-                                        extThemeResolve(true);
-                                    }
-                                }
-                            );
-                        } else if (Configuration.mainData.extTheme) {
-                            fs.copy(
-                                path.resolve(cwd + path.sep + Configuration.mainData.extTheme),
-                                path.resolve(`${finalOutput}/styles/`),
-                                errorCopyTheme => {
-                                    if (errorCopyTheme) {
-                                        logger.error(
-                                            'Error during external styling theme copy ',
-                                            errorCopyTheme
-                                        );
-                                        extThemeReject();
-                                    } else {
-                                        logger.info('External styling theme copy succeeded');
-                                        extThemeResolve(true);
-                                    }
-                                }
-                            );
-                        } else {
-                            extThemeResolve(true);
-                        }
-                    });
-
-                    const customFaviconPromise = new Promise(
-                        (customFaviconResolve, customFaviconReject) => {
-                            if (Configuration.mainData.customFavicon !== '') {
-                                logger.info(`Custom favicon supplied`);
-                                fs.copy(
-                                    path.resolve(
-                                        cwd + path.sep + Configuration.mainData.customFavicon
-                                    ),
-                                    path.resolve(`${finalOutput}/images/favicon.ico`),
-                                    errorCopyFavicon => {
-                                        // tslint:disable-line
-                                        if (errorCopyFavicon) {
-                                            logger.error(
-                                                'Error during resources copy of favicon',
-                                                errorCopyFavicon
-                                            );
-                                            customFaviconReject();
-                                        } else {
-                                            logger.info('External custom favicon copy succeeded');
-                                            customFaviconResolve(true);
-                                        }
-                                    }
-                                );
-                            } else {
-                                customFaviconResolve(true);
-                            }
-                        }
-                    );
-
-                    const customLogoPromise = new Promise((customLogoResolve, customLogoReject) => {
-                        if (Configuration.mainData.customLogo !== '') {
-                            logger.info(`Custom logo supplied`);
-                            fs.copy(
-                                path.resolve(cwd + path.sep + Configuration.mainData.customLogo),
-                                path.resolve(
-                                    finalOutput +
-                                        '/images/' +
-                                        Configuration.mainData.customLogo.split('/').pop()
-                                ),
-                                errorCopyLogo => {
-                                    // tslint:disable-line
-                                    if (errorCopyLogo) {
-                                        logger.error(
-                                            'Error during resources copy of logo',
-                                            errorCopyLogo
-                                        );
-                                        customLogoReject();
-                                    } else {
-                                        logger.info('External custom logo copy succeeded');
-                                        customLogoResolve(true);
-                                    }
-                                }
-                            );
-                        } else {
-                            customLogoResolve(true);
-                        }
-                    });
-
-                    Promise.all([extThemePromise, customFaviconPromise, customLogoPromise]).then(
-                        () => {
-                            onComplete();
-                        }
-                    );
-                }
-            }
-        );
     }
 
     /**
@@ -2505,104 +763,6 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
      */
     private getElapsedTime() {
         return (Date.now() - startTime.valueOf()) / 1000;
-    }
-
-    public processGraphs() {
-        if (Configuration.mainData.disableGraph) {
-            logger.info('Graph generation disabled');
-            this.processPages();
-        } else {
-            logger.info('Process main graph');
-            const modules = Configuration.mainData.modules;
-            let i = 0;
-            const len = modules.length;
-            const loop = () => {
-                if (i <= len - 1) {
-                    logger.info('Process module graph ', modules[i].name);
-                    let finalPath = Configuration.mainData.output;
-                    if (Configuration.mainData.output.lastIndexOf('/') === -1) {
-                        finalPath += '/';
-                    }
-                    finalPath += `modules/${modules[i].name}`;
-                    const _rawModule = DependenciesEngine.getRawModule(modules[i].name);
-                    if (
-                        _rawModule.declarations.length > 0 ||
-                        _rawModule.bootstrap.length > 0 ||
-                        _rawModule.imports.length > 0 ||
-                        _rawModule.exports.length > 0 ||
-                        _rawModule.providers.length > 0
-                    ) {
-                        NgdEngine.renderGraph(
-                            modules[i].file,
-                            finalPath,
-                            'f',
-                            modules[i].name
-                        ).then(
-                            () => {
-                                NgdEngine.readGraph(
-                                    path.resolve(`${finalPath + path.sep}dependencies.svg`),
-                                    modules[i].name
-                                ).then(
-                                    data => {
-                                        modules[i].graph = data;
-                                        i++;
-                                        loop();
-                                    },
-                                    err => {
-                                        logger.error('Error during graph read: ', err);
-                                    }
-                                );
-                            },
-                            errorMessage => {
-                                logger.error(errorMessage);
-                            }
-                        );
-                    } else {
-                        i++;
-                        loop();
-                    }
-                } else {
-                    this.processPages();
-                }
-            };
-            let finalMainGraphPath = Configuration.mainData.output;
-            if (finalMainGraphPath.lastIndexOf('/') === -1) {
-                finalMainGraphPath += '/';
-            }
-            finalMainGraphPath += 'graph';
-            NgdEngine.init(path.resolve(finalMainGraphPath));
-
-            NgdEngine.renderGraph(
-                Configuration.mainData.tsconfig,
-                path.resolve(finalMainGraphPath),
-                'p'
-            ).then(
-                () => {
-                    NgdEngine.readGraph(
-                        path.resolve(`${finalMainGraphPath + path.sep}dependencies.svg`),
-                        'Main graph'
-                    ).then(
-                        data => {
-                            Configuration.mainData.mainGraph = data;
-                            loop();
-                        },
-                        err => {
-                            logger.error('Error during main graph reading : ', err);
-                            Configuration.mainData.disableMainGraph = true;
-                            loop();
-                        }
-                    );
-                },
-                err => {
-                    logger.error(
-                        'Ooops error during main graph generation, moving on next part with main graph disabled : ',
-                        err
-                    );
-                    Configuration.mainData.disableMainGraph = true;
-                    loop();
-                }
-            );
-        }
     }
 
     public serveAndStartWatch(folder: string): void {
@@ -2620,7 +780,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         if (Configuration.mainData.watch && !this.isWatching) {
             if (typeof this.files === 'undefined') {
                 logger.error('No sources files available, please use -p flag');
-                generationPromiseReject();
+                rejectGenerationPromise();
                 process.exit(1);
             } else {
                 this.runWatch();
