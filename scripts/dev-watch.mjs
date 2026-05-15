@@ -111,6 +111,10 @@ const generateFixture = () => {
     if (args.search !== true && args.search !== 'true') {
         cliArgs.push('--disableSearch');
     }
+    const fixtureAssets = resolve(root, `test/fixtures/${fixture}/assets`);
+    if (existsSync(fixtureAssets)) {
+        cliArgs.push('-a', fixtureAssets);
+    }
     return run('./bin/index-cli.js', cliArgs, 'docs', c.green);
 };
 

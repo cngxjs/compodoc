@@ -38,6 +38,10 @@ import {
  * ```
  *
  * @since 2.0.0
+ *
+ * <example-url>../assets/signal-card-short.html</example-url>
+ * <example-url>../assets/signal-card-tall.html</example-url>
+ * <example-url>../assets/signal-card-medium.html</example-url>
  */
 @Component({
     selector: 'app-signal-card',

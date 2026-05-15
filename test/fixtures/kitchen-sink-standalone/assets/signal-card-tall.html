@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Signal Card — tall example</title>
+        <style>
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: system-ui, sans-serif;
+            }
+            body {
+                padding: 16px;
+                background: #fff8f0;
+            }
+            .stack {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .card {
+                border: 1px solid #ffd3a8;
+                border-radius: 8px;
+                background: #fff;
+                padding: 16px 20px;
+            }
+            h2 {
+                margin: 0 0 8px;
+                font-size: 1rem;
+            }
+            p {
+                margin: 0 0 8px;
+                color: #5b3f1f;
+            }
+            code {
+                background: #fff1d6;
+                padding: 1px 6px;
+                border-radius: 4px;
+                font-size: 0.85rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="stack">
+            <article class="card">
+                <h2>Tall example — variant: filled</h2>
+                <p>Use <code>[title]</code> to set the heading text.</p>
+                <p>Use <code>[(expanded)]</code> for two-way collapse state.</p>
+            </article>
+            <article class="card">
+                <h2>Tall example — variant: outlined</h2>
+                <p>Outlined cards add a coloured border instead of a fill.</p>
+                <p>Pair them with <code>signal()</code> for reactive state.</p>
+            </article>
+            <article class="card">
+                <h2>Tall example — variant: elevated</h2>
+                <p>Elevated cards lift off the surface using box-shadow.</p>
+                <p>They work well in dense dashboards as primary cards.</p>
+            </article>
+            <article class="card">
+                <h2>Tall example — content slot</h2>
+                <p>The default <code>ng-content</code> slot renders the body.</p>
+                <p>Named slots via <code>contentChild()</code> are supported too.</p>
+            </article>
+        </div>
+    </body>
+</html>
