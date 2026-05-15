@@ -38,6 +38,7 @@ describe('ClassHelper', () => {
         classHelper = new ClassHelper(typeChecker);
         // Replace the jsdocParserUtil with our stub
         (classHelper as any).jsdocParserUtil = jsdocParserStub;
+        (classHelper as any).memberVisitor.jsdocParserUtil = jsdocParserStub;
 
         // Mock the utility functions
         vi.spyOn(nodeUtil, 'nodeHasDecorator').mockImplementation((node: any) => {
@@ -382,7 +383,10 @@ describe('ClassHelper', () => {
                 end: 20
             } as any;
 
-            const result = (classHelper as any).visitProperty(property, mockSourceFile);
+            const result = (classHelper as any).memberVisitor.visitProperty(
+                property,
+                mockSourceFile
+            );
 
             expect(result.name).toBe('testProp');
             expect(result.type).toBe('string');
@@ -401,7 +405,10 @@ describe('ClassHelper', () => {
                 end: 20
             } as any;
 
-            const result = (classHelper as any).visitProperty(property, mockSourceFile);
+            const result = (classHelper as any).memberVisitor.visitProperty(
+                property,
+                mockSourceFile
+            );
 
             expect(result.optional).toBe(true);
         });
@@ -418,7 +425,10 @@ describe('ClassHelper', () => {
                 end: 20
             } as any;
 
-            const result = (classHelper as any).visitProperty(property, mockSourceFile);
+            const result = (classHelper as any).memberVisitor.visitProperty(
+                property,
+                mockSourceFile
+            );
 
             expect(result.modifierKind).toContain(SyntaxKind.PrivateKeyword);
         });
@@ -435,7 +445,10 @@ describe('ClassHelper', () => {
                 end: 20
             } as any;
 
-            const result = (classHelper as any).visitProperty(property, mockSourceFile);
+            const result = (classHelper as any).memberVisitor.visitProperty(
+                property,
+                mockSourceFile
+            );
 
             expect(result.modifierKind).toContain(SyntaxKind.PrivateKeyword);
         });
@@ -462,7 +475,10 @@ describe('ClassHelper', () => {
                 end: 20
             } as any;
 
-            const result = (classHelper as any).visitMethodDeclaration(method, mockSourceFile);
+            const result = (classHelper as any).memberVisitor.visitMethodDeclaration(
+                method,
+                mockSourceFile
+            );
 
             expect(result.name).toBe('testMethod');
             expect(result.returnType).toBe('void');
@@ -490,7 +506,10 @@ describe('ClassHelper', () => {
                 end: 20
             } as any;
 
-            const result = (classHelper as any).visitMethodDeclaration(method, mockSourceFile);
+            const result = (classHelper as any).memberVisitor.visitMethodDeclaration(
+                method,
+                mockSourceFile
+            );
 
             expect(result.args).toHaveLength(1);
             expect(result.args[0].name).toBe('param1');
@@ -511,7 +530,10 @@ describe('ClassHelper', () => {
                 end: 20
             } as any;
 
-            const result = (classHelper as any).visitMethodDeclaration(method, mockSourceFile);
+            const result = (classHelper as any).memberVisitor.visitMethodDeclaration(
+                method,
+                mockSourceFile
+            );
 
             expect(result.optional).toBe(true);
         });
@@ -529,7 +551,10 @@ describe('ClassHelper', () => {
                 end: 20
             } as any;
 
-            const result = (classHelper as any).visitMethodDeclaration(method, mockSourceFile);
+            const result = (classHelper as any).memberVisitor.visitMethodDeclaration(
+                method,
+                mockSourceFile
+            );
 
             expect(result.typeParameters).toHaveLength(1);
             expect(result.typeParameters[0]).toBe('T');
@@ -546,7 +571,7 @@ describe('ClassHelper', () => {
                 initializer: undefined
             } as any;
 
-            const result = (classHelper as any).visitArgument(param);
+            const result = (classHelper as any).memberVisitor.visitArgument(param);
 
             expect(result.name).toBe('param1');
             expect(result.type).toBe('string');
@@ -563,7 +588,7 @@ describe('ClassHelper', () => {
                 initializer: undefined
             } as any;
 
-            const result = (classHelper as any).visitArgument(param);
+            const result = (classHelper as any).memberVisitor.visitArgument(param);
 
             expect(result.optional).toBe(true);
         });
@@ -577,7 +602,7 @@ describe('ClassHelper', () => {
                 initializer: undefined
             } as any;
 
-            const result = (classHelper as any).visitArgument(param);
+            const result = (classHelper as any).memberVisitor.visitArgument(param);
 
             expect(result.dotDotDotToken).toBe(true);
         });
@@ -591,7 +616,7 @@ describe('ClassHelper', () => {
                 initializer: { getText: () => '"default"' }
             } as any;
 
-            const result = (classHelper as any).visitArgument(param);
+            const result = (classHelper as any).memberVisitor.visitArgument(param);
 
             expect(result.defaultValue).toBe('"default"');
         });
@@ -621,7 +646,7 @@ describe('ClassHelper', () => {
                 }
             } as any;
 
-            const result = (classHelper as any).visitInputAndHostBinding(
+            const result = (classHelper as any).memberVisitor.visitInputAndHostBinding(
                 property,
                 decorator,
                 mockSourceFile
@@ -653,7 +678,7 @@ describe('ClassHelper', () => {
                 }
             } as any;
 
-            const result = (classHelper as any).visitInputAndHostBinding(
+            const result = (classHelper as any).memberVisitor.visitInputAndHostBinding(
                 property,
                 decorator,
                 mockSourceFile
@@ -690,7 +715,7 @@ describe('ClassHelper', () => {
                 }
             } as any;
 
-            const result = (classHelper as any).visitInputAndHostBinding(
+            const result = (classHelper as any).memberVisitor.visitInputAndHostBinding(
                 property,
                 decorator,
                 mockSourceFile
@@ -730,7 +755,11 @@ describe('ClassHelper', () => {
                 }
             } as any;
 
-            const result = (classHelper as any).visitOutput(property, decorator, mockSourceFile);
+            const result = (classHelper as any).memberVisitor.visitOutput(
+                property,
+                decorator,
+                mockSourceFile
+            );
 
             expect(result.name).toBe('outputProp');
             expect(result.type).toBe('EventEmitter');
@@ -757,7 +786,11 @@ describe('ClassHelper', () => {
                 }
             } as any;
 
-            const result = (classHelper as any).visitOutput(property, decorator, mockSourceFile);
+            const result = (classHelper as any).memberVisitor.visitOutput(
+                property,
+                decorator,
+                mockSourceFile
+            );
 
             expect(result.name).toBe('externalOutput');
         });
@@ -786,7 +819,7 @@ describe('ClassHelper', () => {
                 }
             } as any;
 
-            const result = (classHelper as any).visitHostListener(
+            const result = (classHelper as any).memberVisitor.visitHostListener(
                 property,
                 decorator,
                 mockSourceFile
@@ -822,7 +855,7 @@ describe('ClassHelper', () => {
                 }
             } as any;
 
-            const result = (classHelper as any).visitHostListener(
+            const result = (classHelper as any).memberVisitor.visitHostListener(
                 property,
                 decorator,
                 mockSourceFile
