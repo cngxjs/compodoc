@@ -685,9 +685,9 @@ describe('CLI simple generation', () => {
         });
         afterAll(() => tmp.clean(distFolder));
 
-        it('should not contain compodoc logo', () => {
+        it('should not contain generator footer', () => {
             index = read(`${distFolder}/index.html`);
-            expect(index).to.not.contain('src="./images/compodoc-vectorise.svg"');
+            expect(index).to.not.contain('class="copyright"');
         });
     });
 

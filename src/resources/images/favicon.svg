@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect class="bg" width="32" height="32" rx="6"/>
+  <text x="16" y="22" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif"
+        font-size="16" font-weight="700">
+    <tspan class="letter-c">c</tspan><tspan class="letter-x">x</tspan>
+  </text>
+  <style>
+    .bg { fill: #1c1c1c; }
+    .letter-c { fill: #f5f5f5; }
+    .letter-x { fill: hsl(32, 100%, 62%); }
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #f5f5f5; }
+      .letter-c { fill: #1c1c1c; }
+      .letter-x { fill: hsl(25, 95%, 48%); }
+    }
+  </style>
+</svg>

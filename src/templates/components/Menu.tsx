@@ -915,28 +915,14 @@ export const Menu = (props: MenuProps): string => {
                         <li class="copyright">
                             {t('generated-using')}{' '}
                             <a
-                                href="https://compodoc.app/"
+                                href="https://compodocx.dev/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                {d.theme &&
-                                ['readthedocs', 'vagrant', 'postmark'].some((t: string) =>
-                                    d.theme.includes(t)
-                                ) ? (
-                                    <img
-                                        data-src="images/compodoc-vectorise-inverted.png"
-                                        class="cdx-logo-img"
-                                        data-type="compodoc-logo"
-                                        alt="Compodoc logo"
-                                    />
-                                ) : (
-                                    <img
-                                        data-src="images/compodoc-vectorise.png"
-                                        class="cdx-logo-img"
-                                        data-type="compodoc-logo"
-                                        alt="Compodoc logo"
-                                    />
-                                )}
+                                <span class="cdx-logo-placeholder">
+                                    <span class="cdx-logo-text">compodoc</span>
+                                    <span class="text-ember font-bold">x</span>
+                                </span>
                             </a>
                         </li>
                     </>

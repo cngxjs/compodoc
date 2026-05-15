@@ -50,10 +50,10 @@ const PageGlobals = (props: { data: PageData }) => {
     return (
         <script>
             {`
-                var COMPODOC_CURRENT_PAGE_DEPTH = ${data.depth};
-                var COMPODOC_CURRENT_PAGE_CONTEXT = '${data.context}';
-                var COMPODOC_CURRENT_PAGE_URL = '${pageUrl}';
-                ${!data.disableSearch ? `var MAX_SEARCH_RESULTS = ${data.maxSearchResults ?? 15};` : ''}
+                window.COMPODOC_CURRENT_PAGE_DEPTH = ${data.depth};
+                window.COMPODOC_CURRENT_PAGE_CONTEXT = '${data.context}';
+                window.COMPODOC_CURRENT_PAGE_URL = '${pageUrl}';
+                ${!data.disableSearch ? `window.MAX_SEARCH_RESULTS = ${data.maxSearchResults ?? 15};` : ''}
             `}
         </script>
     );
@@ -146,7 +146,11 @@ const CommandPalette = () =>
     ) as string;
 
 /** Built-in themes with display name and primary swatch color */
-const BUILTIN_THEMES: ReadonlyArray<{ id: string; name: string; swatch: string }> = [
+const BUILTIN_THEMES: ReadonlyArray<{
+    id: string;
+    name: string;
+    swatch: string;
+}> = [
     { id: 'default', name: 'Default', swatch: 'hsl(0 0% 15%)' },
     { id: 'ocean', name: 'Ocean', swatch: 'hsl(200 60% 42%)' },
     { id: 'ember', name: 'Ember', swatch: 'hsl(24 90% 52%)' },
@@ -295,7 +299,7 @@ export const Layout = (props: LayoutProps): string => {
                 <title>{pageTitle(data)}</title>
                 <meta name="description" content="" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <link rel="icon" type="image/x-icon" href={r('images/favicon.ico')} />
+                <link rel="icon" type="image/svg+xml" href={r('images/favicon.svg')} />
                 <script>{`(function(){try{var d=localStorage.getItem('compodocx_darkmode-state')||localStorage.getItem('compodoc_darkmode-state');var dark=d!==null?d==='true':window.matchMedia('(prefers-color-scheme:dark)').matches;if(dark)document.documentElement.classList.add('dark');if(/Mac|iPhone|iPad/.test(navigator.platform||''))document.documentElement.classList.add('cdx-mac');if(location.hash&&location.hash!=='#')document.documentElement.classList.add('cdx-hash-pending')}catch(e){}}())`}</script>
                 <style>{`
                     .menu .collapse.in { display: block !important; visibility: visible !important; }

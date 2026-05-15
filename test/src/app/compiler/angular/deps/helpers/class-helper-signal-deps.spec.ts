@@ -15,12 +15,14 @@ describe('ClassHelper > signalDeps extraction', () => {
     beforeEach(() => {
         project = new Project({ useInMemoryFileSystem: true });
         classHelper = new ClassHelper({} as ts.TypeChecker);
-        (classHelper as any).jsdocParserUtil = {
+        const jsdocStub = {
             getMainCommentOfNode: vi.fn().mockReturnValue(''),
             getJsdocTagsOfNode: vi.fn().mockReturnValue([]),
             parseComment: vi.fn().mockReturnValue(''),
             getJSDocs: vi.fn().mockReturnValue([])
         };
+        (classHelper as any).jsdocParserUtil = jsdocStub;
+        (classHelper as any).memberVisitor.jsdocParserUtil = jsdocStub;
         vi.spyOn(nodeUtil, 'nodeHasDecorator').mockReturnValue(false);
         vi.spyOn(nodeUtil, 'getNodeDecorators').mockReturnValue([] as any);
     });
@@ -33,7 +35,7 @@ describe('ClassHelper > signalDeps extraction', () => {
         const sf = project.createSourceFile(`test-${Date.now()}.ts`, `class TestClass { ${code} }`);
         const classDec = sf.getClasses()[0];
         const prop = classDec.getProperty(propName)!;
-        return (classHelper as any).visitProperty(prop.compilerNode, sf.compilerNode);
+        return (classHelper as any).memberVisitor.visitProperty(prop.compilerNode, sf.compilerNode);
     }
 
     it('should extract this.x() calls from a computed body', () => {
