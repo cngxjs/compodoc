@@ -100,6 +100,11 @@ export class MarkdownEngine {
         return this.markedInstance(FileEngine.getSync(process.cwd() + path.sep + filepath));
     }
 
+    public getTraditionalMarkdownSyncWithRaw(filepath: string): { html: string; raw: string } {
+        const raw = FileEngine.getSync(process.cwd() + path.sep + filepath);
+        return { html: this.markedInstance(raw), raw };
+    }
+
     public readNeighbourReadmeFile(file: string): string {
         const dirname = path.dirname(file);
         const readmeFile = `${dirname + path.sep + path.basename(file, '.ts')}.md`;

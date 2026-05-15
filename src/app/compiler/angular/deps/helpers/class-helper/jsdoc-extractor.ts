@@ -64,6 +64,9 @@ export class JsdocExtractor {
                 case 'breaking':
                     result.breaking = comment.split('\n')[0].trim();
                     break;
+                case 'aiGenerated':
+                    result.aiGenerated = comment.split('\n')[0].trim() || true;
+                    break;
                 case 'route':
                     result.route = comment.split('\n')[0].trim();
                     break;

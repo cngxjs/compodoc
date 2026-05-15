@@ -41,6 +41,7 @@ export class DirectiveDepFactory {
             beta: IO.beta || false,
             since: IO.since || '',
             breaking: IO.breaking || '',
+            aiGenerated: IO.aiGenerated || false,
             group: IO.group || '',
             storybookUrl: IO.storybookUrl || '',
             figmaUrl: IO.figmaUrl || '',

@@ -247,7 +247,8 @@ export class AngularDependencies extends FrameworkDependencies {
             figmaUrl: IO.figmaUrl || '',
             stackblitzUrl: IO.stackblitzUrl || '',
             githubUrl: IO.githubUrl || '',
-            docsUrl: IO.docsUrl || ''
+            docsUrl: IO.docsUrl || '',
+            ...(IO.aiGenerated && { aiGenerated: IO.aiGenerated })
         };
         let excludeFromClassArray = false;
 
@@ -535,6 +536,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                 ...(IO.beta && { beta: true }),
                                 ...(IO.since && { since: IO.since }),
                                 ...(IO.breaking && { breaking: IO.breaking }),
+                                ...(IO.aiGenerated && { aiGenerated: IO.aiGenerated }),
                                 ...(IO.storybookUrl && { storybookUrl: IO.storybookUrl }),
                                 ...(IO.figmaUrl && { figmaUrl: IO.figmaUrl }),
                                 ...(IO.stackblitzUrl && { stackblitzUrl: IO.stackblitzUrl }),
@@ -590,6 +592,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                 // Custom JSDoc tags
                                 ...(IO.beta && { beta: true }),
                                 ...(IO.since && { since: IO.since }),
+                                ...(IO.aiGenerated && { aiGenerated: IO.aiGenerated }),
                                 ...(IO.storybookUrl && { storybookUrl: IO.storybookUrl }),
                                 ...(IO.figmaUrl && { figmaUrl: IO.figmaUrl }),
                                 ...(IO.stackblitzUrl && { stackblitzUrl: IO.stackblitzUrl }),
@@ -781,6 +784,9 @@ export class AngularDependencies extends FrameworkDependencies {
                         }
                         if (infos.since) {
                             (functionDep as any).since = infos.since;
+                        }
+                        if (infos.aiGenerated) {
+                            (functionDep as any).aiGenerated = infos.aiGenerated;
                         }
                         if (infos.args) {
                             functionDep.args = infos.args;
@@ -1157,6 +1163,9 @@ export class AngularDependencies extends FrameworkDependencies {
                                         }
                                         if (infos.beta) {
                                             guardDep.beta = true;
+                                        }
+                                        if (infos.aiGenerated) {
+                                            (guardDep as any).aiGenerated = infos.aiGenerated;
                                         }
                                         if (infos.storybookUrl) {
                                             guardDep.storybookUrl = infos.storybookUrl;

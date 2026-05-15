@@ -3,6 +3,7 @@ import * as path from 'node:path';
 
 import traverse from 'neotraverse/legacy';
 
+import { detectAiGeneratedMarker } from '../../utils/ai-generated.util';
 import { COMPODOC_DEFAULTS } from '../../utils/defaults';
 import { logger } from '../../utils/logger';
 import { cleanNameWithoutSpaceAndToLowerCase } from '../../utils/utils';
@@ -103,9 +104,11 @@ export class AdditionalPageGenerator {
                                 });
 
                                 finalPath = finalPath.replace(`/${url}`, '');
-                                const markdownFile = MarkdownEngine.getTraditionalMarkdownSync(
-                                    that.getIncludedPathForFile(file)
-                                );
+                                const { html: markdownFile, raw: markdownRaw } =
+                                    MarkdownEngine.getTraditionalMarkdownSyncWithRaw(
+                                        that.getIncludedPathForFile(file)
+                                    );
+                                const aiGenerated = detectAiGeneratedMarker(markdownRaw);
 
                                 if (finalDepth.length > 5) {
                                     logger.error('Only 5 levels of depth are supported');
@@ -117,6 +120,7 @@ export class AdditionalPageGenerator {
                                         context: 'additional-page',
                                         path: finalPath,
                                         additionalPage: markdownFile,
+                                        aiGenerated,
                                         depth: finalDepth.length,
                                         childrenLength: additionalNode.children
                                             ? additionalNode.children.length
