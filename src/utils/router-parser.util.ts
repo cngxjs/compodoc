@@ -9,27 +9,64 @@ import type { RoutingGraphNode } from '../app/nodes/routing-graph-node';
 import { deepClone } from './deep-clone.util';
 import ImportsUtil from './imports.util';
 import { logger } from './logger';
+import { RawRouteCleaner } from './router-parser/raw-route-cleaner';
+import { RouteStore } from './router-parser/route-store';
 
 const ast = new Project();
 
 export class RouterParserUtil {
-    public scannedFiles: any[] = [];
-    private routes: any[] = [];
-    private incompleteRoutes = [];
-    private modules = [];
-    private modulesTree;
-    private rootModule: string;
-    private cleanModulesTree;
-    private modulesWithRoutes = [];
-    private transformAngular8ImportSyntax =
-        /(['"]loadChildren['"]:)\(\)(:[^)]+?)?=>"import\((\\'|'|"|`)([^'"]+?)(\\'|'|"|`)\)\.then\(\(?\w+?\)?=>\S+?\.([^)]+?)\)(\\'|'|")/g;
-    private transformAngular8ImportSyntaxComponent =
-        /(['"]loadComponent['"]:)\(\)(:[^)]+?)?=>"import\((\\'|'|"|`)([^'"]+?)(\\'|'|"|`)\)\.then\(\(?\w+?\)?=>\S+?\.([^)]+?)\)(\\'|'|")/g;
-    private transformAngular8ImportSyntaxAsyncAwait =
-        /(['"]loadChildren['"]:)\(\)(:[^)]+?)?=>\("import\((\\'|'|"|`)([^'"]+?)(\\'|'|"|`)\)"\)\.['"]([^)]+?)['"]/g;
-    private transformAngular8ImportSyntaxComponentAsyncAwait =
-        /(['"]loadComponent['"]:)\(\)(:[^)]+?)?=>\("import\((\\'|'|"|`)([^'"]+?)(\\'|'|"|`)\)"\)\.['"]([^)]+?)['"]/g;
-    private trailingComma = /,\s*([\]})])/g;
+    private routeStore = new RouteStore();
+    private rawRouteCleaner = new RawRouteCleaner();
+
+    public get scannedFiles(): any[] {
+        return this.routeStore.scannedFiles;
+    }
+    public set scannedFiles(value: any[]) {
+        this.routeStore.scannedFiles = value;
+    }
+
+    private get routes(): any[] {
+        return this.routeStore.routes;
+    }
+    private set routes(value: any[]) {
+        this.routeStore.routes = value;
+    }
+    private get incompleteRoutes(): any[] {
+        return this.routeStore.incompleteRoutes;
+    }
+    private set incompleteRoutes(value: any[]) {
+        this.routeStore.incompleteRoutes = value;
+    }
+    private get modules(): any[] {
+        return this.routeStore.modules;
+    }
+    private set modules(value: any[]) {
+        this.routeStore.modules = value;
+    }
+    private get modulesWithRoutes(): any[] {
+        return this.routeStore.modulesWithRoutes;
+    }
+    private set modulesWithRoutes(value: any[]) {
+        this.routeStore.modulesWithRoutes = value;
+    }
+    private get rootModule(): string {
+        return this.routeStore.rootModule;
+    }
+    private set rootModule(value: string) {
+        this.routeStore.rootModule = value;
+    }
+    private get modulesTree(): any {
+        return this.routeStore.modulesTree;
+    }
+    private set modulesTree(value: any) {
+        this.routeStore.modulesTree = value;
+    }
+    private get cleanModulesTree(): any {
+        return this.routeStore.cleanModulesTree;
+    }
+    private set cleanModulesTree(value: any) {
+        this.routeStore.cleanModulesTree = value;
+    }
 
     private static instance: RouterParserUtil;
     private constructor() {}
@@ -41,96 +78,31 @@ export class RouterParserUtil {
     }
 
     public addRoute(route): void {
-        this.routes.push(route);
-        this.routes = [
-            ...this.routes.filter(
-                (item, i, self) => i === self.findIndex(other => other.name === item.name)
-            )
-        ].sort((a, b) => a.name.localeCompare(b.name));
+        this.routeStore.addRoute(route);
     }
 
     public addIncompleteRoute(route): void {
-        this.incompleteRoutes.push(route);
-        this.incompleteRoutes = [
-            ...this.incompleteRoutes.filter(
-                (item, i, self) => i === self.findIndex(other => other.name === item.name)
-            )
-        ].sort((a, b) => a.name.localeCompare(b.name));
+        this.routeStore.addIncompleteRoute(route);
     }
 
     public addModuleWithRoutes(moduleName, moduleImports, filename): void {
-        this.modulesWithRoutes.push({
-            name: moduleName,
-            importsNode: moduleImports,
-            filename: filename
-        });
-        this.modulesWithRoutes = [
-            ...this.modulesWithRoutes.filter(
-                (item, i, self) => i === self.findIndex(other => other.name === item.name)
-            )
-        ].sort((a, b) => a.name.localeCompare(b.name));
+        this.routeStore.addModuleWithRoutes(moduleName, moduleImports, filename);
     }
 
     public addModule(moduleName: string, moduleImports): void {
-        this.modules.push({
-            name: moduleName,
-            importsNode: moduleImports
-        });
-        this.modules = [
-            ...this.modules.filter(
-                (item, i, self) => i === self.findIndex(other => other.name === item.name)
-            )
-        ].sort((a, b) => a.name.localeCompare(b.name));
+        this.routeStore.addModule(moduleName, moduleImports);
     }
 
     public cleanRawRouteParsed(route: string): object {
-        try {
-            return JSON5.parse(this.cleanRawRoute(route));
-        } catch (parseError) {
-            logger.error(
-                `Failed to parse route data. This may be caused by special characters in file paths or route configurations.`
-            );
-            logger.debug(`Raw route data: ${route}`);
-            logger.debug(`Cleaned route data: ${this.cleanRawRoute(route)}`);
-            logger.debug(`Parse error: ${parseError.message}`);
-            throw parseError;
-        }
+        return this.rawRouteCleaner.cleanRawRouteParsed(route);
     }
 
     public cleanRawRoute(route: string): string {
-        let cleaned = route
-            .replace(/\s/g, '')
-            .replace(this.trailingComma, '$1')
-            .replace(this.transformAngular8ImportSyntax, '$1"$4#$6"')
-            .replace(this.transformAngular8ImportSyntaxAsyncAwait, '$1"$4#$6"')
-            .replace(this.transformAngular8ImportSyntaxComponent, '$1"$4#$6"')
-            .replace(this.transformAngular8ImportSyntaxComponentAsyncAwait, '$1"$4#$6"');
-
-        // Additional cleaning for special characters that cause JSON5 parsing issues
-        // Handle unescaped characters in string literals
-        cleaned = cleaned
-            // Fix template literal expressions that get converted incorrectly
-            // Convert ${VAR}/something patterns to "VAR/something" format
-            .replace(/\$\{([^}]+)\}\/([^"',}\s]+)/g, '"$1/$2"')
-            .replace(/\$\{([^}]+)\}/g, '"$1"')
-            // Fix malformed string concatenations from template literals
-            .replace(/"([^"]*?)"\/"([^"]*?)"/g, '"$1/$2"')
-            .replace(/"([^"]*?)"\+([^"]*?)\+"([^"]*?)"/g, '"$1+$2+$3"')
-            // Fix double quotes issues in path strings
-            .replace(/""([^"]*?)""/g, '"$1"')
-            // Fix malformed string concatenations
-            .replace(/([^"])"([^"]*?)\.([^"]*?)"([^"])/g, '$1"$2\\.$3"$4')
-            // Fix unescaped plus signs in string literals
-            .replace(/([^"])"([^"]*?)\+([^"]*?)"([^"])/g, '$1"$2\\+$3"$4')
-            // Fix unescaped parentheses in string literals
-            .replace(/([^"])"([^"]*?)\(([^"]*?)"([^"])/g, '$1"$2\\($3"$4')
-            .replace(/([^"])"([^"]*?)\)([^"]*?)"([^"])/g, '$1"$2\\)$3"$4');
-
-        return cleaned;
+        return this.rawRouteCleaner.cleanRawRoute(route);
     }
 
     public setRootModule(module: string): void {
-        this.rootModule = module;
+        this.routeStore.setRootModule(module);
     }
 
     public hasRouterModuleInImports(imports: Array<any>): boolean {
@@ -249,21 +221,15 @@ export class RouterParserUtil {
     }
 
     public foundRouteWithModuleName(moduleName: string): any {
-        return this.routes.find(r => r.module === moduleName);
+        return this.routeStore.foundRouteWithModuleName(moduleName);
     }
 
     public foundLazyModuleWithPath(modulePath: string): string {
-        // path is like app/customers/customers.module#CustomersModule
-        const split = modulePath.split('#');
-        const lazyModuleName = split[1];
-        return lazyModuleName;
+        return this.routeStore.foundLazyModuleWithPath(modulePath);
     }
 
     public foundLazyComponentWithPath(componentPath: string): string {
-        // path is like app/customers/customers.component#CustomersComponent
-        const split = componentPath.split('#');
-        const lazyComponentName = split[1];
-        return lazyComponentName;
+        return this.routeStore.foundLazyComponentWithPath(componentPath);
     }
 
     public constructRoutesTree() {
@@ -669,54 +635,19 @@ export class RouterParserUtil {
     }
 
     public routesLength(): number {
-        let _n = 0;
-        const routesParser = route => {
-            if (typeof route.path !== 'undefined') {
-                _n += 1;
-            }
-            if (route.children) {
-                for (const j in route.children) {
-                    routesParser(route.children[j]);
-                }
-            }
-        };
-
-        for (const i in this.routes) {
-            routesParser(this.routes[i]);
-        }
-
-        return _n;
+        return this.routeStore.routesLength();
     }
 
     public printRoutes(): void {
-        console.log('');
-        console.log('printRoutes: ');
-        console.log(this.routes);
+        this.routeStore.printRoutes();
     }
 
     public printModulesRoutes(): void {
-        console.log('');
-        console.log('printModulesRoutes: ');
-        console.log(this.modulesWithRoutes);
+        this.routeStore.printModulesRoutes();
     }
 
     public isVariableRoutes(node) {
-        let result = false;
-        if (node.declarationList?.declarations) {
-            let i = 0;
-            const len = node.declarationList.declarations.length;
-            for (i; i < len; i++) {
-                if (node.declarationList.declarations[i].type) {
-                    if (
-                        node.declarationList.declarations[i].type.typeName &&
-                        node.declarationList.declarations[i].type.typeName.text === 'Routes'
-                    ) {
-                        result = true;
-                    }
-                }
-            }
-        }
-        return result;
+        return this.routeStore.isVariableRoutes(node);
     }
 
     public cleanFileIdentifiers(sourceFile: SourceFile): SourceFile {
