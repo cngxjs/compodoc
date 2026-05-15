@@ -1,7 +1,6 @@
 import * as crypto from 'node:crypto';
 import * as path from 'node:path';
 import { Project, SyntaxKind, ts } from 'ts-morph';
-import { v4 as uuidv4 } from 'uuid';
 import {
     getModuleWithProviders,
     isIgnore,
@@ -9,12 +8,11 @@ import {
     JsdocParserUtil
 } from '../../utils';
 import ExtendsMerger from '../../utils/extends-merger.util';
-import { IsKindType, kindToType } from '../../utils/kind-to-type';
 import { logger } from '../../utils/logger';
 import { markedAcl } from '../../utils/marked.acl';
 import { getNodeDecorators, nodeHasDecorator } from '../../utils/node.util';
 import RouterParserUtil from '../../utils/router-parser.util';
-import { cleanLifecycleHooksFromMethods, markedtags, mergeTagsAndArgs } from '../../utils/utils';
+import { cleanLifecycleHooksFromMethods } from '../../utils/utils';
 import Configuration from '../configuration';
 import ComponentsTreeEngine from '../engines/components-tree.engine';
 import type {
@@ -34,6 +32,7 @@ import { JsDocHelper } from './angular/deps/helpers/js-doc-helper';
 import { ModuleHelper } from './angular/deps/helpers/module-helper';
 import { SymbolHelper } from './angular/deps/helpers/symbol-helper';
 import { ModuleDepFactory } from './angular/deps/module-dep.factory';
+import { EntityVisitor } from './angular-dependencies/entity-visitor';
 import { ExpressionFinder } from './angular-dependencies/expression-finder';
 import { IoExtractor } from './angular-dependencies/io-extractor';
 import { JsdocTags } from './angular-dependencies/jsdoc-tags';
@@ -58,10 +57,16 @@ export class AngularDependencies extends FrameworkDependencies {
     private expressionFinder = new ExpressionFinder();
     private providerDetector = new ProviderDetector();
     private ioExtractor: IoExtractor;
+    private entityVisitor: EntityVisitor;
 
     constructor(files: string[], options: any) {
         super(files, options);
         this.ioExtractor = new IoExtractor(this.classHelper);
+        this.entityVisitor = new EntityVisitor(
+            this.classHelper,
+            this.jsdocParserUtil,
+            this.jsdocTags
+        );
         this.publicApiFilter.initializePublicApiFiltering();
     }
 
@@ -729,7 +734,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             this.ignore(interfaceDeps);
                         }
                     } else if (ts.isFunctionDeclaration(node)) {
-                        const infos = this.visitFunctionDeclaration(node);
+                        const infos = this.entityVisitor.visitFunctionDeclaration(node);
                         const name = infos.name;
 
                         // Check if function is allowed by public API filter
@@ -749,7 +754,10 @@ export class AngularDependencies extends FrameworkDependencies {
                             deprecated,
                             deprecationMessage,
                             category,
-                            description: this.visitEnumTypeAliasFunctionDeclarationDescription(node)
+                            description:
+                                this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
+                                    node
+                                )
                         };
                         // Detect factory function kind by naming convention
                         const factoryKind = this.providerDetector.detectFactoryKind(name);
@@ -786,7 +794,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         if (typeof infos.ignore === 'undefined') {
                             if (
                                 !(
-                                    this.hasPrivateJSDocTag(functionDep.jsdoctags) &&
+                                    this.entityVisitor.hasPrivateJSDocTag(functionDep.jsdoctags) &&
                                     Configuration.mainData.disablePrivate
                                 )
                             ) {
@@ -795,7 +803,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             }
                         }
                     } else if (ts.isEnumDeclaration(node)) {
-                        const infos = this.visitEnumDeclaration(node);
+                        const infos = this.entityVisitor.visitEnumDeclaration(node);
                         const name = infos.name;
 
                         // Check if enum is allowed by public API filter
@@ -816,7 +824,9 @@ export class AngularDependencies extends FrameworkDependencies {
                             deprecationMessage,
                             category,
                             description:
-                                this.visitEnumTypeAliasFunctionDeclarationDescription(node),
+                                this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
+                                    node
+                                ),
                             file: file
                         };
 
@@ -825,7 +835,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             outputSymbols.miscellaneous.enumerations.push(enumDeps);
                         }
                     } else if (ts.isTypeAliasDeclaration(node)) {
-                        const infos = this.visitTypeDeclaration(node);
+                        const infos = this.entityVisitor.visitTypeDeclaration(node);
                         const name = infos.name;
 
                         // Check if type alias is allowed by public API filter
@@ -846,7 +856,10 @@ export class AngularDependencies extends FrameworkDependencies {
                             deprecated,
                             deprecationMessage,
                             category,
-                            description: this.visitEnumTypeAliasFunctionDeclarationDescription(node)
+                            description:
+                                this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
+                                    node
+                                )
                         };
                         if (node.type) {
                             typeAliasDeps.kind = node.type.kind;
@@ -990,7 +1003,8 @@ export class AngularDependencies extends FrameworkDependencies {
                             }
 
                             const visitVariableNode = variableNode => {
-                                const infos: any = this.visitVariableDeclaration(variableNode);
+                                const infos: any =
+                                    this.entityVisitor.visitVariableDeclaration(variableNode);
                                 if (infos) {
                                     const name = infos.name;
                                     const deprecated = infos.deprecated;
@@ -1244,7 +1258,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         } // End of new if condition for isRoutesVariable || isExportedVariable
                     }
                     if (ts.isTypeAliasDeclaration(node)) {
-                        const infos = this.visitTypeDeclaration(node);
+                        const infos = this.entityVisitor.visitTypeDeclaration(node);
                         const name = infos.name;
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
@@ -1258,7 +1272,10 @@ export class AngularDependencies extends FrameworkDependencies {
                             deprecated,
                             deprecationMessage,
                             category,
-                            description: this.visitEnumTypeAliasFunctionDeclarationDescription(node)
+                            description:
+                                this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
+                                    node
+                                )
                         };
                         if (node.type) {
                             deps.kind = node.type.kind;
@@ -1276,7 +1293,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         }
                     }
                     if (ts.isFunctionDeclaration(node)) {
-                        const infos = this.visitFunctionDeclaration(node);
+                        const infos = this.entityVisitor.visitFunctionDeclaration(node);
                         const name = infos.name;
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
@@ -1289,7 +1306,10 @@ export class AngularDependencies extends FrameworkDependencies {
                             deprecated,
                             deprecationMessage,
                             category,
-                            description: this.visitEnumTypeAliasFunctionDeclarationDescription(node)
+                            description:
+                                this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
+                                    node
+                                )
                         };
                         if (infos.args) {
                             functionDep.args = infos.args;
@@ -1303,7 +1323,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         if (typeof infos.ignore === 'undefined') {
                             if (
                                 !(
-                                    this.hasPrivateJSDocTag(functionDep.jsdoctags) &&
+                                    this.entityVisitor.hasPrivateJSDocTag(functionDep.jsdoctags) &&
                                     Configuration.mainData.disablePrivate
                                 )
                             ) {
@@ -1313,7 +1333,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         }
                     }
                     if (ts.isEnumDeclaration(node)) {
-                        const infos = this.visitEnumDeclaration(node);
+                        const infos = this.entityVisitor.visitEnumDeclaration(node);
                         const name = infos.name;
                         const deprecated = infos.deprecated;
                         const deprecationMessage = infos.deprecationMessage;
@@ -1327,7 +1347,9 @@ export class AngularDependencies extends FrameworkDependencies {
                             deprecationMessage,
                             category,
                             description:
-                                this.visitEnumTypeAliasFunctionDeclarationDescription(node),
+                                this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
+                                    node
+                                ),
                             file: file
                         };
                         if (!isIgnore(node)) {
@@ -1381,268 +1403,5 @@ export class AngularDependencies extends FrameworkDependencies {
         } else {
             return;
         }
-    }
-
-    private visitTypeDeclaration(node: ts.TypeAliasDeclaration) {
-        const result: any = {
-            deprecated: false,
-            deprecationMessage: '',
-            name: node.name.text,
-            kind: node.kind
-        };
-        const jsdoctags = this.jsdocParserUtil.getJSDocs(node);
-
-        if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
-            this.jsdocTags.checkForDeprecation((jsdoctags[0] as any).tags, result);
-            result.jsdoctags = markedtags((jsdoctags[0] as any).tags);
-        }
-        return result;
-    }
-
-    private visitArgument(arg) {
-        if (arg.name && arg.name.kind == SyntaxKind.ObjectBindingPattern) {
-            let results = [];
-
-            const destrucuredGroupId = uuidv4();
-
-            results = arg.name.elements.map(element => this.visitArgument(element));
-
-            results = results.map(result => {
-                result.destrucuredGroupId = destrucuredGroupId;
-                return result;
-            });
-
-            if (arg.name.elements && arg.type?.members) {
-                if (arg.name.elements.length === arg.type.members.length) {
-                    for (let i = 0; i < arg.name.elements.length; i++) {
-                        results[i].type = this.classHelper.visitType(arg.type.members[i]);
-                    }
-                }
-            }
-
-            if (arg.name.elements && arg.type?.typeName) {
-                results[0].type = this.classHelper.visitType(arg.type);
-            }
-
-            return results;
-        } else {
-            const result: any = {
-                name: arg.name.text,
-                type: this.classHelper.visitType(arg),
-                deprecated: false,
-                deprecationMessage: ''
-            };
-
-            if (arg.dotDotDotToken) {
-                result.dotDotDotToken = true;
-            }
-            if (arg.questionToken) {
-                result.optional = true;
-            }
-            if (arg.initializer) {
-                result.defaultValue = arg.initializer
-                    ? this.classHelper.stringifyDefaultValue(arg.initializer)
-                    : undefined;
-            }
-            if (arg.type) {
-                result.type = this.mapType(arg.type.kind);
-                if (arg.type.kind === SyntaxKind.TypeReference) {
-                    // try replace TypeReference with typeName
-                    if (arg.type.typeName) {
-                        result.type = arg.type.typeName.text;
-                    }
-                }
-            }
-            const jsdoctags = this.jsdocParserUtil.getJSDocs(arg);
-
-            if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
-                this.jsdocTags.checkForDeprecation((jsdoctags[0] as any).tags, result);
-            }
-            return result;
-        }
-    }
-
-    private mapType(type): string | undefined {
-        switch (type) {
-            case SyntaxKind.NullKeyword:
-                return 'null';
-            case SyntaxKind.AnyKeyword:
-                return 'any';
-            case SyntaxKind.BooleanKeyword:
-                return 'boolean';
-            case SyntaxKind.NeverKeyword:
-                return 'never';
-            case SyntaxKind.NumberKeyword:
-                return 'number';
-            case SyntaxKind.StringKeyword:
-                return 'string';
-            case SyntaxKind.UndefinedKeyword:
-                return 'undefined';
-            case SyntaxKind.TypeReference:
-                return 'typeReference';
-        }
-    }
-
-    private hasPrivateJSDocTag(tags): boolean {
-        let result = false;
-        if (tags) {
-            tags.forEach(tag => {
-                if (tag.tagName?.text && tag.tagName.text === 'private') {
-                    result = true;
-                }
-            });
-        }
-        return result;
-    }
-
-    private visitFunctionDeclaration(method: ts.FunctionDeclaration) {
-        const methodName = method.name ? method.name.text : 'Unnamed function';
-        const resultArguments = [];
-        const result: any = {
-            deprecated: false,
-            deprecationMessage: '',
-            name: methodName
-        };
-
-        for (const element of method.parameters) {
-            const argument = element;
-            if (argument) {
-                const argumentParsed = this.visitArgument(argument);
-                if (argumentParsed.length > 0) {
-                    for (const element of argumentParsed) {
-                        const argumentParsedInside = element;
-                        argumentParsedInside.destructuredParameter = true;
-                        resultArguments.push(argumentParsedInside);
-                    }
-                } else {
-                    resultArguments.push(argumentParsed);
-                }
-            }
-        }
-
-        result.args = resultArguments;
-
-        const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
-
-        if (typeof method.type !== 'undefined') {
-            result.returnType = this.classHelper.visitType(method.type);
-        }
-
-        if (method.modifiers) {
-            if (method.modifiers.length > 0) {
-                let kinds = method.modifiers
-                    .map(modifier => {
-                        return modifier.kind;
-                    })
-                    .reverse();
-                if (
-                    kinds.indexOf(SyntaxKind.PublicKeyword) !== -1 &&
-                    kinds.indexOf(SyntaxKind.StaticKeyword) !== -1
-                ) {
-                    kinds = kinds.filter(kind => kind !== SyntaxKind.PublicKeyword);
-                }
-            }
-        }
-        if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
-            this.jsdocTags.checkForDeprecation((jsdoctags[0] as any).tags, result);
-            result.jsdoctags = markedtags((jsdoctags[0] as any).tags);
-            (jsdoctags[0] as any).tags.forEach(tag => {
-                if (tag.tagName) {
-                    if (tag.tagName.text) {
-                        if (tag.tagName.text.indexOf('ignore') > -1) {
-                            result.ignore = true;
-                        }
-                    }
-                }
-            });
-        }
-        if (result.jsdoctags && result.jsdoctags.length > 0) {
-            result.jsdoctags = mergeTagsAndArgs(result.args, result.jsdoctags);
-        } else if (result.args.length > 0) {
-            result.jsdoctags = mergeTagsAndArgs(result.args);
-        }
-        return result;
-    }
-
-    private visitVariableDeclaration(node) {
-        const decl = node.declarationList?.declarations?.[0];
-        if (decl) {
-            const result: any = {
-                name: decl.name.text,
-                defaultValue: decl.initializer
-                    ? this.classHelper.stringifyDefaultValue(decl.initializer)
-                    : undefined,
-                deprecated: false,
-                deprecationMessage: ''
-            };
-            if (decl.initializer) {
-                result.initializer = decl.initializer;
-            }
-            if (decl.type) {
-                result.type = this.classHelper.visitType(decl.type);
-            }
-            if (typeof result.type === 'undefined' && result.initializer) {
-                result.type = kindToType(result.initializer.kind);
-            }
-            const jsdoctags = this.jsdocParserUtil.getJSDocs(decl);
-            if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
-                this.jsdocTags.checkForDeprecation((jsdoctags[0] as any).tags, result);
-            }
-            return result;
-        }
-    }
-
-    private visitEnumTypeAliasFunctionDeclarationDescription(node): string {
-        let description: string = '';
-        if (node.jsDoc) {
-            if (node.jsDoc.length > 0) {
-                if (typeof node.jsDoc[0].comment !== 'undefined') {
-                    const rawDescription = this.jsdocParserUtil.parseJSDocNode(node.jsDoc[0]);
-                    description = markedAcl(rawDescription);
-                }
-            }
-        }
-        return description;
-    }
-
-    private visitEnumDeclaration(node: ts.EnumDeclaration) {
-        const result: any = {
-            deprecated: false,
-            deprecationMessage: '',
-            name: node.name.text,
-            members: []
-        };
-        if (node.members) {
-            let i = 0;
-            const len = node.members.length;
-            let memberjsdoctags = [];
-            for (i; i < len; i++) {
-                const member: any = {
-                    name: (node.members[i].name as any).text,
-                    deprecated: false,
-                    deprecationMessage: ''
-                };
-                if (node.members[i].initializer) {
-                    // if the initializer kind is a number do cast to the number type
-                    member.value = IsKindType.NUMBER(node.members[i].initializer.kind)
-                        ? Number((node.members[i].initializer as any).text)
-                        : (node.members[i].initializer as any).text;
-                }
-                memberjsdoctags = [...this.jsdocParserUtil.getJSDocs(node.members[i])];
-                if (
-                    memberjsdoctags &&
-                    memberjsdoctags.length >= 1 &&
-                    (memberjsdoctags[0] as any).tags
-                ) {
-                    this.jsdocTags.checkForDeprecation((memberjsdoctags[0] as any).tags, member);
-                }
-                result.members.push(member);
-            }
-        }
-        const jsdoctags = this.jsdocParserUtil.getJSDocs(node);
-        if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
-            this.jsdocTags.checkForDeprecation((jsdoctags[0] as any).tags, result);
-        }
-        return result;
     }
 }
