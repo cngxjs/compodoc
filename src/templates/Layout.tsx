@@ -299,7 +299,7 @@ export const Layout = (props: LayoutProps): string => {
                 <title>{pageTitle(data)}</title>
                 <meta name="description" content="" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <link rel="icon" type="image/x-icon" href={r('images/favicon.ico')} />
+                <link rel="icon" type="image/svg+xml" href={r('images/favicon.svg')} />
                 <script>{`(function(){try{var d=localStorage.getItem('compodocx_darkmode-state')||localStorage.getItem('compodoc_darkmode-state');var dark=d!==null?d==='true':window.matchMedia('(prefers-color-scheme:dark)').matches;if(dark)document.documentElement.classList.add('dark');if(/Mac|iPhone|iPad/.test(navigator.platform||''))document.documentElement.classList.add('cdx-mac');if(location.hash&&location.hash!=='#')document.documentElement.classList.add('cdx-hash-pending')}catch(e){}}())`}</script>
                 <style>{`
                     .menu .collapse.in { display: block !important; visibility: visible !important; }
