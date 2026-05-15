@@ -9,6 +9,7 @@ import type { RoutingGraphNode } from '../app/nodes/routing-graph-node';
 import { deepClone } from './deep-clone.util';
 import ImportsUtil from './imports.util';
 import { logger } from './logger';
+import { ModuleLinker } from './router-parser/module-linker';
 import { RawRouteCleaner } from './router-parser/raw-route-cleaner';
 import { RouteStore } from './router-parser/route-store';
 
@@ -17,6 +18,7 @@ const ast = new Project();
 export class RouterParserUtil {
     private routeStore = new RouteStore();
     private rawRouteCleaner = new RawRouteCleaner();
+    private moduleLinker = new ModuleLinker(this.routeStore);
 
     public get scannedFiles(): any[] {
         return this.routeStore.scannedFiles;
@@ -106,118 +108,15 @@ export class RouterParserUtil {
     }
 
     public hasRouterModuleInImports(imports: Array<any>): boolean {
-        for (let i = 0; i < imports.length; i++) {
-            if (
-                imports[i].name.indexOf('RouterModule.forChild') !== -1 ||
-                imports[i].name.indexOf('RouterModule.forRoot') !== -1 ||
-                imports[i].name.indexOf('RouterModule') !== -1
-            ) {
-                return true;
-            }
-        }
-
-        return false;
+        return this.moduleLinker.hasRouterModuleInImports(imports);
     }
 
     public fixIncompleteRoutes(miscellaneousVariables: Array<any>): void {
-        const matchingVariables = [];
-        // For each incompleteRoute, scan if one misc variable is in code
-        // if ok, try recreating complete route
-        for (let i = 0; i < this.incompleteRoutes.length; i++) {
-            for (let j = 0; j < miscellaneousVariables.length; j++) {
-                if (this.incompleteRoutes[i].data.indexOf(miscellaneousVariables[j].name) !== -1) {
-                    console.log('found one misc var inside incompleteRoute');
-                    console.log(miscellaneousVariables[j].name);
-                    matchingVariables.push(miscellaneousVariables[j]);
-                }
-            }
-            // Clean incompleteRoute
-            this.incompleteRoutes[i].data = this.incompleteRoutes[i].data.replace('[', '');
-            this.incompleteRoutes[i].data = this.incompleteRoutes[i].data.replace(']', '');
-        }
+        this.moduleLinker.fixIncompleteRoutes(miscellaneousVariables);
     }
 
     public linkModulesAndRoutes(): void {
-        let i = 0;
-        const len = this.modulesWithRoutes.length;
-        for (i; i < len; i++) {
-            this.modulesWithRoutes[i].importsNode.forEach((node: ts.Node) => {
-                if (ts.isPropertyDeclaration(node)) {
-                    const initializer = node.initializer as ts.ArrayLiteralExpression;
-                    if (initializer) {
-                        if (initializer.elements) {
-                            (initializer.elements as unknown as ts.CallExpression[]).forEach(
-                                (element: ts.CallExpression) => {
-                                    // find element with arguments
-                                    if (element.arguments) {
-                                        (element.arguments as unknown as ts.Identifier[]).forEach(
-                                            (argument: ts.Identifier) => {
-                                                this.routes.forEach(route => {
-                                                    if (
-                                                        argument.text &&
-                                                        route.name === argument.text &&
-                                                        route.filename ===
-                                                            this.modulesWithRoutes[i].filename
-                                                    ) {
-                                                        route.module =
-                                                            this.modulesWithRoutes[i].name;
-                                                    } else if (
-                                                        argument.text &&
-                                                        route.name === argument.text &&
-                                                        route.filename !==
-                                                            this.modulesWithRoutes[i].filename
-                                                    ) {
-                                                        let argumentImportPath =
-                                                            ImportsUtil.findFilePathOfImportedVariable(
-                                                                argument.text,
-                                                                this.modulesWithRoutes[i].filename
-                                                            );
-
-                                                        argumentImportPath = argumentImportPath
-                                                            .replace(process.cwd() + path.sep, '')
-                                                            .replace(/\\/g, '/');
-
-                                                        if (
-                                                            argument.text &&
-                                                            route.name === argument.text &&
-                                                            route.filename === argumentImportPath
-                                                        ) {
-                                                            route.module =
-                                                                this.modulesWithRoutes[i].name;
-                                                        }
-                                                    }
-                                                });
-                                            }
-                                        );
-                                    }
-                                }
-                            );
-                        }
-                    }
-                }
-                /**
-                 * direct support of for example
-                 * export const HomeRoutingModule: ModuleWithProviders = RouterModule.forChild(HOME_ROUTES);
-                 */
-                if (ts.isCallExpression(node)) {
-                    if (node.arguments) {
-                        (node.arguments as unknown as ts.Identifier[]).forEach(
-                            (argument: ts.Identifier) => {
-                                this.routes.forEach(route => {
-                                    if (
-                                        argument.text &&
-                                        route.name === argument.text &&
-                                        route.filename === this.modulesWithRoutes[i].filename
-                                    ) {
-                                        route.module = this.modulesWithRoutes[i].name;
-                                    }
-                                });
-                            }
-                        );
-                    }
-                }
-            });
-        }
+        this.moduleLinker.linkModulesAndRoutes();
     }
 
     public foundRouteWithModuleName(moduleName: string): any {
