@@ -52,6 +52,7 @@ export class ComponentDepFactory {
             beta: IO.beta || false,
             since: IO.since || '',
             breaking: IO.breaking || '',
+            aiGenerated: IO.aiGenerated || false,
             route: IO.route || '',
             group: IO.group || '',
             order: IO.order || 0,

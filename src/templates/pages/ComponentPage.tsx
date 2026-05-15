@@ -27,6 +27,7 @@ import { PlaygroundContent } from '../blocks/PlaygroundContent';
 import { ProvidersSection } from '../blocks/ProvidersSection';
 import { RouteChip } from '../blocks/RouteChip';
 import { SourceViewer } from '../blocks/SourceViewer';
+import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { EmptyState } from '../components/EmptyState';
 import {
     EmptyIconBook,
@@ -460,6 +461,7 @@ export const ComponentPage = (data: any): string => {
                     ) : (
                         ''
                     )}
+                    {AiGeneratedBadge({ aiGenerated: c.aiGenerated })}
                 </div>
                 {!data.disableFilePath && c.file && (
                     <p class="cdx-entity-hero-file" title="Source file">

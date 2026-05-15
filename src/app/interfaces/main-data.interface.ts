@@ -21,6 +21,7 @@ export interface MainDataInterface {
     hasFilesToCoverage: boolean;
     modules: any;
     readme: boolean;
+    readmeAiGenerated?: string | true;
     changelog: string;
     contributing: string;
     license: string;

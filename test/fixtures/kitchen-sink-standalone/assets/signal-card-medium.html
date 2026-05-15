@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Signal Card — medium example</title>
+        <style>
+            :root {
+                --bg: #f0f4ff;
+                --card-bg: #fff;
+                --card-border: #c3d0ff;
+                --text: #1f2328;
+                --text-list: #34405b;
+            }
+            html.dark {
+                --bg: #181c2a;
+                --card-bg: #23283c;
+                --card-border: #3a4670;
+                --text: #e6e8f3;
+                --text-list: #b6bdd5;
+            }
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: system-ui, sans-serif;
+                color: var(--text);
+            }
+            body {
+                padding: 16px;
+                background: var(--bg);
+            }
+            .card {
+                border: 1px solid var(--card-border);
+                border-radius: 8px;
+                background: var(--card-bg);
+                padding: 16px 20px;
+            }
+            h2 {
+                margin: 0 0 12px;
+                font-size: 1rem;
+            }
+            ul {
+                margin: 0;
+                padding-left: 1.25rem;
+                color: var(--text-list);
+            }
+            li {
+                margin-bottom: 6px;
+            }
+        </style>
+    </head>
+    <body>
+        <article class="card">
+            <h2>Medium example</h2>
+            <p>Three bullet points — taller than the short example.</p>
+            <ul>
+                <li>Title is a required input signal.</li>
+                <li>Expanded is a two-way model signal.</li>
+                <li>Variant switches between filled / outlined / elevated.</li>
+            </ul>
+        </article>
+    </body>
+</html>

@@ -1,5 +1,7 @@
 export const TRANSLATION_DE_DE = {
     accessors: 'Accessors',
+    'ai-generated': 'KI-generiert',
+    'ai-generated-tooltip': 'Dieser Inhalt wurde mit KI-Unterstützung erstellt',
     'angular-adoption': 'Angular-Modernisierung',
     arguments: 'Argumente',
     bootstrap: 'Bootstrap',

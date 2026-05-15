@@ -149,7 +149,7 @@ pre.line-numbers code {
 
 .cdx-source-viewer-header {
     @apply sticky z-20 flex items-center;
-    top: -33px;
+    top: -0.5rem;
     gap: var(--spacing-cdx-sm);
     padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
     background: var(--color-cdx-bg-alt);
@@ -277,7 +277,7 @@ pre.line-numbers code {
     display: flex;
     flex-direction: column;
     position: sticky;
-    top: 10px;
+    top: calc(var(--cdx-source-header-h, 43px) - 0.5rem);
     z-index: 19;
     background: var(--color-cdx-bg-alt);
     border-bottom: 1px solid var(--color-cdx-border);

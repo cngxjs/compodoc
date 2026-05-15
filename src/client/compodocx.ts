@@ -2,6 +2,7 @@ import { initAnimations } from './animate';
 import { initCodeBlocks } from './code-blocks';
 import { initCommandPalette } from './command-palette';
 import { initCoverage } from './coverage';
+import { initExamples } from './examples';
 import { initGraphs } from './graphs';
 import { initHashRouter } from './hash-router';
 import { initKeyboard } from './keyboard';
@@ -27,6 +28,7 @@ const init = () => {
     initGraphs();
     initStackblitz();
     initCoverage();
+    initExamples();
     initKeyboard();
     initAnimations();
     initVersionSwitcher();

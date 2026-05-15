@@ -26,6 +26,7 @@ import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import { PlaygroundContent } from '../blocks/PlaygroundContent';
 import { ProvidersSection } from '../blocks/ProvidersSection';
 import { RouteChip } from '../blocks/RouteChip';
+import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconDocument } from '../components/EmptyStateIcons';
 import {
@@ -572,6 +573,7 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                     ) : (
                         ''
                     )}
+                    {props.showJsdocBadges ? AiGeneratedBadge({ aiGenerated: e.aiGenerated }) : ''}
                 </div>
                 {props.contextLine ? (
                     <p class="cdx-entity-hero-context">{props.contextLine}</p>

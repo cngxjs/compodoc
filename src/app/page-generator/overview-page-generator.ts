@@ -1,3 +1,4 @@
+import { detectAiGeneratedMarker } from '../../utils/ai-generated.util';
 import { COMPODOC_DEFAULTS } from '../../utils/defaults';
 import { logger } from '../../utils/logger';
 import Configuration from '../configuration';
@@ -18,8 +19,12 @@ export class OverviewPageGenerator {
                     MarkdownEngine.getTraditionalMarkdown(markdowns[i].toUpperCase())
                         .then((readmeData: markdownReadedDatas) => {
                             logger.info(`${markdowns[i].toUpperCase()}.md file found`);
+                            const aiGenerated = detectAiGeneratedMarker(readmeData.rawData);
                             if (markdowns[i] === 'readme') {
                                 Configuration.mainData.readme = true;
+                                if (aiGenerated) {
+                                    Configuration.mainData.readmeAiGenerated = aiGenerated;
+                                }
                                 // Always create index.html as main page with README content
                                 Configuration.addPage({
                                     name: 'index',
@@ -27,6 +32,7 @@ export class OverviewPageGenerator {
                                     id: 'index',
                                     markdown: readmeData.markdown,
                                     data: readmeData.rawData,
+                                    aiGenerated,
                                     depth: 0,
                                     pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
                                 });
@@ -37,6 +43,7 @@ export class OverviewPageGenerator {
                                         name: 'overview',
                                         context: 'overview',
                                         id: 'overview',
+                                        aiGenerated,
                                         depth: 0,
                                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
                                     });
@@ -49,6 +56,7 @@ export class OverviewPageGenerator {
                                     id: markdowns[i],
                                     markdown: readmeData.markdown,
                                     data: readmeData.rawData,
+                                    aiGenerated,
                                     depth: 0,
                                     pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
                                 });

@@ -31,6 +31,7 @@
 .cdx-badge--factory         { --cdx-badge-base: var(--color-cdx-badge-factory, hsl(200 50% 42%)); }
 .cdx-badge--zoneless        { --cdx-badge-base: var(--color-cdx-badge-zoneless, hsl(280 45% 48%)); }
 .cdx-badge--breaking        { --cdx-badge-base: var(--color-cdx-badge-breaking, hsl(0 65% 45%)); }
+.cdx-badge--ai-generated    { --cdx-badge-base: var(--color-cdx-badge-ai-generated, hsl(290 55% 48%)); }
 
 /* Signal primitives */
 .cdx-badge--signal,

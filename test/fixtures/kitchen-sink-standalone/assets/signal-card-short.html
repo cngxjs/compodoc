@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Signal Card — short example</title>
+        <style>
+            :root {
+                --bg: #f7f7f7;
+                --card-bg: #fff;
+                --card-border: #d0d7de;
+                --text: #1f2328;
+                --text-muted: #555;
+            }
+            html.dark {
+                --bg: #1b1d22;
+                --card-bg: #24272d;
+                --card-border: #3a3f47;
+                --text: #e6e8eb;
+                --text-muted: #a4a8b0;
+            }
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: system-ui, sans-serif;
+                color: var(--text);
+            }
+            body {
+                padding: 16px;
+                background: var(--bg);
+            }
+            .card {
+                border: 1px solid var(--card-border);
+                border-radius: 8px;
+                background: var(--card-bg);
+                padding: 16px 20px;
+            }
+            h2 {
+                margin: 0 0 8px;
+                font-size: 1rem;
+            }
+            p {
+                margin: 0;
+                color: var(--text-muted);
+            }
+        </style>
+    </head>
+    <body>
+        <article class="card">
+            <h2>Short example</h2>
+            <p>Single-paragraph card — should keep the iframe tight.</p>
+        </article>
+    </body>
+</html>

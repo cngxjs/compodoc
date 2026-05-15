@@ -2,6 +2,7 @@ import Html from '@kitajs/html';
 import { BlockMethod } from '../blocks/BlockMethod';
 import { EntityTabs } from '../blocks/EntityTabs';
 import { GraphZoomControls } from '../blocks/GraphControls';
+import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { IconFile, IconInterface, IconMaximize, IconModule } from '../components/Icons';
 import { parseDescription, relativeUrl, t } from '../helpers';
 
@@ -197,6 +198,7 @@ export const ModulePage = (data: any): string => {
                 </h1>
                 <div class="cdx-entity-hero-badges">
                     <span class="cdx-badge cdx-badge--entity-module">Module</span>
+                    {AiGeneratedBadge({ aiGenerated: mod.aiGenerated })}
                 </div>
                 {!data.disableFilePath && mod.file && (
                     <p class="cdx-entity-hero-file" title="Source file">

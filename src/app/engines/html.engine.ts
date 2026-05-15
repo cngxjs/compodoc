@@ -94,9 +94,12 @@ export class HtmlEngine {
             case 'changelog':
             case 'contributing':
             case 'license':
-                return Markdown({ markdown: data.markdown });
+                return Markdown({ markdown: data.markdown, aiGenerated: data.aiGenerated });
             case 'additional-page':
-                return AdditionalPage({ additionalPage: data.additionalPage });
+                return AdditionalPage({
+                    additionalPage: data.additionalPage,
+                    aiGenerated: data.aiGenerated
+                });
             case 'package-dependencies':
                 return data.disableDependencies ? '' : PackageDependencies(data);
             case 'package-properties':
