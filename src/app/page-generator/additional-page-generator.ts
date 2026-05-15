@@ -10,8 +10,37 @@ import Configuration from '../configuration';
 import FileEngine from '../engines/file.engine';
 import MarkdownEngine from '../engines/markdown.engine';
 import type { AdditionalNode } from '../interfaces/additional-node.interface';
+import type { AssetCopier } from './asset-copier';
+import type { PageWriter } from './page-writer';
 
 export class AdditionalPageGenerator {
+    public processAdditionalPages(pageWriter: PageWriter, assetCopier: AssetCopier): void {
+        logger.info('Process additional pages');
+        const pages = Configuration.mainData.additionalPages;
+        Promise.all(
+            pages.map(page => {
+                if (page.children.length > 0) {
+                    return Promise.all([
+                        pageWriter.processPage(page),
+                        ...page.children.map(childPage => pageWriter.processPage(childPage))
+                    ]);
+                } else {
+                    return pageWriter.processPage(page);
+                }
+            })
+        )
+            .then(() => {
+                if (Configuration.mainData.assetsFolder !== '') {
+                    assetCopier.processAssetsFolder();
+                }
+                assetCopier.processResources();
+            })
+            .catch(e => {
+                logger.error(e);
+                return Promise.reject(e);
+            });
+    }
+
     public prepareExternalIncludes(): Promise<any> {
         logger.info('Adding external markdown files');
         // Scan include folder for files detailed in summary.json

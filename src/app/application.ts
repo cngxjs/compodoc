@@ -1,9 +1,7 @@
 import * as path from 'node:path';
-import * as fs from 'fs-extra';
 
 import AngularVersionUtil from '../utils/angular-version.util';
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
-import { buildEntityIndex } from '../utils/entity-index.util';
 import { logger } from '../utils/logger';
 import { promiseSequential } from '../utils/promise-sequential';
 import RouterParserUtil from '../utils/router-parser.util';
@@ -15,10 +13,7 @@ import FileEngine from './engines/file.engine';
 import HtmlEngine from './engines/html.engine';
 import I18nEngine from './engines/i18n.engine';
 import MarkdownEngine from './engines/markdown.engine';
-import NgdEngine from './engines/ngd.engine';
-import { runPagefindIndex } from './engines/search-indexer.engine';
 import { initHighlighter } from './engines/syntax-highlight.engine';
-import { updateVersionsManifest } from './engines/versions-manifest.engine';
 import {
     generationPromise,
     rejectGenerationPromise,
@@ -27,11 +22,13 @@ import {
 import {
     AdditionalPageGenerator,
     AppConfigPageGenerator,
+    AssetCopier,
     ClassPageGenerator,
     ComponentPageGenerator,
     CoveragePageGenerator,
     DirectivePageGenerator,
     EntityPageGenerator,
+    GraphGenerator,
     GuardPageGenerator,
     InjectablePageGenerator,
     InterceptorPageGenerator,
@@ -41,6 +38,7 @@ import {
     NavTabsResolver,
     OverviewPageGenerator,
     PackageDependenciesPageGenerator,
+    PageWriter,
     PipePageGenerator,
     PlaygroundFileResolver,
     RoutesPageGenerator
@@ -89,6 +87,9 @@ export class Application {
     private readonly packageDependenciesPageGenerator: PackageDependenciesPageGenerator;
     private readonly playgroundFileResolver: PlaygroundFileResolver;
     private readonly coveragePageGenerator: CoveragePageGenerator;
+    private readonly assetCopier: AssetCopier;
+    private readonly pageWriter: PageWriter;
+    private readonly graphGenerator: GraphGenerator;
 
     /**
      * Create a new compodocx application instance.
@@ -129,6 +130,13 @@ export class Application {
         this.packageDependenciesPageGenerator = new PackageDependenciesPageGenerator();
         this.playgroundFileResolver = new PlaygroundFileResolver();
         this.coveragePageGenerator = new CoveragePageGenerator();
+        this.assetCopier = new AssetCopier({
+            onServe: folder => this.serveAndStartWatch(folder),
+            onDone: () => this.endCallback(),
+            getElapsedTime: () => this.getElapsedTime()
+        });
+        this.pageWriter = new PageWriter(this.additionalPageGenerator, this.assetCopier);
+        this.graphGenerator = new GraphGenerator(this.pageWriter);
     }
 
     /**
@@ -359,7 +367,7 @@ export class Application {
 
         promiseSequential(actions)
             .then(_res => {
-                this.processPages();
+                this.pageWriter.processPages();
                 this.clearUpdatedFiles();
             })
             .catch(errorMessage => {
@@ -402,7 +410,7 @@ export class Application {
 
         promiseSequential(actions)
             .then(_res => {
-                this.processPages();
+                this.pageWriter.processPages();
                 this.clearUpdatedFiles();
             })
             .catch(errorMessage => {
@@ -549,7 +557,7 @@ export class Application {
                         logger.warn(`Exported format not supported`);
                     }
                 } else {
-                    this.processGraphs();
+                    this.graphGenerator.processGraphs();
                     this.clearUpdatedFiles();
                 }
             })
@@ -739,356 +747,13 @@ export class Application {
                         logger.warn(`Exported format not supported`);
                     }
                 } else {
-                    this.processGraphs();
+                    this.graphGenerator.processGraphs();
                 }
             })
             .catch(errorMessage => {
                 logger.error(errorMessage);
                 process.exit(1);
             });
-    }
-
-    private processPage(page): Promise<void> {
-        logger.info('Process page', page.name);
-
-        const htmlData = HtmlEngine.render(Configuration.mainData, page);
-        let finalPath = Configuration.mainData.output;
-
-        if (Configuration.mainData.output.lastIndexOf('/') === -1) {
-            finalPath += '/';
-        }
-        if (page.path) {
-            finalPath += `${page.path}/`;
-        }
-
-        if (page.filename) {
-            finalPath += `${page.filename}.html`;
-        } else {
-            finalPath += `${page.name}.html`;
-        }
-
-        FileEngine.writeSync(finalPath, htmlData);
-        return Promise.resolve();
-    }
-    /**
-     * Build the standalone component dependency graph from all components
-     * that have standalone: true and imports.
-     */
-    private buildDependencyGraph() {
-        const components = (Configuration.mainData.components as any[]) ?? [];
-        const directives = (Configuration.mainData.directives as any[]) ?? [];
-        const pipes = (Configuration.mainData.pipes as any[]) ?? [];
-        const modules = (Configuration.mainData.modules as any[]) ?? [];
-        const injectables = (Configuration.mainData.injectables as any[]) ?? [];
-
-        // Build a name→type+url lookup for all known entities
-        const entityMap = new Map<string, { type: string; url?: string }>();
-        for (const c of components) {
-            entityMap.set(c.name, { type: 'component', url: `./components/${c.name}.html` });
-        }
-        for (const d of directives) {
-            entityMap.set(d.name, { type: 'directive', url: `./directives/${d.name}.html` });
-        }
-        for (const p of pipes) {
-            entityMap.set(p.name, { type: 'pipe', url: `./pipes/${p.name}.html` });
-        }
-        for (const m of modules) {
-            entityMap.set(m.name, { type: 'module', url: `./modules/${m.name}.html` });
-        }
-        for (const s of injectables) {
-            entityMap.set(s.name, { type: 'injectable', url: `./injectables/${s.name}.html` });
-        }
-
-        const nodeSet = new Set<string>();
-        const edges: Array<{ source: string; target: string }> = [];
-
-        for (const comp of components) {
-            if (!comp.standalone || !comp.imports?.length) {
-                continue;
-            }
-            nodeSet.add(comp.name);
-            for (const imp of comp.imports) {
-                const impName = typeof imp === 'string' ? imp : imp.name;
-                if (!impName) {
-                    continue;
-                }
-                nodeSet.add(impName);
-                edges.push({ source: comp.name, target: impName });
-            }
-        }
-
-        const nodes = Array.from(nodeSet).map(name => {
-            const info = entityMap.get(name);
-            return {
-                name,
-                type: info?.type ?? 'module',
-                url: info?.url
-            };
-        });
-
-        Configuration.mainData.dependencyGraph = { nodes, edges };
-    }
-
-    private buildEntityIndex() {
-        const index = buildEntityIndex(
-            Configuration.mainData as unknown as Record<string, unknown>
-        );
-        Configuration.mainData.entityIndex = index;
-    }
-
-    public processPages() {
-        this.buildDependencyGraph();
-        this.buildEntityIndex();
-        Configuration.mainData.generatedAt = new Date().toISOString();
-        const pages = [...Configuration.pages].sort((a, b) => a.name.localeCompare(b.name));
-
-        logger.info('Process pages');
-        Promise.all(pages.map(page => this.processPage(page)))
-            .then(() => {
-                const callbacksAfterGenerateSearchIndexJson = () => {
-                    if (Configuration.mainData.additionalPages.length > 0) {
-                        this.processAdditionalPages();
-                    } else {
-                        if (Configuration.mainData.assetsFolder !== '') {
-                            this.processAssetsFolder();
-                        }
-                        this.processResources();
-                    }
-                };
-                callbacksAfterGenerateSearchIndexJson();
-            })
-            .catch(e => {
-                logger.error(e);
-            });
-    }
-
-    public processAdditionalPages() {
-        logger.info('Process additional pages');
-        const pages = Configuration.mainData.additionalPages;
-        Promise.all(
-            pages.map(page => {
-                if (page.children.length > 0) {
-                    return Promise.all([
-                        this.processPage(page),
-                        ...page.children.map(childPage => this.processPage(childPage))
-                    ]);
-                } else {
-                    return this.processPage(page);
-                }
-            })
-        )
-            .then(() => {
-                if (Configuration.mainData.assetsFolder !== '') {
-                    this.processAssetsFolder();
-                }
-                this.processResources();
-            })
-            .catch(e => {
-                logger.error(e);
-                return Promise.reject(e);
-            });
-    }
-
-    public processAssetsFolder(): void {
-        logger.info('Copy assets folder');
-
-        if (!FileEngine.existsSync(Configuration.mainData.assetsFolder)) {
-            logger.error(
-                `Provided assets folder ${Configuration.mainData.assetsFolder} did not exist`
-            );
-        } else {
-            let finalOutput = Configuration.mainData.output;
-
-            const testOutputDir = Configuration.mainData.output.match(cwd);
-
-            if (testOutputDir && testOutputDir.length > 0) {
-                finalOutput = Configuration.mainData.output.replace(cwd + path.sep, '');
-            }
-
-            const destination = path.join(
-                finalOutput,
-                path.basename(Configuration.mainData.assetsFolder)
-            );
-            fs.copy(
-                path.resolve(Configuration.mainData.assetsFolder),
-                path.resolve(destination),
-                err => {
-                    if (err) {
-                        logger.error('Error during resources copy ', err);
-                    }
-                }
-            );
-        }
-    }
-
-    public processResources() {
-        logger.info('Copy main resources');
-
-        const onComplete = () => {
-            // Run Pagefind search indexing after all HTML files are written
-            if (!Configuration.mainData.disableSearch) {
-                runPagefindIndex(Configuration.mainData.output);
-            }
-
-            // Multi-version: append/update this version's entry in
-            // <versionsRoot>/versions.json. Runs after Pagefind so an
-            // indexing failure doesn't leave a stale manifest behind. The
-            // manifest stores a URL-relative path with a trailing slash
-            // (the switcher widget concatenates it with the per-page tail).
-            if (Configuration.mainData.multiVersion && Configuration.mainData.versionsRoot) {
-                try {
-                    updateVersionsManifest({
-                        versionsRoot: Configuration.mainData.versionsRoot,
-                        label: Configuration.mainData.versionLabel,
-                        path: `${Configuration.mainData.versionLabel}/`
-                    });
-                } catch (err) {
-                    logger.error(`Failed to update versions.json: ${(err as Error).message}`);
-                    process.exit(1);
-                }
-            }
-
-            logger.info(
-                'Documentation generated in ' +
-                    Configuration.mainData.output +
-                    ' in ' +
-                    this.getElapsedTime() +
-                    ' seconds using ' +
-                    Configuration.mainData.theme +
-                    ' theme'
-            );
-            if (Configuration.mainData.serve) {
-                logger.info(
-                    `Serving documentation from ${Configuration.mainData.output} at http://${Configuration.mainData.hostname}:${Configuration.mainData.port}`
-                );
-                this.serveAndStartWatch(Configuration.mainData.output);
-            } else {
-                resolveGenerationPromise(true);
-                this.endCallback();
-            }
-        };
-
-        let finalOutput = Configuration.mainData.output;
-
-        const testOutputDir = Configuration.mainData.output.match(cwd);
-
-        if (testOutputDir && testOutputDir.length > 0) {
-            finalOutput = Configuration.mainData.output.replace(cwd + path.sep, '');
-        }
-
-        fs.copy(
-            path.resolve(`${__dirname}/../src/resources/`),
-            path.resolve(finalOutput),
-            errorCopy => {
-                if (errorCopy) {
-                    logger.error('Error during resources copy ', errorCopy);
-                } else {
-                    const extThemePromise = new Promise((extThemeResolve, extThemeReject) => {
-                        if (Configuration.mainData.customThemePath) {
-                            fs.copy(
-                                Configuration.mainData.customThemePath,
-                                path.resolve(`${finalOutput}/styles/custom.css`),
-                                errorCopyTheme => {
-                                    if (errorCopyTheme) {
-                                        logger.error(
-                                            'Error during custom theme copy ',
-                                            errorCopyTheme
-                                        );
-                                        extThemeReject();
-                                    } else {
-                                        logger.info('Custom theme copy succeeded');
-                                        extThemeResolve(true);
-                                    }
-                                }
-                            );
-                        } else if (Configuration.mainData.extTheme) {
-                            fs.copy(
-                                path.resolve(cwd + path.sep + Configuration.mainData.extTheme),
-                                path.resolve(`${finalOutput}/styles/`),
-                                errorCopyTheme => {
-                                    if (errorCopyTheme) {
-                                        logger.error(
-                                            'Error during external styling theme copy ',
-                                            errorCopyTheme
-                                        );
-                                        extThemeReject();
-                                    } else {
-                                        logger.info('External styling theme copy succeeded');
-                                        extThemeResolve(true);
-                                    }
-                                }
-                            );
-                        } else {
-                            extThemeResolve(true);
-                        }
-                    });
-
-                    const customFaviconPromise = new Promise(
-                        (customFaviconResolve, customFaviconReject) => {
-                            if (Configuration.mainData.customFavicon !== '') {
-                                logger.info(`Custom favicon supplied`);
-                                fs.copy(
-                                    path.resolve(
-                                        cwd + path.sep + Configuration.mainData.customFavicon
-                                    ),
-                                    path.resolve(`${finalOutput}/images/favicon.ico`),
-                                    errorCopyFavicon => {
-                                        // tslint:disable-line
-                                        if (errorCopyFavicon) {
-                                            logger.error(
-                                                'Error during resources copy of favicon',
-                                                errorCopyFavicon
-                                            );
-                                            customFaviconReject();
-                                        } else {
-                                            logger.info('External custom favicon copy succeeded');
-                                            customFaviconResolve(true);
-                                        }
-                                    }
-                                );
-                            } else {
-                                customFaviconResolve(true);
-                            }
-                        }
-                    );
-
-                    const customLogoPromise = new Promise((customLogoResolve, customLogoReject) => {
-                        if (Configuration.mainData.customLogo !== '') {
-                            logger.info(`Custom logo supplied`);
-                            fs.copy(
-                                path.resolve(cwd + path.sep + Configuration.mainData.customLogo),
-                                path.resolve(
-                                    finalOutput +
-                                        '/images/' +
-                                        Configuration.mainData.customLogo.split('/').pop()
-                                ),
-                                errorCopyLogo => {
-                                    // tslint:disable-line
-                                    if (errorCopyLogo) {
-                                        logger.error(
-                                            'Error during resources copy of logo',
-                                            errorCopyLogo
-                                        );
-                                        customLogoReject();
-                                    } else {
-                                        logger.info('External custom logo copy succeeded');
-                                        customLogoResolve(true);
-                                    }
-                                }
-                            );
-                        } else {
-                            customLogoResolve(true);
-                        }
-                    });
-
-                    Promise.all([extThemePromise, customFaviconPromise, customLogoPromise]).then(
-                        () => {
-                            onComplete();
-                        }
-                    );
-                }
-            }
-        );
     }
 
     /**
@@ -1098,104 +763,6 @@ export class Application {
      */
     private getElapsedTime() {
         return (Date.now() - startTime.valueOf()) / 1000;
-    }
-
-    public processGraphs() {
-        if (Configuration.mainData.disableGraph) {
-            logger.info('Graph generation disabled');
-            this.processPages();
-        } else {
-            logger.info('Process main graph');
-            const modules = Configuration.mainData.modules;
-            let i = 0;
-            const len = modules.length;
-            const loop = () => {
-                if (i <= len - 1) {
-                    logger.info('Process module graph ', modules[i].name);
-                    let finalPath = Configuration.mainData.output;
-                    if (Configuration.mainData.output.lastIndexOf('/') === -1) {
-                        finalPath += '/';
-                    }
-                    finalPath += `modules/${modules[i].name}`;
-                    const _rawModule = DependenciesEngine.getRawModule(modules[i].name);
-                    if (
-                        _rawModule.declarations.length > 0 ||
-                        _rawModule.bootstrap.length > 0 ||
-                        _rawModule.imports.length > 0 ||
-                        _rawModule.exports.length > 0 ||
-                        _rawModule.providers.length > 0
-                    ) {
-                        NgdEngine.renderGraph(
-                            modules[i].file,
-                            finalPath,
-                            'f',
-                            modules[i].name
-                        ).then(
-                            () => {
-                                NgdEngine.readGraph(
-                                    path.resolve(`${finalPath + path.sep}dependencies.svg`),
-                                    modules[i].name
-                                ).then(
-                                    data => {
-                                        modules[i].graph = data;
-                                        i++;
-                                        loop();
-                                    },
-                                    err => {
-                                        logger.error('Error during graph read: ', err);
-                                    }
-                                );
-                            },
-                            errorMessage => {
-                                logger.error(errorMessage);
-                            }
-                        );
-                    } else {
-                        i++;
-                        loop();
-                    }
-                } else {
-                    this.processPages();
-                }
-            };
-            let finalMainGraphPath = Configuration.mainData.output;
-            if (finalMainGraphPath.lastIndexOf('/') === -1) {
-                finalMainGraphPath += '/';
-            }
-            finalMainGraphPath += 'graph';
-            NgdEngine.init(path.resolve(finalMainGraphPath));
-
-            NgdEngine.renderGraph(
-                Configuration.mainData.tsconfig,
-                path.resolve(finalMainGraphPath),
-                'p'
-            ).then(
-                () => {
-                    NgdEngine.readGraph(
-                        path.resolve(`${finalMainGraphPath + path.sep}dependencies.svg`),
-                        'Main graph'
-                    ).then(
-                        data => {
-                            Configuration.mainData.mainGraph = data;
-                            loop();
-                        },
-                        err => {
-                            logger.error('Error during main graph reading : ', err);
-                            Configuration.mainData.disableMainGraph = true;
-                            loop();
-                        }
-                    );
-                },
-                err => {
-                    logger.error(
-                        'Ooops error during main graph generation, moving on next part with main graph disabled : ',
-                        err
-                    );
-                    Configuration.mainData.disableMainGraph = true;
-                    loop();
-                }
-            );
-        }
     }
 
     public serveAndStartWatch(folder: string): void {
