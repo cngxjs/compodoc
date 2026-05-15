@@ -1,9 +1,16 @@
 /* Example container */
 .cdx-example-container {
+    display: block;
+    box-sizing: content-box;
     width: 100%;
-    min-height: 400px;
+    min-height: 120px;
     border: 1px solid var(--color-cdx-border);
     border-radius: var(--radius-cdx-md);
+    background: var(--color-cdx-bg);
+}
+
+.cdx-example-container + .cdx-example-container {
+    margin-top: var(--spacing-cdx-lg);
 }
 
 /* JSDoc text example (variant: 'text') */

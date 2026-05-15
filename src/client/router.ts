@@ -9,6 +9,7 @@ declare function gtag(...args: unknown[]): void;
 import { initAnimations } from './animate';
 import { initCodeBlocks } from './code-blocks';
 import { initCoverage } from './coverage';
+import { initExamples } from './examples';
 import { initGraphs } from './graphs';
 import { applyHashTarget, resolveHash } from './hash-router';
 import { resetKeyboardState } from './keyboard';
@@ -94,6 +95,7 @@ const reinitPage = async () => {
     initCodeBlocks();
     initGraphs();
     initCoverage();
+    initExamples();
     initAnimations();
     // Re-bind StackBlitz launchers — `<button class="cdx-playground-launch">`
     // tags from the swapped page need a fresh click handler. WeakSet guards

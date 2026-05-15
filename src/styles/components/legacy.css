@@ -36,8 +36,7 @@ a[href] {
 .content table {
     margin-top: var(--spacing-cdx-xl);
 }
-.content-data .exampleContainer,
-.content-data .cdx-example-container {
+.content-data .exampleContainer {
     height: 100%;
     width: 100%;
 }
