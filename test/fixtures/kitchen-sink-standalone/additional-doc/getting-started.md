@@ -1,3 +1,4 @@
+<!-- @aiGenerated 2026-05 -->
 # Getting Started
 
 Welcome to the **Kitchen Sink Standalone** demo — a modern Angular app with no NgModules.

@@ -38,6 +38,7 @@ import {
  * ```
  *
  * @since 2.0.0
+ * @aiGenerated claude-opus-4.7
  *
  * <example-url>../assets/signal-card-short.html</example-url>
  * <example-url>../assets/signal-card-tall.html</example-url>
