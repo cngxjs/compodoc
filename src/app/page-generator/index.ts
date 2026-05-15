@@ -1,4 +1,5 @@
 export { ClassPageGenerator } from './class-page-generator';
+export { ComponentPageGenerator } from './component-page-generator';
 export { DirectivePageGenerator } from './directive-page-generator';
 export { EntityPageGenerator } from './entity-page-generator';
 export { GuardPageGenerator } from './guard-page-generator';
