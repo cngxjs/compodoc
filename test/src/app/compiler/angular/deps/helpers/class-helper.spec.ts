@@ -311,9 +311,9 @@ describe('ClassHelper', () => {
             const result = { deprecated: false, deprecationMessage: '' };
 
             // Access private method through composed jsdocExtractor
-            const processJSDocTags = (
-                classHelper as any
-            ).jsdocExtractor.processJSDocTags.bind((classHelper as any).jsdocExtractor);
+            const processJSDocTags = (classHelper as any).jsdocExtractor.processJSDocTags.bind(
+                (classHelper as any).jsdocExtractor
+            );
             processJSDocTags(jsdoctags, result);
 
             expect(result.deprecated).toBe(true);
@@ -326,8 +326,9 @@ describe('ClassHelper', () => {
                 modifiers: []
             };
 
-            // Access private method through prototype
-            const isPrivate = (classHelper as any).isPrivate.bind(classHelper);
+            // Access via composed decoratorInspector
+            const inspector = (classHelper as any).decoratorInspector;
+            const isPrivate = inspector.isPrivate.bind(inspector);
             const result = isPrivate(mockMember);
 
             expect(result).toBe(true);
@@ -342,9 +343,8 @@ describe('ClassHelper', () => {
                 expression: { expression: { text: 'Directive' } }
             } as any;
 
-            const isDirectiveDecorator = (classHelper as any).isDirectiveDecorator.bind(
-                classHelper
-            );
+            const inspector = (classHelper as any).decoratorInspector;
+            const isDirectiveDecorator = inspector.isDirectiveDecorator.bind(inspector);
 
             expect(isDirectiveDecorator(componentDecorator)).toBe(true);
             expect(isDirectiveDecorator(directiveDecorator)).toBe(true);
@@ -355,7 +355,8 @@ describe('ClassHelper', () => {
                 expression: { expression: { text: 'Injectable' } }
             } as any;
 
-            const isServiceDecorator = (classHelper as any).isServiceDecorator.bind(classHelper);
+            const inspector = (classHelper as any).decoratorInspector;
+            const isServiceDecorator = inspector.isServiceDecorator.bind(inspector);
 
             expect(isServiceDecorator(injectableDecorator)).toBe(true);
         });

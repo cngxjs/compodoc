@@ -12,6 +12,7 @@ import { StringifyObjectLiteralExpression } from '../../../../../utils/object-li
 import { getNamesCompareFn, markedtags, mergeTagsAndArgs } from '../../../../../utils/utils';
 import Configuration from '../../../../configuration';
 import DependenciesEngine from '../../../../engines/dependencies.engine';
+import { DecoratorInspector } from './class-helper/decorator-inspector';
 import { JsdocExtractor } from './class-helper/jsdoc-extractor';
 import { TypeRenderer } from './class-helper/type-renderer';
 
@@ -19,6 +20,7 @@ export class ClassHelper {
     private jsdocParserUtil = new JsdocParserUtil();
     private typeRenderer = new TypeRenderer();
     private jsdocExtractor = new JsdocExtractor();
+    private decoratorInspector = new DecoratorInspector();
 
     constructor(private typeChecker: ts.TypeChecker) {}
 
@@ -150,7 +152,7 @@ export class ClassHelper {
      * Ensure private keyword is added for ECMAScript private fields
      */
     private ensurePrivateKeyword(result: any, node: any): void {
-        if (this.isPrivate(node)) {
+        if (this.decoratorInspector.isPrivate(node)) {
             if (!result.modifierKind) {
                 result.modifierKind = [];
             }
@@ -174,38 +176,6 @@ export class ClassHelper {
                 result.description = markedAcl(rawDescription);
             }
         }
-    }
-
-    private getDecoratorOfType(node, decoratorType) {
-        const decorators = getNodeDecorators(node) || [];
-        const result = [];
-        const len = decorators.length;
-
-        if (len > 1) {
-            for (let i = 0; i < decorators.length; i++) {
-                const expr = decorators[i].expression as any;
-                if (expr.expression) {
-                    if (expr.expression.text === decoratorType) {
-                        result.push(decorators[i]);
-                    }
-                }
-            }
-            if (result.length > 0) {
-                return result;
-            }
-        } else {
-            if (len === 1) {
-                const expr = decorators[0].expression as any;
-                if (expr?.expression) {
-                    if (expr.expression.text === decoratorType) {
-                        result.push(decorators[0]);
-                        return result;
-                    }
-                }
-            }
-        }
-
-        return undefined;
     }
 
     private formatDecorators(decorators) {
@@ -453,114 +423,6 @@ export class ClassHelper {
         }
     }
 
-    private hasDecoratorType(decorator: ts.Decorator, ...types: string[]): boolean {
-        if ((decorator.expression as any).expression) {
-            const decoratorText = (decorator.expression as any).expression.text;
-            return types.includes(decoratorText);
-        }
-        return false;
-    }
-
-    private isDirectiveDecorator(decorator: ts.Decorator): boolean {
-        return this.hasDecoratorType(decorator, 'Directive', 'Component');
-    }
-
-    private isServiceDecorator(decorator) {
-        return this.hasDecoratorType(decorator, 'Injectable');
-    }
-
-    private isPrivate(member): boolean {
-        /**
-         * Copyright https://github.com/ng-bootstrap/ng-bootstrap
-         */
-        if (member.modifiers) {
-            const isPrivate: boolean = member.modifiers.some(
-                modifier => modifier.kind === SyntaxKind.PrivateKeyword
-            );
-            if (isPrivate) {
-                return true;
-            }
-        }
-        // Check for ECMAScript Private Fields
-        if (member.name?.escapedText) {
-            const isPrivate: boolean = member.name.escapedText.indexOf('#') === 0;
-            if (isPrivate) {
-                return true;
-            }
-        }
-        return this.isHiddenMember(member);
-    }
-
-    private isProtected(member): boolean {
-        if (member.modifiers) {
-            const isProtected: boolean = member.modifiers.some(
-                modifier => modifier.kind === SyntaxKind.ProtectedKeyword
-            );
-            if (isProtected) {
-                return true;
-            }
-        }
-        return this.isHiddenMember(member);
-    }
-
-    private isInternal(member): boolean {
-        /**
-         * Copyright https://github.com/ng-bootstrap/ng-bootstrap
-         */
-        const internalTags: string[] = ['internal'];
-        if (member.jsDoc) {
-            for (const doc of member.jsDoc) {
-                if (doc.tags) {
-                    for (const tag of doc.tags) {
-                        if (internalTags.indexOf(tag.tagName.text) > -1) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private isPublic(member): boolean {
-        if (member.modifiers) {
-            const isPublic: boolean = member.modifiers.some(
-                modifier => modifier.kind === SyntaxKind.PublicKeyword
-            );
-            if (isPublic) {
-                return true;
-            }
-        }
-        return this.isHiddenMember(member);
-    }
-
-    private isHiddenMember(member): boolean {
-        /**
-         * Copyright https://github.com/ng-bootstrap/ng-bootstrap
-         */
-        const internalTags: string[] = ['hidden'];
-        if (member.jsDoc) {
-            for (const doc of member.jsDoc) {
-                if (doc.tags) {
-                    for (const tag of doc.tags) {
-                        if (internalTags.indexOf(tag.tagName.text) > -1) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private isPipeDecorator(decorator) {
-        return this.hasDecoratorType(decorator, 'Pipe');
-    }
-
-    private isModuleDecorator(decorator) {
-        return this.hasDecoratorType(decorator, 'NgModule');
-    }
-
     /**
      * VISITERS
      */
@@ -676,10 +538,13 @@ export class ClassHelper {
 
                 // RETURN TOO EARLY FOR MANY DECORATORS !!!!
                 // iterating through the decorators array we have to keep the flags `true` values from the previous loop iteration
-                isDirective = isDirective || this.isDirectiveDecorator(classDecorators[a]);
-                isService = isService || this.isServiceDecorator(classDecorators[a]);
-                isPipe = isPipe || this.isPipeDecorator(classDecorators[a]);
-                isModule = isModule || this.isModuleDecorator(classDecorators[a]);
+                isDirective =
+                    isDirective || this.decoratorInspector.isDirectiveDecorator(classDecorators[a]);
+                isService =
+                    isService || this.decoratorInspector.isServiceDecorator(classDecorators[a]);
+                isPipe = isPipe || this.decoratorInspector.isPipeDecorator(classDecorators[a]);
+                isModule =
+                    isModule || this.decoratorInspector.isModuleDecorator(classDecorators[a]);
             }
             if (isDirective) {
                 return {
@@ -828,10 +693,16 @@ export class ClassHelper {
             // Allows typescript guess type when using ts.is*
             const member = members[i];
 
-            inputDecorator = this.getDecoratorOfType(member, 'Input');
-            outputDecorator = this.getDecoratorOfType(member, 'Output');
-            const parsedHostBindings = this.getDecoratorOfType(member, 'HostBinding');
-            const parsedHostListeners = this.getDecoratorOfType(member, 'HostListener');
+            inputDecorator = this.decoratorInspector.getDecoratorOfType(member, 'Input');
+            outputDecorator = this.decoratorInspector.getDecoratorOfType(member, 'Output');
+            const parsedHostBindings = this.decoratorInspector.getDecoratorOfType(
+                member,
+                'HostBinding'
+            );
+            const parsedHostListeners = this.decoratorInspector.getDecoratorOfType(
+                member,
+                'HostListener'
+            );
 
             kind = member.kind;
 
@@ -839,7 +710,10 @@ export class ClassHelper {
                 continue;
             }
 
-            if (this.isInternal(member) && Configuration.mainData.disableInternal) {
+            if (
+                this.decoratorInspector.isInternal(member) &&
+                Configuration.mainData.disableInternal
+            ) {
                 continue;
             }
 
@@ -868,11 +742,24 @@ export class ClassHelper {
                 }
             }
 
-            if (!this.isHiddenMember(member)) {
-                if (!(this.isPrivate(member) && Configuration.mainData.disablePrivate)) {
-                    if (!(this.isInternal(member) && Configuration.mainData.disableInternal)) {
+            if (!this.decoratorInspector.isHiddenMember(member)) {
+                if (
+                    !(
+                        this.decoratorInspector.isPrivate(member) &&
+                        Configuration.mainData.disablePrivate
+                    )
+                ) {
+                    if (
+                        !(
+                            this.decoratorInspector.isInternal(member) &&
+                            Configuration.mainData.disableInternal
+                        )
+                    ) {
                         if (
-                            !(this.isProtected(member) && Configuration.mainData.disableProtected)
+                            !(
+                                this.decoratorInspector.isProtected(member) &&
+                                Configuration.mainData.disableProtected
+                            )
                         ) {
                             if (ts.isMethodDeclaration(member) || ts.isMethodSignature(member)) {
                                 methods.push(this.visitMethodDeclaration(member, sourceFile));
@@ -1156,12 +1043,12 @@ export class ClassHelper {
                     continue;
                 }
                 if (
-                    this.isInternal(parameterOfConstructor) &&
+                    this.decoratorInspector.isInternal(parameterOfConstructor) &&
                     Configuration.mainData.disableInternal
                 ) {
                     continue;
                 }
-                if (this.isPublic(parameterOfConstructor)) {
+                if (this.decoratorInspector.isPublic(parameterOfConstructor)) {
                     _parameters.push(this.visitProperty(constr.parameters[i], sourceFile));
                 }
             }
