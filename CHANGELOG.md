@@ -6,7 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
-## Unreleased
+## [0.4.7] — 2026-05-15
+
+`@aiGenerated` content marker, iframe-content auto-sizing with theme sync on the Examples tab, a fix for the sticky source-viewer header, plus the bulk of the Phase 6 internal refactor.
+
+### Added
+
+- **`@aiGenerated` JSDoc tag for entities and `<!-- @aiGenerated [value] -->` marker for markdown.** A single mechanism for flagging AI-assisted content across the documentation surface. On any class-level JSDoc (component, directive, class, interface, pipe, injectable, guard, interceptor, module, standalone function), `@aiGenerated` renders a purple "AI generated" chip in the entity hero next to the Beta / Since / Breaking row. The same value-aware syntax works as an HTML-comment marker at the top of any markdown source — additional pages (`--includes` + `summary.json`) and the five root markdowns (README, CHANGELOG, CONTRIBUTING, LICENSE, TODO) — and renders as a full-width banner above the page body. Optional inline value (model name, date, …) surfaces in the badge tooltip. Locales: English and German labels ship; other locales fall back to English. CSS tokens: `--color-cdx-badge-ai-generated` for chip chrome (purple `hsl(290 55% 48%)`), `cdx-ai-generated-banner` for the markdown banner block. Not yet wired through the neighbour-`*.md` README tab on entity pages — that's a follow-up.
+
+- **Example-tab iframes auto-resize to their content height and stack with proper spacing.** `iframe.cdx-example-container` now reports its inner `body.scrollHeight` via a same-origin `ResizeObserver` + `load` handler, so each example shrinks or grows to fit its content — no more 400px min-height clip that masked short demos and forced internal scrollbars on tall ones. Sibling iframes get a `--spacing-cdx-lg` margin so they no longer butt up against each other, `box-sizing: content-box` removes the 1px-border-eats-the-viewport issue that produced phantom scrollbars, and the `.dark` class on the parent document propagates into same-origin iframe contents (with a `postMessage({ type: 'cdx-iframe-theme', dark })` fallback for opt-in cross-origin examples) so demo HTML can theme itself via `html.dark { ... }`. Cross-origin examples keep the CSS `min-height: 120px` fallback. New client module: `src/client/examples.ts`.
+
+- **Dev-watch fixture conventions: `assets/` and `additional-doc/` folders auto-pass to the CLI.** `npm run dev` now appends `-a test/fixtures/<fixture>/assets` and `--includes ./test/fixtures/<fixture>/additional-doc` automatically when the matching directory exists under the active fixture. Any fixture can opt in to assets-copy or summary-driven additional pages just by creating the folder — no manual flag, no per-fixture config tweaks.
+
+### Fixed
+
+- **Sticky source-viewer header sat 33px above the scroll viewport, leaving only a 10-18px sliver visible while reading code.** Switched `.cdx-source-viewer-header` from `top: -33px` to `top: -0.5rem` so the file-path bar negates `.content`'s 8px top padding and pins flush at viewport `y: 0`. Sticky scope-context stack (`.cdx-source-viewer-sticky-stack`) moves from `top: 10px` to `top: calc(var(--cdx-source-header-h, 43px) - 0.5rem)` so scope lines tuck right under the header rather than overlapping it. Sentinel + `is-stuck` class detection unchanged.
 
 ### Internal
 
