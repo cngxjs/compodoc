@@ -1,7 +1,7 @@
-import Html from '@kitajs/html';
-import { VersionSwitcher } from './blocks/VersionSwitcher';
-import { IconMoon, IconPalette, IconSearch, IconSun } from './components/Icons';
-import { relativeUrl } from './helpers';
+import Html from "@kitajs/html";
+import { VersionSwitcher } from "./blocks/VersionSwitcher";
+import { IconMoon, IconPalette, IconSearch, IconSun } from "./components/Icons";
+import { relativeUrl } from "./helpers";
 
 export type PageData = {
     readonly documentationMainName: string;
@@ -46,14 +46,16 @@ window.addEventListener('DOMContentLoaded', sendCurrentUrlToParent, false);
 
 const PageGlobals = (props: { data: PageData }) => {
     const { data } = props;
-    const pageUrl = data.filename ? `${data.filename}.html` : `${data.name}.html`;
+    const pageUrl = data.filename
+        ? `${data.filename}.html`
+        : `${data.name}.html`;
     return (
         <script>
             {`
-                var COMPODOC_CURRENT_PAGE_DEPTH = ${data.depth};
-                var COMPODOC_CURRENT_PAGE_CONTEXT = '${data.context}';
-                var COMPODOC_CURRENT_PAGE_URL = '${pageUrl}';
-                ${!data.disableSearch ? `var MAX_SEARCH_RESULTS = ${data.maxSearchResults ?? 15};` : ''}
+                window.COMPODOC_CURRENT_PAGE_DEPTH = ${data.depth};
+                window.COMPODOC_CURRENT_PAGE_CONTEXT = '${data.context}';
+                window.COMPODOC_CURRENT_PAGE_URL = '${pageUrl}';
+                ${!data.disableSearch ? `window.MAX_SEARCH_RESULTS = ${data.maxSearchResults ?? 15};` : ""}
             `}
         </script>
     );
@@ -61,7 +63,10 @@ const PageGlobals = (props: { data: PageData }) => {
 
 const GoogleAnalytics = (props: { gaID: string }) => (
     <>
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${props.gaID}`}></script>
+        <script
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${props.gaID}`}
+        ></script>
         <script>
             {`
             window.dataLayer = window.dataLayer || [];
@@ -75,7 +80,11 @@ const GoogleAnalytics = (props: { gaID: string }) => (
 
 const CommandPalette = () =>
     (
-        <dialog id="cdx-command-palette" class="cdx-cp" aria-label="Search documentation">
+        <dialog
+            id="cdx-command-palette"
+            class="cdx-cp"
+            aria-label="Search documentation"
+        >
             <div class="cdx-cp-panel">
                 <div class="cdx-cp-header">
                     <svg
@@ -104,7 +113,11 @@ const CommandPalette = () =>
                         aria-controls="cdx-cp-listbox"
                         aria-autocomplete="list"
                     />
-                    <button class="cdx-cp-close" aria-label="Close search" type="button">
+                    <button
+                        class="cdx-cp-close"
+                        aria-label="Close search"
+                        type="button"
+                    >
                         <svg
                             width="16"
                             height="16"
@@ -146,15 +159,19 @@ const CommandPalette = () =>
     ) as string;
 
 /** Built-in themes with display name and primary swatch color */
-const BUILTIN_THEMES: ReadonlyArray<{ id: string; name: string; swatch: string }> = [
-    { id: 'default', name: 'Default', swatch: 'hsl(0 0% 15%)' },
-    { id: 'ocean', name: 'Ocean', swatch: 'hsl(200 60% 42%)' },
-    { id: 'ember', name: 'Ember', swatch: 'hsl(24 90% 52%)' },
-    { id: 'midnight', name: 'Midnight', swatch: 'hsl(262 68% 58%)' },
-    { id: 'neon', name: 'Neon', swatch: 'hsl(180 100% 50%)' },
-    { id: 'brutalist', name: 'Brutalist', swatch: 'hsl(0 0% 0%)' },
-    { id: 'nord', name: 'Nord', swatch: '#5e81ac' },
-    { id: 'rose-pine', name: 'Rose Pine', swatch: '#d7827e' }
+const BUILTIN_THEMES: ReadonlyArray<{
+    id: string;
+    name: string;
+    swatch: string;
+}> = [
+    { id: "default", name: "Default", swatch: "hsl(0 0% 15%)" },
+    { id: "ocean", name: "Ocean", swatch: "hsl(200 60% 42%)" },
+    { id: "ember", name: "Ember", swatch: "hsl(24 90% 52%)" },
+    { id: "midnight", name: "Midnight", swatch: "hsl(262 68% 58%)" },
+    { id: "neon", name: "Neon", swatch: "hsl(180 100% 50%)" },
+    { id: "brutalist", name: "Brutalist", swatch: "hsl(0 0% 0%)" },
+    { id: "nord", name: "Nord", swatch: "#5e81ac" },
+    { id: "rose-pine", name: "Rose Pine", swatch: "#d7827e" },
 ];
 
 const SidebarHeader = (props: {
@@ -167,11 +184,22 @@ const SidebarHeader = (props: {
         <div class="cdx-sidebar-header">
             <div class="cdx-sidebar-header-row">
                 {props.logo ? (
-                    <a href="index.html" data-type="index-link" class="cdx-sidebar-logo">
-                        <img src={props.r(`images/${props.logo}`)} alt={props.name} />
+                    <a
+                        href="index.html"
+                        data-type="index-link"
+                        class="cdx-sidebar-logo"
+                    >
+                        <img
+                            src={props.r(`images/${props.logo}`)}
+                            alt={props.name}
+                        />
                     </a>
                 ) : (
-                    <a href="index.html" data-type="index-link" class="cdx-sidebar-brand">
+                    <a
+                        href="index.html"
+                        data-type="index-link"
+                        class="cdx-sidebar-brand"
+                    >
                         {props.name}
                     </a>
                 )}
@@ -213,9 +241,11 @@ const ContentActions = (props: {
     depth: number;
 }): string => {
     const isDefaultTheme =
-        !props.lockedTheme || props.lockedTheme === 'default' || props.lockedTheme === 'gitbook';
+        !props.lockedTheme ||
+        props.lockedTheme === "default" ||
+        props.lockedTheme === "gitbook";
     const showThemePicker = isDefaultTheme;
-    const activeTheme = isDefaultTheme ? 'default' : props.lockedTheme!;
+    const activeTheme = isDefaultTheme ? "default" : props.lockedTheme!;
 
     return (
         <div class="cdx-content-actions">
@@ -231,10 +261,12 @@ const ContentActions = (props: {
                         {IconPalette()}
                     </button>
                     <ul class="cdx-theme-picker-menu" aria-label="Theme" hidden>
-                        {BUILTIN_THEMES.map(t => (
+                        {BUILTIN_THEMES.map((t) => (
                             <li
                                 data-cdx-theme={t.id}
-                                aria-current={t.id === activeTheme ? 'true' : undefined}
+                                aria-current={
+                                    t.id === activeTheme ? "true" : undefined
+                                }
                             >
                                 <span
                                     class="cdx-theme-swatch"
@@ -253,8 +285,8 @@ const ContentActions = (props: {
                     aria-label="Toggle dark mode"
                     aria-pressed="false"
                 >
-                    {IconMoon('icon-moon')}
-                    {IconSun('icon-sun')}
+                    {IconMoon("icon-moon")}
+                    {IconSun("icon-sun")}
                 </button>
             )}
             {props.multiVersion && props.versionLabel && (
@@ -271,14 +303,18 @@ const ContentActions = (props: {
 /** Build a descriptive page title for browser tab + Pagefind indexing */
 const pageTitle = (data: PageData): string => {
     const base = data.documentationMainName;
-    if (!data.context || data.context === 'readme' || data.context === 'getting-started') {
+    if (
+        !data.context ||
+        data.context === "readme" ||
+        data.context === "getting-started"
+    ) {
         return base;
     }
-    const name = data.name || data.filename || '';
+    const name = data.name || data.filename || "";
     if (!name) {
         return base;
     }
-    const ctx = data.context.replaceAll('-', ' ');
+    const ctx = data.context.replaceAll("-", " ");
     return `${name} - ${ctx} - ${base}`;
 };
 
@@ -286,7 +322,7 @@ export const Layout = (props: LayoutProps): string => {
     const { data, content, menuHtml } = props;
     const r = (path: string) => relativeUrl(data.depth, path);
 
-    return ('<!doctype html>\n' +
+    return ("<!doctype html>\n" +
     (
         <html class="no-js" lang="en">
             <head>
@@ -294,28 +330,36 @@ export const Layout = (props: LayoutProps): string => {
                 <meta http-equiv="x-ua-compatible" content="ie=edge" />
                 <title>{pageTitle(data)}</title>
                 <meta name="description" content="" />
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <link rel="icon" type="image/x-icon" href={r('images/favicon.ico')} />
+                <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1"
+                />
+                <link
+                    rel="icon"
+                    type="image/x-icon"
+                    href={r("images/favicon.ico")}
+                />
                 <script>{`(function(){try{var d=localStorage.getItem('compodocx_darkmode-state')||localStorage.getItem('compodoc_darkmode-state');var dark=d!==null?d==='true':window.matchMedia('(prefers-color-scheme:dark)').matches;if(dark)document.documentElement.classList.add('dark');if(/Mac|iPhone|iPad/.test(navigator.platform||''))document.documentElement.classList.add('cdx-mac');if(location.hash&&location.hash!=='#')document.documentElement.classList.add('cdx-hash-pending')}catch(e){}}())`}</script>
                 <style>{`
                     .menu .collapse.in { display: block !important; visibility: visible !important; }
                     .menu .collapse:not(.in) { display: none !important; }
                 `}</style>
-                <link rel="stylesheet" href={r('styles/compodocx.css')} />
+                <link rel="stylesheet" href={r("styles/compodocx.css")} />
                 <link
                     id="cdx-theme-link"
                     rel="stylesheet"
                     href={
-                        data.theme && !['default', 'gitbook'].includes(data.theme)
+                        data.theme &&
+                        !["default", "gitbook"].includes(data.theme)
                             ? r(`styles/${data.theme}.css`)
-                            : ''
+                            : ""
                     }
-                    data-base={r('')}
+                    data-base={r("")}
                 />
                 <script>{`(function(){try{var t=localStorage.getItem('compodocx-theme')||localStorage.getItem('compodoc-theme');if(t&&t!=='default'){var l=document.getElementById('cdx-theme-link');if(l)l.href=l.getAttribute('data-base')+'styles/'+t+'.css'}}catch(e){}}())`}</script>
             </head>
             <body>
-                <script type="module" src={r('js/compodocx.js')}></script>
+                <script type="module" src={r("js/compodocx.js")}></script>
                 <script>{IframeTrackingScript}</script>
                 {data.entityIndex && (
                     <script>{`window.__CDX_ENTITIES__=${JSON.stringify(data.entityIndex)};`}</script>
@@ -330,7 +374,7 @@ export const Layout = (props: LayoutProps): string => {
 
                 {/* Mobile top bar */}
                 <header class="cdx-topbar">
-                    <a href={r('')} class="cdx-topbar-brand">
+                    <a href={r("")} class="cdx-topbar-brand">
                         {data.documentationMainName}
                     </a>
                     <div class="cdx-topbar-actions">
@@ -344,7 +388,8 @@ export const Layout = (props: LayoutProps): string => {
                                 {IconSearch()}
                             </button>
                         )}
-                        {!data.theme || ['default', 'gitbook'].includes(data.theme) ? (
+                        {!data.theme ||
+                        ["default", "gitbook"].includes(data.theme) ? (
                             <div class="cdx-theme-picker" data-cdx-theme-picker>
                                 <button
                                     type="button"
@@ -355,11 +400,19 @@ export const Layout = (props: LayoutProps): string => {
                                 >
                                     {IconPalette()}
                                 </button>
-                                <ul class="cdx-theme-picker-menu" aria-label="Theme" hidden>
-                                    {BUILTIN_THEMES.map(t => (
+                                <ul
+                                    class="cdx-theme-picker-menu"
+                                    aria-label="Theme"
+                                    hidden
+                                >
+                                    {BUILTIN_THEMES.map((t) => (
                                         <li
                                             data-cdx-theme={t.id}
-                                            aria-current={t.id === 'default' ? 'true' : undefined}
+                                            aria-current={
+                                                t.id === "default"
+                                                    ? "true"
+                                                    : undefined
+                                            }
                                         >
                                             <span
                                                 class="cdx-theme-swatch"
@@ -371,7 +424,7 @@ export const Layout = (props: LayoutProps): string => {
                                 </ul>
                             </div>
                         ) : (
-                            ''
+                            ""
                         )}
                         {!data.hideDarkModeToggle && (
                             <button
@@ -380,8 +433,8 @@ export const Layout = (props: LayoutProps): string => {
                                 aria-label="Toggle dark mode"
                                 aria-pressed="false"
                             >
-                                {IconMoon('icon-moon')}
-                                {IconSun('icon-sun')}
+                                {IconMoon("icon-moon")}
+                                {IconSun("icon-sun")}
                             </button>
                         )}
                         {data.multiVersion && data.versionLabel && (
@@ -421,8 +474,16 @@ export const Layout = (props: LayoutProps): string => {
                 <div class="cdx-backdrop" aria-hidden="true"></div>
 
                 {/* Sidebar */}
-                <nav class="cdx-sidebar menu" id="sidebar" aria-label="Documentation">
-                    <button class="cdx-sidebar-close" type="button" aria-label="Close navigation">
+                <nav
+                    class="cdx-sidebar menu"
+                    id="sidebar"
+                    aria-label="Documentation"
+                >
+                    <button
+                        class="cdx-sidebar-close"
+                        type="button"
+                        aria-label="Close navigation"
+                    >
                         <svg
                             width="20"
                             height="20"
@@ -442,20 +503,24 @@ export const Layout = (props: LayoutProps): string => {
                         name: data.documentationMainName,
                         logo: data.customLogo,
                         disableSearch: data.disableSearch,
-                        r
+                        r,
                     })}
                     {menuHtml}
                 </nav>
 
                 {/* Main content */}
-                <main id="main-content" class={`content ${data.context}`} tabindex="-1">
+                <main
+                    id="main-content"
+                    class={`content ${data.context}`}
+                    tabindex="-1"
+                >
                     {ContentActions({
                         hideDarkModeToggle: data.hideDarkModeToggle,
                         lockedTheme: data.theme,
                         multiVersion: data.multiVersion,
                         versionLabel: data.versionLabel,
                         maxVersionsShown: data.maxVersionsShown,
-                        depth: data.depth
+                        depth: data.depth,
                     })}
                     <div class="content-data">{content}</div>
                 </main>
