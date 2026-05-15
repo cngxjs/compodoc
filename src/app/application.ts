@@ -3,9 +3,7 @@ import * as path from 'node:path';
 import * as fs from 'fs-extra';
 import traverse from 'neotraverse/legacy';
 
-import { hasAnyApiSections } from '../templates/helpers/tab-helpers';
 import AngularVersionUtil from '../utils/angular-version.util';
-import { COMPODOC_CONSTANTS } from '../utils/constants';
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
 import { buildEntityIndex } from '../utils/entity-index.util';
 import { logger } from '../utils/logger';
@@ -33,6 +31,13 @@ import { initHighlighter } from './engines/syntax-highlight.engine';
 import { updateVersionsManifest } from './engines/versions-manifest.engine';
 import type { AdditionalNode } from './interfaces/additional-node.interface';
 import type { CoverageData } from './interfaces/coverageData.interface';
+import {
+    ClassPageGenerator,
+    EntityPageGenerator,
+    InterfacePageGenerator,
+    NavTabsResolver,
+    PipePageGenerator
+} from './page-generator';
 import {
     type CoverageFile,
     computeDocumentationCoverage,
@@ -69,6 +74,12 @@ export class Application {
      */
     public isWatching: boolean = false;
 
+    private readonly navTabs: NavTabsResolver;
+    private readonly pipePageGenerator: PipePageGenerator;
+    private readonly classPageGenerator: ClassPageGenerator;
+    private readonly interfacePageGenerator: InterfacePageGenerator;
+    private readonly entityPageGenerator: EntityPageGenerator;
+
     /**
      * Create a new compodocx application instance.
      *
@@ -88,6 +99,12 @@ export class Application {
                 logger.silent = false;
             }
         }
+
+        this.navTabs = new NavTabsResolver();
+        this.pipePageGenerator = new PipePageGenerator(this.navTabs);
+        this.classPageGenerator = new ClassPageGenerator(this.navTabs);
+        this.interfacePageGenerator = new InterfacePageGenerator(this.navTabs);
+        this.entityPageGenerator = new EntityPageGenerator(this.navTabs);
     }
 
     /**
@@ -540,7 +557,7 @@ export class Application {
             actions.push(() => this.prepareComponents());
         }
         if (diffCrawledData.entities.length > 0) {
-            actions.push(() => this.prepareEntities());
+            actions.push(() => this.entityPageGenerator.prepare());
         }
         if (diffCrawledData.modules.length > 0) {
             actions.push(() => this.prepareModules());
@@ -563,15 +580,15 @@ export class Application {
         }
 
         if (diffCrawledData.pipes.length > 0) {
-            actions.push(() => this.preparePipes());
+            actions.push(() => this.pipePageGenerator.prepare());
         }
 
         if (diffCrawledData.classes.length > 0) {
-            actions.push(() => this.prepareClasses());
+            actions.push(() => this.classPageGenerator.prepare());
         }
 
         if (diffCrawledData.interfaces.length > 0) {
-            actions.push(() => this.prepareInterfaces());
+            actions.push(() => this.interfacePageGenerator.prepare());
         }
 
         if (
@@ -699,7 +716,7 @@ export class Application {
 
         if (DependenciesEngine.entities.length > 0) {
             actions.push(() => {
-                return this.prepareEntities();
+                return this.entityPageGenerator.prepare();
             });
         }
 
@@ -729,19 +746,19 @@ export class Application {
 
         if (DependenciesEngine.pipes.length > 0) {
             actions.push(() => {
-                return this.preparePipes();
+                return this.pipePageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.classes.length > 0) {
             actions.push(() => {
-                return this.prepareClasses();
+                return this.classPageGenerator.prepare();
             });
         }
 
         if (DependenciesEngine.interfaces.length > 0) {
             actions.push(() => {
-                return this.prepareInterfaces();
+                return this.interfacePageGenerator.prepare();
             });
         }
 
@@ -1113,133 +1130,12 @@ export class Application {
                         path: 'modules',
                         name: Configuration.mainData.modules[i].name,
                         id: Configuration.mainData.modules[i].id,
-                        navTabs: this.getNavTabs(Configuration.mainData.modules[i]),
+                        navTabs: this.navTabs.resolve(Configuration.mainData.modules[i]),
                         context: 'module',
                         module: Configuration.mainData.modules[i],
                         depth: 1,
                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
                     });
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
-    public preparePipes = (somePipes?) => {
-        logger.info('Prepare pipes');
-        Configuration.mainData.pipes = somePipes ? somePipes : DependenciesEngine.getPipes();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.pipes.length;
-            const loop = () => {
-                if (i < len) {
-                    const pipe = Configuration.mainData.pipes[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(pipe.file)) {
-                        logger.info(` ${pipe.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(pipe.file);
-                        pipe.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'pipes',
-                        name: pipe.name,
-                        id: pipe.id,
-                        navTabs: this.getNavTabs(pipe),
-                        context: 'pipe',
-                        pipe: pipe,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (pipe.isDuplicate) {
-                        page.name += `-${pipe.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    };
-
-    public prepareClasses = (someClasses?) => {
-        logger.info('Prepare classes');
-        Configuration.mainData.classes = someClasses
-            ? someClasses
-            : DependenciesEngine.getClasses();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.classes.length;
-            const loop = () => {
-                if (i < len) {
-                    const classe = Configuration.mainData.classes[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(classe.file)) {
-                        logger.info(` ${classe.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(classe.file);
-                        classe.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'classes',
-                        name: classe.name,
-                        id: classe.id,
-                        navTabs: this.getNavTabs(classe),
-                        context: 'class',
-                        class: classe,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (classe.isDuplicate) {
-                        page.name += `-${classe.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    };
-
-    public prepareInterfaces(someInterfaces?) {
-        logger.info('Prepare interfaces');
-        Configuration.mainData.interfaces = someInterfaces
-            ? someInterfaces
-            : DependenciesEngine.getInterfaces();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.interfaces.length;
-            const loop = () => {
-                if (i < len) {
-                    const interf = Configuration.mainData.interfaces[i];
-                    if (MarkdownEngine.hasNeighbourReadmeFile(interf.file)) {
-                        logger.info(` ${interf.name} has a README file, include it`);
-                        const readme = MarkdownEngine.readNeighbourReadmeFile(interf.file);
-                        interf.readme = markedAcl(readme);
-                    }
-                    const page = {
-                        path: 'interfaces',
-                        name: interf.name,
-                        id: interf.id,
-                        navTabs: this.getNavTabs(interf),
-                        context: 'interface',
-                        interface: interf,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (interf.isDuplicate) {
-                        page.name += `-${interf.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
                     i++;
                     loop();
                 } else {
@@ -1375,154 +1271,6 @@ export class Application {
         );
     }
 
-    private getNavTabs(dependency): Array<any> {
-        let navTabConfig = Configuration.mainData.navTabConfig;
-        const hasCustomNavTabConfig = navTabConfig.length !== 0;
-        navTabConfig =
-            navTabConfig.length === 0
-                ? structuredClone(COMPODOC_CONSTANTS.navTabDefinitions)
-                : navTabConfig;
-        const matchDepType = (depType: string) => {
-            return depType === 'all' || depType === dependency.type;
-        };
-
-        const navTabs = [];
-        navTabConfig.forEach(customTab => {
-            const navTab = COMPODOC_CONSTANTS.navTabDefinitions.find(t => t.id === customTab.id);
-            if (!navTab) {
-                throw new Error(`Invalid tab ID '${customTab.id}' specified in tab configuration`);
-            }
-
-            navTab.label = customTab.label;
-
-            if (hasCustomNavTabConfig) {
-                (navTab as any).custom = true;
-            }
-
-            // is tab applicable to target dependency?
-            if (-1 === navTab.depTypes.findIndex(matchDepType)) {
-                return;
-            }
-
-            // global config
-            if (customTab.id === 'tree' && Configuration.mainData.disableDomTree) {
-                return;
-            }
-            if (customTab.id === 'source' && Configuration.mainData.disableSourceCode) {
-                return;
-            }
-            if (customTab.id === 'templateData' && Configuration.mainData.disableTemplateTab) {
-                return;
-            }
-            if (customTab.id === 'styleData' && Configuration.mainData.disableStyleTab) {
-                return;
-            }
-
-            // per dependency config
-            if (customTab.id === 'readme' && !dependency.readme) {
-                return;
-            }
-            if (customTab.id === 'example' && !dependency.exampleUrls) {
-                return;
-            }
-            if (
-                customTab.id === 'templateData' &&
-                (!dependency.templateUrl || dependency.templateUrl.length === 0)
-            ) {
-                return;
-            }
-            if (
-                customTab.id === 'styleData' &&
-                (!dependency.styleUrls || dependency.styleUrls.length === 0) &&
-                (!dependency.styles || dependency.styles.length === 0)
-            ) {
-                return;
-            }
-            if (
-                customTab.id === 'theming' &&
-                (!dependency.themeTokens || dependency.themeTokens.length === 0) &&
-                !dependency.themeOverview
-            ) {
-                return;
-            }
-            if (customTab.id === 'playground') {
-                if (Configuration.mainData.disablePlaygroundTab) {
-                    return;
-                }
-                if (!dependency.playgrounds || dependency.playgrounds.length === 0) {
-                    return;
-                }
-            }
-
-            // API tab: drop it in legacy single-tab mode, or when the
-            // dependency has no member content to populate it.
-            if (customTab.id === 'api') {
-                if (!hasAnyApiSections()) {
-                    return;
-                }
-                const hasApiMembers = !!(
-                    dependency.constructorObj ||
-                    dependency.inputsClass?.length ||
-                    dependency.outputsClass?.length ||
-                    dependency.hostBindings?.length ||
-                    dependency.hostListeners?.length ||
-                    (dependency.methodsClass ?? dependency.methods)?.length ||
-                    (dependency.propertiesClass ?? dependency.properties)?.length ||
-                    dependency.indexSignatures?.length ||
-                    (dependency.accessors && Object.keys(dependency.accessors).length)
-                );
-                if (!hasApiMembers) {
-                    return;
-                }
-            }
-
-            navTabs.push(navTab);
-        });
-
-        if (navTabs.length === 0) {
-            throw new Error(`No valid navigation tabs have been defined for dependency type '${dependency.type}'. Specify \
-at least one config for the 'info' or 'source' tab in --navTabConfig.`);
-        }
-
-        return navTabs;
-    }
-
-    public prepareEntities(someEntities?) {
-        logger.info('Prepare entities');
-        Configuration.mainData.entities = someEntities
-            ? someEntities
-            : DependenciesEngine.getEntities();
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const len = Configuration.mainData.entities.length;
-            const loop = () => {
-                if (i < len) {
-                    const entity = Configuration.mainData.entities[i];
-                    const page = {
-                        path: 'entities',
-                        name: entity.name,
-                        id: entity.id,
-                        navTabs: this.getNavTabs(entity),
-                        context: 'entity',
-                        entity: entity,
-                        depth: 1,
-                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                    };
-                    if (entity.isDuplicate) {
-                        page.name += `-${entity.duplicateId}`;
-                    }
-                    Configuration.addPage(page);
-                    i++;
-                    loop();
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
     public prepareComponents(someComponents?) {
         logger.info('Prepare components');
         Configuration.mainData.components = someComponents
@@ -1552,7 +1300,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         path: 'components',
                         name: component.name,
                         id: component.id,
-                        navTabs: this.getNavTabs(component),
+                        navTabs: this.navTabs.resolve(component),
                         context: 'component',
                         component: component,
                         depth: 1,
@@ -1657,7 +1405,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         path: 'directives',
                         name: directive.name,
                         id: directive.id,
-                        navTabs: this.getNavTabs(directive),
+                        navTabs: this.navTabs.resolve(directive),
                         context: 'directive',
                         directive: directive,
                         depth: 1,
@@ -1699,7 +1447,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         path: 'injectables',
                         name: injec.name,
                         id: injec.id,
-                        navTabs: this.getNavTabs(injec),
+                        navTabs: this.navTabs.resolve(injec),
                         context: 'injectable',
                         injectable: injec,
                         depth: 1,
@@ -1741,7 +1489,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         path: 'interceptors',
                         name: interceptor.name,
                         id: interceptor.id,
-                        navTabs: this.getNavTabs(interceptor),
+                        navTabs: this.navTabs.resolve(interceptor),
                         context: 'interceptor',
                         injectable: interceptor,
                         depth: 1,
@@ -1781,7 +1529,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         path: 'guards',
                         name: guard.name,
                         id: guard.id,
-                        navTabs: this.getNavTabs(guard),
+                        navTabs: this.navTabs.resolve(guard),
                         context: 'guard',
                         injectable: guard,
                         depth: 1,
