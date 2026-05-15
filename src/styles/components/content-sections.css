@@ -119,6 +119,28 @@
     /* max-width: 72ch; */
 }
 
+.cdx-ai-generated-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-sm);
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-md);
+    margin-bottom: var(--spacing-cdx-lg);
+    border: 1px solid color-mix(in srgb, hsl(290 55% 48%) 35%, transparent);
+    border-radius: var(--radius-cdx-md);
+    background: color-mix(in srgb, hsl(290 55% 48%) 7%, var(--color-cdx-bg-elevated, white));
+    font-size: 0.8125rem;
+    color: var(--color-cdx-text-secondary);
+}
+
+.cdx-ai-generated-banner .cdx-badge {
+    margin-left: 0;
+}
+
+.dark .cdx-ai-generated-banner {
+    background: color-mix(in srgb, hsl(290 55% 48%) 14%, var(--color-cdx-bg));
+    border-color: color-mix(in srgb, hsl(290 55% 48%) 30%, transparent);
+}
+
 .cdx-prose > p {
     margin-bottom: 1rem;
 }

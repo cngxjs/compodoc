@@ -1,5 +1,7 @@
 export const TRANSLATION_EN_US = {
     accessors: 'Accessors',
+    'ai-generated': 'AI generated',
+    'ai-generated-tooltip': 'This content was generated with AI assistance',
     'angular-adoption': 'Angular Adoption',
     'application-configuration': 'Application Configuration',
     arguments: 'Arguments',
