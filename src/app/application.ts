@@ -1,7 +1,5 @@
-import * as crypto from 'node:crypto';
 import * as path from 'node:path';
 import * as fs from 'fs-extra';
-import traverse from 'neotraverse/legacy';
 
 import AngularVersionUtil from '../utils/angular-version.util';
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
@@ -9,26 +7,22 @@ import { buildEntityIndex } from '../utils/entity-index.util';
 import { logger } from '../utils/logger';
 import { promiseSequential } from '../utils/promise-sequential';
 import RouterParserUtil from '../utils/router-parser.util';
-import {
-    cleanNameWithoutSpaceAndToLowerCase,
-    cleanSourcesForWatch,
-    findMainSourceFolder
-} from '../utils/utils';
+import { cleanSourcesForWatch, findMainSourceFolder } from '../utils/utils';
 import Configuration from './configuration';
 import DependenciesEngine from './engines/dependencies.engine';
 import ExportEngine from './engines/export.engine';
 import FileEngine from './engines/file.engine';
 import HtmlEngine from './engines/html.engine';
 import I18nEngine from './engines/i18n.engine';
-import MarkdownEngine, { type markdownReadedDatas } from './engines/markdown.engine';
+import MarkdownEngine from './engines/markdown.engine';
 import NgdEngine from './engines/ngd.engine';
 import { runPagefindIndex } from './engines/search-indexer.engine';
-import { type FileRefBundle, type FsReader, readFileRef } from './engines/stackblitz';
 import { initHighlighter } from './engines/syntax-highlight.engine';
 import { updateVersionsManifest } from './engines/versions-manifest.engine';
-import type { AdditionalNode } from './interfaces/additional-node.interface';
 import type { CoverageData } from './interfaces/coverageData.interface';
 import {
+    AdditionalPageGenerator,
+    AppConfigPageGenerator,
     ClassPageGenerator,
     ComponentPageGenerator,
     DirectivePageGenerator,
@@ -37,9 +31,14 @@ import {
     InjectablePageGenerator,
     InterceptorPageGenerator,
     InterfacePageGenerator,
+    MiscellaneousPageGenerator,
     ModulePageGenerator,
     NavTabsResolver,
-    PipePageGenerator
+    OverviewPageGenerator,
+    PackageDependenciesPageGenerator,
+    PipePageGenerator,
+    PlaygroundFileResolver,
+    RoutesPageGenerator
 } from './page-generator';
 import {
     type CoverageFile,
@@ -88,6 +87,13 @@ export class Application {
     private readonly guardPageGenerator: GuardPageGenerator;
     private readonly componentPageGenerator: ComponentPageGenerator;
     private readonly modulePageGenerator: ModulePageGenerator;
+    private readonly miscellaneousPageGenerator: MiscellaneousPageGenerator;
+    private readonly appConfigPageGenerator: AppConfigPageGenerator;
+    private readonly routesPageGenerator: RoutesPageGenerator;
+    private readonly overviewPageGenerator: OverviewPageGenerator;
+    private readonly additionalPageGenerator: AdditionalPageGenerator;
+    private readonly packageDependenciesPageGenerator: PackageDependenciesPageGenerator;
+    private readonly playgroundFileResolver: PlaygroundFileResolver;
 
     /**
      * Create a new compodocx application instance.
@@ -120,6 +126,13 @@ export class Application {
         this.guardPageGenerator = new GuardPageGenerator(this.navTabs);
         this.componentPageGenerator = new ComponentPageGenerator(this.navTabs);
         this.modulePageGenerator = new ModulePageGenerator(this.navTabs);
+        this.miscellaneousPageGenerator = new MiscellaneousPageGenerator();
+        this.appConfigPageGenerator = new AppConfigPageGenerator();
+        this.routesPageGenerator = new RoutesPageGenerator();
+        this.overviewPageGenerator = new OverviewPageGenerator();
+        this.additionalPageGenerator = new AdditionalPageGenerator();
+        this.packageDependenciesPageGenerator = new PackageDependenciesPageGenerator();
+        this.playgroundFileResolver = new PlaygroundFileResolver();
     }
 
     /**
@@ -269,10 +282,14 @@ export class Application {
 
                 if (!Configuration.mainData.disableDependencies) {
                     if (typeof parsedData.dependencies !== 'undefined') {
-                        this.processPackageDependencies(parsedData.dependencies);
+                        this.packageDependenciesPageGenerator.processDependencies(
+                            parsedData.dependencies
+                        );
                     }
                     if (typeof parsedData.peerDependencies !== 'undefined') {
-                        this.processPackagePeerDependencies(parsedData.peerDependencies);
+                        this.packageDependenciesPageGenerator.processPeerDependencies(
+                            parsedData.peerDependencies
+                        );
                     }
                 }
 
@@ -305,7 +322,7 @@ export class Application {
                     }
                 }
 
-                this.processMarkdowns().then(
+                this.overviewPageGenerator.processMarkdowns().then(
                     () => {
                         this.getDependenciesData();
                     },
@@ -318,7 +335,7 @@ export class Application {
             errorMessage => {
                 logger.error(errorMessage);
                 logger.error('Continuing without package.json file');
-                this.processMarkdowns().then(
+                this.overviewPageGenerator.processMarkdowns().then(
                     () => {
                         this.getDependenciesData();
                     },
@@ -331,131 +348,6 @@ export class Application {
         );
     }
 
-    private processPackagePeerDependencies(dependencies): void {
-        logger.info('Processing package.json peerDependencies');
-        Configuration.mainData.packagePeerDependencies = dependencies;
-        if (!Configuration.hasPage('dependencies')) {
-            Configuration.addPage({
-                name: 'dependencies',
-                id: 'packageDependencies',
-                context: 'package-dependencies',
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-        }
-    }
-
-    private processPackageDependencies(dependencies): void {
-        logger.info('Processing package.json dependencies');
-        Configuration.mainData.packageDependencies = dependencies;
-        Configuration.addPage({
-            name: 'dependencies',
-            id: 'packageDependencies',
-            context: 'package-dependencies',
-            depth: 0,
-            pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-        });
-    }
-
-    private processMarkdowns(): Promise<any> {
-        logger.info(
-            'Searching README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE.md, TODO.md files'
-        );
-
-        return new Promise((resolve, _reject) => {
-            let i = 0;
-            const markdowns = ['readme', 'changelog', 'contributing', 'license', 'todo'];
-            const numberOfMarkdowns = 5;
-            const loop = () => {
-                if (i < numberOfMarkdowns) {
-                    MarkdownEngine.getTraditionalMarkdown(markdowns[i].toUpperCase())
-                        .then((readmeData: markdownReadedDatas) => {
-                            logger.info(`${markdowns[i].toUpperCase()}.md file found`);
-                            if (markdowns[i] === 'readme') {
-                                Configuration.mainData.readme = true;
-                                // Always create index.html as main page with README content
-                                Configuration.addPage({
-                                    name: 'index',
-                                    context: 'readme',
-                                    id: 'index',
-                                    markdown: readmeData.markdown,
-                                    data: readmeData.rawData,
-                                    depth: 0,
-                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                });
-
-                                // If overview is not disabled, also create separate overview page
-                                if (!Configuration.mainData.disableOverview) {
-                                    Configuration.addPage({
-                                        name: 'overview',
-                                        context: 'overview',
-                                        id: 'overview',
-                                        depth: 0,
-                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                    });
-                                }
-                            } else {
-                                // For other markdown files (changelog, contributing, etc.)
-                                Configuration.addPage({
-                                    name: markdowns[i],
-                                    context: markdowns[i],
-                                    id: markdowns[i],
-                                    markdown: readmeData.markdown,
-                                    data: readmeData.rawData,
-                                    depth: 0,
-                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                });
-                                Configuration.mainData.markdowns.push({
-                                    name: markdowns[i],
-                                    uppername: markdowns[i].toUpperCase(),
-                                    depth: 0,
-                                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                });
-                            }
-                            i++;
-                            loop();
-                        })
-                        .catch(errorMessage => {
-                            logger.warn(errorMessage);
-                            logger.warn(`Continuing without ${markdowns[i].toUpperCase()}.md file`);
-                            if (markdowns[i] === 'readme') {
-                                if (!Configuration.mainData.disableOverview) {
-                                    Configuration.addPage({
-                                        name: 'index',
-                                        id: 'index',
-                                        context: 'overview',
-                                        depth: 0,
-                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                    });
-                                } else {
-                                    // When README doesn't exist and overview is disabled,
-                                    // generate overview page anyway but show warning
-                                    logger.warn(
-                                        'No README.md found and --disableOverview is enabled.'
-                                    );
-                                    logger.warn(
-                                        'Generating overview page as landing page. Consider adding a README.md file.'
-                                    );
-                                    Configuration.addPage({
-                                        name: 'index',
-                                        id: 'index',
-                                        context: 'overview',
-                                        depth: 0,
-                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-                                    });
-                                }
-                            }
-                            i++;
-                            loop();
-                        });
-                } else {
-                    resolve(true);
-                }
-            };
-            loop();
-        });
-    }
-
     private rebuildRootMarkdowns(): void {
         logger.info(
             'Regenerating README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE.md, TODO.md pages'
@@ -466,7 +358,7 @@ export class Application {
         Configuration.resetRootMarkdownPages();
 
         actions.push(() => {
-            return this.processMarkdowns();
+            return this.overviewPageGenerator.processMarkdowns();
         });
 
         promiseSequential(actions)
@@ -508,7 +400,7 @@ export class Application {
 
         if (Configuration.mainData.includes !== '') {
             actions.push(() => {
-                return this.prepareExternalIncludes();
+                return this.additionalPageGenerator.prepareExternalIncludes();
             });
         }
 
@@ -565,7 +457,7 @@ export class Application {
         Configuration.resetPages();
 
         if (!Configuration.mainData.disableRoutesGraph) {
-            actions.push(() => this.prepareRoutes());
+            actions.push(() => this.routesPageGenerator.prepare());
         }
 
         if (diffCrawledData.components.length > 0) {
@@ -606,13 +498,15 @@ export class Application {
             actions.push(() => this.interfacePageGenerator.prepare());
         }
 
+        actions.push(() => this.appConfigPageGenerator.prepare());
+
         if (
             diffCrawledData.miscellaneous.variables.length > 0 ||
             diffCrawledData.miscellaneous.functions.length > 0 ||
             diffCrawledData.miscellaneous.typealiases.length > 0 ||
             diffCrawledData.miscellaneous.enumerations.length > 0
         ) {
-            actions.push(() => this.prepareMiscellaneous());
+            actions.push(() => this.miscellaneousPageGenerator.prepare());
         }
 
         if (!Configuration.mainData.disableCoverage) {
@@ -622,7 +516,7 @@ export class Application {
         // Resolve `@playground` file refs after every dependency kind has
         // been prepared (so `dependency.playgrounds` is fully populated) and
         // before page rendering reads `data.playgroundFiles`.
-        actions.push(() => Promise.resolve(this.resolvePlaygroundFiles()));
+        actions.push(() => Promise.resolve(this.playgroundFileResolver.resolve()));
 
         promiseSequential(actions)
             .then(_res => {
@@ -755,7 +649,7 @@ export class Application {
 
         if (DependenciesEngine.routes && !Configuration.mainData.disableRoutesGraph) {
             actions.push(() => {
-                return this.prepareRoutes();
+                return this.routesPageGenerator.prepare();
             });
         }
 
@@ -777,6 +671,10 @@ export class Application {
             });
         }
 
+        actions.push(() => {
+            return this.appConfigPageGenerator.prepare();
+        });
+
         if (
             DependenciesEngine.miscellaneous.variables.length > 0 ||
             DependenciesEngine.miscellaneous.functions.length > 0 ||
@@ -784,7 +682,7 @@ export class Application {
             DependenciesEngine.miscellaneous.enumerations.length > 0
         ) {
             actions.push(() => {
-                return this.prepareMiscellaneous();
+                return this.miscellaneousPageGenerator.prepare();
             });
         }
 
@@ -802,13 +700,13 @@ export class Application {
 
         if (Configuration.mainData.includes !== '') {
             actions.push(() => {
-                return this.prepareExternalIncludes();
+                return this.additionalPageGenerator.prepareExternalIncludes();
             });
         }
 
         // Resolve `@playground` file refs after every prepare* step has
         // populated `Configuration.mainData.<kind>.playgrounds`.
-        actions.push(() => Promise.resolve(this.resolvePlaygroundFiles()));
+        actions.push(() => Promise.resolve(this.playgroundFileResolver.resolve()));
 
         promiseSequential(actions)
             .then(_res => {
@@ -852,214 +750,6 @@ export class Application {
                 logger.error(errorMessage);
                 process.exit(1);
             });
-    }
-
-    private getIncludedPathForFile(file) {
-        return path.join(Configuration.mainData.includes, file);
-    }
-
-    private prepareExternalIncludes() {
-        logger.info('Adding external markdown files');
-        // Scan include folder for files detailed in summary.json
-        // For each file, add to Configuration.mainData.additionalPages
-        // Each file will be converted to html page, inside COMPODOC_DEFAULTS.additionalEntryPath
-        return new Promise(resolve => {
-            FileEngine.get(this.getIncludedPathForFile('summary.json')).then(
-                summaryData => {
-                    logger.info('Additional documentation: summary.json file found');
-
-                    const parsedSummaryData = JSON.parse(summaryData);
-
-                    const that = this;
-                    let lastLevelOnePage;
-
-                    traverse(parsedSummaryData).forEach(function () {
-                        // tslint:disable-next-line:no-invalid-this
-                        if (this.notRoot && typeof this.node === 'object') {
-                            // tslint:disable-next-line:no-invalid-this
-                            const rawPath = this.path;
-                            // tslint:disable-next-line:no-invalid-this
-                            const additionalNode: AdditionalNode = this.node;
-                            const file = additionalNode.file;
-                            const title = additionalNode.title;
-                            let finalPath = Configuration.mainData.includesFolder;
-
-                            const finalDepth = rawPath.filter(el => {
-                                return !Number.isNaN(parseInt(String(el), 10));
-                            });
-
-                            if (typeof file !== 'undefined' && typeof title !== 'undefined') {
-                                const url = cleanNameWithoutSpaceAndToLowerCase(title);
-
-                                /**
-                                 * Id created with title + file path hash, seems to be hypothetically unique here
-                                 */
-                                const id = crypto
-                                    .createHash('sha512')
-                                    .update(title + file)
-                                    .digest('hex');
-
-                                // tslint:disable-next-line:no-invalid-this
-                                this.node.id = id;
-
-                                let lastElementRootTree;
-                                finalDepth.forEach(el => {
-                                    let elementTree =
-                                        typeof lastElementRootTree === 'undefined'
-                                            ? parsedSummaryData
-                                            : lastElementRootTree;
-                                    if (typeof elementTree.children !== 'undefined') {
-                                        elementTree = elementTree.children[el];
-                                    } else {
-                                        elementTree = elementTree[el];
-                                    }
-                                    finalPath +=
-                                        '/' +
-                                        cleanNameWithoutSpaceAndToLowerCase(elementTree.title);
-                                    lastElementRootTree = elementTree;
-                                });
-
-                                finalPath = finalPath.replace(`/${url}`, '');
-                                const markdownFile = MarkdownEngine.getTraditionalMarkdownSync(
-                                    that.getIncludedPathForFile(file)
-                                );
-
-                                if (finalDepth.length > 5) {
-                                    logger.error('Only 5 levels of depth are supported');
-                                } else {
-                                    const _page = {
-                                        name: title,
-                                        id: id,
-                                        filename: url,
-                                        context: 'additional-page',
-                                        path: finalPath,
-                                        additionalPage: markdownFile,
-                                        depth: finalDepth.length,
-                                        childrenLength: additionalNode.children
-                                            ? additionalNode.children.length
-                                            : 0,
-                                        children: [],
-                                        lastChild: false,
-                                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                                    };
-                                    if (finalDepth.length === 1) {
-                                        lastLevelOnePage = _page;
-                                    }
-                                    if (finalDepth.length > 1) {
-                                        // store all child pages of the last root level 1 page inside it
-                                        lastLevelOnePage.children.push(_page);
-                                    } else {
-                                        Configuration.addAdditionalPage(_page);
-                                    }
-                                }
-                            }
-                        }
-                    });
-
-                    resolve(true);
-                },
-                () => {
-                    resolve(true);
-                }
-            );
-        });
-    }
-
-    public prepareMiscellaneous(someMisc?) {
-        // Generate app-config page if ApplicationConfig found
-        Configuration.mainData.appConfig = DependenciesEngine.appConfig;
-        if (Configuration.mainData.appConfig?.length > 0) {
-            Configuration.addPage({
-                name: 'app-config',
-                id: 'app-config',
-                context: 'app-config',
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-        }
-
-        logger.info('Prepare miscellaneous');
-        Configuration.mainData.miscellaneous = someMisc
-            ? someMisc
-            : DependenciesEngine.getMiscellaneous();
-
-        return new Promise((resolve, _reject) => {
-            if (Configuration.mainData.miscellaneous.functions.length > 0) {
-                Configuration.addPage({
-                    path: 'miscellaneous',
-                    name: 'functions',
-                    id: 'miscellaneous-functions',
-                    context: 'miscellaneous-functions',
-                    depth: 1,
-                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                });
-            }
-            if (Configuration.mainData.miscellaneous.variables.length > 0) {
-                Configuration.addPage({
-                    path: 'miscellaneous',
-                    name: 'variables',
-                    id: 'miscellaneous-variables',
-                    context: 'miscellaneous-variables',
-                    depth: 1,
-                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                });
-            }
-            if (Configuration.mainData.miscellaneous.typealiases.length > 0) {
-                Configuration.addPage({
-                    path: 'miscellaneous',
-                    name: 'typealiases',
-                    id: 'miscellaneous-typealiases',
-                    context: 'miscellaneous-typealiases',
-                    depth: 1,
-                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                });
-            }
-            if (Configuration.mainData.miscellaneous.enumerations.length > 0) {
-                Configuration.addPage({
-                    path: 'miscellaneous',
-                    name: 'enumerations',
-                    id: 'miscellaneous-enumerations',
-                    context: 'miscellaneous-enumerations',
-                    depth: 1,
-                    pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                });
-            }
-
-            resolve(true);
-        });
-    }
-
-    public prepareRoutes(): Promise<void> {
-        logger.info('Process routes');
-        Configuration.mainData.routes = DependenciesEngine.getRoutes();
-
-        return new Promise((resolve, reject) => {
-            Configuration.addPage({
-                name: 'routes',
-                id: 'routes',
-                context: 'routes',
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-
-            if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
-                RouterParserUtil.generateRoutesIndex(
-                    Configuration.mainData.output,
-                    Configuration.mainData.routes
-                ).then(
-                    () => {
-                        logger.info(' Routes index generated');
-                        resolve();
-                    },
-                    e => {
-                        logger.error(e);
-                        reject();
-                    }
-                );
-            } else {
-                resolve();
-            }
-        });
     }
 
     public prepareCoverage() {
@@ -1256,83 +946,6 @@ export class Application {
                 resolve(true);
             }
         });
-    }
-
-    /**
-     * Walk every entity kind that may carry `@playground fileRef` blocks
-     * (components/directives/injectables/etc) and resolve each fileRef into
-     * a `FileRefBundle` keyed by `${entityName}:${blockIndex}`. Read failures
-     * surface as `logger.warn` and skip that block — the manifest builder
-     * then falls back to its "Project assembly failed" path. Inline-only
-     * playgrounds never enter this loop.
-     */
-    public resolvePlaygroundFiles(): void {
-        const fsReader: FsReader = {
-            readFile: (p: string): string | null => {
-                try {
-                    return fs.readFileSync(p, 'utf8');
-                } catch {
-                    return null;
-                }
-            },
-            exists: (p: string): boolean => {
-                try {
-                    return fs.existsSync(p);
-                } catch {
-                    return false;
-                }
-            }
-        };
-
-        const out: Record<string, FileRefBundle> = {};
-        const entitySources = [
-            Configuration.mainData.components,
-            Configuration.mainData.directives,
-            Configuration.mainData.injectables,
-            Configuration.mainData.guards,
-            Configuration.mainData.interceptors,
-            Configuration.mainData.pipes,
-            Configuration.mainData.classes,
-            Configuration.mainData.interfaces,
-            Configuration.mainData.entities
-        ];
-
-        for (const list of entitySources) {
-            if (!Array.isArray(list)) {
-                continue;
-            }
-            for (const entity of list) {
-                const playgrounds = entity?.playgrounds as
-                    | Array<{ title?: string; fileRef?: string }>
-                    | undefined;
-                if (!playgrounds || playgrounds.length === 0) {
-                    continue;
-                }
-                for (let i = 0; i < playgrounds.length; i++) {
-                    const block = playgrounds[i];
-                    if (!block?.fileRef) {
-                        continue;
-                    }
-                    const hostFile = entity.file;
-                    if (typeof hostFile !== 'string' || hostFile.length === 0) {
-                        logger.warn(
-                            `Playground "${block.title ?? '<untitled>'}" on ${entity.name}: missing host file path`
-                        );
-                        continue;
-                    }
-                    const result = readFileRef(block.fileRef, hostFile, fsReader);
-                    if (!result.ok) {
-                        logger.warn(
-                            `Playground "${block.title ?? '<untitled>'}" on ${entity.name}: ${result.error}`
-                        );
-                        continue;
-                    }
-                    out[`${entity.name}:${i}`] = result.value;
-                }
-            }
-        }
-
-        Configuration.mainData.playgroundFiles = out;
     }
 
     public prepareUnitTestCoverage() {

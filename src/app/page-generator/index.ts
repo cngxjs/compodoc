@@ -1,3 +1,5 @@
+export { AdditionalPageGenerator } from './additional-page-generator';
+export { AppConfigPageGenerator } from './app-config-page-generator';
 export { ClassPageGenerator } from './class-page-generator';
 export { ComponentPageGenerator } from './component-page-generator';
 export { DirectivePageGenerator } from './directive-page-generator';
@@ -6,6 +8,11 @@ export { GuardPageGenerator } from './guard-page-generator';
 export { InjectablePageGenerator } from './injectable-page-generator';
 export { InterceptorPageGenerator } from './interceptor-page-generator';
 export { InterfacePageGenerator } from './interface-page-generator';
+export { MiscellaneousPageGenerator } from './miscellaneous-page-generator';
 export { ModulePageGenerator } from './module-page-generator';
 export { NavTabsResolver } from './nav-tabs';
+export { OverviewPageGenerator } from './overview-page-generator';
+export { PackageDependenciesPageGenerator } from './package-dependencies-page-generator';
 export { PipePageGenerator } from './pipe-page-generator';
+export { PlaygroundFileResolver } from './playground-file-resolver';
+export { RoutesPageGenerator } from './routes-page-generator';
