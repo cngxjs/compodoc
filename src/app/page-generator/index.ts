@@ -6,5 +6,6 @@ export { GuardPageGenerator } from './guard-page-generator';
 export { InjectablePageGenerator } from './injectable-page-generator';
 export { InterceptorPageGenerator } from './interceptor-page-generator';
 export { InterfacePageGenerator } from './interface-page-generator';
+export { ModulePageGenerator } from './module-page-generator';
 export { NavTabsResolver } from './nav-tabs';
 export { PipePageGenerator } from './pipe-page-generator';
