@@ -310,8 +310,10 @@ describe('ClassHelper', () => {
             const jsdoctags = [{ tags: mockTags }];
             const result = { deprecated: false, deprecationMessage: '' };
 
-            // Access private method through prototype
-            const processJSDocTags = (classHelper as any).processJSDocTags.bind(classHelper);
+            // Access private method through composed jsdocExtractor
+            const processJSDocTags = (
+                classHelper as any
+            ).jsdocExtractor.processJSDocTags.bind((classHelper as any).jsdocExtractor);
             processJSDocTags(jsdoctags, result);
 
             expect(result.deprecated).toBe(true);

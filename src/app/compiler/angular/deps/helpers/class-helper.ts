@@ -1,24 +1,24 @@
 import * as crypto from 'node:crypto';
 import { SyntaxKind, ts } from 'ts-morph';
-import { extractJsdocPlaygroundBlocks } from '../../../../../templates/helpers/jsdoc';
 import { isIgnore } from '../../../../../utils';
 import AngularVersionUtil from '../../../../..//utils/angular-version.util';
 import { StringifyArrowFunction } from '../../../../../utils/arrow-function.util';
 import BasicTypeUtil from '../../../../../utils/basic-type.util';
 import { JsdocParserUtil } from '../../../../../utils/jsdoc-parser.util';
 import { kindToType } from '../../../../../utils/kind-to-type';
-import { logger } from '../../../../../utils/logger';
 import { markedAcl } from '../../../../../utils/marked.acl';
 import { getNodeDecorators, nodeHasDecorator } from '../../../../../utils/node.util';
 import { StringifyObjectLiteralExpression } from '../../../../../utils/object-literal-expression.util';
 import { getNamesCompareFn, markedtags, mergeTagsAndArgs } from '../../../../../utils/utils';
 import Configuration from '../../../../configuration';
 import DependenciesEngine from '../../../../engines/dependencies.engine';
+import { JsdocExtractor } from './class-helper/jsdoc-extractor';
 import { TypeRenderer } from './class-helper/type-renderer';
 
 export class ClassHelper {
     private jsdocParserUtil = new JsdocParserUtil();
     private typeRenderer = new TypeRenderer();
+    private jsdocExtractor = new JsdocExtractor();
 
     constructor(private typeChecker: ts.TypeChecker) {}
 
@@ -38,140 +38,6 @@ export class ClassHelper {
             return 'true';
         }
         return '';
-    }
-
-    private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
-        tags.forEach(tag => {
-            if (tag.tagName?.text) {
-                if (tag.tagName.text.indexOf('deprecated') > -1) {
-                    result.deprecated = true;
-                    // tag.comment becomes a NodeArray (not a string) when the
-                    // JSDoc has an inline {@link X}; parseJSDocNode flattens both shapes.
-                    result.deprecationMessage = this.jsdocParserUtil.parseJSDocNode(tag) || '';
-                }
-                if (tag.tagName.text === 'category') {
-                    // Take only the first line of the comment (category name)
-                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
-                    result.category = raw.split('\n')[0].trim();
-                }
-            }
-        });
-        this.extractCustomTags(tags, result);
-    }
-
-    private extractCustomTags(tags: any[], result: { [key in string | number]: any }) {
-        for (const tag of tags) {
-            if (!tag.tagName?.text) {
-                continue;
-            }
-            const name = tag.tagName.text;
-            const rawComment = tag.comment;
-            const comment = (
-                typeof rawComment === 'string'
-                    ? rawComment
-                    : Array.isArray(rawComment)
-                      ? rawComment.map((c: any) => c.text || '').join('')
-                      : ''
-            ).trim();
-
-            switch (name) {
-                case 'signal':
-                    result.signal = true;
-                    break;
-                case 'zoneless':
-                    result.zoneless = true;
-                    break;
-                case 'beta':
-                    result.beta = true;
-                    break;
-                case 'group':
-                    result.group = comment.split('\n')[0].trim();
-                    break;
-                case 'order':
-                    result.order = parseInt(comment, 10) || 0;
-                    break;
-                case 'since':
-                    result.since = comment.split('\n')[0].trim();
-                    break;
-                case 'breaking':
-                    result.breaking = comment.split('\n')[0].trim();
-                    break;
-                case 'route':
-                    result.route = comment.split('\n')[0].trim();
-                    break;
-                case 'storybook':
-                    result.storybookUrl = comment.split('\n')[0].trim();
-                    break;
-                case 'figma':
-                    result.figmaUrl = comment.split('\n')[0].trim();
-                    break;
-                case 'stackblitz':
-                    result.stackblitzUrl = comment.split('\n')[0].trim();
-                    break;
-                case 'github':
-                    result.githubUrl = comment.split('\n')[0].trim();
-                    break;
-                case 'docs':
-                    result.docsUrl = comment.split('\n')[0].trim();
-                    break;
-                case 'slot': {
-                    if (!result.slots) {
-                        result.slots = [];
-                    }
-                    const parts = comment.match(/^(\S+)\s*-?\s*(.*)$/);
-                    const slotName = parts ? parts[1] : comment;
-                    const slotDesc = parts ? parts[2] || '' : '';
-                    if (slotName && !result.slots.some((s: any) => s.name === slotName)) {
-                        result.slots.push({
-                            name: slotName,
-                            description: slotDesc
-                        });
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    /**
-     * Process JSDoc tags and apply them to a result object
-     */
-    private processJSDocTags(jsdoctags: any, result: any, includeTagsArray: boolean = true): void {
-        if (jsdoctags && jsdoctags.length >= 1) {
-            const jsdoc = jsdoctags[0];
-            if (jsdoc?.tags) {
-                const tags = jsdoc.tags as unknown as any[];
-                this.checkForDeprecation(tags, result);
-                this.collectPlaygroundBlocks(tags, result);
-                if (includeTagsArray) {
-                    result.jsdoctags = markedtags(tags);
-                }
-            }
-        }
-    }
-
-    private collectPlaygroundBlocks(tags: any[], result: { [key: string]: any }): void {
-        const { blocks, warnings } = extractJsdocPlaygroundBlocks(tags);
-        if (blocks.length > 0) {
-            result.playgrounds = blocks;
-        }
-        for (const w of warnings) {
-            logger.warn(w);
-        }
-    }
-
-    /**
-     * Extract and process JSDoc comment for a node
-     */
-    private extractAndProcessJSDocComment(node: any, sourceFile: ts.SourceFile, result: any): void {
-        if (node.jsDoc) {
-            const comment = this.jsdocParserUtil.getMainCommentOfNode(node, sourceFile);
-            if (typeof comment !== 'undefined') {
-                const cleanedDescription = this.jsdocParserUtil.parseComment(comment);
-                result.rawdescription = cleanedDescription;
-                result.description = markedAcl(cleanedDescription);
-            }
-        }
     }
 
     /**
@@ -549,8 +415,12 @@ export class ClassHelper {
                     line: this.getPosition(nodeAccessor, sourceFile).line + 1
                 };
 
-                this.extractAndProcessJSDocComment(nodeAccessor, sourceFile, setSignature);
-                this.processJSDocTags(jsdoctags, setSignature);
+                this.jsdocExtractor.extractAndProcessJSDocComment(
+                    nodeAccessor,
+                    sourceFile,
+                    setSignature
+                );
+                this.jsdocExtractor.processJSDocTags(jsdoctags, setSignature);
 
                 if (setSignature.jsdoctags && setSignature.jsdoctags.length > 0) {
                     setSignature.jsdoctags = mergeTagsAndArgs(
@@ -571,8 +441,12 @@ export class ClassHelper {
                     line: this.getPosition(nodeAccessor, sourceFile).line + 1
                 };
 
-                this.extractAndProcessJSDocComment(nodeAccessor, sourceFile, getSignature);
-                this.processJSDocTags(jsdoctags, getSignature);
+                this.jsdocExtractor.extractAndProcessJSDocComment(
+                    nodeAccessor,
+                    sourceFile,
+                    getSignature
+                );
+                this.jsdocExtractor.processJSDocTags(jsdoctags, getSignature);
 
                 accessors[nodeName].getSignature = getSignature;
             }
@@ -714,7 +588,7 @@ export class ClassHelper {
                 const declarationsjsdoctags = this.jsdocParserUtil.getJSDocs(
                     symbol.declarations[0]
                 );
-                this.processJSDocTags(declarationsjsdoctags, deprecation, false);
+                this.jsdocExtractor.processJSDocTags(declarationsjsdoctags, deprecation, false);
                 if (isIgnore(symbol.declarations[0])) {
                     return [{ ignore: true }];
                 }
@@ -726,7 +600,7 @@ export class ClassHelper {
                 if (jsdoctags && jsdoctags.length >= 1) {
                     const jsdoc = jsdoctags[0] as any;
                     if (jsdoc?.tags) {
-                        this.checkForDeprecation(jsdoc.tags, deprecation);
+                        this.jsdocExtractor.checkForDeprecation(jsdoc.tags, deprecation);
                         jsdoctags = markedtags(jsdoc.tags);
                     }
                 }
@@ -1083,9 +957,9 @@ export class ClassHelper {
             line: this.getPosition(method, sourceFile).line + 1,
             ...this.initializeDocumentationFields()
         };
-        this.extractAndProcessJSDocComment(method, sourceFile, result);
+        this.jsdocExtractor.extractAndProcessJSDocComment(method, sourceFile, result);
         const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
-        this.processJSDocTags(jsdoctags, result);
+        this.jsdocExtractor.processJSDocTags(jsdoctags, result);
         return result;
     }
 
@@ -1102,9 +976,9 @@ export class ClassHelper {
             line: this.getPosition(method, sourceFile).line + 1,
             ...this.initializeDocumentationFields()
         };
-        this.extractAndProcessJSDocComment(method, sourceFile, result);
+        this.jsdocExtractor.extractAndProcessJSDocComment(method, sourceFile, result);
         const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
-        this.processJSDocTags(jsdoctags, result);
+        this.jsdocExtractor.processJSDocTags(jsdoctags, result);
         return result;
     }
 
@@ -1122,7 +996,7 @@ export class ClassHelper {
             args: method.parameters ? method.parameters.map(prop => this.visitArgument(prop)) : [],
             line: this.getPosition(method, sourceFile).line + 1
         };
-        this.extractAndProcessJSDocComment(method, sourceFile, result);
+        this.jsdocExtractor.extractAndProcessJSDocComment(method, sourceFile, result);
 
         const kinds = this.extractModifierKinds(method);
         if (kinds) {
@@ -1130,7 +1004,7 @@ export class ClassHelper {
         }
 
         const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
-        this.processJSDocTags(jsdoctags, result);
+        this.jsdocExtractor.processJSDocTags(jsdoctags, result);
 
         if (result.jsdoctags && result.jsdoctags.length > 0) {
             result.jsdoctags = mergeTagsAndArgs(result.args, result.jsdoctags);
@@ -1243,7 +1117,7 @@ export class ClassHelper {
             result.name = (property.name as any).expression.text;
         }
 
-        this.extractAndProcessJSDocComment(property, sourceFile, result);
+        this.jsdocExtractor.extractAndProcessJSDocComment(property, sourceFile, result);
 
         if (nodeHasDecorator(property)) {
             const propertyDecorators = getNodeDecorators(property);
@@ -1261,7 +1135,7 @@ export class ClassHelper {
         if (jsdoctags && jsdoctags.length >= 1) {
             const jsdoc = jsdoctags[0] as any;
             if (jsdoc?.tags) {
-                this.checkForDeprecation(jsdoc.tags, result);
+                this.jsdocExtractor.checkForDeprecation(jsdoc.tags, result);
                 if ((property as any).jsDoc) {
                     result.jsdoctags = markedtags(jsdoc.tags);
                 }
@@ -1364,7 +1238,7 @@ export class ClassHelper {
             );
         }
 
-        this.extractAndProcessJSDocComment(method, sourceFile, result);
+        this.jsdocExtractor.extractAndProcessJSDocComment(method, sourceFile, result);
 
         if (nodeHasDecorator(method)) {
             const methodDecorators = getNodeDecorators(method);
@@ -1379,7 +1253,7 @@ export class ClassHelper {
         this.ensurePrivateKeyword(result, method);
 
         const jsdoctags = this.jsdocParserUtil.getJSDocs(method);
-        this.processJSDocTags(jsdoctags, result);
+        this.jsdocExtractor.processJSDocTags(jsdoctags, result);
 
         if (result.jsdoctags && result.jsdoctags.length > 0) {
             result.jsdoctags = mergeTagsAndArgs(result.args, result.jsdoctags);
@@ -1408,9 +1282,9 @@ export class ClassHelper {
         };
 
         if ((property as any).jsDoc) {
-            this.extractAndProcessJSDocComment(property, sourceFile, _return);
+            this.jsdocExtractor.extractAndProcessJSDocComment(property, sourceFile, _return);
             const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
-            this.processJSDocTags(jsdoctags, _return);
+            this.jsdocExtractor.processJSDocTags(jsdoctags, _return);
         }
 
         this.setFallbackDescription(_return, property);
@@ -1448,7 +1322,7 @@ export class ClassHelper {
             _result.defaultValue = this.stringifyDefaultValue(arg.initializer);
         }
         const jsdoctags = this.jsdocParserUtil.getJSDocs(arg);
-        this.processJSDocTags(jsdoctags, _result, false);
+        this.jsdocExtractor.processJSDocTags(jsdoctags, _result, false);
         return _result;
     }
 
@@ -1500,8 +1374,8 @@ export class ClassHelper {
 
         if (!_return.description && property.jsDoc && property.jsDoc.length > 0) {
             const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
-            this.processJSDocTags(jsdoctags, _return);
-            this.extractAndProcessJSDocComment(property, sourceFile, _return);
+            this.jsdocExtractor.processJSDocTags(jsdoctags, _return);
+            this.jsdocExtractor.extractAndProcessJSDocComment(property, sourceFile, _return);
         }
         _return.line = this.getPosition(property, sourceFile).line + 1;
         if (property.type) {
@@ -1563,9 +1437,9 @@ export class ClassHelper {
         Object.assign(_return, this.initializeDocumentationFields());
 
         if (property.jsDoc) {
-            this.extractAndProcessJSDocComment(property, sourceFile, _return);
+            this.jsdocExtractor.extractAndProcessJSDocComment(property, sourceFile, _return);
             const jsdoctags = this.jsdocParserUtil.getJSDocs(property);
-            this.processJSDocTags(jsdoctags, _return);
+            this.jsdocExtractor.processJSDocTags(jsdoctags, _return);
         }
 
         this.setFallbackDescription(_return, property);
