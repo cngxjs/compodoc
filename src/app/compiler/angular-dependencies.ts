@@ -9,7 +9,6 @@ import {
     JsdocParserUtil
 } from '../../utils';
 import ExtendsMerger from '../../utils/extends-merger.util';
-import ImportsUtil from '../../utils/imports.util';
 import { IsKindType, kindToType } from '../../utils/kind-to-type';
 import { logger } from '../../utils/logger';
 import { markedAcl } from '../../utils/marked.acl';
@@ -36,6 +35,10 @@ import { JsDocHelper } from './angular/deps/helpers/js-doc-helper';
 import { ModuleHelper } from './angular/deps/helpers/module-helper';
 import { SymbolHelper } from './angular/deps/helpers/symbol-helper';
 import { ModuleDepFactory } from './angular/deps/module-dep.factory';
+import { ExpressionFinder } from './angular-dependencies/expression-finder';
+import { JsdocTags } from './angular-dependencies/jsdoc-tags';
+import { MetadataPredicates } from './angular-dependencies/metadata-predicates';
+import { PublicApiFilter } from './angular-dependencies/public-api-filter';
 import { FrameworkDependencies } from './framework-dependencies';
 
 const project = new Project();
@@ -48,64 +51,14 @@ export class AngularDependencies extends FrameworkDependencies {
     private jsDocHelper = new JsDocHelper();
     private symbolHelper = new SymbolHelper();
     private jsdocParserUtil = new JsdocParserUtil();
-    private allowedSymbols: Set<string> = new Set<string>();
-    private allowedFiles: Set<string> = new Set<string>();
+    private metadataPredicates = new MetadataPredicates();
+    private jsdocTags = new JsdocTags(this.jsdocParserUtil);
+    private publicApiFilter = new PublicApiFilter();
+    private expressionFinder = new ExpressionFinder();
 
     constructor(files: string[], options: any) {
         super(files, options);
-        this.initializePublicApiFiltering();
-    }
-
-    /**
-     * Initialize public API filtering if enabled
-     */
-    private initializePublicApiFiltering(): void {
-        if (
-            Configuration.mainData.publicApiOnly &&
-            Configuration.mainData.publicApiExports.size > 0
-        ) {
-            logger.info('Public API filtering enabled');
-
-            // Build set of allowed symbols and files
-            for (const [symbolName, sourceFiles] of Configuration.mainData.publicApiExports) {
-                this.allowedSymbols.add(symbolName);
-                for (const sourceFile of sourceFiles) {
-                    this.allowedFiles.add(path.resolve(sourceFile));
-                }
-            }
-
-            logger.info(
-                `Allowed ${this.allowedSymbols.size} public API symbol(s) from ${this.allowedFiles.size} file(s)`
-            );
-        }
-    }
-
-    /**
-     * Check if a symbol is part of the public API
-     */
-    private isSymbolAllowed(symbolName: string, fileName: string): boolean {
-        // If public API filtering is not enabled, allow all symbols
-        if (!Configuration.mainData.publicApiOnly) {
-            return true;
-        }
-
-        // If no symbols are defined, allow all (fallback)
-        if (this.allowedSymbols.size === 0) {
-            return true;
-        }
-
-        const resolvedFileName = path.resolve(fileName);
-
-        // Check if the symbol is explicitly allowed
-        if (this.allowedSymbols.has(symbolName)) {
-            // Verify the symbol is from an allowed file
-            const allowedSourceFiles = Configuration.mainData.publicApiExports.get(symbolName);
-            if (allowedSourceFiles?.has(resolvedFileName)) {
-                return true;
-            }
-        }
-
-        return false;
+        this.publicApiFilter.initializePublicApiFiltering();
     }
 
     public getDependencies() {
@@ -268,7 +221,7 @@ export class AngularDependencies extends FrameworkDependencies {
     }
 
     private processClass(node, file, srcFile, outputSymbols, fileBody, astFile) {
-        const name = this.getSymboleName(node);
+        const name = this.expressionFinder.getSymboleName(node);
         const IO = this.getClassIO(file, srcFile, node, fileBody, astFile);
         const sourceCode = srcFile.getText();
         const hash = crypto.createHash('sha512').update(sourceCode).digest('hex');
@@ -336,7 +289,7 @@ export class AngularDependencies extends FrameworkDependencies {
         if (IO.implements && IO.implements.length > 0) {
             deps.implements = IO.implements;
 
-            if (this.isGuard(IO.implements)) {
+            if (this.metadataPredicates.isGuard(IO.implements)) {
                 // We don't want the Guard to show up in the Classes menu
                 excludeFromClassArray = true;
                 deps.type = 'guard';
@@ -487,15 +440,18 @@ export class AngularDependencies extends FrameworkDependencies {
                     const visitDecorator = (visitedDecorator, _index) => {
                         let deps: IDep;
 
-                        const name = this.getSymboleName(node);
+                        const name = this.expressionFinder.getSymboleName(node);
 
                         // Check if this decorated class is allowed by public API filter
-                        if (!this.isSymbolAllowed(name, file)) {
+                        if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
                             logger.debug(`Skipping decorated class ${name} (not in public API)`);
                             return;
                         }
 
-                        const props = this.findProperties(visitedDecorator, srcFile);
+                        const props = this.expressionFinder.findProperties(
+                            visitedDecorator,
+                            srcFile
+                        );
                         const IO = this.componentHelper.getComponentIO(
                             file,
                             srcFile,
@@ -504,7 +460,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             astFile
                         );
 
-                        if (this.isModule(visitedDecorator)) {
+                        if (this.metadataPredicates.isModule(visitedDecorator)) {
                             const moduleDep = new ModuleDepFactory(this.moduleHelper).create(
                                 file,
                                 srcFile,
@@ -525,7 +481,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                 outputSymbols.modules.push(moduleDep);
                                 outputSymbols.modulesForGraph.push(moduleDep);
                             }
-                        } else if (this.isComponent(visitedDecorator)) {
+                        } else if (this.metadataPredicates.isComponent(visitedDecorator)) {
                             if (props.length === 0) {
                                 return;
                             }
@@ -537,7 +493,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                 ComponentsTreeEngine.addComponent(componentDep);
                                 outputSymbols.components.push(componentDep);
                             }
-                        } else if (this.isEntity(visitedDecorator)) {
+                        } else if (this.metadataPredicates.isEntity(visitedDecorator)) {
                             const entityDep = new EntityDepFactory().create(
                                 file,
                                 srcFile,
@@ -550,7 +506,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             if (typeof IO.ignore === 'undefined') {
                                 outputSymbols.entities.push(entityDep);
                             }
-                        } else if (this.isInjectable(visitedDecorator)) {
+                        } else if (this.metadataPredicates.isInjectable(visitedDecorator)) {
                             const injectableDeps: IInjectableDep = {
                                 name,
                                 id: `injectable-${name}-${hash}`,
@@ -598,7 +554,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                 if (IO.implements.includes('HttpInterceptor')) {
                                     injectableDeps.type = 'interceptor';
                                     outputSymbols.interceptors.push(injectableDeps);
-                                } else if (this.isGuard(IO.implements)) {
+                                } else if (this.metadataPredicates.isGuard(IO.implements)) {
                                     injectableDeps.type = 'guard';
                                     outputSymbols.guards.push(injectableDeps);
                                 } else {
@@ -609,7 +565,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                     );
                                 }
                             }
-                        } else if (this.isPipe(visitedDecorator)) {
+                        } else if (this.metadataPredicates.isPipe(visitedDecorator)) {
                             const pipeDeps: IPipeDep = {
                                 name,
                                 id: `pipe-${name}-${hash}`,
@@ -651,7 +607,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             if (typeof IO.ignore === 'undefined') {
                                 outputSymbols.pipes.push(pipeDeps);
                             }
-                        } else if (this.isDirective(visitedDecorator)) {
+                        } else if (this.metadataPredicates.isDirective(visitedDecorator)) {
                             const directiveDeps = new DirectiveDepFactory(
                                 this.componentHelper
                             ).create(file, srcFile, name, props, IO);
@@ -661,7 +617,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             }
                         } else {
                             const hasMultipleDecoratorsWithInternalOne =
-                                this.hasInternalDecorator(nodeDecorators);
+                                this.metadataPredicates.hasInternalDecorator(nodeDecorators);
                             // Just a class
                             if (
                                 !classWithCustomDecorator &&
@@ -707,17 +663,17 @@ export class AngularDependencies extends FrameworkDependencies {
                 } else if (node.symbol) {
                     if (node.symbol.flags === ts.SymbolFlags.Class) {
                         // Check if class is allowed by public API filter
-                        const className = this.getSymboleName(node);
-                        if (!this.isSymbolAllowed(className, file)) {
+                        const className = this.expressionFinder.getSymboleName(node);
+                        if (!this.publicApiFilter.isSymbolAllowed(className, file)) {
                             logger.debug(`Skipping class ${className} (not in public API)`);
                             return;
                         }
                         this.processClass(node, file, srcFile, outputSymbols, fileBody, astFile);
                     } else if (node.symbol.flags === ts.SymbolFlags.Interface) {
-                        const name = this.getSymboleName(node);
+                        const name = this.expressionFinder.getSymboleName(node);
 
                         // Check if interface is allowed by public API filter
-                        if (!this.isSymbolAllowed(name, file)) {
+                        if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
                             logger.debug(`Skipping interface ${name} (not in public API)`);
                             return;
                         }
@@ -767,7 +723,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         const name = infos.name;
 
                         // Check if function is allowed by public API filter
-                        if (!this.isSymbolAllowed(name, file)) {
+                        if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
                             logger.debug(`Skipping function ${name} (not in public API)`);
                             return;
                         }
@@ -833,7 +789,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         const name = infos.name;
 
                         // Check if enum is allowed by public API filter
-                        if (!this.isSymbolAllowed(name, file)) {
+                        if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
                             logger.debug(`Skipping enum ${name} (not in public API)`);
                             return;
                         }
@@ -863,7 +819,7 @@ export class AngularDependencies extends FrameworkDependencies {
                         const name = infos.name;
 
                         // Check if type alias is allowed by public API filter
-                        if (!this.isSymbolAllowed(name, file)) {
+                        if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
                             logger.debug(`Skipping type alias ${name} (not in public API)`);
                             return;
                         }
@@ -957,10 +913,11 @@ export class AngularDependencies extends FrameworkDependencies {
                         let resultNode;
                         if (srcFile.text.indexOf(bootstrapModuleReference) !== -1) {
                             if (node.expression) {
-                                resultNode = this.findExpressionByNameInExpressions(
-                                    node.expression,
-                                    'bootstrapModule'
-                                );
+                                resultNode =
+                                    this.expressionFinder.findExpressionByNameInExpressions(
+                                        node.expression,
+                                        'bootstrapModule'
+                                    );
                             }
                             if (typeof (node as any).thenStatement !== 'undefined') {
                                 if (
@@ -969,10 +926,11 @@ export class AngularDependencies extends FrameworkDependencies {
                                 ) {
                                     const firstStatement = (node as any).thenStatement
                                         .statements[0];
-                                    resultNode = this.findExpressionByNameInExpressions(
-                                        firstStatement.expression,
-                                        'bootstrapModule'
-                                    );
+                                    resultNode =
+                                        this.expressionFinder.findExpressionByNameInExpressions(
+                                            firstStatement.expression,
+                                            'bootstrapModule'
+                                        );
                                 }
                             }
                             if (!resultNode) {
@@ -981,10 +939,11 @@ export class AngularDependencies extends FrameworkDependencies {
                                     (node.expression as any).arguments &&
                                     (node.expression as any).arguments.length > 0
                                 ) {
-                                    resultNode = this.findExpressionByNameInExpressionArguments(
-                                        (node.expression as any).arguments,
-                                        'bootstrapModule'
-                                    );
+                                    resultNode =
+                                        this.expressionFinder.findExpressionByNameInExpressionArguments(
+                                            (node.expression as any).arguments,
+                                            'bootstrapModule'
+                                        );
                                 }
                             }
                             if (resultNode) {
@@ -1078,7 +1037,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                             zoneless: isZoneless
                                         };
                                         if (!isIgnore(variableNode)) {
-                                            if (!this.isSymbolAllowed(name, file)) {
+                                            if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
                                                 logger.debug(
                                                     `Skipping ApplicationConfig ${name} (not in public API)`
                                                 );
@@ -1124,7 +1083,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                             )
                                         };
                                         if (!isIgnore(variableNode)) {
-                                            if (!this.isSymbolAllowed(name, file)) {
+                                            if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
                                                 logger.debug(
                                                     `Skipping InjectionToken ${name} (not in public API)`
                                                 );
@@ -1142,7 +1101,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                         name
                                     );
                                     if (functionalKind && !isIgnore(variableNode)) {
-                                        if (!this.isSymbolAllowed(name, file)) {
+                                        if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
                                             logger.debug(
                                                 `Skipping functional ${functionalKind} ${name} (not in public API)`
                                             );
@@ -1208,7 +1167,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                     }
                                     if (!isIgnore(variableNode)) {
                                         // Check if variable is allowed by public API filter
-                                        if (!this.isSymbolAllowed(name, file)) {
+                                        if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
                                             logger.debug(
                                                 `Skipping variable ${name} (not in public API)`
                                             );
@@ -1255,7 +1214,7 @@ export class AngularDependencies extends FrameworkDependencies {
 
                                         if (!isIgnore(destructuredVariables[i])) {
                                             // Check if variable is allowed by public API filter
-                                            if (!this.isSymbolAllowed(name, file)) {
+                                            if (!this.publicApiFilter.isSymbolAllowed(name, file)) {
                                                 logger.debug(
                                                     `Skipping destructured variable ${name} (not in public API)`
                                                 );
@@ -1411,98 +1370,6 @@ export class AngularDependencies extends FrameworkDependencies {
         }
     }
 
-    private checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
-        tags.forEach(tag => {
-            if (tag.tagName?.text) {
-                if (tag.tagName.text.indexOf('deprecated') > -1) {
-                    result.deprecated = true;
-                    // tag.comment becomes a NodeArray (not a string) when the
-                    // JSDoc has an inline {@link X}; parseJSDocNode flattens both shapes.
-                    result.deprecationMessage = this.jsdocParserUtil.parseJSDocNode(tag) || '';
-                }
-                if (tag.tagName.text === 'category') {
-                    result.category = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
-                }
-            }
-        });
-        this.extractCustomTags(tags, result);
-    }
-
-    private extractCustomTags(tags: any[], result: { [key in string | number]: any }) {
-        for (const tag of tags) {
-            if (!tag.tagName?.text) {
-                continue;
-            }
-            const name = tag.tagName.text;
-            const rawComment = tag.comment;
-            const comment = (
-                typeof rawComment === 'string'
-                    ? rawComment
-                    : Array.isArray(rawComment)
-                      ? rawComment.map((c: any) => c.text || '').join('')
-                      : ''
-            ).trim();
-
-            switch (name) {
-                case 'signal':
-                    result.signal = true;
-                    break;
-                case 'zoneless':
-                    result.zoneless = true;
-                    break;
-                case 'beta':
-                    result.beta = true;
-                    break;
-                case 'group':
-                    result.group = comment.split('\n')[0].trim();
-                    break;
-                case 'order':
-                    result.order = parseInt(comment, 10) || 0;
-                    break;
-                case 'since':
-                    result.since = comment.split('\n')[0].trim();
-                    break;
-                case 'breaking':
-                    result.breaking = comment.split('\n')[0].trim();
-                    break;
-                case 'route':
-                    result.route = comment.split('\n')[0].trim();
-                    break;
-                case 'storybook':
-                    result.storybookUrl = comment.split('\n')[0].trim();
-                    break;
-                case 'figma':
-                    result.figmaUrl = comment.split('\n')[0].trim();
-                    break;
-                case 'stackblitz':
-                    result.stackblitzUrl = comment.split('\n')[0].trim();
-                    break;
-                case 'github':
-                    result.githubUrl = comment.split('\n')[0].trim();
-                    break;
-                case 'docs':
-                    result.docsUrl = comment.split('\n')[0].trim();
-                    break;
-                case 'slot': {
-                    // @slot name - description
-                    if (!result.slots) {
-                        result.slots = [];
-                    }
-                    const parts = comment.match(/^(\S+)\s*-?\s*(.*)$/);
-                    if (parts) {
-                        result.slots.push({
-                            name: parts[1],
-                            description: parts[2] || ''
-                        });
-                    } else if (comment) {
-                        result.slots.push({ name: comment, description: '' });
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
     /**
      * Extract provider function calls from an ApplicationConfig initializer.
      * Walks the `providers` array in the object literal and extracts call expressions.
@@ -1638,150 +1505,6 @@ export class AngularDependencies extends FrameworkDependencies {
         return undefined;
     }
 
-    private findExpressionByNameInExpressions(entryNode, name) {
-        let result;
-        const loop = (node, z) => {
-            if (node) {
-                if (node.expression && !node.expression.name) {
-                    loop(node.expression, z);
-                }
-                if (node.expression?.name) {
-                    if (node.expression.name.text === z) {
-                        result = node;
-                    } else {
-                        loop(node.expression, z);
-                    }
-                }
-            }
-        };
-        loop(entryNode, name);
-        return result;
-    }
-
-    private findExpressionByNameInExpressionArguments(arg, name) {
-        let result;
-
-        let i = 0;
-        const len = arg.length;
-        const loop = (node, z) => {
-            if (node.body) {
-                if (node.body.statements && node.body.statements.length > 0) {
-                    let j = 0;
-                    const leng = node.body.statements.length;
-                    for (j; j < leng; j++) {
-                        result = this.findExpressionByNameInExpressions(node.body.statements[j], z);
-                    }
-                }
-            }
-        };
-        for (i; i < len; i++) {
-            loop(arg[i], name);
-        }
-        return result;
-    }
-
-    private parseDecorators(decorators, type: string): boolean {
-        let result = false;
-        if (decorators.length > 1) {
-            decorators.forEach((decorator: any) => {
-                if (decorator.expression.expression) {
-                    if (decorator.expression.expression.text === type) {
-                        result = true;
-                    }
-                }
-            });
-        } else {
-            if (decorators[0].expression.expression) {
-                if (decorators[0].expression.expression.text === type) {
-                    result = true;
-                }
-            }
-        }
-        return result;
-    }
-
-    private parseDecorator(decorator, type: string): boolean {
-        let result = false;
-        if (decorator.expression.expression) {
-            if (decorator.expression.expression.text === type) {
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    private isEntity(metadata) {
-        return this.parseDecorator(metadata, 'Entity');
-    }
-
-    private isComponent(metadata) {
-        return this.parseDecorator(metadata, 'Component');
-    }
-
-    private isPipe(metadata) {
-        return this.parseDecorator(metadata, 'Pipe');
-    }
-
-    private isDirective(metadata) {
-        return this.parseDecorator(metadata, 'Directive');
-    }
-
-    private isInjectable(metadata) {
-        return this.parseDecorator(metadata, 'Injectable');
-    }
-
-    private isModule(metadata) {
-        return this.parseDecorator(metadata, 'NgModule');
-    }
-
-    private hasInternalDecorator(metadatas) {
-        return (
-            this.parseDecorators(metadatas, 'Component') ||
-            this.parseDecorators(metadatas, 'Pipe') ||
-            this.parseDecorators(metadatas, 'Directive') ||
-            this.parseDecorators(metadatas, 'Injectable') ||
-            this.parseDecorators(metadatas, 'NgModule')
-        );
-    }
-
-    private isGuard(ioImplements: string[]): boolean {
-        return (
-            ioImplements.includes('CanActivate') ||
-            ioImplements.includes('CanActivateChild') ||
-            ioImplements.includes('CanDeactivate') ||
-            ioImplements.includes('Resolve') ||
-            ioImplements.includes('CanLoad')
-        );
-    }
-
-    private getSymboleName(node): string {
-        return node.name.text;
-    }
-
-    private findProperties(
-        visitedNode: ts.Decorator,
-        sourceFile: ts.SourceFile
-    ): ReadonlyArray<ts.ObjectLiteralElementLike> {
-        if (
-            visitedNode.expression &&
-            (visitedNode.expression as any).arguments &&
-            (visitedNode.expression as any).arguments.length > 0
-        ) {
-            const pop = (visitedNode.expression as any).arguments[0];
-
-            if (pop?.properties && pop.properties.length >= 0) {
-                return pop.properties;
-            } else if (pop?.kind && pop.kind === SyntaxKind.StringLiteral) {
-                return [pop];
-            } else {
-                logger.warn('Empty metadatas, trying to find it with imports.');
-                return ImportsUtil.findValueInImportOrLocalVariables(pop.text, sourceFile) as any;
-            }
-        }
-
-        return [];
-    }
-
     private visitTypeDeclaration(node: ts.TypeAliasDeclaration) {
         const result: any = {
             deprecated: false,
@@ -1792,7 +1515,7 @@ export class AngularDependencies extends FrameworkDependencies {
         const jsdoctags = this.jsdocParserUtil.getJSDocs(node);
 
         if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
-            this.checkForDeprecation((jsdoctags[0] as any).tags, result);
+            this.jsdocTags.checkForDeprecation((jsdoctags[0] as any).tags, result);
             result.jsdoctags = markedtags((jsdoctags[0] as any).tags);
         }
         return result;
@@ -1855,7 +1578,7 @@ export class AngularDependencies extends FrameworkDependencies {
             const jsdoctags = this.jsdocParserUtil.getJSDocs(arg);
 
             if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
-                this.checkForDeprecation((jsdoctags[0] as any).tags, result);
+                this.jsdocTags.checkForDeprecation((jsdoctags[0] as any).tags, result);
             }
             return result;
         }
@@ -1943,7 +1666,7 @@ export class AngularDependencies extends FrameworkDependencies {
             }
         }
         if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
-            this.checkForDeprecation((jsdoctags[0] as any).tags, result);
+            this.jsdocTags.checkForDeprecation((jsdoctags[0] as any).tags, result);
             result.jsdoctags = markedtags((jsdoctags[0] as any).tags);
             (jsdoctags[0] as any).tags.forEach(tag => {
                 if (tag.tagName) {
@@ -1985,7 +1708,7 @@ export class AngularDependencies extends FrameworkDependencies {
             }
             const jsdoctags = this.jsdocParserUtil.getJSDocs(decl);
             if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
-                this.checkForDeprecation((jsdoctags[0] as any).tags, result);
+                this.jsdocTags.checkForDeprecation((jsdoctags[0] as any).tags, result);
             }
             return result;
         }
@@ -2033,14 +1756,14 @@ export class AngularDependencies extends FrameworkDependencies {
                     memberjsdoctags.length >= 1 &&
                     (memberjsdoctags[0] as any).tags
                 ) {
-                    this.checkForDeprecation((memberjsdoctags[0] as any).tags, member);
+                    this.jsdocTags.checkForDeprecation((memberjsdoctags[0] as any).tags, member);
                 }
                 result.members.push(member);
             }
         }
         const jsdoctags = this.jsdocParserUtil.getJSDocs(node);
         if (jsdoctags && jsdoctags.length >= 1 && (jsdoctags[0] as any).tags) {
-            this.checkForDeprecation((jsdoctags[0] as any).tags, result);
+            this.jsdocTags.checkForDeprecation((jsdoctags[0] as any).tags, result);
         }
         return result;
     }
