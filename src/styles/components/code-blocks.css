@@ -379,7 +379,8 @@ pre.line-numbers code {
 
 .dark .cdx-line-highlight {
     background: var(--color-cdx-line-highlight) !important;
-    outline: 1px solid color-mix(in srgb, var(--color-cdx-line-highlight) 200%, transparent);
+    outline: 1px solid
+        color-mix(in srgb, var(--color-cdx-line-highlight) 200%, transparent);
 }
 
 .cdx-line-flash {
@@ -398,7 +399,11 @@ pre.line-numbers code {
 @media (prefers-reduced-motion: reduce) {
     .cdx-line-flash {
         animation: none;
-        background: color-mix(in srgb, var(--color-cdx-line-highlight) 50%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-cdx-line-highlight) 50%,
+            transparent
+        );
     }
 }
 
@@ -530,9 +535,15 @@ pre:hover > .cdx-code-lang-chip {
     padding: var(--spacing-cdx-sm);
     font-size: 12px;
     color: var(--color-cdx-primary);
-    background: transparent;
+    background: rgba(255, 255, 255, 0.2);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
     border: none;
     z-index: 1;
+}
+
+.dark .cdx-code-expand-btn {
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .cdx-code-expand-btn:hover {
@@ -551,4 +562,8 @@ pre:hover > .cdx-code-lang-chip {
 
 pre ::selection {
     background: var(--color-cdx-primary-subtle, hsl(222 68% 52% / 0.2));
+}
+
+.cdx-source-viewer .cdx-source-viewer--scss {
+    margin-bottom: 1.25rem;
 }
