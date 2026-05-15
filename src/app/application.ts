@@ -19,12 +19,17 @@ import NgdEngine from './engines/ngd.engine';
 import { runPagefindIndex } from './engines/search-indexer.engine';
 import { initHighlighter } from './engines/syntax-highlight.engine';
 import { updateVersionsManifest } from './engines/versions-manifest.engine';
-import type { CoverageData } from './interfaces/coverageData.interface';
+import {
+    generationPromise,
+    rejectGenerationPromise,
+    resolveGenerationPromise
+} from './generation-promise';
 import {
     AdditionalPageGenerator,
     AppConfigPageGenerator,
     ClassPageGenerator,
     ComponentPageGenerator,
+    CoveragePageGenerator,
     DirectivePageGenerator,
     EntityPageGenerator,
     GuardPageGenerator,
@@ -40,22 +45,11 @@ import {
     PlaygroundFileResolver,
     RoutesPageGenerator
 } from './page-generator';
-import {
-    type CoverageFile,
-    computeDocumentationCoverage,
-    computeUnitTestCoverage
-} from './services/coverage';
 import { crawlDependencies, crawlMicroDependencies } from './services/dependencies';
 import { startWebServer } from './services/serve';
 
 const cwd = process.cwd();
 let startTime = new Date();
-let generationPromiseResolve;
-let generationPromiseReject;
-const generationPromise = new Promise((resolve, reject) => {
-    generationPromiseResolve = resolve;
-    generationPromiseReject = reject;
-});
 
 export class Application {
     /**
@@ -94,6 +88,7 @@ export class Application {
     private readonly additionalPageGenerator: AdditionalPageGenerator;
     private readonly packageDependenciesPageGenerator: PackageDependenciesPageGenerator;
     private readonly playgroundFileResolver: PlaygroundFileResolver;
+    private readonly coveragePageGenerator: CoveragePageGenerator;
 
     /**
      * Create a new compodocx application instance.
@@ -133,6 +128,7 @@ export class Application {
         this.additionalPageGenerator = new AdditionalPageGenerator();
         this.packageDependenciesPageGenerator = new PackageDependenciesPageGenerator();
         this.playgroundFileResolver = new PlaygroundFileResolver();
+        this.coveragePageGenerator = new CoveragePageGenerator();
     }
 
     /**
@@ -510,7 +506,7 @@ export class Application {
         }
 
         if (!Configuration.mainData.disableCoverage) {
-            actions.push(() => this.prepareCoverage());
+            actions.push(() => this.coveragePageGenerator.prepareDocumentation());
         }
 
         // Resolve `@playground` file refs after every dependency kind has
@@ -533,7 +529,7 @@ export class Application {
                             Configuration.mainData.output,
                             Configuration.mainData
                         ).then(() => {
-                            generationPromiseResolve(true);
+                            resolveGenerationPromise(true);
                             this.endCallback();
                             logger.info(
                                 'Documentation generated in ' +
@@ -688,13 +684,13 @@ export class Application {
 
         if (!Configuration.mainData.disableCoverage) {
             actions.push(() => {
-                return this.prepareCoverage();
+                return this.coveragePageGenerator.prepareDocumentation();
             });
         }
 
         if (Configuration.mainData.unitTestCoverage !== '') {
             actions.push(() => {
-                return this.prepareUnitTestCoverage();
+                return this.coveragePageGenerator.prepareUnitTest();
             });
         }
 
@@ -723,7 +719,7 @@ export class Application {
                             Configuration.mainData.output,
                             Configuration.mainData
                         ).then(() => {
-                            generationPromiseResolve(true);
+                            resolveGenerationPromise(true);
                             this.endCallback();
                             logger.info(
                                 'Documentation generated in ' +
@@ -750,250 +746,6 @@ export class Application {
                 logger.error(errorMessage);
                 process.exit(1);
             });
-    }
-
-    public prepareCoverage() {
-        logger.info('Process documentation coverage report');
-
-        return new Promise((resolve, _reject) => {
-            const report = computeDocumentationCoverage({
-                components: Configuration.mainData.components,
-                directives: Configuration.mainData.directives,
-                entities: Configuration.mainData.entities,
-                classes: Configuration.mainData.classes,
-                injectables: Configuration.mainData.injectables,
-                interfaces: Configuration.mainData.interfaces,
-                guards: Configuration.mainData.guards,
-                interceptors: Configuration.mainData.interceptors,
-                pipes: Configuration.mainData.pipes,
-                miscellaneous: {
-                    functions: Configuration.mainData.miscellaneous.functions,
-                    variables: Configuration.mainData.miscellaneous.variables,
-                    typealiases: Configuration.mainData.miscellaneous.typealiases
-                }
-            });
-
-            const coverageData = {
-                count: report.count,
-                status: report.status,
-                files: report.files
-            };
-
-            Configuration.addPage({
-                name: 'coverage',
-                id: 'coverage',
-                context: 'coverage',
-                files: coverageData.files,
-                data: coverageData,
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-            Configuration.mainData.coverageData = coverageData;
-            if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
-                HtmlEngine.generateCoverageBadge(
-                    Configuration.mainData.output,
-                    'documentation',
-                    coverageData
-                );
-            }
-
-            const filesByPercent = [...coverageData.files].sort(
-                (a, b) => a.coveragePercent - b.coveragePercent
-            );
-            const processCoveragePerFile = () => {
-                logger.info('Process documentation coverage per file');
-                logger.info('-------------------');
-
-                const overFiles = filesByPercent.filter(f => {
-                    const overTest =
-                        f.coveragePercent >= Configuration.mainData.coverageMinimumPerFile;
-                    if (overTest && !Configuration.mainData.coverageTestShowOnlyFailed) {
-                        logger.info(
-                            `${f.coveragePercent} % for file ${f.filePath} - ${f.name} - over minimum per file`
-                        );
-                    }
-                    return overTest;
-                });
-                const underFiles = filesByPercent.filter(f => {
-                    const underTest =
-                        f.coveragePercent < Configuration.mainData.coverageMinimumPerFile;
-                    if (underTest) {
-                        logger.error(
-                            `${f.coveragePercent} % for file ${f.filePath} - ${f.name} - under minimum per file`
-                        );
-                    }
-                    return underTest;
-                });
-
-                logger.info('-------------------');
-                return {
-                    overFiles: overFiles,
-                    underFiles: underFiles
-                };
-            };
-
-            let coverageTestPerFileResults;
-            if (
-                Configuration.mainData.coverageTest &&
-                !Configuration.mainData.coverageTestPerFile
-            ) {
-                // Global coverage test and not per file
-                if (coverageData.count >= Configuration.mainData.coverageTestThreshold) {
-                    logger.info(
-                        `Documentation coverage (${coverageData.count}%) is over threshold (${Configuration.mainData.coverageTestThreshold}%)`
-                    );
-                    generationPromiseResolve(true);
-                    process.exit(0);
-                } else {
-                    const message = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`;
-                    generationPromiseReject();
-                    if (Configuration.mainData.coverageTestThresholdFail) {
-                        logger.error(message);
-                        process.exit(1);
-                    } else {
-                        logger.warn(message);
-                        process.exit(0);
-                    }
-                }
-            } else if (
-                !Configuration.mainData.coverageTest &&
-                Configuration.mainData.coverageTestPerFile
-            ) {
-                coverageTestPerFileResults = processCoveragePerFile();
-                // Per file coverage test and not global
-                if (coverageTestPerFileResults.underFiles.length > 0) {
-                    const message = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
-                    generationPromiseReject();
-                    if (Configuration.mainData.coverageTestThresholdFail) {
-                        logger.error(message);
-                        process.exit(1);
-                    } else {
-                        logger.warn(message);
-                        process.exit(0);
-                    }
-                } else {
-                    logger.info(
-                        `Documentation coverage per file is over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`
-                    );
-                    generationPromiseResolve(true);
-                    process.exit(0);
-                }
-            } else if (
-                Configuration.mainData.coverageTest &&
-                Configuration.mainData.coverageTestPerFile
-            ) {
-                // Per file coverage test and global
-                coverageTestPerFileResults = processCoveragePerFile();
-                if (
-                    coverageData.count >= Configuration.mainData.coverageTestThreshold &&
-                    coverageTestPerFileResults.underFiles.length === 0
-                ) {
-                    logger.info(
-                        `Documentation coverage (${coverageData.count}%) is over threshold (${Configuration.mainData.coverageTestThreshold}%)`
-                    );
-                    logger.info(
-                        `Documentation coverage per file is over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`
-                    );
-                    generationPromiseResolve(true);
-                    process.exit(0);
-                } else if (
-                    coverageData.count >= Configuration.mainData.coverageTestThreshold &&
-                    coverageTestPerFileResults.underFiles.length > 0
-                ) {
-                    logger.info(
-                        `Documentation coverage (${coverageData.count}%) is over threshold (${Configuration.mainData.coverageTestThreshold}%)`
-                    );
-                    const message = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
-                    generationPromiseReject();
-                    if (Configuration.mainData.coverageTestThresholdFail) {
-                        logger.error(message);
-                        process.exit(1);
-                    } else {
-                        logger.warn(message);
-                        process.exit(0);
-                    }
-                } else if (
-                    coverageData.count < Configuration.mainData.coverageTestThreshold &&
-                    coverageTestPerFileResults.underFiles.length > 0
-                ) {
-                    const messageGlobal = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`,
-                        messagePerFile = `Documentation coverage per file is not over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
-                    generationPromiseReject();
-                    if (Configuration.mainData.coverageTestThresholdFail) {
-                        logger.error(messageGlobal);
-                        logger.error(messagePerFile);
-                        process.exit(1);
-                    } else {
-                        logger.warn(messageGlobal);
-                        logger.warn(messagePerFile);
-                        process.exit(0);
-                    }
-                } else {
-                    const message = `Documentation coverage (${coverageData.count}%) is not over threshold (${Configuration.mainData.coverageTestThreshold}%)`,
-                        messagePerFile = `Documentation coverage per file is over threshold (${Configuration.mainData.coverageMinimumPerFile}%)`;
-                    generationPromiseReject();
-                    if (Configuration.mainData.coverageTestThresholdFail) {
-                        logger.error(message);
-                        logger.info(messagePerFile);
-                        process.exit(1);
-                    } else {
-                        logger.warn(message);
-                        logger.info(messagePerFile);
-                        process.exit(0);
-                    }
-                }
-            } else {
-                resolve(true);
-            }
-        });
-    }
-
-    public prepareUnitTestCoverage() {
-        logger.info('Process unit test coverage report');
-        return new Promise((resolve, _reject) => {
-            const coverageData: CoverageData = Configuration.mainData.coverageData;
-            const coverageFiles = coverageData.files as ReadonlyArray<CoverageFile> | undefined;
-            if (!coverageFiles) {
-                logger.warn('Missing documentation coverage data');
-            }
-
-            const fileDat = FileEngine.getSync(Configuration.mainData.unitTestCoverage);
-            if (!fileDat) {
-                return Promise.reject('Error reading unit test coverage file');
-            }
-            const unitTestSummary = JSON.parse(fileDat) as Record<string, unknown>;
-
-            const report = computeUnitTestCoverage(unitTestSummary, coverageFiles);
-            const unitTestData: Record<string, unknown> = {
-                total: report.total,
-                files: report.files,
-                idColumn: report.idColumn
-            };
-            Configuration.mainData.unitTestData = unitTestData;
-            Configuration.addPage({
-                name: 'unit-test',
-                id: 'unit-test',
-                context: 'unit-test',
-                files: report.files,
-                data: unitTestData,
-                depth: 0,
-                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-            });
-
-            if (Configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
-                const keysToGet = ['statements', 'branches', 'functions', 'lines'] as const;
-                keysToGet.forEach(key => {
-                    const metric = report.total[key];
-                    if (metric) {
-                        HtmlEngine.generateCoverageBadge(Configuration.mainData.output, key, {
-                            count: metric.coveragePercent,
-                            status: metric.status
-                        });
-                    }
-                });
-            }
-            resolve(true);
-        });
     }
 
     private processPage(page): Promise<void> {
@@ -1211,7 +963,7 @@ export class Application {
                 );
                 this.serveAndStartWatch(Configuration.mainData.output);
             } else {
-                generationPromiseResolve(true);
+                resolveGenerationPromise(true);
                 this.endCallback();
             }
         };
@@ -1461,7 +1213,7 @@ export class Application {
         if (Configuration.mainData.watch && !this.isWatching) {
             if (typeof this.files === 'undefined') {
                 logger.error('No sources files available, please use -p flag');
-                generationPromiseReject();
+                rejectGenerationPromise();
                 process.exit(1);
             } else {
                 this.runWatch();
