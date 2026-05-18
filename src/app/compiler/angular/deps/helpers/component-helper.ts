@@ -492,7 +492,22 @@ export class ComponentHelper {
         props: ReadonlyArray<ts.ObjectLiteralElementLike>,
         srcFile: ts.SourceFile
     ): string[] {
-        return this.symbolHelper.getSymbolDeps(props, 'styleUrls', srcFile);
+        const plural = this.symbolHelper.getSymbolDeps(props, 'styleUrls', srcFile);
+        const singular = this.symbolHelper.getSymbolDeps(props, 'styleUrl', srcFile);
+        if (singular.length === 0) {
+            return plural;
+        }
+        // Angular 21 introduced the singular `styleUrl: './foo.css'` form. Stencil
+        // components have always used the same field. Fold it into the plural so
+        // every downstream consumer (theming parser, handleStyleurls, nav-tabs,
+        // hero metadata) sees one canonical list regardless of authoring style.
+        const merged = [...plural];
+        for (const url of singular) {
+            if (url && !merged.includes(url)) {
+                merged.push(url);
+            }
+        }
+        return merged;
     }
 
     public getComponentStyleUrl(

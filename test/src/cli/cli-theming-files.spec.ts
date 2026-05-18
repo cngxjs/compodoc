@@ -185,4 +185,96 @@ describe('CLI Theming tab generation', () => {
             expect(plainComponentHtml).to.not.contain('data-compodoc="block-theming"');
         });
     });
+
+    describe('when a component uses Angular 21 singular `styleUrl`', () => {
+        const singularDistFolder = `${tmp.name}-theming-tab-singular`;
+        const singularFixtureFolder = `${tmp.name}-theming-tab-singular-fixture`;
+        let componentHtml: string;
+
+        beforeAll(() => {
+            tmp.create(singularFixtureFolder);
+            tmp.create(singularDistFolder);
+
+            const srcFolder = path.join(singularFixtureFolder, 'src');
+            const themedFolder = path.join(srcFolder, 'themed');
+            fs.mkdirSync(themedFolder, { recursive: true });
+
+            // Singular `styleUrl: './foo.css'` is the Angular 21 default and
+            // must produce the same theming tab as the plural form. Issue #85.
+            fs.writeFileSync(
+                path.join(themedFolder, 'card.component.ts'),
+                `import { Component } from '@angular/core';\n` +
+                    `@Component({\n` +
+                    `    selector: 'app-card',\n` +
+                    `    template: '<div></div>',\n` +
+                    `    styleUrl: './card.component.css'\n` +
+                    `})\n` +
+                    `export class CardComponent {}\n`
+            );
+            fs.writeFileSync(
+                path.join(themedFolder, 'card.component.css'),
+                `/**\n` +
+                    ` * Background fill of the card.\n` +
+                    ` * @type <color>\n` +
+                    ` * @default #ffffff\n` +
+                    ` * @group container\n` +
+                    ` */\n` +
+                    `@property --card-bg {\n` +
+                    `    syntax: "<color>";\n` +
+                    `    inherits: true;\n` +
+                    `    initial-value: #ffffff;\n` +
+                    `}\n`
+            );
+
+            fs.writeFileSync(
+                path.join(srcFolder, 'app.module.ts'),
+                `import { NgModule } from '@angular/core';\n` +
+                    `import { CardComponent } from './themed/card.component';\n` +
+                    `@NgModule({ declarations: [CardComponent] })\n` +
+                    `export class AppModule {}\n`
+            );
+
+            fs.writeFileSync(
+                path.join(singularFixtureFolder, 'tsconfig.json'),
+                JSON.stringify(tsconfigContent, null, 2)
+            );
+
+            const ls = shell('node', [
+                './bin/index-cli.js',
+                '--no-multiVersion',
+                '-p',
+                path.join(singularFixtureFolder, 'tsconfig.json'),
+                '-d',
+                singularDistFolder
+            ]);
+
+            if (hasStderrError(ls.stderr.toString())) {
+                console.error(`shell error: ${ls.stderr.toString()}`);
+                throw new Error('error');
+            }
+            componentHtml = read(`${singularDistFolder}/components/CardComponent.html`);
+        });
+
+        afterAll(() => {
+            tmp.clean(singularDistFolder);
+            tmp.clean(singularFixtureFolder);
+        });
+
+        it('renders the theming panel for the singular-styleUrl component', () => {
+            expect(componentHtml).to.contain('id="theming"');
+            expect(componentHtml).to.contain('data-compodoc="block-theming"');
+        });
+
+        it('surfaces the @property token and its annotated metadata', () => {
+            expect(componentHtml).to.contain('--card-bg');
+            expect(componentHtml).to.contain('Background fill of the card');
+            expect(componentHtml).to.contain('&lt;color>');
+            expect(componentHtml).to.contain('#ffffff');
+        });
+
+        it('exposes the singular-styleUrl source file in the collapsible source panel', () => {
+            expect(componentHtml).to.contain('cdx-theming-source');
+            expect(componentHtml).to.contain('card.component.css');
+        });
+    });
 });
