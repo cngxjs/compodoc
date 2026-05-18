@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.4.8] — 2026-05-18
+
+Theming-tab regression fix for Angular 21's singular `styleUrl`.
+
+### Fixed
+
+- **Theming tab silently dropped for components on Angular 21's singular `styleUrl: './foo.css'` form.** `collectStyleSources` only inspected the plural `styleUrls`, so any component authored with the singular field — which Angular 21 made the default for new components, and which Stencil has always used — produced empty `themeTokens` even when its stylesheet carried fully annotated `@property` blocks. `getComponentStyleUrls` now folds the singular value into the array at the helper boundary, so the theming parser, `handleStyleurls`, nav-tabs gating, and hero metadata all receive one canonical list regardless of authoring style. Duplicate URLs are de-duped so a component declaring both forms (rare but legal) does not double-load. Closes #85.
+
 ## [0.4.7] — 2026-05-15
 
 `@aiGenerated` content marker, iframe-content auto-sizing with theme sync on the Examples tab, a fix for the sticky source-viewer header, plus the bulk of the Phase 6 internal refactor.
