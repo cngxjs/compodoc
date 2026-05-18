@@ -143,9 +143,11 @@ describe('ComponentHelper', () => {
     });
 
     describe('getComponentStyleUrls', () => {
-        it('should extract styleUrls from props', () => {
+        it('should extract styleUrls (plural) from props', () => {
             const props = createMockProps({ styleUrls: ['style1.css', 'style2.css'] });
-            symbolHelperStub.getSymbolDeps.mockReturnValue(['style1.css', 'style2.css']);
+            symbolHelperStub.getSymbolDeps.mockImplementation((_p: any, field: string) =>
+                field === 'styleUrls' ? ['style1.css', 'style2.css'] : []
+            );
 
             const result = componentHelper.getComponentStyleUrls(props, sourceFile);
 
@@ -154,7 +156,72 @@ describe('ComponentHelper', () => {
                 'styleUrls',
                 sourceFile
             );
+            expect(symbolHelperStub.getSymbolDeps).toHaveBeenCalledWith(
+                props,
+                'styleUrl',
+                sourceFile
+            );
             expect(result).to.deep.equal(['style1.css', 'style2.css']);
+        });
+
+        it('should fold singular styleUrl into the plural array (Angular 21 / Stencil)', () => {
+            const props = createMockProps({ styleUrl: './my-thing.css' });
+            symbolHelperStub.getSymbolDeps.mockImplementation((_p: any, field: string) =>
+                field === 'styleUrl' ? ['./my-thing.css'] : []
+            );
+
+            const result = componentHelper.getComponentStyleUrls(props, sourceFile);
+
+            expect(result).to.deep.equal(['./my-thing.css']);
+        });
+
+        it('should merge both forms without duplicates when a component declares each', () => {
+            const props = createMockProps({
+                styleUrls: ['./shared.css'],
+                styleUrl: './my-thing.css'
+            });
+            symbolHelperStub.getSymbolDeps.mockImplementation((_p: any, field: string) => {
+                if (field === 'styleUrls') {
+                    return ['./shared.css'];
+                }
+                if (field === 'styleUrl') {
+                    return ['./my-thing.css'];
+                }
+                return [];
+            });
+
+            const result = componentHelper.getComponentStyleUrls(props, sourceFile);
+
+            expect(result).to.deep.equal(['./shared.css', './my-thing.css']);
+        });
+
+        it('should dedupe when the same URL appears in both forms', () => {
+            const props = createMockProps({
+                styleUrls: ['./shared.css'],
+                styleUrl: './shared.css'
+            });
+            symbolHelperStub.getSymbolDeps.mockImplementation((_p: any, field: string) => {
+                if (field === 'styleUrls') {
+                    return ['./shared.css'];
+                }
+                if (field === 'styleUrl') {
+                    return ['./shared.css'];
+                }
+                return [];
+            });
+
+            const result = componentHelper.getComponentStyleUrls(props, sourceFile);
+
+            expect(result).to.deep.equal(['./shared.css']);
+        });
+
+        it('should return an empty array when neither form is present', () => {
+            const props = createMockProps({});
+            symbolHelperStub.getSymbolDeps.mockReturnValue([]);
+
+            const result = componentHelper.getComponentStyleUrls(props, sourceFile);
+
+            expect(result).to.deep.equal([]);
         });
     });
 
