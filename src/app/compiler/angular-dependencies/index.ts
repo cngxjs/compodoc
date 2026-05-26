@@ -703,6 +703,7 @@ export class AngularDependencies extends FrameworkDependencies {
                             file: file,
                             deprecated: IO.deprecated,
                             deprecationMessage: IO.deprecationMessage,
+                            category: IO.category || '',
                             type: 'interface',
                             sourceCode: srcFile.getText(),
                             storybookUrl: IO.storybookUrl || '',
