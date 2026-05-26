@@ -38,7 +38,11 @@ export type EntityKind =
     | 'interface'
     | 'guard'
     | 'interceptor'
-    | 'entity';
+    | 'entity'
+    | 'function'
+    | 'variable'
+    | 'typealias'
+    | 'enumeration';
 
 /** Entity decorated with its kind + href prefix for cross-kind sidebar rendering. */
 export interface EntityWithKind {
@@ -729,7 +733,27 @@ export class DependenciesEngine {
             { list: this.interfaces, kind: 'interface', hrefPrefix: 'interfaces' },
             { list: this.guards, kind: 'guard', hrefPrefix: 'guards' },
             { list: this.interceptors, kind: 'interceptor', hrefPrefix: 'interceptors' },
-            { list: this.entities, kind: 'entity', hrefPrefix: 'entities' }
+            { list: this.entities, kind: 'entity', hrefPrefix: 'entities' },
+            {
+                list: this.miscellaneous?.functions ?? [],
+                kind: 'function',
+                hrefPrefix: 'miscellaneous/functions'
+            },
+            {
+                list: this.miscellaneous?.variables ?? [],
+                kind: 'variable',
+                hrefPrefix: 'miscellaneous/variables'
+            },
+            {
+                list: this.miscellaneous?.typealiases ?? [],
+                kind: 'typealias',
+                hrefPrefix: 'miscellaneous/typealiases'
+            },
+            {
+                list: this.miscellaneous?.enumerations ?? [],
+                kind: 'enumeration',
+                hrefPrefix: 'miscellaneous/enumerations'
+            }
         ];
         for (const { list, kind, hrefPrefix } of kinds) {
             for (const item of list ?? []) {
