@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.4.9] — 2026-05-26
+
+Feature-grouping fix for interfaces and miscellaneous entities under `menuLayout: 'feature'`.
+
+### Fixed
+
+- **`@category` JSDoc on interfaces and miscellaneous entities was silently dropped from the feature-grouped sidebar.** Two bugs hid the tag from `DependenciesEngine.prepareFeatureGroups()`. First, the orchestrator built every `IInterfaceDep` from the `ioExtractor` result but forgot to copy `IO.category` onto it — so even interfaces whose JSDoc was parsed correctly fell back to folder-based grouping regardless of their explicit tag. Second, the cross-kind walk iterated nine entity kinds (components / directives / injectables / pipes / classes / interfaces / guards / interceptors / entities) and never visited the four miscellaneous sub-collections — functions, variables (incl. `InjectionToken`s), typealiases, enumerations — so items in those collections could not enter the feature groups even when they carried an explicit `@category`. Adds the missing field copy to the interface construction site and extends the kinds list with the four miscellaneous sub-collections (`hrefPrefix` `miscellaneous/<sub>`). The `EntityKind` union grows to `component | directive | injectable | pipe | class | interface | guard | interceptor | entity | function | variable | typealias | enumeration` so the `EntityWithKind` shape stays typed. After the fix, `@category` works for every documented symbol kind under `menuLayout: 'feature'`.
+
 ## [0.4.8] — 2026-05-18
 
 Theming-tab regression fix for Angular 21's singular `styleUrl`.
