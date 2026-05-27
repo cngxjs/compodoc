@@ -123,7 +123,7 @@ const EntityLink = (props: {
                 }
                 data-cdx-desc={previewDesc(props.description)}
             >
-                {props.name}
+                <span class="cdx-menu-item-name">{props.name}</span>
                 {props.deprecated ? Badge({ label: 'D', cssClass: 'cdx-badge--deprecated' }) : ''}
                 {props.standalone && Configuration.mainData.hasNgModules
                     ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' })
@@ -251,7 +251,7 @@ const FeatureEntityLink = (item: EntityWithKind): string =>
                 <span class="cdx-feature-kind-icon" aria-hidden="true">
                     {kindIconHtml(item.kind)}
                 </span>
-                {item.name}
+                <span class="cdx-menu-item-name">{item.name}</span>
                 {item.deprecated ? Badge({ label: 'D', cssClass: 'cdx-badge--deprecated' }) : ''}
                 {item.standalone && Configuration.mainData.hasNgModules
                     ? Badge({ label: 'S', cssClass: 'cdx-badge--standalone' })
@@ -684,7 +684,7 @@ export const Menu = (props: MenuProps): string => {
                                         data-type="entity-link"
                                         class={mod.deprecated ? 'cdx-member-name--deprecated' : ''}
                                     >
-                                        {mod.name}
+                                        <span class="cdx-menu-item-name">{mod.name}</span>
                                         {mod.deprecated
                                             ? Badge({
                                                   label: 'D',
