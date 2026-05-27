@@ -64,7 +64,7 @@ export interface EntityWithKind {
     [key: string]: unknown;
 }
 
-function deriveGroupKey(filePath: string, maxDepth: number): string {
+export function deriveGroupKey(filePath: string, maxDepth: number): string {
     if (!filePath) {
         return '';
     }

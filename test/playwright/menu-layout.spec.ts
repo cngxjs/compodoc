@@ -86,6 +86,23 @@ test.describe('menuLayout: "feature" sidebar', () => {
         await expect(page.locator('h1.cdx-entity-hero-name')).toContainText('provideUserFeature');
     });
 
+    test('hero breadcrumb mirrors the sidebar bucket path in feature layout', async ({ page }) => {
+        // Tagged misc symbol — breadcrumb from @category.
+        await page.goto('/miscellaneous/functions/provideUserFeature.html');
+        await page.waitForLoadState('domcontentloaded');
+        const taggedCrumbs = page.locator('.cdx-breadcrumb li').allInnerTexts();
+        await expect(page.locator('.cdx-breadcrumb li').first()).toHaveText('Providers');
+        await expect(page.locator('.cdx-breadcrumb li').last()).toHaveText('provideUserFeature');
+        // Sanity-check: no kind label in the breadcrumb (would be 'Miscellaneous'/'Functions')
+        const labels = await taggedCrumbs;
+        expect(labels.some(t => t === 'Miscellaneous' || t === 'Functions')).toBe(false);
+
+        // Untagged component — folder-fallback derived path.
+        await page.goto('/components/DashboardComponent.html');
+        await page.waitForLoadState('domcontentloaded');
+        await expect(page.locator('.cdx-breadcrumb li').first()).toHaveText('dashboard');
+    });
+
     test('anchor links on miscellaneous collection pages scroll to the row', async ({ page }) => {
         // Untagged misc symbol — sidebar link form is `<plural>.html#<name>`.
         // The element is NOT inside a `.cdx-tab-panel`, so the pre-fix

@@ -49,6 +49,7 @@ import {
     isTabEnabled,
     linkTypeHtml,
     parseDescription,
+    resolveBucketSegments,
     t
 } from '../helpers';
 import type { ComponentPlaygroundBlock } from '../helpers/jsdoc';
@@ -537,7 +538,12 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 </div>
                 <nav aria-label="Breadcrumb">
                     <ol class="cdx-breadcrumb">
-                        <li>{t(props.breadcrumbLabel)}</li>
+                        {(() => {
+                            const segments = resolveBucketSegments(e);
+                            return segments
+                                ? segments.map(seg => <li>{seg}</li>)
+                                : ((<li>{t(props.breadcrumbLabel)}</li>) as string);
+                        })()}
                         <li aria-current="page">{e.name}</li>
                     </ol>
                 </nav>

@@ -46,6 +46,7 @@ import {
     isTabEnabled,
     parseDescription,
     relativeUrl,
+    resolveBucketSegments,
     t
 } from '../helpers';
 
@@ -414,7 +415,12 @@ export const ComponentPage = (data: any): string => {
                 </div>
                 <nav aria-label="Breadcrumb">
                     <ol class="cdx-breadcrumb">
-                        <li>{t('components')}</li>
+                        {(() => {
+                            const segments = resolveBucketSegments(c);
+                            return segments
+                                ? segments.map(seg => <li>{seg}</li>)
+                                : ((<li>{t('components')}</li>) as string);
+                        })()}
                         <li aria-current="page">{c.name}</li>
                     </ol>
                 </nav>

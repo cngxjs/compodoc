@@ -9,6 +9,7 @@ import {
     jsdocReturnsComment,
     linkTypeHtml,
     parseDescription,
+    resolveBucketSegments,
     t
 } from '../helpers';
 
@@ -362,8 +363,15 @@ export const renderMiscDetailPage = (props: MiscDetailProps): string => {
                 </div>
                 <nav aria-label="Breadcrumb">
                     <ol class="cdx-breadcrumb">
-                        <li>{t('miscellaneous')}</li>
-                        <li>{t(meta.breadcrumb)}</li>
+                        {(() => {
+                            const segments = resolveBucketSegments(item);
+                            return segments
+                                ? segments.map(seg => <li>{seg}</li>)
+                                : [
+                                      (<li>{t('miscellaneous')}</li>) as string,
+                                      (<li>{t(meta.breadcrumb)}</li>) as string
+                                  ].join('');
+                        })()}
                         <li aria-current="page">{item.name}</li>
                     </ol>
                 </nav>
