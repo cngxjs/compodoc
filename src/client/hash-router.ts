@@ -13,7 +13,8 @@
 export type HashTarget =
     | { kind: 'tab'; panel: HTMLElement }
     | { kind: 'element'; panel: HTMLElement; element: HTMLElement }
-    | { kind: 'line'; panel: HTMLElement; start: number; end: number };
+    | { kind: 'line'; panel: HTMLElement; start: number; end: number }
+    | { kind: 'scroll'; element: HTMLElement };
 
 // Bound at runtime by code-blocks.ts to avoid a circular import.
 
@@ -57,10 +58,15 @@ export const resolveHash = (hash: string): HashTarget | null => {
 
     // Element nested inside a panel (member card, section heading, etc.).
     const panel = direct.closest<HTMLElement>('.cdx-tab-panel');
-    if (!panel) {
-        return null;
+    if (panel) {
+        return { kind: 'element', panel, element: direct };
     }
-    return { kind: 'element', panel, element: direct };
+
+    // Element exists but no tab panel — collection pages and other tab-less
+    // layouts (miscellaneous functions/variables/typealiases/enumerations).
+    // Without this branch `applyHashTarget` returns early and the SPA router's
+    // scroll path silently drops the anchor.
+    return { kind: 'scroll', element: direct };
 };
 
 // Switch to a tab panel and keep the tab bar's ARIA in sync.
@@ -94,6 +100,12 @@ export const applyHashTarget = (target: HashTarget | null): void => {
     if (!target) {
         return;
     }
+
+    if (target.kind === 'scroll') {
+        target.element.scrollIntoView({ block: 'start' });
+        return;
+    }
+
     activatePanel(target.panel);
 
     if (target.kind === 'tab') {

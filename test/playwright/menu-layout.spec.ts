@@ -85,4 +85,15 @@ test.describe('menuLayout: "feature" sidebar', () => {
         await page.waitForLoadState('domcontentloaded');
         await expect(page.locator('h1.cdx-entity-hero-name')).toContainText('provideUserFeature');
     });
+
+    test('anchor links on miscellaneous collection pages scroll to the row', async ({ page }) => {
+        // Untagged misc symbol — sidebar link form is `<plural>.html#<name>`.
+        // The element is NOT inside a `.cdx-tab-panel`, so the pre-fix
+        // resolveHash returned null and the SPA scroll never fired.
+        await page.goto('/miscellaneous/functions.html#roleGuard');
+        await page.waitForLoadState('domcontentloaded');
+
+        const row = page.locator('#roleGuard');
+        await expect(row).toBeInViewport();
+    });
 });
