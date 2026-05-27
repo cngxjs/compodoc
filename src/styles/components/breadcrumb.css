@@ -22,3 +22,11 @@
     color: var(--color-cdx-primary);
     text-decoration: underline;
 }
+
+/* Title-case category / folder-fallback segments while keeping the trailing
+   entity-name segment verbatim. Casing is display-only — bucket identity in
+   the URL and sidebar IDs stays lowercase by design (lowercase is what merges
+   tagged + folder-fallback entries into the same bucket). */
+.cdx-breadcrumb li:not(:last-child) {
+    text-transform: capitalize;
+}
