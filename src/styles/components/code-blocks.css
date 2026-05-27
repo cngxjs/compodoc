@@ -467,7 +467,18 @@ pre.line-numbers code {
         background var(--cdx-transition-fast);
 }
 
-pre:hover .cdx-code-copy,
+/* Auto-inserted by `code-blocks.ts` around standalone <pre> blocks that
+   don't already have a positioned wrapper (.cdx-code-snippet already
+   carries position: relative via the @apply rule below). */
+.cdx-code-copy-wrap {
+    position: relative;
+}
+
+/* The button sits as a SIBLING of the scrolling <pre> (not inside it) so
+   horizontal scroll inside <pre> doesn't drag the button off-screen.
+   Hover/focus on either wrapper variant reveals it. */
+.cdx-code-copy-wrap:hover .cdx-code-copy,
+.cdx-code-snippet:hover .cdx-code-copy,
 .cdx-code-copy:focus-visible {
     opacity: 1;
 }
