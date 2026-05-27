@@ -25,17 +25,22 @@ export const BlockMethod = (props: BlockMethodProps): string => {
     if (custom !== null) {
         return custom;
     }
+    // `title: ''` is an explicit opt-out — collection pages and misc detail
+    // pages wrap each block under their own section heading, so the inner
+    // `<h3>methods</h3>` would render an empty heading with a stray permalink.
+    const showHeading = props.title !== '';
+    const headingText = props.title || t('methods');
+    const headingId = props.title ? props.title.toLowerCase() : 'methods';
     return (
         <section data-compodoc="block-methods">
-            <h3 id={props.title ? props.title.toLowerCase() : 'methods'}>
-                {props.title ?? t('methods')}
-                <a
-                    class="cdx-member-permalink"
-                    href={`#${props.title ? props.title.toLowerCase() : 'methods'}`}
-                >
-                    #
-                </a>
-            </h3>
+            {showHeading && (
+                <h3 id={headingId}>
+                    {headingText}
+                    <a class="cdx-member-permalink" href={`#${headingId}`}>
+                        #
+                    </a>
+                </h3>
+            )}
             {props.methods.map((m: any) => {
                 const cls = ['cdx-io-member', 'cdx-io-member--method'];
                 if (m.deprecated) {
