@@ -137,6 +137,7 @@ export const TRANSLATION_ZH_TW = {
     'no-matching-entities': '沒有匹配的實體',
     'no-result-matching': '無匹配的結果',
     'no-svg': '你的瀏覽器不支援 SVG',
+    'open-detail-page': '開啟詳細頁面',
     optional: '可選的',
     outputs: '輸出屬性',
     overview: '概述',

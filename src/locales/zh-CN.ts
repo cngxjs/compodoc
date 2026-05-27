@@ -137,6 +137,7 @@ export const TRANSLATION_ZH_CN = {
     'no-matching-entities': '没有匹配的实体',
     'no-result-matching': '无匹配的结果',
     'no-svg': '你的浏览器不支持SVG',
+    'open-detail-page': '打开详情页',
     optional: '可选的',
     outputs: '输出属性',
     overview: '概述',

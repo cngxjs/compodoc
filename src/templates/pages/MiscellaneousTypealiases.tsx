@@ -2,6 +2,7 @@ import Html from '@kitajs/html';
 import { BlockTypealias } from '../blocks/BlockTypealias';
 import { IndexMisc } from '../blocks/IndexMisc';
 import { MiscHero } from '../blocks/MiscHero';
+import { TaggedDetailLinks } from '../blocks/TaggedDetailLinks';
 import { shortPath } from '../helpers';
 
 type MiscTypealiasesProps = {
@@ -22,6 +23,7 @@ export const MiscellaneousTypealiases = (props: MiscTypealiasesProps): string =>
                     <h3 class="cdx-section-heading" title={key}>
                         {shortPath(key)}
                     </h3>
+                    {TaggedDetailLinks({ items: typealias as any[], plural: 'typealiases' })}
                     {BlockTypealias({ typealias, depth: props.depth })}
                 </div>
             ))}

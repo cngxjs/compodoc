@@ -56,9 +56,19 @@ const isCollapsedAll = (): boolean => Configuration.mainData.collapsedAll === tr
 /** Whether a top-level chapter should render expanded on first load. */
 const chapterOpen = (type: string): boolean => !isCollapsedAll() && isToggled(type);
 
-/** Entity link href with duplicateName fallback */
-const entityHref = (prefix: string, item: any): string =>
-    `${prefix}/${item.duplicateName ?? item.name}.html`;
+/** Miscellaneous kinds render on a shared collection page (`miscellaneous/<plural>.html`).
+ * Entries tagged with `@category` get a dedicated detail page; untagged entries
+ * remain inline anchors on the collection page. */
+const ANCHOR_KINDS = new Set<EntityKind>(['variable', 'function', 'typealias', 'enumeration']);
+
+/** Entity link href with duplicateName fallback. */
+const entityHref = (prefix: string, item: any): string => {
+    const name = item.duplicateName ?? item.name;
+    if (ANCHOR_KINDS.has(item.kind)) {
+        return item.category ? `${prefix}/${name}.html` : `${prefix}.html#${name}`;
+    }
+    return `${prefix}/${name}.html`;
+};
 
 /** Inline badge for entity type indicators */
 const Badge = (props: { label: string; cssClass: string }): string =>

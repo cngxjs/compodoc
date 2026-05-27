@@ -139,6 +139,7 @@ export const TRANSLATION_JA_JP = {
     'no-matching-entities': '一致するエンティティがありません',
     'no-result-matching': '見つかりませんでした',
     'no-svg': 'ブラウザがSVGに対応してません',
+    'open-detail-page': '詳細ページを開く',
     optional: 'オプション',
     outputs: '出力',
     overview: '概要',

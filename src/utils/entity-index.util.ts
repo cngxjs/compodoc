@@ -10,6 +10,7 @@ interface EntityLike {
     id?: string;
     isDuplicate?: boolean;
     duplicateId?: number;
+    category?: string;
 }
 
 const ENTITY_COLLECTIONS: Array<{ key: string; path: string; kind: string }> = [
@@ -59,9 +60,13 @@ export function buildEntityIndex(mainData: Record<string, unknown>): EntityIndex
             if (!items) {
                 continue;
             }
+            const plural = kind === 'typealias' ? 'typealiases' : key;
             for (const item of items) {
+                const tagged = typeof item.category === 'string' && item.category.trim() !== '';
                 index[item.name] = {
-                    href: `miscellaneous/${kind === 'typealias' ? 'typealiases' : key}.html`,
+                    href: tagged
+                        ? `miscellaneous/${plural}/${item.name}.html`
+                        : `miscellaneous/${plural}.html#${item.name}`,
                     kind
                 };
             }

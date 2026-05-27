@@ -61,4 +61,28 @@ test.describe('menuLayout: "feature" sidebar', () => {
         const first = componentLink.first();
         await expect(first).toHaveAttribute('href', /(?:\.\/)?components\/[A-Za-z]+\.html$/);
     });
+
+    test('tagged miscellaneous symbols get dedicated detail pages, untagged stay as anchors', async ({
+        page
+    }) => {
+        // Standalone-app fixture has provideUserFeature + createDefaultUser
+        // tagged with @category (Providers, Factories) and roleGuard untagged.
+        const features = page.locator('#features-links');
+
+        const tagged = features.locator(
+            'a[data-cdx-entity-type="function"][href$="provideUserFeature.html"]'
+        );
+        await expect(tagged).toHaveCount(1);
+
+        const anchor = features.locator(
+            'a[data-cdx-entity-type="function"][href*="functions.html#roleGuard"]'
+        );
+        await expect(anchor).toHaveCount(1);
+
+        // The dedicated detail page must actually exist and render the entity name.
+        const detailUrl = await tagged.getAttribute('href');
+        await page.goto(detailUrl as string);
+        await page.waitForLoadState('domcontentloaded');
+        await expect(page.locator('h1.cdx-entity-hero-name')).toContainText('provideUserFeature');
+    });
 });

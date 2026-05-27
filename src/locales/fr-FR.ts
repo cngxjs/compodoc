@@ -139,6 +139,7 @@ export const TRANSLATION_FR_FR = {
     'no-matching-entities': 'Aucune entité correspondante',
     'no-result-matching': 'Aucun résultat matchant',
     'no-svg': 'Votre navigateur ne supporte pas le SVG',
+    'open-detail-page': 'Ouvrir la page de détail',
     optional: 'Optionnel',
     outputs: 'Sorties',
     overview: "Vue d'ensemble",

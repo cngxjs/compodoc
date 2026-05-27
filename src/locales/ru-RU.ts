@@ -141,6 +141,7 @@ export const TRANSLATION_RU_RU = {
     'no-matching-entities': 'Нет совпадающих сущностей',
     'no-result-matching': 'Результаты не найдены',
     'no-svg': 'Браузер не поддерживает SVG',
+    'open-detail-page': 'Открыть страницу с подробностями',
     optional: 'Опциональный',
     outputs: 'Выходные данные',
     overview: 'Обзор',

@@ -139,6 +139,7 @@ export const TRANSLATION_BG_BG = {
     'no-matching-entities': 'Няма съвпадащи обекти',
     'no-result-matching': 'Няма намерени резултати.',
     'no-svg': 'Браузърът Ви не поддържа SVG.',
+    'open-detail-page': 'Отваряне на страница за детайли',
     optional: 'Незадължително',
     outputs: 'Outputs',
     overview: 'Преглед',

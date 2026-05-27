@@ -2,6 +2,7 @@ import Html from '@kitajs/html';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { IndexMisc } from '../blocks/IndexMisc';
 import { MiscHero } from '../blocks/MiscHero';
+import { TaggedDetailLinks } from '../blocks/TaggedDetailLinks';
 import { shortPath } from '../helpers';
 
 type MiscVariablesProps = {
@@ -22,6 +23,7 @@ export const MiscellaneousVariables = (props: MiscVariablesProps): string =>
                     <h3 class="cdx-section-heading" title={key}>
                         {shortPath(key)}
                     </h3>
+                    {TaggedDetailLinks({ items: properties as any[], plural: 'variables' })}
                     {BlockProperty({ properties, title: '', file: '', depth: props.depth })}
                 </div>
             ))}
