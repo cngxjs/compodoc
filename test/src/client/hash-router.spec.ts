@@ -126,12 +126,19 @@ describe('resolveHash', () => {
         expect(resolveHash('#foo')).toBeNull();
     });
 
-    // 11. Orphan element outside any panel
-    it('returns null when element exists but is not inside a cdx-tab-panel', () => {
-        const orphan = makeElement('orphan'); // no panelAncestor
-        stubDom({ orphan });
+    // 11. Element outside any panel — scroll-only target
+    //
+    // Collection pages (miscellaneous/functions.html etc.) emit entity-row
+    // anchors at the top level without any tab panel wrapper. Returning null
+    // here would silently drop the scroll in the SPA router's hash path.
+    it('returns a scroll target when element exists but is not inside a cdx-tab-panel', () => {
+        const bareAnchor = makeElement('createPausableTimer'); // no panelAncestor
+        stubDom({ createPausableTimer: bareAnchor });
 
-        expect(resolveHash('#orphan')).toBeNull();
+        expect(resolveHash('#createPausableTimer')).toEqual({
+            kind: 'scroll',
+            element: bareAnchor
+        });
     });
 
     // 12. Line-pattern priority over same-named DOM id

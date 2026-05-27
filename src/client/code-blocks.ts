@@ -94,7 +94,12 @@ const initCopyButtons = () => {
         if (pre.closest('.cdx-source-viewer')) {
             return;
         }
-        if (pre.querySelector('.cdx-code-copy')) {
+        // Idempotency: skip if either the button or its wrapping container
+        // is already in place (covers SPA re-init and pre-existing markup).
+        if (
+            pre.parentElement?.querySelector(':scope > .cdx-code-copy') ||
+            pre.parentElement?.classList.contains('cdx-code-copy-wrap')
+        ) {
             return;
         }
 
@@ -117,8 +122,23 @@ const initCopyButtons = () => {
                 });
             }
         });
-        pre.style.position = 'relative';
-        pre.appendChild(btn);
+        // Place the button OUTSIDE `<pre>` so it doesn't scroll with the
+        // horizontally-scrolling code content. If `<pre>` is already wrapped
+        // by `.cdx-code-snippet` (markdown-rendered fences) we reuse that
+        // positioned wrapper; otherwise we insert a thin one.
+        const existingWrapper = pre.parentElement?.classList.contains('cdx-code-snippet')
+            ? pre.parentElement
+            : null;
+        let wrapper: HTMLElement;
+        if (existingWrapper) {
+            wrapper = existingWrapper;
+        } else {
+            wrapper = document.createElement('div');
+            wrapper.className = 'cdx-code-copy-wrap';
+            pre.parentNode?.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+        }
+        wrapper.appendChild(btn);
     });
 
     // Wire up the integrated `.cdx-source-viewer-copy` button in each

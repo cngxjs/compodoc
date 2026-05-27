@@ -7,6 +7,7 @@
     position: sticky;
     top: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     background: var(--color-cdx-bg-alt);
     border-right: 1px solid var(--color-cdx-border);
@@ -260,6 +261,7 @@
 .menu ul.list li a {
     display: flex;
     align-items: center;
+    gap: 0.25rem;
     padding: var(--spacing-cdx-sm) var(--spacing-cdx-lg);
     border-bottom: none;
     font-size: 13px;
@@ -270,6 +272,34 @@
     overflow: hidden;
     white-space: nowrap;
     position: relative;
+    /* `max-width: 100%` + `min-width: 0` + `box-sizing: border-box` are the
+       triad that constrains the flex link to the parent <ul> width. Without
+       max-width the flex container sizes to its content (long entity names
+       blow past the sidebar edge), without min-width: 0 the inner text span
+       refuses to shrink below its intrinsic width, without border-box the
+       padding pushes the link 100% + 2×padding wider than the parent. */
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.menu ul.list li {
+    /* List items default to `display: list-item`, but `min-width: 0` is still
+       needed here so a deeply nested <li> inside flex/grid ancestors doesn't
+       inherit an intrinsic content-width from its grandchildren. */
+    min-width: 0;
+}
+
+/* Long entity names truncate inside the sidebar width — ellipsis lives on the
+   text span so trailing badges (D / S / T / B / kind icon) stay fully visible.
+   `min-width: 0` is required for the flex item to shrink below its intrinsic
+   width; without it the link overflows the sidebar container. */
+.cdx-menu-item-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .menu ul.list li a.active {
     color: var(--color-cdx-primary);

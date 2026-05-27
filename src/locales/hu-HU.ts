@@ -139,6 +139,7 @@ export const TRANSLATION_HU_HU = {
     'no-matching-entities': 'Nincs egyező entitás',
     'no-result-matching': 'Nincs találat',
     'no-svg': 'A böngészője nem támogatja az SVG formátumot.',
+    'open-detail-page': 'Részletoldal megnyitása',
     optional: 'Opcionális',
     outputs: 'Kimenetek',
     overview: 'Áttekintés',

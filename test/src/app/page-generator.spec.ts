@@ -150,6 +150,52 @@ describe('page-generator — orchestrator wiring', () => {
         expect(miscPages[0].name).toBe('functions');
     });
 
+    it('MiscellaneousPageGenerator.prepare enqueues a detail page per @category-tagged entry', async () => {
+        const generator = new MiscellaneousPageGenerator();
+        await generator.prepare({
+            functions: [{ name: 'provideToaster', category: 'Toast' }, { name: 'helperFn' }],
+            variables: [{ name: 'TOAST_TOKEN', category: 'Toast' }],
+            typealiases: [{ name: 'ToastConfig', category: 'Toast' }],
+            enumerations: [{ name: 'ToastPosition', category: 'Toast' }]
+        });
+
+        const detailPages = config.pages.filter(
+            p => p.context?.startsWith('miscellaneous-') && p.filename
+        );
+        expect(detailPages).toHaveLength(4);
+
+        const fn = config.pages.find(p => p.filename === 'provideToaster');
+        expect(fn?.path).toBe('miscellaneous/functions');
+        expect(fn?.context).toBe('miscellaneous-function');
+        expect((fn as any)?.function?.name).toBe('provideToaster');
+        expect(fn?.depth).toBe(2);
+
+        const varPage = config.pages.find(p => p.filename === 'TOAST_TOKEN');
+        expect(varPage?.path).toBe('miscellaneous/variables');
+        expect(varPage?.context).toBe('miscellaneous-variable');
+
+        const ta = config.pages.find(p => p.filename === 'ToastConfig');
+        expect(ta?.path).toBe('miscellaneous/typealiases');
+        expect(ta?.context).toBe('miscellaneous-typealias');
+
+        const en = config.pages.find(p => p.filename === 'ToastPosition');
+        expect(en?.path).toBe('miscellaneous/enumerations');
+        expect(en?.context).toBe('miscellaneous-enumeration');
+
+        expect(config.pages.find(p => p.filename === 'helperFn')).toBeUndefined();
+    });
+
+    it('MiscellaneousPageGenerator.prepare treats whitespace-only category as untagged', async () => {
+        const generator = new MiscellaneousPageGenerator();
+        await generator.prepare({
+            functions: [{ name: 'whitespace', category: '   ' }],
+            variables: [],
+            typealiases: [],
+            enumerations: []
+        });
+        expect(config.pages.some(p => p.filename === 'whitespace')).toBe(false);
+    });
+
     it('PlaygroundFileResolver.resolve leaves playgroundFiles empty when no entity has @playground blocks', () => {
         config.mainData.components = [];
         config.mainData.directives = [];

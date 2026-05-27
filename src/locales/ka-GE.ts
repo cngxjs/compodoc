@@ -138,6 +138,7 @@ export const TRANSLATION_KA_GE = {
     'no-matching-entities': 'შესაბამისი ერთეულები ვერ მოიძებნა',
     'no-result-matching': 'არ არის შესაბამისი შედეგები',
     'no-svg': 'თქვენს ბრაუზერს არ აქვს SVG მხარდაჭერა',
+    'open-detail-page': 'დეტალური გვერდის გახსნა',
     optional: 'სურვილისამებრ',
     outputs: 'შედეგები',
     overview: 'მიმოხილვა',

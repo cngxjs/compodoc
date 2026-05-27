@@ -49,7 +49,7 @@ export const IndexMisc = (props: IndexMiscProps): string => {
                 </button>
             </div>
 
-            <div class="cdx-index">
+            <div class="cdx-index cdx-index--misc">
                 <div class="cdx-index-entries">
                     {sorted.map(item => (
                         <a

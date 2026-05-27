@@ -14,6 +14,12 @@ import { InjectablePage } from '../../templates/pages/InjectablePage';
 import { InterceptorPage } from '../../templates/pages/InterceptorPage';
 import { InterfacePage } from '../../templates/pages/InterfacePage';
 import { Markdown } from '../../templates/pages/Markdown';
+import {
+    MiscEnumerationPage,
+    MiscFunctionPage,
+    MiscTypealiasPage,
+    MiscVariablePage
+} from '../../templates/pages/MiscDetailPage';
 import { MiscellaneousEnumerations } from '../../templates/pages/MiscellaneousEnumerations';
 import { MiscellaneousFunctions } from '../../templates/pages/MiscellaneousFunctions';
 import { MiscellaneousTypealiases } from '../../templates/pages/MiscellaneousTypealiases';
@@ -57,6 +63,10 @@ const CONTEXT_TEMPLATE_MAP: Record<string, string> = {
     'miscellaneous-variables': 'miscellaneous-variables',
     'miscellaneous-typealiases': 'miscellaneous-typealiases',
     'miscellaneous-enumerations': 'miscellaneous-enumerations',
+    'miscellaneous-function': 'miscellaneous-function',
+    'miscellaneous-variable': 'miscellaneous-variable',
+    'miscellaneous-typealias': 'miscellaneous-typealias',
+    'miscellaneous-enumeration': 'miscellaneous-enumeration',
     coverage: 'coverage-report',
     'unit-test': 'unit-test-report',
     'additional-page': 'additional-page'
@@ -143,6 +153,14 @@ export class HtmlEngine {
                 return MiscellaneousTypealiases(data);
             case 'miscellaneous-enumerations':
                 return MiscellaneousEnumerations(data);
+            case 'miscellaneous-function':
+                return MiscFunctionPage(data);
+            case 'miscellaneous-variable':
+                return MiscVariablePage(data);
+            case 'miscellaneous-typealias':
+                return MiscTypealiasPage(data);
+            case 'miscellaneous-enumeration':
+                return MiscEnumerationPage(data);
             case 'component':
                 data.relationships = DependenciesEngine.getRelationships(data.component?.name);
                 return ComponentPage(data);

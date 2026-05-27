@@ -140,6 +140,7 @@ export const TRANSLATION_NL_NL = {
     'no-matching-entities': 'Geen overeenkomende entiteiten',
     'no-result-matching': 'Geen overeenkomende resultaten',
     'no-svg': 'Uw browser ondersteund geen SVG',
+    'open-detail-page': 'Detailpagina openen',
     optional: 'Optioneel',
     outputs: 'Outputs',
     overview: 'Overzicht',

@@ -250,6 +250,80 @@ describe('Menu — feature layout', () => {
         expect(html).to.include('class="links collapse in"');
     });
 
+    it('miscellaneous feature-walk: untagged entries link to anchor on collection page', () => {
+        const html = Menu({
+            data: baseData({
+                menuLayout: 'feature',
+                miscellaneous: { functions: [{ name: 'helperFn' }] },
+                categorizedByFeature: {
+                    util: [
+                        {
+                            kind: 'function',
+                            hrefPrefix: 'miscellaneous/functions',
+                            name: 'helperFn',
+                            file: 'src/util/helper.ts'
+                        }
+                    ]
+                }
+            })
+        });
+        expect(html).to.include('href="miscellaneous/functions.html#helperFn"');
+        expect(html).to.not.include('href="miscellaneous/functions/helperFn.html"');
+    });
+
+    it('miscellaneous feature-walk: @category-tagged entries link to dedicated detail pages', () => {
+        const html = Menu({
+            data: baseData({
+                menuLayout: 'feature',
+                miscellaneous: { functions: [{ name: 'provideToaster', category: 'Toast' }] },
+                categorizedByFeature: {
+                    Toast: [
+                        {
+                            kind: 'function',
+                            hrefPrefix: 'miscellaneous/functions',
+                            name: 'provideToaster',
+                            category: 'Toast',
+                            file: 'src/toast/providers.ts'
+                        }
+                    ]
+                }
+            })
+        });
+        expect(html).to.include('href="miscellaneous/functions/provideToaster.html"');
+        expect(html).to.not.include('href="miscellaneous/functions.html#provideToaster"');
+    });
+
+    it.each([
+        ['variable', 'variables'],
+        ['typealias', 'typealiases'],
+        ['enumeration', 'enumerations']
+    ])('miscellaneous feature-walk: %s — tagged → page, untagged → anchor', (kind, plural) => {
+        const html = Menu({
+            data: baseData({
+                menuLayout: 'feature',
+                categorizedByFeature: {
+                    Group: [
+                        {
+                            kind,
+                            hrefPrefix: `miscellaneous/${plural}`,
+                            name: 'Tagged',
+                            category: 'Group',
+                            file: 'src/lib/file.ts'
+                        },
+                        {
+                            kind,
+                            hrefPrefix: `miscellaneous/${plural}`,
+                            name: 'Untagged',
+                            file: 'src/lib/file.ts'
+                        }
+                    ]
+                }
+            })
+        });
+        expect(html).to.include(`href="miscellaneous/${plural}/Tagged.html"`);
+        expect(html).to.include(`href="miscellaneous/${plural}.html#Untagged"`);
+    });
+
     it('honours the menu custom-template override regardless of layout', () => {
         registerCustomTemplate(
             'menu',

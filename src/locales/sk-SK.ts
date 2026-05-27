@@ -138,6 +138,7 @@ export const TRANSLATION_SK_SK = {
     'no-matching-entities': 'Žiadne zodpovedajúce entity',
     'no-result-matching': 'Nenájdené žiadne výsledky pre',
     'no-svg': 'Váš prehliadač nepodporuje SVG',
+    'open-detail-page': 'Otvoriť stránku s detailmi',
     optional: 'Voliteľný',
     outputs: 'Výstupy',
     overview: 'Prehľad',

@@ -4,7 +4,7 @@ import { EntityTabs } from '../blocks/EntityTabs';
 import { GraphZoomControls } from '../blocks/GraphControls';
 import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { IconFile, IconInterface, IconMaximize, IconModule } from '../components/Icons';
-import { parseDescription, relativeUrl, t } from '../helpers';
+import { parseDescription, relativeUrl, resolveBucketSegments, t } from '../helpers';
 
 const NG2_MODULES = ['BrowserModule', 'FormsModule', 'HttpModule', 'RouterModule'];
 const isAngularModule = (name: string): boolean => NG2_MODULES.some(m => name.includes(m));
@@ -187,7 +187,12 @@ export const ModulePage = (data: any): string => {
                 </div>
                 <nav aria-label="Breadcrumb">
                     <ol class="cdx-breadcrumb">
-                        <li>{t('modules')}</li>
+                        {(() => {
+                            const segments = resolveBucketSegments(mod);
+                            return segments
+                                ? segments.map(seg => <li>{seg}</li>)
+                                : ((<li>{t('modules')}</li>) as string);
+                        })()}
                         <li aria-current="page">{data.name}</li>
                     </ol>
                 </nav>

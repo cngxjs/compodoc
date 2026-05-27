@@ -28,15 +28,19 @@ export const BlockProperty = (props: BlockPropertyProps): string => {
     if (custom !== null) {
         return custom;
     }
+    // `title: ''` is an explicit opt-out — see BlockMethod for the same pattern.
+    const showHeading = props.title !== '';
     const sectionId = props.id ?? (props.title ? props.title.toLowerCase() : 'properties');
     return (
         <section data-compodoc="block-properties">
-            <h3 id={sectionId}>
-                {props.title ?? t('instance-properties')}
-                <a class="cdx-member-permalink" href={`#${sectionId}`}>
-                    #
-                </a>
-            </h3>
+            {showHeading && (
+                <h3 id={sectionId}>
+                    {props.title || t('instance-properties')}
+                    <a class="cdx-member-permalink" href={`#${sectionId}`}>
+                        #
+                    </a>
+                </h3>
+            )}
             {props.properties.map((p: any) => {
                 const cls = ['cdx-io-member', 'cdx-io-member--property'];
                 if (p.signalKind) {

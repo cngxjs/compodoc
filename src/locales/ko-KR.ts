@@ -137,6 +137,7 @@ export const TRANSLATION_KO_KR = {
     'no-matching-entities': '일치하는 엔티티 없음',
     'no-result-matching': '검색 결과가 없습니다',
     'no-svg': '브라우저가 SVG를 지원하지 않습니다',
+    'open-detail-page': '상세 페이지 열기',
     optional: '선택적',
     outputs: '결과물',
     overview: '개요',

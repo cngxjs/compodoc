@@ -1,7 +1,6 @@
 import Html from '@kitajs/html';
 import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { codeWrap, functionSignature, linkTypeHtml, parseDescription, t } from '../helpers';
-import { MemberCard } from './MemberCard';
 
 type TypealiasItem = {
     readonly name: string;
@@ -28,51 +27,37 @@ export const BlockTypealias = (props: BlockTypealiasProps): string => {
     return (
         <section data-compodoc="block-typealias">
             {props.typealias.map(ta => {
-                const header = (
-                    <header class="cdx-member-header">
-                        <span class="cdx-member-name">
+                const cls = ['cdx-io-member', 'cdx-io-member--typealias'];
+                if (ta.deprecated) {
+                    cls.push('cdx-io-member--deprecated');
+                }
+                const body =
+                    ta.kind === 160
+                        ? codeWrap(functionSignature(ta))
+                        : codeWrap(linkTypeHtml(ta.rawtype ?? ''));
+                return (
+                    <div class={cls.join(' ')} id={ta.name}>
+                        <div class="cdx-io-member-title">
                             <span
-                                class={`cdx-member-name-text${ta.deprecated ? ' cdx-member-name--deprecated' : ''}`}
+                                class={`cdx-io-member-name${ta.deprecated ? ' cdx-member-name--deprecated' : ''}`}
                             >
                                 {ta.name}
+                                <a class="cdx-member-permalink" href={`#${ta.name}`}>
+                                    #
+                                </a>
                             </span>
-                            <a
-                                href={`#${ta.name}`}
-                                class="cdx-member-permalink"
-                                aria-label={`Link to ${ta.name}`}
-                            >
-                                #
-                            </a>
-                        </span>
-                    </header>
-                ) as string;
-
-                const body = (
-                    <>
-                        {ta.deprecated && (
-                            <div class="cdx-member-deprecated">
-                                {ta.deprecationMessage || t('deprecated')}
-                            </div>
+                        </div>
+                        {ta.deprecated && ta.deprecationMessage && (
+                            <div class="cdx-member-deprecated">{ta.deprecationMessage}</div>
                         )}
                         {ta.description && (
-                            <div class="cdx-member-description">
+                            <div class="cdx-io-member-desc">
                                 {parseDescription(ta.description, props.depth ?? 0)}
                             </div>
                         )}
-                        <div class="cdx-member-row">
-                            {ta.kind === 160
-                                ? codeWrap(functionSignature(ta))
-                                : codeWrap(linkTypeHtml(ta.rawtype ?? ''))}
-                        </div>
-                    </>
-                ) as string;
-
-                return MemberCard({
-                    id: ta.name,
-                    deprecated: ta.deprecated,
-                    header,
-                    children: body
-                });
+                        <div class="cdx-io-member-default">{body}</div>
+                    </div>
+                );
             })}
         </section>
     ) as string;
