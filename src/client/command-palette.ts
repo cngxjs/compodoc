@@ -233,6 +233,13 @@ let pagefind: any = null;
 let activeIndex = -1;
 let lastQuery = '';
 let throttleTimer: ReturnType<typeof setTimeout> | undefined;
+/** Index-wide filter counts cached from `pagefind.filters()` at warmup
+ *  time. Drives the empty-palette state: when the user opens the
+ *  dialog with no query and no active filters, the facet rail shows
+ *  these global counts so they can scope by clicking a chip without
+ *  ever typing. `null` until Pagefind initialises (or stays `null` for
+ *  indexes without filters / `file://` mode). */
+let globalFilterCounts: Record<string, Record<string, number>> | null = null;
 
 const getDialog = (): HTMLDialogElement | null =>
     document.getElementById(DIALOG_ID) as HTMLDialogElement | null;
@@ -384,12 +391,19 @@ const loadPagefind = async (): Promise<any> => {
         // call after `init()` returns `filters: {}` until something
         // touches `filters()`. Warm it up here so the facet rail
         // populates on the very first query instead of staying empty
-        // until the user types a second character.
+        // until the user types a second character. Cache the
+        // index-wide result for the empty-palette state — no query, no
+        // active filter → render these global counts so the rail
+        // doubles as a "browse the API" affordance.
         try {
-            await pagefind.filters();
+            globalFilterCounts = (await pagefind.filters()) as Record<
+                string,
+                Record<string, number>
+            >;
         } catch {
             // Indexes built without any filters throw here — silently
             // ignore so search still works in that case.
+            globalFilterCounts = null;
         }
         if (loading) {
             loading.hidden = true;
@@ -418,10 +432,20 @@ const search = async (query: string) => {
         list.innerHTML = '';
         empty.hidden = false;
         empty.textContent = 'Start typing to see results';
-        const facetsRoot = getFacets();
-        if (facetsRoot) {
-            facetsRoot.hidden = true;
-            facetsRoot.innerHTML = '';
+        // Surface the global filter counts so an empty palette is a
+        // valid "browse the API" entry point — clicking Interface
+        // narrows to all interfaces without ever typing. Falls back to
+        // a hidden rail when no global counts are available (Pagefind
+        // still loading, `file://` mode, or an index built without
+        // filters).
+        if (globalFilterCounts) {
+            renderFacets(globalFilterCounts);
+        } else {
+            const facetsRoot = getFacets();
+            if (facetsRoot) {
+                facetsRoot.hidden = true;
+                facetsRoot.innerHTML = '';
+            }
         }
         activeIndex = -1;
         updateUrlFromState();
@@ -559,7 +583,7 @@ const navigateToActive = () => {
     }
     const active = list.querySelector<HTMLAnchorElement>('.cdx-cp-active');
     if (active?.href) {
-        close();
+        closePalette();
         // Use SPA router click simulation
         active.click();
     }
@@ -592,17 +616,57 @@ export const openCommandPalette = () => {
     activeIndex = -1;
     lastQuery = initialQuery;
 
-    // Lazy-load Pagefind on first open
+    // Lazy-load Pagefind on first open. After warmup, either run the
+    // hydrated search (deep link / re-open with existing filters) or
+    // surface the empty-palette state with the cached global counts
+    // so the user sees facet chips immediately.
     loadPagefind().then(() => {
         const hasFilters = FACET_DIMS.some(d => activeFilters[d].size > 0);
         if (initialQuery || hasFilters) {
             search(initialQuery);
+        } else {
+            search('');
         }
     });
 };
 
-/** Close the command palette */
-const close = () => {
+/** Reset every piece of in-memory facet state so a subsequent open
+ *  shows a clean global-counts view rather than the previous query's
+ *  residue: chip counts that read "Component 9" from a "card" query,
+ *  an active filter the user thought they had dismissed, or a
+ *  still-populated input value. The URL is also rolled back to a bare
+ *  path so the back/forward buttons stay sane. Wired to the dialog's
+ *  native `close` event so it fires for every close path — Esc,
+ *  programmatic `close()`, X-button click, and backdrop click — not
+ *  just the paths that route through `closePalette()`.
+ */
+const resetState = () => {
+    for (const dim of FACET_DIMS) {
+        activeFilters[dim].clear();
+    }
+    lastQuery = '';
+    activeIndex = -1;
+    const input = getInput();
+    if (input) {
+        input.value = '';
+    }
+    const facetsRoot = getFacets();
+    if (facetsRoot) {
+        facetsRoot.hidden = true;
+        facetsRoot.innerHTML = '';
+    }
+    const list = getList();
+    if (list) {
+        list.innerHTML = '';
+    }
+    updateUrlFromState();
+};
+
+/** Close the command palette. The `close` event listener wired in
+ *  `initCommandPalette` does the actual state cleanup so the same
+ *  path runs for Esc, backdrop click, and programmatic closes.
+ */
+const closePalette = () => {
     const dialog = getDialog();
     if (!dialog) {
         return;
@@ -621,7 +685,7 @@ export const initCommandPalette = () => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
             e.preventDefault();
             if (dialog.open) {
-                close();
+                closePalette();
             } else {
                 openCommandPalette();
             }
@@ -631,17 +695,18 @@ export const initCommandPalette = () => {
     // Close on backdrop click
     dialog.addEventListener('click', e => {
         if (e.target === dialog) {
-            close();
+            closePalette();
         }
     });
 
     // X-button close
-    dialog.querySelector('.cdx-cp-close')?.addEventListener('click', () => close());
+    dialog.querySelector('.cdx-cp-close')?.addEventListener('click', () => closePalette());
 
-    // Close on Escape (native dialog behavior, but ensure cleanup)
+    // The `<dialog>` element fires `close` for every close path —
+    // native Esc, programmatic `close()`, X click, backdrop click —
+    // so resetting state here covers all of them in one place.
     dialog.addEventListener('close', () => {
-        activeIndex = -1;
-        lastQuery = '';
+        resetState();
     });
 
     // Search input handling
