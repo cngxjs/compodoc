@@ -308,7 +308,10 @@ const hydrateStateFromUrl = (): string => {
 /** Render the facet rail. Dimensions with 0 or 1 distinct value are
  *  hidden — there's nothing to choose. Active chips stay visible even
  *  when their count drops to 0 (so users can unselect from an empty
- *  intersection). */
+ *  intersection). Non-active 0-count chips are filtered out so a
+ *  narrow query doesn't drown the dropdown in dead values; remaining
+ *  chips are sorted by count descending so the most populated lands
+ *  closest to the dimension label. */
 const renderFacets = (counts: Record<string, Record<string, number>>) => {
     const root = getFacets();
     if (!root) {
@@ -322,8 +325,14 @@ const renderFacets = (counts: Record<string, Record<string, number>>) => {
         if (values.size <= 1 && active.size === 0) {
             continue;
         }
+        const visible = [...values]
+            .filter(value => (dimCounts[value] ?? 0) > 0 || active.has(value))
+            .sort((a, b) => (dimCounts[b] ?? 0) - (dimCounts[a] ?? 0) || a.localeCompare(b));
+        if (visible.length === 0) {
+            continue;
+        }
         const chips: string[] = [];
-        for (const value of [...values].sort()) {
+        for (const value of visible) {
             const count = dimCounts[value] ?? 0;
             const isActive = active.has(value);
             const label = FACET_VALUE_LABELS[dim][value] ?? value;
@@ -371,6 +380,17 @@ const loadPagefind = async (): Promise<any> => {
     try {
         pagefind = await import(/* @vite-ignore */ pagefindUrl);
         await pagefind.init();
+        // Pagefind 1.x lazy-loads its filter index — the first `search()`
+        // call after `init()` returns `filters: {}` until something
+        // touches `filters()`. Warm it up here so the facet rail
+        // populates on the very first query instead of staying empty
+        // until the user types a second character.
+        try {
+            await pagefind.filters();
+        } catch {
+            // Indexes built without any filters throw here — silently
+            // ignore so search still works in that case.
+        }
         if (loading) {
             loading.hidden = true;
         }
