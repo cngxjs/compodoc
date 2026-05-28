@@ -27,6 +27,7 @@ import { PlaygroundContent } from '../blocks/PlaygroundContent';
 import { ProvidersSection } from '../blocks/ProvidersSection';
 import { ReferencedBySection } from '../blocks/ReferencedBySection';
 import { RouteChip } from '../blocks/RouteChip';
+import { A11yNote } from '../components/A11yNote';
 import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconDocument } from '../components/EmptyStateIcons';
@@ -43,12 +44,15 @@ import {
     IconModule,
     IconPipe
 } from '../components/Icons';
+import { WcagBadge } from '../components/WcagBadge';
 import {
+    deriveLibFromBucket,
     isApiSection,
     isInfoSection,
     isInitialTab,
     isTabEnabled,
     linkTypeHtml,
+    pagefindFilterBlock,
     pagefindMetaBlock,
     parseDescription,
     resolveBucketSegments,
@@ -199,6 +203,7 @@ const hasInfoContent = (e: any, props: EntityInfoProps): boolean =>
         e.deprecated ||
         e.route ||
         e.description ||
+        e.a11yNote ||
         e.jsdoctags?.length ||
         props.metadataHtml ||
         e.constructorObj ||
@@ -266,7 +271,9 @@ const InfoContent = (props: EntityInfoProps): string => {
         return EmptyState({
             icon: EmptyIconDocument(),
             title: t('empty-entity-title'),
-            description: t('empty-entity-desc', { entityType: t(props.entityKey) }),
+            description: t('empty-entity-desc', {
+                entityType: t(props.entityKey)
+            }),
             variant: 'full'
         }) as string;
     }
@@ -282,7 +289,7 @@ const InfoContent = (props: EntityInfoProps): string => {
 
     return (
         <>
-            {/* 0a. Referenced-by backlinks (References-only — gated to interfaces in EntityPage,
+            {/* Referenced-by backlinks (References-only — gated to interfaces in EntityPage,
                   rendered unconditionally on MiscDetailPage which is reference-kind by design) */}
             {props.entityKey === 'interface' &&
                 ReferencedBySection({
@@ -290,10 +297,10 @@ const InfoContent = (props: EntityInfoProps): string => {
                     depth: props.depth ?? 0
                 })}
 
-            {/* 0. Import statement */}
+            {/* Import statement */}
             {isInfoSection('import') && ImportStatement({ name: e.name, file: e.file })}
 
-            {/* 1. Deprecation banner */}
+            {/* Deprecation banner */}
             {isInfoSection('deprecated') && e.deprecated && (
                 <div class="cdx-deprecation-banner" role="alert">
                     <strong>{t('deprecated')}</strong>
@@ -301,10 +308,13 @@ const InfoContent = (props: EntityInfoProps): string => {
                 </div>
             )}
 
-            {/* 2. Route chip (above description) */}
+            {/* Route chip (above description) */}
             {RouteChip({ route: e.route })}
 
-            {/* 3. Description */}
+            {/* Accessibility note (above description so a11y context comes first) */}
+            {A11yNote({ a11yNote: e.a11yNote })}
+
+            {/* Description */}
             {isInfoSection('description') && e.description && (
                 <section class="cdx-content-section">
                     <h3 class="cdx-section-heading" id="description">
@@ -317,12 +327,16 @@ const InfoContent = (props: EntityInfoProps): string => {
                 </section>
             )}
 
-            {/* 3. Examples */}
+            {/* Examples */}
             {isInfoSection('examples') &&
                 e.jsdoctags &&
-                JsdocExamplesBlock({ tags: e.jsdoctags, variant: 'code', level: 'section' })}
+                JsdocExamplesBlock({
+                    tags: e.jsdoctags,
+                    variant: 'code',
+                    level: 'section'
+                })}
 
-            {/* 4. Metadata (from entity-specific page) or extends/implements card */}
+            {/* Metadata (from entity-specific page) or extends/implements card */}
             {isInfoSection('metadata') &&
                 (props.metadataHtml
                     ? props.metadataHtml
@@ -330,20 +344,26 @@ const InfoContent = (props: EntityInfoProps): string => {
                       ? ExtendsMetadataCard(e)
                       : '')}
 
-            {/* 4b. Host section */}
+            {/* Host section */}
             {isInfoSection('host') && e.hostStructured?.length > 0 && HostSection(e.hostStructured)}
 
-            {/* 4c. Providers */}
+            {/* Providers */}
             {isInfoSection('providers') &&
                 e.providers?.length > 0 &&
-                ProvidersSection({ title: t('providers'), entries: e.providers })}
+                ProvidersSection({
+                    title: t('providers'),
+                    entries: e.providers
+                })}
 
-            {/* 4d. View Providers */}
+            {/* View Providers */}
             {isInfoSection('viewProviders') &&
                 e.viewProviders?.length > 0 &&
-                ProvidersSection({ title: t('view-providers'), entries: e.viewProviders })}
+                ProvidersSection({
+                    title: t('view-providers'),
+                    entries: e.viewProviders
+                })}
 
-            {/* 4e. Dependencies (inject() + constructor merged) */}
+            {/* Dependencies (inject() + constructor merged) */}
             {isInfoSection('dependencies') &&
                 (() => {
                     const allProps = e.propertiesClass ?? e.properties ?? [];
@@ -372,7 +392,7 @@ const InfoContent = (props: EntityInfoProps): string => {
                     });
                 })()}
 
-            {/* 4.5 Relationships (cross-linking) */}
+            {/* Relationships (cross-linking) */}
             {isInfoSection('relationships') &&
                 props.relationships &&
                 (props.relationships.incoming?.length > 0 ||
@@ -414,7 +434,7 @@ const ApiContent = (props: EntityInfoProps): string => {
 
     return (
         <>
-            {/* 5. Index */}
+            {/* Index */}
             {isApiSection('index') &&
                 props.showIndex !== false &&
                 BlockIndex({
@@ -430,7 +450,7 @@ const ApiContent = (props: EntityInfoProps): string => {
                     indexSignatures: e.indexSignatures
                 })}
 
-            {/* 7. Inputs */}
+            {/* Inputs */}
             {isApiSection('inputs') &&
                 props.showInputs !== false &&
                 e.inputsClass?.length > 0 &&
@@ -441,7 +461,7 @@ const ApiContent = (props: EntityInfoProps): string => {
                     navTabs: props.navTabs
                 })}
 
-            {/* 8. Outputs */}
+            {/* Outputs */}
             {isApiSection('outputs') &&
                 props.showOutputs !== false &&
                 e.outputsClass?.length > 0 &&
@@ -452,7 +472,7 @@ const ApiContent = (props: EntityInfoProps): string => {
                     navTabs: props.navTabs
                 })}
 
-            {/* 8b. Derived State */}
+            {/* Derived State */}
             {isApiSection('derivedState') &&
                 derivedProps.length > 0 &&
                 BlockDerivedState({
@@ -463,7 +483,7 @@ const ApiContent = (props: EntityInfoProps): string => {
                     navTabs: props.navTabs
                 })}
 
-            {/* 9. Properties */}
+            {/* Properties */}
             {isApiSection('properties') &&
                 props.showProperties !== false &&
                 regularProps.length > 0 &&
@@ -474,7 +494,7 @@ const ApiContent = (props: EntityInfoProps): string => {
                     navTabs: props.navTabs
                 })}
 
-            {/* 9b. Effects (opt-in via --showEffects) */}
+            {/* Effects (opt-in via --showEffects) */}
             {isApiSection('effects') &&
                 showEffects &&
                 effectProps.length > 0 &&
@@ -487,7 +507,7 @@ const ApiContent = (props: EntityInfoProps): string => {
                     id: 'effects'
                 })}
 
-            {/* 10. Methods */}
+            {/* Methods */}
             {isApiSection('methods') &&
                 props.showMethods !== false &&
                 (e.methodsClass ?? e.methods)?.length > 0 &&
@@ -498,7 +518,7 @@ const ApiContent = (props: EntityInfoProps): string => {
                     navTabs: props.navTabs
                 })}
 
-            {/* 13. Index Signatures */}
+            {/* Index Signatures */}
             {isApiSection('indexSignatures') &&
                 props.showIndexSignatures !== false &&
                 e.indexSignatures?.length > 0 &&
@@ -509,7 +529,7 @@ const ApiContent = (props: EntityInfoProps): string => {
                     navTabs: props.navTabs
                 })}
 
-            {/* 14. Accessors */}
+            {/* Accessors */}
             {isApiSection('accessors') &&
                 props.showAccessors !== false &&
                 e.accessors &&
@@ -521,13 +541,13 @@ const ApiContent = (props: EntityInfoProps): string => {
                     navTabs: props.navTabs
                 })}
 
-            {/* 15. Host Bindings */}
+            {/* Host Bindings */}
             {isApiSection('hostBindings') &&
                 props.showHostBindings !== false &&
                 e.hostBindings?.length > 0 &&
                 BlockHostBindings({ bindings: e.hostBindings })}
 
-            {/* 16. Host Listeners */}
+            {/* Host Listeners */}
             {isApiSection('hostListeners') &&
                 props.showHostListeners !== false &&
                 e.hostListeners?.length > 0 &&
@@ -546,11 +566,19 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
         category: e.category,
         description: e.description
     });
+    const searchFilters = pagefindFilterBlock({
+        kind: props.entityKey as any,
+        lib: deriveLibFromBucket(e.category || e.file),
+        bucket: e.category,
+        docsKind: e.docsKind === 'primary' ? 'primary' : 'reference',
+        wcag: e.wcagLevel
+    });
 
     return (
         <>
             <div class="cdx-entity-hero" style={`--cdx-hero-color: ${meta.color}`}>
                 {searchMeta}
+                {searchFilters}
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {meta.icon()}
                 </div>
@@ -598,6 +626,7 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                         ''
                     )}
                     {props.showJsdocBadges ? AiGeneratedBadge({ aiGenerated: e.aiGenerated }) : ''}
+                    {WcagBadge({ wcagLevel: e.wcagLevel })}
                 </div>
                 {props.contextLine ? (
                     <p class="cdx-entity-hero-context">{props.contextLine}</p>

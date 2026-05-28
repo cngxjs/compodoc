@@ -2,13 +2,17 @@ import Html from '@kitajs/html';
 import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { ParamsTable } from '../blocks/ParamsTable';
 import { ReferencedBySection } from '../blocks/ReferencedBySection';
+import { A11yNote } from '../components/A11yNote';
 import { IconEnum, IconFile, IconFunction, IconTypealias, IconVariable } from '../components/Icons';
+import { WcagBadge } from '../components/WcagBadge';
 import {
     codeWrap,
+    deriveLibFromBucket,
     functionSignature,
     hasJsdocParams,
     jsdocReturnsComment,
     linkTypeHtml,
+    pagefindFilterBlock,
     pagefindMetaBlock,
     parseDescription,
     resolveBucketSegments,
@@ -121,16 +125,20 @@ const InfoContent = (item: any, depth: number): string => {
         entries: item.referencedBy,
         depth
     });
-    if (!item.description) {
+    const a11y = A11yNote({ a11yNote: item.a11yNote });
+    if (!item.description && !a11y) {
         return backlinks;
     }
-    return [
-        backlinks,
-        Section({
-            title: t('description'),
-            children: parseDescription(item.description, depth)
-        })
-    ].join('');
+    const parts: string[] = [backlinks, a11y];
+    if (item.description) {
+        parts.push(
+            Section({
+                title: t('description'),
+                children: parseDescription(item.description, depth)
+            })
+        );
+    }
+    return parts.join('');
 };
 
 //  API-tab content (structural data per kind)
@@ -373,10 +381,18 @@ export const renderMiscDetailPage = (props: MiscDetailProps): string => {
         category: item.category,
         description: item.description
     });
+    const searchFilters = pagefindFilterBlock({
+        kind: props.kind,
+        lib: deriveLibFromBucket(item.category || item.file),
+        bucket: item.category,
+        docsKind: item.docsKind === 'primary' ? 'primary' : 'reference',
+        wcag: item.wcagLevel
+    });
     return (
         <>
             <div class="cdx-entity-hero" style={`--cdx-hero-color: ${meta.color}`}>
                 {searchMeta}
+                {searchFilters}
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {meta.icon()}
                 </div>
@@ -409,6 +425,7 @@ export const renderMiscDetailPage = (props: MiscDetailProps): string => {
                     )}
                     {item.beta && <span class="cdx-badge cdx-badge--beta">Beta</span>}
                     {item.since && <span class="cdx-badge cdx-badge--since">v{item.since}</span>}
+                    {WcagBadge({ wcagLevel: item.wcagLevel })}
                 </div>
                 {item.deprecated && item.deprecationMessage && (
                     <p class="cdx-entity-hero-context">{item.deprecationMessage}</p>

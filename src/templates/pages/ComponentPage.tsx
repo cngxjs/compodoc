@@ -27,6 +27,7 @@ import { PlaygroundContent } from '../blocks/PlaygroundContent';
 import { ProvidersSection } from '../blocks/ProvidersSection';
 import { RouteChip } from '../blocks/RouteChip';
 import { SourceViewer } from '../blocks/SourceViewer';
+import { A11yNote } from '../components/A11yNote';
 import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { EmptyState } from '../components/EmptyState';
 import {
@@ -37,13 +38,16 @@ import {
     EmptyIconTree
 } from '../components/EmptyStateIcons';
 import { IconComponent, IconFile } from '../components/Icons';
+import { WcagBadge } from '../components/WcagBadge';
 import {
+    deriveLibFromBucket,
     extractReadmeHeadings,
     isApiSection,
     isInfoSection,
     isInitialTab,
     isReadmeEmpty,
     isTabEnabled,
+    pagefindFilterBlock,
     pagefindMetaBlock,
     parseDescription,
     relativeUrl,
@@ -129,6 +133,7 @@ const hasComponentInfoContent = (data: any): boolean => {
         c.deprecated ||
         c.route ||
         c.description ||
+        c.a11yNote ||
         c.jsdoctags?.length ||
         c.selector ||
         c.constructorObj ||
@@ -170,6 +175,8 @@ const InfoContent = (data: any): string => {
             )}
 
             {RouteChip({ route: c.route })}
+
+            {A11yNote({ a11yNote: c.a11yNote })}
 
             {isInfoSection('description') && c.description && (
                 <section class="cdx-content-section">
@@ -410,6 +417,13 @@ export const ComponentPage = (data: any): string => {
         category: c.category,
         description: c.description
     });
+    const searchFilters = pagefindFilterBlock({
+        kind: 'component',
+        lib: deriveLibFromBucket(c.category || c.file),
+        bucket: c.category,
+        docsKind: c.docsKind === 'primary' ? 'primary' : 'reference',
+        wcag: c.wcagLevel
+    });
 
     return (
         <>
@@ -418,6 +432,7 @@ export const ComponentPage = (data: any): string => {
                 style="--cdx-hero-color: var(--color-cdx-entity-component)"
             >
                 {searchMeta}
+                {searchFilters}
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {IconComponent()}
                 </div>
@@ -476,6 +491,7 @@ export const ComponentPage = (data: any): string => {
                         ''
                     )}
                     {AiGeneratedBadge({ aiGenerated: c.aiGenerated })}
+                    {WcagBadge({ wcagLevel: c.wcagLevel })}
                 </div>
                 {!data.disableFilePath && c.file && (
                     <p class="cdx-entity-hero-file" title="Source file">

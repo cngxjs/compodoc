@@ -1,4 +1,5 @@
 export const TRANSLATION_EN_US = {
+    'accessibility-notes': 'Accessibility',
     accessors: 'Accessors',
     'ai-generated': 'AI generated',
     'ai-generated-tooltip': 'This content was generated with AI assistance',
@@ -10,6 +11,8 @@ export const TRANSLATION_EN_US = {
     bootstrap: 'Bootstrap',
     branches: 'Branches',
     browse: 'Browse',
+    categories: 'Categories',
+    category: 'Category',
     classe: 'Class',
     classes: 'Classes',
     component: 'Component',
@@ -200,6 +203,7 @@ export const TRANSLATION_EN_US = {
     variables: 'Variables',
     'view-providers': 'View Providers',
     'view-details': 'View details',
+    'wcag-level': 'WCAG conformance',
     yes: 'Yes',
     zoomin: 'Zoom in',
     zoomout: 'Zoom out'

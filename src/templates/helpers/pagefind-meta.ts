@@ -119,3 +119,89 @@ function escapeAttr(value: string): string {
 function escapeText(value: string): string {
     return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }
+
+/**
+ * Inputs for the Pagefind filter block. Filter attributes are distinct
+ * from meta attributes: meta shows up in result rendering, filters power
+ * the facet UI. Filters use the multi-attribute form
+ * (`data-pagefind-filter-<dimension>="value"`) so dimensions stay
+ * independent — Pagefind 1.0+ surfaces each suffix as its own facet
+ * dimension via `pagefind.filters()`.
+ *
+ * The single-value `data-pagefind-filter="kind:Component"` form is also
+ * supported by Pagefind for the legacy "kind" dimension; we emit both so
+ * pre-1.0 indexes and future versions stay compatible.
+ */
+export interface PagefindFilterInput {
+    readonly kind?: EntityKind | 'Bucket' | 'Module';
+    readonly lib?: string;
+    readonly bucket?: string;
+    /** `primary` for promoted symbols, `reference` for everything else. */
+    readonly docsKind?: 'primary' | 'reference';
+    readonly wcag?: 'A' | 'AA' | 'AAA';
+}
+
+/** Map an EntityKind to its facet-UI label. Non-entity rows (Bucket,
+ *  Module) are passed through verbatim. */
+function kindFilterLabel(kind: EntityKind | 'Bucket' | 'Module' | undefined): string | undefined {
+    if (!kind) {
+        return undefined;
+    }
+    if (kind === 'Bucket' || kind === 'Module') {
+        return kind;
+    }
+    return KIND_LABELS[kind];
+}
+
+/**
+ * Render Pagefind filter spans for an entity hero. Empty fields are
+ * omitted so the index does not carry phantom facet values. The block is
+ * hidden visually (`hidden` attribute) but stays in the static HTML so
+ * Pagefind's build-time scan picks it up.
+ *
+ * Pagefind's filter discovery is attribute-driven, NOT element-content
+ * driven — putting filter values inside `<span>` text would NOT register.
+ * Always use the `data-pagefind-filter-<dim>="<value>"` attribute form.
+ */
+export function pagefindFilterBlock(input: PagefindFilterInput): string {
+    const attrs: string[] = [];
+    const kindLabel = kindFilterLabel(input.kind);
+    if (kindLabel) {
+        attrs.push(`data-pagefind-filter="kind:${escapeAttr(kindLabel)}"`);
+        attrs.push(`data-pagefind-filter-kind="${escapeAttr(kindLabel)}"`);
+    }
+    if (input.lib?.trim()) {
+        attrs.push(`data-pagefind-filter-lib="${escapeAttr(input.lib.trim())}"`);
+    }
+    if (input.bucket?.trim()) {
+        attrs.push(`data-pagefind-filter-bucket="${escapeAttr(input.bucket.trim())}"`);
+    }
+    if (input.docsKind) {
+        attrs.push(`data-pagefind-filter-tier="${escapeAttr(input.docsKind)}"`);
+    }
+    if (input.wcag) {
+        attrs.push(`data-pagefind-filter-wcag="${escapeAttr(input.wcag)}"`);
+    }
+    if (attrs.length === 0) {
+        return '';
+    }
+    return `<span hidden ${attrs.join(' ')}></span>`;
+}
+
+/**
+ * Derive the "library" facet value from a bucket id (e.g.
+ * `ui/feedback/toast` → `ui`). When the bucket id is empty, fall back to
+ * the leading segment of the source-file path so single-app workspaces
+ * still surface their top-level folders as facet values.
+ */
+export function deriveLibFromBucket(bucketOrFile: string | undefined): string | undefined {
+    if (!bucketOrFile) {
+        return undefined;
+    }
+    const normalised = bucketOrFile.replaceAll('\\', '/').trim();
+    if (!normalised) {
+        return undefined;
+    }
+    const first = normalised.split('/').filter(Boolean)[0];
+    return first || undefined;
+}

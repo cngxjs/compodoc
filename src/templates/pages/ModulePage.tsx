@@ -2,9 +2,19 @@ import Html from '@kitajs/html';
 import { BlockMethod } from '../blocks/BlockMethod';
 import { EntityTabs } from '../blocks/EntityTabs';
 import { GraphZoomControls } from '../blocks/GraphControls';
+import { A11yNote } from '../components/A11yNote';
 import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { IconFile, IconInterface, IconMaximize, IconModule } from '../components/Icons';
-import { firstSentence, parseDescription, relativeUrl, resolveBucketSegments, t } from '../helpers';
+import { WcagBadge } from '../components/WcagBadge';
+import {
+    deriveLibFromBucket,
+    firstSentence,
+    pagefindFilterBlock,
+    parseDescription,
+    relativeUrl,
+    resolveBucketSegments,
+    t
+} from '../helpers';
 
 const NG2_MODULES = ['BrowserModule', 'FormsModule', 'HttpModule', 'RouterModule'];
 const isAngularModule = (name: string): boolean => NG2_MODULES.some(m => name.includes(m));
@@ -76,6 +86,8 @@ export const ModulePage = (data: any): string => {
                     <span>{mod.deprecationMessage}</span>
                 </div>
             )}
+
+            {A11yNote({ a11yNote: mod.a11yNote })}
 
             {mod.description && (
                 <section class="cdx-content-section">
@@ -193,6 +205,12 @@ export const ModulePage = (data: any): string => {
                         {moduleExcerpt}
                     </span>
                 )}
+                {pagefindFilterBlock({
+                    kind: 'Module',
+                    lib: deriveLibFromBucket(mod.file),
+                    docsKind: mod.docsKind === 'primary' ? 'primary' : 'reference',
+                    wcag: mod.wcagLevel
+                })}
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {IconModule()}
                 </div>
@@ -215,6 +233,7 @@ export const ModulePage = (data: any): string => {
                 <div class="cdx-entity-hero-badges">
                     <span class="cdx-badge cdx-badge--entity-module">Module</span>
                     {AiGeneratedBadge({ aiGenerated: mod.aiGenerated })}
+                    {WcagBadge({ wcagLevel: mod.wcagLevel })}
                 </div>
                 {!data.disableFilePath && mod.file && (
                     <p class="cdx-entity-hero-file" title="Source file">
