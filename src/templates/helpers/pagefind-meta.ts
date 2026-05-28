@@ -123,14 +123,14 @@ function escapeText(value: string): string {
 /**
  * Inputs for the Pagefind filter block. Filter attributes are distinct
  * from meta attributes: meta shows up in result rendering, filters power
- * the facet UI. Filters use the multi-attribute form
- * (`data-pagefind-filter-<dimension>="value"`) so dimensions stay
- * independent — Pagefind 1.0+ surfaces each suffix as its own facet
- * dimension via `pagefind.filters()`.
+ * the facet UI.
  *
- * The single-value `data-pagefind-filter="kind:Component"` form is also
- * supported by Pagefind for the legacy "kind" dimension; we emit both so
- * pre-1.0 indexes and future versions stay compatible.
+ * Pagefind 1.x only recognises the canonical
+ * `data-pagefind-filter="dim:value"` attribute form during its static
+ * HTML scan. The plausible-looking per-suffix variant
+ * `data-pagefind-filter-<dim>="value"` is silently ignored — verified
+ * against `pagefind@1.5.2` (the version bundled with compodocx). One span
+ * is emitted per dimension so each carries exactly one `dim:value` pair.
  */
 export interface PagefindFilterInput {
     readonly kind?: EntityKind | 'Bucket' | 'Module';
@@ -159,33 +159,35 @@ function kindFilterLabel(kind: EntityKind | 'Bucket' | 'Module' | undefined): st
  * hidden visually (`hidden` attribute) but stays in the static HTML so
  * Pagefind's build-time scan picks it up.
  *
- * Pagefind's filter discovery is attribute-driven, NOT element-content
- * driven — putting filter values inside `<span>` text would NOT register.
- * Always use the `data-pagefind-filter-<dim>="<value>"` attribute form.
+ * Each dimension gets its own span carrying a single canonical
+ * `data-pagefind-filter="dim:value"` attribute — that is the only form
+ * Pagefind's static scan registers; multi-attribute siblings like
+ * `data-pagefind-filter-lib="…"` are silently dropped on the indexer
+ * floor.
  */
 export function pagefindFilterBlock(input: PagefindFilterInput): string {
-    const attrs: string[] = [];
+    const spans: string[] = [];
     const kindLabel = kindFilterLabel(input.kind);
     if (kindLabel) {
-        attrs.push(`data-pagefind-filter="kind:${escapeAttr(kindLabel)}"`);
-        attrs.push(`data-pagefind-filter-kind="${escapeAttr(kindLabel)}"`);
+        spans.push(filterSpan('kind', kindLabel));
     }
     if (input.lib?.trim()) {
-        attrs.push(`data-pagefind-filter-lib="${escapeAttr(input.lib.trim())}"`);
+        spans.push(filterSpan('lib', input.lib.trim()));
     }
     if (input.bucket?.trim()) {
-        attrs.push(`data-pagefind-filter-bucket="${escapeAttr(input.bucket.trim())}"`);
+        spans.push(filterSpan('bucket', input.bucket.trim()));
     }
     if (input.docsKind) {
-        attrs.push(`data-pagefind-filter-tier="${escapeAttr(input.docsKind)}"`);
+        spans.push(filterSpan('tier', input.docsKind));
     }
     if (input.wcag) {
-        attrs.push(`data-pagefind-filter-wcag="${escapeAttr(input.wcag)}"`);
+        spans.push(filterSpan('wcag', input.wcag));
     }
-    if (attrs.length === 0) {
-        return '';
-    }
-    return `<span hidden ${attrs.join(' ')}></span>`;
+    return spans.join('');
+}
+
+function filterSpan(dim: string, value: string): string {
+    return `<span hidden data-pagefind-filter="${escapeAttr(dim)}:${escapeAttr(value)}"></span>`;
 }
 
 /**

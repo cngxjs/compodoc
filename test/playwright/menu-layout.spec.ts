@@ -224,7 +224,9 @@ test.describe('menuLayout: "feature" sidebar', () => {
         await expect(firstCard.locator('.cdx-badge')).toBeAttached();
         await expect(firstCard.locator('.cdx-bucket-card-name')).toBeAttached();
         const linkHref = await firstCard.locator('a.cdx-bucket-card-link').getAttribute('href');
-        expect(linkHref).toMatch(/(?:components|directives|pipes|injectables|classes|guards|interceptors|entities|interfaces|miscellaneous)\/[A-Za-z0-9_-]+\.html$/);
+        expect(linkHref).toMatch(
+            /(?:components|directives|pipes|injectables|classes|guards|interceptors|entities|interfaces|miscellaneous)\/[A-Za-z0-9_-]+\.html$/
+        );
     });
 
     test('intermediate bucket landings aggregate items from every descendant leaf', async ({
@@ -241,21 +243,27 @@ test.describe('menuLayout: "feature" sidebar', () => {
     test('entity hero exposes data-pagefind-filter attributes for the facet UI', async ({
         page
     }) => {
-        // Filter attrs are emitted as a hidden span next to the meta block
-        // on every entity hero. They drive the command-palette facet rail
-        // (kind / lib / bucket / tier / wcag).
+        // Filter attrs are emitted as one hidden span per dimension next to
+        // the meta block on every entity hero. They drive the command-palette
+        // facet rail (kind / lib / bucket / tier / wcag). Pagefind 1.x only
+        // recognises the canonical `data-pagefind-filter="dim:value"` form,
+        // so each dimension gets its own span.
         await page.goto('/components/DashboardComponent.html');
         await page.waitForLoadState('domcontentloaded');
-        const filterSpan = page
+        const filterSpans = page
             .locator('.cdx-entity-hero')
             .first()
             .locator('span[data-pagefind-filter]');
-        await expect(filterSpan).toHaveCount(1);
-        const attr = await filterSpan.getAttribute('data-pagefind-filter');
-        expect(attr).toContain('kind:Component');
-        // Multi-attribute form must also be present so Pagefind treats
-        // each dimension as a separate facet.
-        await expect(filterSpan).toHaveAttribute('data-pagefind-filter-kind', 'Component');
+        // At minimum: kind + tier (every entity has a docsKind classification).
+        // Lib + bucket may or may not be present depending on whether the
+        // entity sits in a categorised folder.
+        const count = await filterSpans.count();
+        expect(count).toBeGreaterThanOrEqual(2);
+        const attrs = await filterSpans.evaluateAll(els =>
+            els.map(el => el.getAttribute('data-pagefind-filter'))
+        );
+        expect(attrs).toContain('kind:Component');
+        expect(attrs.some(a => a?.startsWith('tier:'))).toBe(true);
     });
 
     test('WCAG chip + Accessibility section render when @wcag and @a11y tags are present', async ({

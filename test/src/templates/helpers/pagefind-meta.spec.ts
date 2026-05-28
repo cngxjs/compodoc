@@ -186,10 +186,10 @@ describe('pagefindFilterBlock', () => {
         expect(pagefindFilterBlock({})).toBe('');
     });
 
-    it('emits both the legacy key:value and the multi-attribute form for kind', () => {
-        const out = pagefindFilterBlock({ kind: 'component' });
-        expect(out).toContain('data-pagefind-filter="kind:Component"');
-        expect(out).toContain('data-pagefind-filter-kind="Component"');
+    it('emits the canonical `dim:value` form for kind so Pagefind 1.x registers it', () => {
+        expect(pagefindFilterBlock({ kind: 'component' })).toBe(
+            '<span hidden data-pagefind-filter="kind:Component"></span>'
+        );
     });
 
     it('passes through non-EntityKind labels (Bucket, Module) verbatim', () => {
@@ -203,24 +203,24 @@ describe('pagefindFilterBlock', () => {
 
     it('omits whitespace-only lib / bucket dimensions', () => {
         const out = pagefindFilterBlock({ kind: 'pipe', lib: '   ', bucket: '' });
-        expect(out).not.toContain('data-pagefind-filter-lib');
-        expect(out).not.toContain('data-pagefind-filter-bucket');
+        expect(out).not.toContain('lib:');
+        expect(out).not.toContain('bucket:');
         expect(out).toContain('kind:Pipe');
     });
 
-    it('emits docsKind under the "tier" facet dimension', () => {
+    it('emits docsKind under the canonical `tier` facet dimension', () => {
         const primary = pagefindFilterBlock({ docsKind: 'primary' });
         const reference = pagefindFilterBlock({ docsKind: 'reference' });
-        expect(primary).toContain('data-pagefind-filter-tier="primary"');
-        expect(reference).toContain('data-pagefind-filter-tier="reference"');
+        expect(primary).toContain('data-pagefind-filter="tier:primary"');
+        expect(reference).toContain('data-pagefind-filter="tier:reference"');
     });
 
     it('escapes attribute-significant characters in values', () => {
         const out = pagefindFilterBlock({ lib: 'a"b' });
-        expect(out).toContain('data-pagefind-filter-lib="a&quot;b"');
+        expect(out).toContain('data-pagefind-filter="lib:a&quot;b"');
     });
 
-    it('emits every dimension when every field is populated', () => {
+    it('emits one span per dimension when every field is populated', () => {
         const out = pagefindFilterBlock({
             kind: 'interface',
             lib: 'ui',
@@ -228,11 +228,27 @@ describe('pagefindFilterBlock', () => {
             docsKind: 'reference',
             wcag: 'AA'
         });
-        expect(out).toContain('data-pagefind-filter="kind:Interface"');
-        expect(out).toContain('data-pagefind-filter-kind="Interface"');
-        expect(out).toContain('data-pagefind-filter-lib="ui"');
-        expect(out).toContain('data-pagefind-filter-bucket="ui/feedback/toast"');
-        expect(out).toContain('data-pagefind-filter-tier="reference"');
-        expect(out).toContain('data-pagefind-filter-wcag="AA"');
+        expect(out).toBe(
+            '<span hidden data-pagefind-filter="kind:Interface"></span>' +
+                '<span hidden data-pagefind-filter="lib:ui"></span>' +
+                '<span hidden data-pagefind-filter="bucket:ui/feedback/toast"></span>' +
+                '<span hidden data-pagefind-filter="tier:reference"></span>' +
+                '<span hidden data-pagefind-filter="wcag:AA"></span>'
+        );
+    });
+
+    it('does NOT emit the per-suffix attribute variants (Pagefind 1.x ignores them)', () => {
+        const out = pagefindFilterBlock({
+            kind: 'interface',
+            lib: 'ui',
+            bucket: 'ui/feedback/toast',
+            docsKind: 'reference',
+            wcag: 'AA'
+        });
+        expect(out).not.toContain('data-pagefind-filter-kind=');
+        expect(out).not.toContain('data-pagefind-filter-lib=');
+        expect(out).not.toContain('data-pagefind-filter-bucket=');
+        expect(out).not.toContain('data-pagefind-filter-tier=');
+        expect(out).not.toContain('data-pagefind-filter-wcag=');
     });
 });
