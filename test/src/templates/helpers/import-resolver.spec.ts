@@ -82,6 +82,22 @@ describe('resolveImportPath', () => {
         );
     });
 
+    it('resolves project-relative paths without a leading prefix segment', () => {
+        // Mirrors cngx repo layout: entity.file is stored as `projects/ui/feedback/alert/alert.ts`
+        // (project-root-relative, no leading slash, no extra prefix segment before the matched dir).
+        setup({
+            '@cngx/ui/feedback': ['projects/ui/feedback/public-api.ts']
+        });
+        expect(resolveImportPath('projects/ui/feedback/alert/alert.ts')).toBe('@cngx/ui/feedback');
+    });
+
+    it('resolves project-relative paths when the entire file IS the matched dir prefix', () => {
+        setup({
+            '@cngx/ui/feedback': ['projects/ui/feedback/public-api.ts']
+        });
+        expect(resolveImportPath('projects/ui/feedback/index.ts')).toBe('@cngx/ui/feedback');
+    });
+
     it('does not match partial directory names', () => {
         setup({
             '@cngx/common/car': ['src/common/car/public-api.ts']
