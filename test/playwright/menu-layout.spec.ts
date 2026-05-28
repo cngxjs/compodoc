@@ -109,26 +109,32 @@ test.describe('menuLayout: "feature" sidebar', () => {
         await expect(page.locator('.cdx-tab-panel#api')).toHaveClass(/active/);
     });
 
-    test('entity heroes emit Pagefind meta attrs (kind, category, description)', async ({
+    test('entity heroes emit Pagefind-discoverable meta spans (kind, category, description)', async ({
         page
     }) => {
-        // Reference-kind page first — confirms `data-pagefind-meta-kind`
-        // surfaces "Interface", and description excerpt is HTML-stripped.
+        // Pagefind reads `data-pagefind-meta="key:value"` (literal form) and
+        // `data-pagefind-meta="key"` (inner-text form). The per-key attribute
+        // form (`data-pagefind-meta-X="value"`) looks plausible but is NOT
+        // discovered by Pagefind's static scan — kept as a regression guard
+        // against accidentally reintroducing the broken form.
         await page.goto('/miscellaneous/functions/provideUserFeature.html');
         await page.waitForLoadState('domcontentloaded');
         const hero = page.locator('.cdx-entity-hero').first();
-        await expect(hero).toHaveAttribute('data-pagefind-meta-kind', 'Function');
-        await expect(hero).toHaveAttribute('data-pagefind-meta-category', 'Providers');
-        // Description is optional but should be present for this fixture
-        // (provideUserFeature has JSDoc in the standalone-app fixture).
-        const description = await hero.getAttribute('data-pagefind-meta-description');
-        expect(description?.length).toBeGreaterThan(0);
+        await expect(hero.locator('span[data-pagefind-meta="kind:Function"]')).toHaveCount(1);
+        await expect(hero.locator('span[data-pagefind-meta="category:Providers"]')).toHaveCount(1);
+        // Description uses inner-text form so commas / colons in JSDoc
+        // survive Pagefind's attribute parser.
+        const description = hero.locator('span[data-pagefind-meta="description"]');
+        await expect(description).toHaveCount(1);
+        expect((await description.innerText()).trim().length).toBeGreaterThan(0);
 
         // Primary-kind component — same contract, different kind label.
         await page.goto('/components/DashboardComponent.html');
         await page.waitForLoadState('domcontentloaded');
         const componentHero = page.locator('.cdx-entity-hero').first();
-        await expect(componentHero).toHaveAttribute('data-pagefind-meta-kind', 'Component');
+        await expect(
+            componentHero.locator('span[data-pagefind-meta="kind:Component"]')
+        ).toHaveCount(1);
     });
 
     test('tagged miscellaneous symbols get dedicated detail pages, untagged stay as anchors', async ({

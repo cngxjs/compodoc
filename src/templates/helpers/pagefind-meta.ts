@@ -30,8 +30,8 @@ export const KIND_LABELS: Record<EntityKind, string> = {
  * residue like backticks or asterisks bleeding into the search index.
  *
  * Returns `undefined` when the input is empty or strips to whitespace —
- * callers omit the meta attribute entirely in that case so the Pagefind
- * index stays small.
+ * callers omit the meta block entirely in that case so the Pagefind index
+ * stays small.
  */
 export function firstSentence(html: unknown): string | undefined {
     if (typeof html !== 'string' || html.length === 0) {
@@ -60,13 +60,15 @@ export function firstSentence(html: unknown): string | undefined {
 }
 
 /**
- * Build the `data-pagefind-meta-*` attribute string for an entity hero.
- * Pagefind reads these during indexing and surfaces them on search-result
- * data. Empty fields are omitted entirely to keep the index small.
+ * Inputs for the Pagefind meta block.
  *
- * The category falls back to the bucket path under `menuLayout: 'feature'`;
- * caller resolves which value to pass (raw `@category` string or the
- * folder-derived bucket key).
+ * Pagefind reads metadata from elements carrying a `data-pagefind-meta`
+ * attribute — either in `key:value` literal form or in inner-text form
+ * (`data-pagefind-meta="key"` with text content as the value). The
+ * `data-pagefind-meta-X="..."` per-key attribute form looks plausible but
+ * is NOT discovered by Pagefind's static scan, so an earlier iteration of
+ * this helper silently produced no meta keys at all. See
+ * <https://pagefind.app/docs/metadata/> for the supported syntax.
  */
 export interface PagefindMetaInput {
     readonly kind?: EntityKind;
@@ -74,26 +76,46 @@ export interface PagefindMetaInput {
     readonly description?: string;
 }
 
-export interface PagefindMetaAttrs {
-    readonly 'data-pagefind-meta-kind'?: string;
-    readonly 'data-pagefind-meta-category'?: string;
-    readonly 'data-pagefind-meta-description'?: string;
-}
-
-export function pagefindMetaAttrs(input: PagefindMetaInput): PagefindMetaAttrs {
-    const attrs: Record<string, string> = {};
+/**
+ * Render a Pagefind-discoverable meta block as a string fragment of hidden
+ * spans. Each span carries one `data-pagefind-meta` attribute:
+ *
+ *   - `kind` and `category` use the literal `key:value` form (short, safe
+ *     values, no commas or colons in real-world content).
+ *   - `description` uses the inner-text form so values containing commas,
+ *     colons, or quotes survive without escaping the `data-pagefind-meta`
+ *     attribute parser.
+ *
+ * Empty / whitespace-only fields are omitted entirely — Pagefind index
+ * stays small. The block is rendered inside the entity hero and hidden
+ * with the `hidden` attribute (Pagefind's static HTML scan still picks it
+ * up; the browser does not render it).
+ */
+export function pagefindMetaBlock(input: PagefindMetaInput): string {
+    const parts: string[] = [];
     if (input.kind && KIND_LABELS[input.kind]) {
-        attrs['data-pagefind-meta-kind'] = KIND_LABELS[input.kind];
+        const label = escapeAttr(KIND_LABELS[input.kind]);
+        parts.push(`<span hidden data-pagefind-meta="kind:${label}"></span>`);
     }
     if (typeof input.category === 'string') {
         const trimmed = input.category.trim();
         if (trimmed) {
-            attrs['data-pagefind-meta-category'] = trimmed;
+            const value = escapeAttr(trimmed);
+            parts.push(`<span hidden data-pagefind-meta="category:${value}"></span>`);
         }
     }
     const excerpt = firstSentence(input.description);
     if (excerpt) {
-        attrs['data-pagefind-meta-description'] = excerpt;
+        const text = escapeText(excerpt);
+        parts.push(`<span hidden data-pagefind-meta="description">${text}</span>`);
     }
-    return attrs as PagefindMetaAttrs;
+    return parts.join('');
+}
+
+function escapeAttr(value: string): string {
+    return value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+}
+
+function escapeText(value: string): string {
+    return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }

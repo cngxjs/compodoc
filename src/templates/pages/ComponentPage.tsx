@@ -44,7 +44,7 @@ import {
     isInitialTab,
     isReadmeEmpty,
     isTabEnabled,
-    pagefindMetaAttrs,
+    pagefindMetaBlock,
     parseDescription,
     relativeUrl,
     resolveBucketSegments,
@@ -405,7 +405,7 @@ export const ComponentPage = (data: any): string => {
           })()
         : null;
 
-    const searchMeta = pagefindMetaAttrs({
+    const searchMeta = pagefindMetaBlock({
         kind: 'component',
         category: c.category,
         description: c.description
@@ -416,8 +416,8 @@ export const ComponentPage = (data: any): string => {
             <div
                 class="cdx-entity-hero"
                 style="--cdx-hero-color: var(--color-cdx-entity-component)"
-                {...searchMeta}
             >
+                {searchMeta}
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {IconComponent()}
                 </div>

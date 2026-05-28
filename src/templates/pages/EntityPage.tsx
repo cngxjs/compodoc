@@ -49,7 +49,7 @@ import {
     isInitialTab,
     isTabEnabled,
     linkTypeHtml,
-    pagefindMetaAttrs,
+    pagefindMetaBlock,
     parseDescription,
     resolveBucketSegments,
     t
@@ -541,7 +541,7 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
     const meta = entityMeta[props.entityKey] ?? entityMeta['entity'];
     const e = props.entity;
 
-    const searchMeta = pagefindMetaAttrs({
+    const searchMeta = pagefindMetaBlock({
         kind: props.entityKey as any,
         category: e.category,
         description: e.description
@@ -549,7 +549,8 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
 
     return (
         <>
-            <div class="cdx-entity-hero" style={`--cdx-hero-color: ${meta.color}`} {...searchMeta}>
+            <div class="cdx-entity-hero" style={`--cdx-hero-color: ${meta.color}`}>
+                {searchMeta}
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {meta.icon()}
                 </div>

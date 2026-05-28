@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
     firstSentence,
     KIND_LABELS,
-    pagefindMetaAttrs
+    pagefindMetaBlock
 } from '../../../../src/templates/helpers/pagefind-meta';
 
 describe('firstSentence', () => {
@@ -64,72 +64,91 @@ describe('KIND_LABELS', () => {
     });
 });
 
-describe('pagefindMetaAttrs', () => {
-    it('returns an empty object when nothing is set', () => {
-        expect(pagefindMetaAttrs({})).toEqual({});
+describe('pagefindMetaBlock', () => {
+    it('returns an empty string when no fields are set', () => {
+        expect(pagefindMetaBlock({})).toBe('');
     });
 
-    it('omits the kind attr when kind is unknown', () => {
-        const out = pagefindMetaAttrs({ kind: 'mystery' as any });
-        expect(out).not.toHaveProperty('data-pagefind-meta-kind');
+    it('omits the kind span when kind is unknown', () => {
+        const out = pagefindMetaBlock({ kind: 'mystery' as any });
+        expect(out).not.toContain('data-pagefind-meta="kind:');
     });
 
-    it('emits the kind label for a valid EntityKind', () => {
-        expect(pagefindMetaAttrs({ kind: 'component' })).toEqual({
-            'data-pagefind-meta-kind': 'Component'
-        });
-        expect(pagefindMetaAttrs({ kind: 'typealias' })).toEqual({
-            'data-pagefind-meta-kind': 'Type Alias'
-        });
-    });
-
-    it('omits category when empty or whitespace-only', () => {
-        expect(pagefindMetaAttrs({ kind: 'component', category: '' })).toEqual({
-            'data-pagefind-meta-kind': 'Component'
-        });
-        expect(pagefindMetaAttrs({ kind: 'component', category: '   ' })).toEqual({
-            'data-pagefind-meta-kind': 'Component'
-        });
-    });
-
-    it('emits a trimmed category when set', () => {
-        expect(pagefindMetaAttrs({ kind: 'component', category: '  ui/feedback/toast  ' })).toEqual(
-            {
-                'data-pagefind-meta-kind': 'Component',
-                'data-pagefind-meta-category': 'ui/feedback/toast'
-            }
+    it('emits the kind label in literal `key:value` form for a valid EntityKind', () => {
+        expect(pagefindMetaBlock({ kind: 'component' })).toBe(
+            '<span hidden data-pagefind-meta="kind:Component"></span>'
         );
     });
 
-    it('omits description when it strips to empty', () => {
-        expect(pagefindMetaAttrs({ kind: 'component', description: '<p>  </p>' })).toEqual({
-            'data-pagefind-meta-kind': 'Component'
-        });
+    it('emits typealias label with space ("Type Alias") attribute-safe', () => {
+        const out = pagefindMetaBlock({ kind: 'typealias' });
+        expect(out).toContain('data-pagefind-meta="kind:Type Alias"');
     });
 
-    it('emits the firstSentence excerpt for description', () => {
+    it('omits category span when empty or whitespace-only', () => {
+        expect(pagefindMetaBlock({ kind: 'component', category: '' })).toBe(
+            '<span hidden data-pagefind-meta="kind:Component"></span>'
+        );
+        expect(pagefindMetaBlock({ kind: 'component', category: '   ' })).toBe(
+            '<span hidden data-pagefind-meta="kind:Component"></span>'
+        );
+    });
+
+    it('emits a trimmed category in literal `key:value` form when set', () => {
+        expect(pagefindMetaBlock({ kind: 'component', category: '  ui/feedback/toast  ' })).toBe(
+            '<span hidden data-pagefind-meta="kind:Component"></span>' +
+                '<span hidden data-pagefind-meta="category:ui/feedback/toast"></span>'
+        );
+    });
+
+    it('omits the description span when stripped content is empty', () => {
+        expect(pagefindMetaBlock({ kind: 'component', description: '<p>  </p>' })).toBe(
+            '<span hidden data-pagefind-meta="kind:Component"></span>'
+        );
+    });
+
+    it('emits description via inner-text form so commas / colons survive', () => {
         expect(
-            pagefindMetaAttrs({
+            pagefindMetaBlock({
                 kind: 'interface',
-                description: '<p>Options for the toaster. More details below.</p>'
+                description: '<p>Options, including: timeout. More details.</p>'
             })
-        ).toEqual({
-            'data-pagefind-meta-kind': 'Interface',
-            'data-pagefind-meta-description': 'Options for the toaster'
-        });
+        ).toBe(
+            '<span hidden data-pagefind-meta="kind:Interface"></span>' +
+                '<span hidden data-pagefind-meta="description">Options, including: timeout</span>'
+        );
     });
 
-    it('emits all three attrs when every field is populated', () => {
+    it('escapes HTML special chars in description inner text', () => {
+        // `firstSentence` strips tags then collapses whitespace runs, so
+        // `<b>bar</b>` reduces to ` bar ` → `bar` after collapse + trim.
+        // Inner-text escaping handles the `&` and angle brackets; quotes
+        // need no escaping inside element text content.
         expect(
-            pagefindMetaAttrs({
+            pagefindMetaBlock({
+                kind: 'class',
+                description: 'Foo <b>bar</b> & "baz"'
+            })
+        ).toContain('<span hidden data-pagefind-meta="description">Foo bar &amp; "baz"</span>');
+    });
+
+    it('escapes attribute quotes in kind / category values', () => {
+        expect(pagefindMetaBlock({ kind: 'component', category: 'a"b' })).toContain(
+            'data-pagefind-meta="category:a&quot;b"'
+        );
+    });
+
+    it('emits all three spans in stable order when every field is populated', () => {
+        expect(
+            pagefindMetaBlock({
                 kind: 'component',
                 category: 'ui/feedback/toast',
                 description: '<p>Toast component.</p>'
             })
-        ).toEqual({
-            'data-pagefind-meta-kind': 'Component',
-            'data-pagefind-meta-category': 'ui/feedback/toast',
-            'data-pagefind-meta-description': 'Toast component'
-        });
+        ).toBe(
+            '<span hidden data-pagefind-meta="kind:Component"></span>' +
+                '<span hidden data-pagefind-meta="category:ui/feedback/toast"></span>' +
+                '<span hidden data-pagefind-meta="description">Toast component</span>'
+        );
     });
 });

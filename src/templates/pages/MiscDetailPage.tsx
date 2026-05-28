@@ -9,7 +9,7 @@ import {
     hasJsdocParams,
     jsdocReturnsComment,
     linkTypeHtml,
-    pagefindMetaAttrs,
+    pagefindMetaBlock,
     parseDescription,
     resolveBucketSegments,
     t
@@ -368,14 +368,15 @@ export const renderMiscDetailPage = (props: MiscDetailProps): string => {
     const meta = META[props.kind];
     const item = props.item;
     const tabs = buildTabs(props);
-    const searchMeta = pagefindMetaAttrs({
+    const searchMeta = pagefindMetaBlock({
         kind: props.kind,
         category: item.category,
         description: item.description
     });
     return (
         <>
-            <div class="cdx-entity-hero" style={`--cdx-hero-color: ${meta.color}`} {...searchMeta}>
+            <div class="cdx-entity-hero" style={`--cdx-hero-color: ${meta.color}`}>
+                {searchMeta}
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {meta.icon()}
                 </div>

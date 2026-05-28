@@ -179,15 +179,20 @@ export const ModulePage = (data: any): string => {
         </>
     ) as string;
 
+    // Module isn't part of `EntityKind`, so emit Pagefind meta inline rather
+    // than going through `pagefindMetaBlock`. Same `data-pagefind-meta="key:value"`
+    // form for the kind chip; description uses inner-text form so commas
+    // / colons in JSDoc survive Pagefind's attribute parser.
     const moduleExcerpt = firstSentence(mod.description);
     return (
         <>
-            <div
-                class="cdx-entity-hero"
-                style="--cdx-hero-color: var(--color-cdx-entity-module)"
-                data-pagefind-meta-kind="Module"
-                {...(moduleExcerpt ? { 'data-pagefind-meta-description': moduleExcerpt } : {})}
-            >
+            <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-entity-module)">
+                <span hidden data-pagefind-meta="kind:Module"></span>
+                {moduleExcerpt && (
+                    <span hidden data-pagefind-meta="description">
+                        {moduleExcerpt}
+                    </span>
+                )}
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {IconModule()}
                 </div>
