@@ -22,6 +22,13 @@ export class JsdocExtractor {
                     const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
                     result.category = raw.split('\n')[0].trim();
                 }
+                if (tag.tagName.text === 'docsKind') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    const value = raw.split('\n')[0].trim().toLowerCase();
+                    if (value === 'primary') {
+                        result.docsKind = 'primary';
+                    }
+                }
             }
         });
         this.extractCustomTags(tags, result);

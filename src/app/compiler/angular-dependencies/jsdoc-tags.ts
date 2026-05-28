@@ -15,6 +15,13 @@ export class JsdocTags {
                 if (tag.tagName.text === 'category') {
                     result.category = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
                 }
+                if (tag.tagName.text === 'docsKind') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    const value = raw.split('\n')[0].trim().toLowerCase();
+                    if (value === 'primary') {
+                        result.docsKind = 'primary';
+                    }
+                }
             }
         });
         this.extractCustomTags(tags, result);

@@ -4,6 +4,7 @@ export interface IDep {
     ctype?: string;
     name: string;
     category?: string;
+    docsKind?: 'primary';
 }
 
 export interface IInjectableDep extends IDep {

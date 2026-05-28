@@ -710,7 +710,8 @@ export class AngularDependencies extends FrameworkDependencies {
                             figmaUrl: IO.figmaUrl || '',
                             stackblitzUrl: IO.stackblitzUrl || '',
                             githubUrl: IO.githubUrl || '',
-                            docsUrl: IO.docsUrl || ''
+                            docsUrl: IO.docsUrl || '',
+                            ...(IO.docsKind === 'primary' && { docsKind: 'primary' as const })
                         };
                         if (IO.properties) {
                             interfaceDeps.properties = IO.properties;
@@ -761,7 +762,8 @@ export class AngularDependencies extends FrameworkDependencies {
                             description:
                                 this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
                                     node
-                                )
+                                ),
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
                         };
                         // Detect factory function kind by naming convention
                         const factoryKind = this.providerDetector.detectFactoryKind(name);
@@ -834,7 +836,8 @@ export class AngularDependencies extends FrameworkDependencies {
                                 this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
                                     node
                                 ),
-                            file: file
+                            file: file,
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
                         };
 
                         if (!isIgnore(node)) {
@@ -866,7 +869,8 @@ export class AngularDependencies extends FrameworkDependencies {
                             description:
                                 this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
                                     node
-                                )
+                                ),
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
                         };
                         if (node.type) {
                             typeAliasDeps.kind = node.type.kind;
@@ -1024,7 +1028,10 @@ export class AngularDependencies extends FrameworkDependencies {
                                         file: file,
                                         deprecated,
                                         deprecationMessage,
-                                        category
+                                        category,
+                                        ...(infos.docsKind === 'primary' && {
+                                            docsKind: 'primary' as const
+                                        })
                                     };
                                     deps.type = infos.type ? infos.type : '';
                                     if (infos.defaultValue) {
@@ -1285,7 +1292,8 @@ export class AngularDependencies extends FrameworkDependencies {
                             description:
                                 this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
                                     node
-                                )
+                                ),
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
                         };
                         if (node.type) {
                             deps.kind = node.type.kind;
@@ -1319,7 +1327,8 @@ export class AngularDependencies extends FrameworkDependencies {
                             description:
                                 this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
                                     node
-                                )
+                                ),
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
                         };
                         if (infos.args) {
                             functionDep.args = infos.args;
@@ -1360,7 +1369,8 @@ export class AngularDependencies extends FrameworkDependencies {
                                 this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
                                     node
                                 ),
-                            file: file
+                            file: file,
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
                         };
                         if (!isIgnore(node)) {
                             this.debug(enumDeps);
