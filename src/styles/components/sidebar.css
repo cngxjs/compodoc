@@ -195,8 +195,14 @@
     border-radius: var(--radius-cdx-sm);
 }
 
-.cdx-bucket-toggle {
+/* Toggle button needs specificity 0,2,1 (`button.menu-toggler.cdx-bucket-toggle`)
+ * to outrank the global `button.menu-toggler { @apply w-full }` reset
+ * which has matching 0,1,1 specificity but sits later in the bundle and
+ * would otherwise win the cascade — stretching the chevron to 100% of
+ * the row and squashing the adjacent `.cdx-bucket-label` link. */
+button.menu-toggler.cdx-bucket-toggle {
     flex: 0 0 auto;
+    width: auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -207,7 +213,7 @@
     cursor: pointer;
 }
 
-.cdx-bucket-toggle:focus-visible {
+button.menu-toggler.cdx-bucket-toggle:focus-visible {
     outline: 2px solid var(--color-cdx-focus-ring, var(--color-cdx-primary));
     outline-offset: -2px;
     border-radius: var(--radius-cdx-sm);
