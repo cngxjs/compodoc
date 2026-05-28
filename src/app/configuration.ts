@@ -126,9 +126,13 @@ export class Configuration implements ConfigurationInterface {
         categorizedInterceptors: {},
         categorizedEntities: {},
         categorizedByFeature: {},
+        categorizedByFeaturePrimary: {},
+        categorizedByFeatureReference: {},
         groupBy: '',
         groupDepth: 2,
         menuLayout: 'type',
+        featuresName: 'Features',
+        referencesName: 'References',
         collapsedAll: false,
         generatedAt: ''
     };

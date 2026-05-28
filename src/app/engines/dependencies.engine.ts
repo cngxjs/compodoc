@@ -44,6 +44,96 @@ export type EntityKind =
     | 'typealias'
     | 'enumeration';
 
+/**
+ * Extracts PascalCase identifier tokens from a public-surface entity so the
+ * reverse-index pass can match them against the set of documented reference
+ * symbols. Walks every place a referenced type can live: extends/implements,
+ * host directives, member types, method return types, constructor args.
+ *
+ * Generic parameters resolve by base name (`Component<MyT>` matches `MyT`) —
+ * we extract identifiers, not full type expressions. Built-in primitives such
+ * as `Type<unknown>` never enter the result because they are not in the
+ * reference-name set the caller filters against.
+ */
+const REFERENCED_TYPE_TOKEN_RE = /\b[A-Z][A-Za-z0-9_]*\b/g;
+
+function collectReferencedTokensFromString(input: unknown, sink: Set<string>): void {
+    if (typeof input !== 'string' || input.length === 0) {
+        return;
+    }
+    const matches = input.match(REFERENCED_TYPE_TOKEN_RE);
+    if (matches) {
+        for (const token of matches) {
+            sink.add(token);
+        }
+    }
+}
+
+function collectReferencedTypeNames(entity: any): Set<string> {
+    const tokens = new Set<string>();
+    const scanMember = (member: any): void => {
+        if (!member) {
+            return;
+        }
+        collectReferencedTokensFromString(member.type, tokens);
+        collectReferencedTokensFromString(member.rawtype, tokens);
+        collectReferencedTokensFromString(member.returnType, tokens);
+        if (Array.isArray(member.args)) {
+            for (const arg of member.args) {
+                collectReferencedTokensFromString(arg?.type, tokens);
+            }
+        }
+    };
+    (entity?.inputsClass ?? []).forEach(scanMember);
+    (entity?.outputsClass ?? []).forEach(scanMember);
+    (entity?.propertiesClass ?? entity?.properties ?? []).forEach(scanMember);
+    (entity?.methodsClass ?? entity?.methods ?? []).forEach(scanMember);
+    if (entity?.constructorObj?.args) {
+        entity.constructorObj.args.forEach(scanMember);
+    }
+
+    const scanRef = (ref: unknown): void => {
+        if (typeof ref === 'string') {
+            collectReferencedTokensFromString(ref, tokens);
+        } else if (ref && typeof ref === 'object' && (ref as any).name) {
+            tokens.add((ref as any).name);
+        }
+    };
+
+    if (entity?.extends) {
+        const exts = Array.isArray(entity.extends) ? entity.extends : [entity.extends];
+        exts.forEach(scanRef);
+    }
+    if (Array.isArray(entity?.implements)) {
+        entity.implements.forEach(scanRef);
+    }
+    if (Array.isArray(entity?.hostDirectives)) {
+        entity.hostDirectives.forEach(scanRef);
+    }
+    return tokens;
+}
+
+/** Kinds that default into the Features chapter under `menuLayout: 'feature'`. */
+export const PRIMARY_KINDS: ReadonlySet<EntityKind> = new Set<EntityKind>([
+    'component',
+    'directive',
+    'pipe',
+    'injectable',
+    'class',
+    'guard',
+    'interceptor',
+    'entity'
+]);
+
+/** Kinds that default into the References chapter under `menuLayout: 'feature'`. */
+export const REFERENCE_KINDS: ReadonlySet<EntityKind> = new Set<EntityKind>([
+    'interface',
+    'function',
+    'variable',
+    'typealias',
+    'enumeration'
+]);
+
 /** Entity decorated with its kind + href prefix for cross-kind sidebar rendering. */
 export interface EntityWithKind {
     kind: EntityKind;
@@ -183,6 +273,8 @@ export class DependenciesEngine {
     public categorizedInterceptors: Record<string, IInterceptorDep[]> = {};
     public categorizedEntities: Record<string, IDep[]> = {};
     public categorizedByFeature: Record<string, EntityWithKind[]> = {};
+    public categorizedByFeaturePrimary: Record<string, EntityWithKind[]> = {};
+    public categorizedByFeatureReference: Record<string, EntityWithKind[]> = {};
     public appConfig: any[] = [];
     public rawStandaloneComponents: IComponentDep[] = [];
     public rawStandaloneDirectives: IDirectiveDep[] = [];
@@ -307,6 +399,7 @@ export class DependenciesEngine {
         this.cleanRawModulesNames();
         this.prepareCategoryGroups();
         this.prepareFeatureGroups();
+        this.prepareReferencedByIndex();
     }
 
     private inferStandaloneStatus() {
@@ -773,6 +866,131 @@ export class DependenciesEngine {
             }
         }
         this.categorizedByFeature = groups;
+
+        // Features = curated subset of organisms a consumer USES. Filtered
+        // by PRIMARY_KINDS membership; `@docsKind primary` promotes a
+        // reference-kind entity (function, interface, typealias, variable,
+        // enumeration) into Features regardless of its TS kind.
+        //
+        // References = EXHAUSTIVE list of every public symbol in the bucket.
+        // Primary-kind organisms intentionally surface in BOTH chapters —
+        // Features as a curated highlight, References as the complete index.
+        // Same target page; readers pick the chapter that matches their
+        // intent (toolbox view vs. API surface view). `docsKind` is ignored
+        // here because References is the full surface, not a residual.
+        const primary: Record<string, EntityWithKind[]> = {};
+        const reference: Record<string, EntityWithKind[]> = {};
+        for (const [bucket, items] of Object.entries(groups)) {
+            const primaryItems = items.filter(
+                i => PRIMARY_KINDS.has(i.kind) || (i as any).docsKind === 'primary'
+            );
+            // Leaf-level pruning: empty buckets never enter the dict, so the
+            // tree builder cannot synthesise an empty intermediate node.
+            if (primaryItems.length > 0) {
+                primary[bucket] = primaryItems;
+            }
+            if (items.length > 0) {
+                reference[bucket] = items;
+            }
+        }
+        this.categorizedByFeaturePrimary = primary;
+        this.categorizedByFeatureReference = reference;
+    }
+
+    /**
+     * Reverse-index pass: for every reference-kind symbol (interface, function,
+     * typealias, variable, enumeration), collect the primary-kind entities
+     * (components / directives / pipes / injectables / classes / guards /
+     * interceptors / entities) whose public surface mentions the symbol's name.
+     *
+     * The result is attached as `entity.referencedBy: EntityWithKind[]` on each
+     * reference-kind item, so per-page templates can render a "Referenced by"
+     * chip-list without threading an extra lookup table through render args.
+     * Empty lists stay undefined so templates can `?.length > 0` guard cheaply.
+     */
+    private prepareReferencedByIndex(): void {
+        // Build name → kind/hrefPrefix map for primary entities once.
+        type PrimaryRef = {
+            name: string;
+            kind: EntityKind;
+            hrefPrefix: string;
+            file?: string;
+        };
+        const primaryGroups: Array<{ list: any[]; kind: EntityKind; hrefPrefix: string }> = [
+            { list: this.components, kind: 'component', hrefPrefix: 'components' },
+            { list: this.directives, kind: 'directive', hrefPrefix: 'directives' },
+            { list: this.injectables, kind: 'injectable', hrefPrefix: 'injectables' },
+            { list: this.pipes, kind: 'pipe', hrefPrefix: 'pipes' },
+            { list: this.classes, kind: 'class', hrefPrefix: 'classes' },
+            { list: this.guards, kind: 'guard', hrefPrefix: 'guards' },
+            { list: this.interceptors, kind: 'interceptor', hrefPrefix: 'interceptors' },
+            { list: this.entities, kind: 'entity', hrefPrefix: 'entities' }
+        ];
+
+        // Set of reference-kind names — we only record backlinks for symbols
+        // that actually exist as documented reference entities.
+        const referenceNames = new Set<string>();
+        const referenceLookup = new Map<string, any>();
+        const registerRef = (item: any) => {
+            if (item?.name) {
+                referenceNames.add(item.name);
+                referenceLookup.set(item.name, item);
+            }
+        };
+        this.interfaces.forEach(registerRef);
+        this.miscellaneous?.functions?.forEach(registerRef);
+        this.miscellaneous?.variables?.forEach(registerRef);
+        this.miscellaneous?.typealiases?.forEach(registerRef);
+        this.miscellaneous?.enumerations?.forEach(registerRef);
+
+        if (referenceNames.size === 0) {
+            return;
+        }
+
+        // Build inverse index: typeName → Map<dedupKey, PrimaryRef>
+        const index = new Map<string, Map<string, PrimaryRef>>();
+
+        for (const { list, kind, hrefPrefix } of primaryGroups) {
+            for (const entity of list ?? []) {
+                const tokens = collectReferencedTypeNames(entity);
+                if (tokens.size === 0) {
+                    continue;
+                }
+                for (const typeName of tokens) {
+                    if (typeName === entity.name) {
+                        continue; // self-reference
+                    }
+                    if (!referenceNames.has(typeName)) {
+                        continue;
+                    }
+                    let bucket = index.get(typeName);
+                    if (!bucket) {
+                        bucket = new Map();
+                        index.set(typeName, bucket);
+                    }
+                    const dedupKey = `${kind}:${entity.name}`;
+                    if (!bucket.has(dedupKey)) {
+                        bucket.set(dedupKey, {
+                            name: entity.name,
+                            kind,
+                            hrefPrefix,
+                            file: entity.file
+                        });
+                    }
+                }
+            }
+        }
+
+        // Attach sorted list onto each reference-kind entity.
+        for (const [typeName, bucket] of index.entries()) {
+            const entries = Array.from(bucket.values()).sort((a, b) =>
+                a.name.localeCompare(b.name)
+            );
+            const ref = referenceLookup.get(typeName);
+            if (ref && entries.length > 0) {
+                ref.referencedBy = entries;
+            }
+        }
     }
 
     public getModule(name: string) {

@@ -101,10 +101,35 @@
     color: var(--color-cdx-text-muted);
 }
 
+.cdx-cp .cdx-cp-body {
+    @apply flex flex-col;
+    flex: 1;
+    min-width: 0;
+    gap: 2px;
+}
+
 .cdx-cp .cdx-cp-name {
     @apply truncate;
     font-family: var(--font-body);
-    flex: 1;
+}
+
+.cdx-cp .cdx-cp-meta {
+    @apply flex items-center gap-2;
+    min-width: 0;
+    font-size: 0.7rem;
+    color: var(--color-cdx-text-muted);
+    font-family: var(--font-body);
+}
+
+.cdx-cp .cdx-cp-category {
+    @apply shrink-0;
+    font-family: var(--font-code);
+    color: var(--color-cdx-text-secondary);
+}
+
+.cdx-cp .cdx-cp-excerpt {
+    @apply truncate;
+    min-width: 0;
 }
 
 .cdx-cp .cdx-cp-type {

@@ -64,6 +64,7 @@ export const BLOCK_LEVEL_OVERRIDES: readonly string[] = [
     'block-theming-token',
     'block-typealias',
     'playground-content',
+    'referenced-by',
     'version-switcher'
 ];
 

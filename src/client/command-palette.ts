@@ -85,6 +85,27 @@ const parseEntityType = (title: string): { type: EntityType | 'other'; name: str
     return { type: 'other', name: title };
 };
 
+/** Map the user-facing `data-pagefind-meta-kind` label emitted by entity
+ *  heroes back into the internal `EntityType` discriminator used for
+ *  result-chip colours and icons. Returns `'other'` for unknown labels so
+ *  the existing "Docs" fallback applies. */
+const KIND_LABEL_TO_TYPE: Record<string, EntityType> = {
+    Component: 'component',
+    Directive: 'directive',
+    Pipe: 'pipe',
+    Injectable: 'injectable',
+    Class: 'class',
+    Interface: 'interface',
+    Guard: 'guard',
+    Interceptor: 'interceptor',
+    Enumeration: 'enum',
+    Function: 'function',
+    Variable: 'variable',
+    'Type Alias': 'typealias',
+    Module: 'module',
+    Entity: 'class'
+};
+
 /** Capitalize first letter */
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -169,6 +190,8 @@ interface SearchResult {
     readonly url: string;
     readonly type: EntityType | 'other';
     readonly name: string;
+    readonly category?: string;
+    readonly description?: string;
 }
 
 let pagefind: any = null;
@@ -251,12 +274,20 @@ const search = async (query: string) => {
     const data = await Promise.all(sliced.map((r: any) => r.data()));
 
     const mapped: SearchResult[] = data.map((d: any) => {
-        const parsed = parseEntityType(d.meta.title || '');
+        const meta = d.meta || {};
+        const parsed = parseEntityType(meta.title || '');
+        // Prefer the explicit `data-pagefind-meta-kind` attribute emitted by
+        // entity heroes (v0.6.0+) — robust against title-format drift. Fall
+        // back to title parsing for pages that predate the meta attribute
+        // (custom templates, README/CHANGELOG without a kind, etc.).
+        const metaType = typeof meta.kind === 'string' ? KIND_LABEL_TO_TYPE[meta.kind] : undefined;
         return {
-            title: d.meta.title || '',
+            title: meta.title || '',
             url: d.url,
-            type: parsed.type,
-            name: parsed.name
+            type: metaType ?? parsed.type,
+            name: parsed.name,
+            category: typeof meta.category === 'string' ? meta.category : undefined,
+            description: typeof meta.description === 'string' ? meta.description : undefined
         };
     });
 
@@ -271,8 +302,21 @@ const search = async (query: string) => {
     empty.hidden = true;
     const searchQuery = lastQuery;
     list.innerHTML = mapped
-        .map(
-            (r, i) =>
+        .map((r, i) => {
+            const meta: string[] = [];
+            if (r.category) {
+                meta.push(`<span class="cdx-cp-category">${escapeHtml(r.category)}</span>`);
+            }
+            if (r.description) {
+                meta.push(
+                    '<span class="cdx-cp-excerpt">' +
+                        highlightMatch(r.description, searchQuery) +
+                        '</span>'
+                );
+            }
+            const metaBlock =
+                meta.length > 0 ? `<div class="cdx-cp-meta">${meta.join('')}</div>` : '';
+            return (
                 '<a href="' +
                 escapeAttr(r.url) +
                 '" class="cdx-cp-item' +
@@ -286,9 +330,12 @@ const search = async (query: string) => {
                 i +
                 '">' +
                 resultIcon(r.type) +
+                '<div class="cdx-cp-body">' +
                 '<span class="cdx-cp-name">' +
                 highlightMatch(r.name, searchQuery) +
                 '</span>' +
+                metaBlock +
+                '</div>' +
                 '<span class="' +
                 (entityClass(r.type) !== 'other'
                     ? `cdx-badge cdx-badge--entity-${entityClass(r.type)} `
@@ -297,7 +344,8 @@ const search = async (query: string) => {
                 typeLabel(r.type) +
                 '</span>' +
                 '</a>'
-        )
+            );
+        })
         .join('');
 
     activeIndex = 0;

@@ -70,6 +70,44 @@ const entityHref = (prefix: string, item: any): string => {
     return `${prefix}/${name}.html`;
 };
 
+/**
+ * Kinds whose detail page renders an API tab. Used to gate the
+ * References-chapter `#api` smart default: appending the fragment to a
+ * URL whose target page has no API tab would activate nothing and just
+ * leave a confusing fragment in the address bar.
+ *
+ * Typealias + variable detail pages (MiscDetailPage) only render Info
+ * tab — their API surface IS the description / signature, surfaced
+ * inline. Modules / Routes / Coverage are not entity pages.
+ */
+const KINDS_WITH_API_TAB: ReadonlySet<EntityKind> = new Set<EntityKind>([
+    'component',
+    'directive',
+    'pipe',
+    'injectable',
+    'class',
+    'interface',
+    'guard',
+    'interceptor',
+    'entity',
+    'function',
+    'enumeration'
+]);
+
+/**
+ * Sidebar-link href with optional `#api` default-tab hint. The hint is
+ * appended only when the target page actually has an API tab and the
+ * existing href carries no fragment (anchor-style miscellaneous URLs
+ * already encode the target row — never stack `#api` on top of `#name`).
+ */
+const featureLinkHref = (prefix: string, item: any, defaultTab: 'api' | undefined): string => {
+    const base = entityHref(prefix, item);
+    if (defaultTab === 'api' && KINDS_WITH_API_TAB.has(item.kind) && !base.includes('#')) {
+        return `${base}#api`;
+    }
+    return base;
+};
+
 /** Inline badge for entity type indicators */
 const Badge = (props: { label: string; cssClass: string }): string =>
     (<span class={`cdx-badge ${props.cssClass}`}>{props.label}</span>) as string;
@@ -232,11 +270,11 @@ const kindIconHtml = (kind: EntityKind): string => {
 };
 
 /** Render a kind-tagged entity link inside a feature folder. */
-const FeatureEntityLink = (item: EntityWithKind): string =>
+const FeatureEntityLink = (item: EntityWithKind, defaultTab?: 'api'): string =>
     (
         <li class="link cdx-feature-link" data-cdx-kind={item.kind}>
             <a
-                href={entityHref(item.hrefPrefix, item as any)}
+                href={featureLinkHref(item.hrefPrefix, item as any, defaultTab)}
                 data-type="entity-link"
                 data-cdx-entity-type={item.kind}
                 data-cdx-selector={item.selector || undefined}
@@ -273,12 +311,14 @@ const FeatureGroupTree = (props: {
     node: GroupNode;
     depth: number;
     groupDepth: number;
+    idPrefix: string;
+    defaultTab?: 'api';
 }): string => {
     const hasContent = props.node.items.length > 0 || props.node.children.length > 0;
     if (!hasContent) {
         return '';
     }
-    const id = `features-group-${props.node.fullPath}`;
+    const id = `${props.idPrefix}${props.node.fullPath}`;
     const startExpanded = !isCollapsedAll() && props.depth < props.groupDepth;
     return (
         <li class="chapter inner" style={`--depth: ${props.depth}`}>
@@ -303,50 +343,62 @@ const FeatureGroupTree = (props: {
                     FeatureGroupTree({
                         node: child,
                         depth: props.depth + 1,
-                        groupDepth: props.groupDepth
+                        groupDepth: props.groupDepth,
+                        idPrefix: props.idPrefix,
+                        defaultTab: props.defaultTab
                     })
                 )}
-                {props.node.items.map((item: EntityWithKind) => FeatureEntityLink(item))}
+                {props.node.items.map((item: EntityWithKind) =>
+                    FeatureEntityLink(item, props.defaultTab)
+                )}
             </ul>
         </li>
     ) as string;
 };
 
 /**
- * Cross-kind feature chapter — replaces every per-kind EntitySection when
- * `menuLayout: 'feature'`. Renders nothing when no folder groups exist.
+ * Cross-kind chapter for `menuLayout: 'feature'`. Renders nothing when the
+ * `groups` dict is empty. The same component renders both the Primary
+ * ("Features") and Reference chapters — `chapterKey` drives the id prefix,
+ * collapse state, and label.
  */
 const FeatureSection = (props: {
     groups?: Record<string, EntityWithKind[]>;
     groupDepth: number;
+    chapterKey: 'features' | 'references';
+    label: string;
+    defaultTab?: 'api';
 }): string => {
     const groups = props.groups ?? {};
     const keys = Object.keys(groups);
     if (keys.length === 0) {
         return '';
     }
-    const id = 'features-links';
+    const id = `${props.chapterKey}-links`;
+    const idPrefix = `${props.chapterKey}-group-`;
     const tree = buildGroupTree(groups as unknown as Record<string, any[]>);
     return (
-        <li class="chapter features">
+        <li class={`chapter ${props.chapterKey}`}>
             <button
                 class="simple menu-toggler"
                 type="button"
                 data-cdx-toggle="collapse"
                 data-cdx-target={`#${id}`}
-                aria-expanded={chapterOpen('features') ? 'true' : 'false'}
+                aria-expanded={chapterOpen(props.chapterKey) ? 'true' : 'false'}
                 aria-controls={id}
             >
                 {IconFolder()}
-                <span>{t('features')}</span>
+                <span>{props.label}</span>
                 {chevron()}
             </button>
-            <ul class={`links collapse${chapterOpen('features') ? ' in' : ''}`} id={id}>
+            <ul class={`links collapse${chapterOpen(props.chapterKey) ? ' in' : ''}`} id={id}>
                 {tree.map(node =>
                     FeatureGroupTree({
                         node,
                         depth: 0,
-                        groupDepth: props.groupDepth
+                        groupDepth: props.groupDepth,
+                        idPrefix,
+                        defaultTab: props.defaultTab
                     })
                 )}
             </ul>
@@ -730,12 +782,30 @@ export const Menu = (props: MenuProps): string => {
                     </li>
                 )}
 
-                {/* Feature-folder layout swaps all per-kind chapters for one cross-kind tree. */}
+                {/* Feature-folder layout swaps every per-kind chapter for two cross-kind
+                    chapters: Features (organisms — components, directives, pipes, injectables,
+                    classes, guards, interceptors, entities, plus any reference-kind symbol
+                    promoted via @docsKind primary) and References (interfaces, functions,
+                    typealiases, variables, enumerations). Both share the same @category /
+                    folder bucket paths, so the same bucket may appear in both chapters. */}
                 {(d.menuLayout ?? 'type') === 'feature' ? (
-                    FeatureSection({
-                        groups: d.categorizedByFeature,
-                        groupDepth: d.groupDepth
-                    })
+                    <>
+                        {FeatureSection({
+                            groups: d.categorizedByFeaturePrimary,
+                            groupDepth: d.groupDepth,
+                            chapterKey: 'features',
+                            label: d.featuresName || t('features')
+                        })}
+                        {FeatureSection({
+                            groups: d.categorizedByFeatureReference,
+                            groupDepth: d.groupDepth,
+                            chapterKey: 'references',
+                            label: d.referencesName || t('references'),
+                            // References-chapter links open the API tab by default.
+                            // Features stays default Info — chapter intent drives tab.
+                            defaultTab: 'api'
+                        })}
+                    </>
                 ) : (
                     <>
                         {/* Standalone entity sections */}
@@ -831,8 +901,8 @@ export const Menu = (props: MenuProps): string => {
                     </>
                 )}
 
-                {/* Miscellaneous */}
-                {d.miscellaneous && (
+                {/* Miscellaneous — redundant in feature mode (everything moved into References) */}
+                {d.miscellaneous && (d.menuLayout ?? 'type') !== 'feature' && (
                     <li class="chapter">
                         <button
                             class="simple menu-toggler"

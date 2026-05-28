@@ -162,6 +162,8 @@ export const TRANSLATION_DE_DE = {
     providers: 'Providers',
     pure: 'Pure',
     readme: 'README',
+    references: 'Referenzen',
+    'referenced-by': 'Referenziert von',
     required: 'Erforderlich',
     reset: 'Zurücksetzen',
     relationships: 'Beziehungen',

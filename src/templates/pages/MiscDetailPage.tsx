@@ -1,6 +1,7 @@
 import Html from '@kitajs/html';
 import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { ParamsTable } from '../blocks/ParamsTable';
+import { ReferencedBySection } from '../blocks/ReferencedBySection';
 import { IconEnum, IconFile, IconFunction, IconTypealias, IconVariable } from '../components/Icons';
 import {
     codeWrap,
@@ -8,6 +9,7 @@ import {
     hasJsdocParams,
     jsdocReturnsComment,
     linkTypeHtml,
+    pagefindMetaAttrs,
     parseDescription,
     resolveBucketSegments,
     t
@@ -112,19 +114,26 @@ const collectExampleComments = (item: any): string[] => {
     return out;
 };
 
-// ---------- Info-tab content (description + prose) ----------
+//  Info-tab content (description + prose)
 
 const InfoContent = (item: any, depth: number): string => {
-    if (!item.description) {
-        return '';
-    }
-    return Section({
-        title: t('description'),
-        children: parseDescription(item.description, depth)
+    const backlinks = ReferencedBySection({
+        entries: item.referencedBy,
+        depth
     });
+    if (!item.description) {
+        return backlinks;
+    }
+    return [
+        backlinks,
+        Section({
+            title: t('description'),
+            children: parseDescription(item.description, depth)
+        })
+    ].join('');
 };
 
-// ---------- API-tab content (structural data per kind) ----------
+//  API-tab content (structural data per kind)
 
 const FunctionApi = (item: any, depth: number): string => {
     const hasSignature = (item.args?.length ?? 0) > 0 || item.returnType;
@@ -250,7 +259,7 @@ const ApiContent = (props: MiscDetailProps): string => {
     }
 };
 
-// ---------- Examples-tab content (@example JSDoc blocks) ----------
+//  Examples-tab content (@example JSDoc blocks)
 // Same rendering pipeline as the markdown-engine code renderer
 // (`<div class="cdx-code-snippet">` with Shiki output) — see `collectExampleComments`
 // for why we don't go through JsdocExamplesBlock/extractJsdocCodeExamples here.
@@ -270,7 +279,7 @@ const ExamplesContent = (item: any): string => {
     ) as string;
 };
 
-// ---------- Tab orchestration ----------
+//  Tab orchestration
 
 interface MiscTab {
     readonly id: 'info' | 'api' | 'example';
@@ -283,7 +292,11 @@ const buildTabs = (props: MiscDetailProps): MiscTab[] => {
     const tabs: MiscTab[] = [];
 
     const info = InfoContent(props.item, depth);
-    tabs.push({ id: 'info', label: 'Info', content: info || EmptyInfoFallback() });
+    tabs.push({
+        id: 'info',
+        label: 'Info',
+        content: info || EmptyInfoFallback()
+    });
 
     const api = ApiContent(props);
     if (api) {
@@ -345,7 +358,7 @@ const TabPanels = (tabs: MiscTab[]): string =>
         </div>
     ) as string;
 
-// ---------- Page entry ----------
+//  Page entry
 
 export const renderMiscDetailPage = (props: MiscDetailProps): string => {
     const custom = renderCustomTemplate(META[props.kind].contextKey, props);
@@ -355,9 +368,14 @@ export const renderMiscDetailPage = (props: MiscDetailProps): string => {
     const meta = META[props.kind];
     const item = props.item;
     const tabs = buildTabs(props);
+    const searchMeta = pagefindMetaAttrs({
+        kind: props.kind,
+        category: item.category,
+        description: item.description
+    });
     return (
         <>
-            <div class="cdx-entity-hero" style={`--cdx-hero-color: ${meta.color}`}>
+            <div class="cdx-entity-hero" style={`--cdx-hero-color: ${meta.color}`} {...searchMeta}>
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {meta.icon()}
                 </div>
@@ -408,13 +426,29 @@ export const renderMiscDetailPage = (props: MiscDetailProps): string => {
 };
 
 export const MiscFunctionPage = (data: any): string =>
-    renderMiscDetailPage({ kind: 'function', item: data.function, depth: data.depth });
+    renderMiscDetailPage({
+        kind: 'function',
+        item: data.function,
+        depth: data.depth
+    });
 
 export const MiscVariablePage = (data: any): string =>
-    renderMiscDetailPage({ kind: 'variable', item: data.variable, depth: data.depth });
+    renderMiscDetailPage({
+        kind: 'variable',
+        item: data.variable,
+        depth: data.depth
+    });
 
 export const MiscTypealiasPage = (data: any): string =>
-    renderMiscDetailPage({ kind: 'typealias', item: data.typealias, depth: data.depth });
+    renderMiscDetailPage({
+        kind: 'typealias',
+        item: data.typealias,
+        depth: data.depth
+    });
 
 export const MiscEnumerationPage = (data: any): string =>
-    renderMiscDetailPage({ kind: 'enumeration', item: data.enumeration, depth: data.depth });
+    renderMiscDetailPage({
+        kind: 'enumeration',
+        item: data.enumeration,
+        depth: data.depth
+    });

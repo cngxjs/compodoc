@@ -447,6 +447,10 @@ export class Application {
         Configuration.mainData.categorizedInterceptors = DependenciesEngine.categorizedInterceptors;
         Configuration.mainData.categorizedEntities = DependenciesEngine.categorizedEntities;
         Configuration.mainData.categorizedByFeature = DependenciesEngine.categorizedByFeature;
+        Configuration.mainData.categorizedByFeaturePrimary =
+            DependenciesEngine.categorizedByFeaturePrimary;
+        Configuration.mainData.categorizedByFeatureReference =
+            DependenciesEngine.categorizedByFeatureReference;
 
         Configuration.mainData.routesLength = RouterParserUtil.routesLength();
 

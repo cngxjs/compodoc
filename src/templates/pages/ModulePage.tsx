@@ -4,7 +4,7 @@ import { EntityTabs } from '../blocks/EntityTabs';
 import { GraphZoomControls } from '../blocks/GraphControls';
 import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { IconFile, IconInterface, IconMaximize, IconModule } from '../components/Icons';
-import { parseDescription, relativeUrl, resolveBucketSegments, t } from '../helpers';
+import { firstSentence, parseDescription, relativeUrl, resolveBucketSegments, t } from '../helpers';
 
 const NG2_MODULES = ['BrowserModule', 'FormsModule', 'HttpModule', 'RouterModule'];
 const isAngularModule = (name: string): boolean => NG2_MODULES.some(m => name.includes(m));
@@ -179,9 +179,15 @@ export const ModulePage = (data: any): string => {
         </>
     ) as string;
 
+    const moduleExcerpt = firstSentence(mod.description);
     return (
         <>
-            <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-entity-module)">
+            <div
+                class="cdx-entity-hero"
+                style="--cdx-hero-color: var(--color-cdx-entity-module)"
+                data-pagefind-meta-kind="Module"
+                {...(moduleExcerpt ? { 'data-pagefind-meta-description': moduleExcerpt } : {})}
+            >
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {IconModule()}
                 </div>

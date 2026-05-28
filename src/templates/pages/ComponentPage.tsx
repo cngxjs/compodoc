@@ -44,6 +44,7 @@ import {
     isInitialTab,
     isReadmeEmpty,
     isTabEnabled,
+    pagefindMetaAttrs,
     parseDescription,
     relativeUrl,
     resolveBucketSegments,
@@ -404,11 +405,18 @@ export const ComponentPage = (data: any): string => {
           })()
         : null;
 
+    const searchMeta = pagefindMetaAttrs({
+        kind: 'component',
+        category: c.category,
+        description: c.description
+    });
+
     return (
         <>
             <div
                 class="cdx-entity-hero"
                 style="--cdx-hero-color: var(--color-cdx-entity-component)"
+                {...searchMeta}
             >
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {IconComponent()}

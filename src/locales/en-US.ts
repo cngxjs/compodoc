@@ -164,6 +164,8 @@ export const TRANSLATION_EN_US = {
     providers: 'Providers',
     pure: 'Pure',
     readme: 'README',
+    references: 'References',
+    'referenced-by': 'Referenced by',
     required: 'Required',
     reset: 'Reset',
     relationships: 'Relationships',

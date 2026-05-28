@@ -166,9 +166,13 @@ export interface MainDataInterface {
     categorizedInterceptors: Record<string, unknown[]>;
     categorizedEntities: Record<string, unknown[]>;
     categorizedByFeature: Record<string, unknown[]>;
+    categorizedByFeaturePrimary: Record<string, unknown[]>;
+    categorizedByFeatureReference: Record<string, unknown[]>;
     groupBy: 'folder' | 'category' | 'none' | '';
     groupDepth: number;
     menuLayout: 'type' | 'feature';
+    featuresName: string;
+    referencesName: string;
     collapsedAll: boolean;
     generatedAt: string;
 }

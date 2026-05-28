@@ -81,7 +81,7 @@ export function loadConfigFile(opts: LoadConfigOptions): ConfigFileResult {
  * Side-effects allowed:
  *  - `process.exit(1)` for invalid `--jsonIndent` / `--maxVersionsShown` /
  *    missing custom-theme file / `--tsconfig` boolean.
- *  - `process.exit(2)` for invalid `menuLayout` / `collapsedAll` config.
+ *  - `process.exit(2)` for invalid `menuLayout` / `collapsedAll` / `featuresName` / `referencesName` config.
  *  - Mutates `logger.silent` and `logger.routeToStderr`.
  *  - Mutates `I18nEngine` via the language-availability warning.
  *
@@ -686,6 +686,26 @@ export function applyConfigToMainData(
             process.exit(2);
         }
         mainData.menuLayout = layout;
+    }
+
+    if (configFile.featuresName !== undefined) {
+        if (typeof configFile.featuresName !== 'string') {
+            logger.error(
+                `Invalid featuresName value "${configFile.featuresName}". Expected string.`
+            );
+            process.exit(2);
+        }
+        mainData.featuresName = configFile.featuresName;
+    }
+
+    if (configFile.referencesName !== undefined) {
+        if (typeof configFile.referencesName !== 'string') {
+            logger.error(
+                `Invalid referencesName value "${configFile.referencesName}". Expected string.`
+            );
+            process.exit(2);
+        }
+        mainData.referencesName = configFile.referencesName;
     }
 
     if (configFile.collapsedAll !== undefined) {

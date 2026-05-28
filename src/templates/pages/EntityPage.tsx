@@ -25,6 +25,7 @@ import { ImportStatement } from '../blocks/ImportStatement';
 import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import { PlaygroundContent } from '../blocks/PlaygroundContent';
 import { ProvidersSection } from '../blocks/ProvidersSection';
+import { ReferencedBySection } from '../blocks/ReferencedBySection';
 import { RouteChip } from '../blocks/RouteChip';
 import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { EmptyState } from '../components/EmptyState';
@@ -48,6 +49,7 @@ import {
     isInitialTab,
     isTabEnabled,
     linkTypeHtml,
+    pagefindMetaAttrs,
     parseDescription,
     resolveBucketSegments,
     t
@@ -207,7 +209,8 @@ const hasInfoContent = (e: any, props: EntityInfoProps): boolean =>
         e.extends?.length ||
         e.implements?.length ||
         props.relationships?.incoming?.length ||
-        props.relationships?.outgoing?.length
+        props.relationships?.outgoing?.length ||
+        (props.entityKey === 'interface' && e.referencedBy?.length)
     );
 
 /** Render extends/implements as metadata card rows for entities without decorator metadata */
@@ -279,6 +282,14 @@ const InfoContent = (props: EntityInfoProps): string => {
 
     return (
         <>
+            {/* 0a. Referenced-by backlinks (References-only — gated to interfaces in EntityPage,
+                  rendered unconditionally on MiscDetailPage which is reference-kind by design) */}
+            {props.entityKey === 'interface' &&
+                ReferencedBySection({
+                    entries: e.referencedBy,
+                    depth: props.depth ?? 0
+                })}
+
             {/* 0. Import statement */}
             {isInfoSection('import') && ImportStatement({ name: e.name, file: e.file })}
 
@@ -530,9 +541,15 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
     const meta = entityMeta[props.entityKey] ?? entityMeta['entity'];
     const e = props.entity;
 
+    const searchMeta = pagefindMetaAttrs({
+        kind: props.entityKey as any,
+        category: e.category,
+        description: e.description
+    });
+
     return (
         <>
-            <div class="cdx-entity-hero" style={`--cdx-hero-color: ${meta.color}`}>
+            <div class="cdx-entity-hero" style={`--cdx-hero-color: ${meta.color}`} {...searchMeta}>
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {meta.icon()}
                 </div>

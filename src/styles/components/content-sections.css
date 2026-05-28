@@ -232,11 +232,15 @@
  * Matches the "Features" chip style on the AppConfig provider cards.
  */
 
-.cdx-metadata-value .cdx-chip-list {
+.cdx-chip-list {
     display: flex;
     flex-wrap: wrap;
     gap: 0.375rem;
     align-items: center;
+}
+
+.cdx-referenced-by {
+    margin-top: var(--spacing-cdx-md);
 }
 
 .cdx-chip {
@@ -270,6 +274,23 @@ a.cdx-chip:hover {
     border-color: var(--cdx-chip-color);
     color: var(--cdx-chip-color);
     text-decoration: none;
+}
+
+/* Link affordance: only `<a class="cdx-chip" href="…">` chips communicate
+   that they navigate. Static chips (no href — kind badges, status pills)
+   keep their flat appearance. */
+.cdx-chip[href] {
+    cursor: pointer;
+}
+
+.cdx-chip[href]:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.cdx-chip[href]:focus-visible {
+    outline: 2px solid var(--color-cdx-focus-ring, currentColor);
+    outline-offset: 2px;
 }
 
 .cdx-chip-label {
