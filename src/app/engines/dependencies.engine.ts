@@ -33,6 +33,7 @@ export type EntityKind =
     | 'component'
     | 'directive'
     | 'injectable'
+    | 'token'
     | 'pipe'
     | 'class'
     | 'interface'
@@ -119,6 +120,7 @@ export const PRIMARY_KINDS: ReadonlySet<EntityKind> = new Set<EntityKind>([
     'directive',
     'pipe',
     'injectable',
+    'token',
     'class',
     'guard',
     'interceptor',
@@ -257,6 +259,7 @@ export class DependenciesEngine {
     public entities: IDep[];
     public directives: IDirectiveDep[];
     public injectables: IInjectableDep[];
+    public tokens: IInjectableDep[];
     public interceptors: IInterceptorDep[];
     public guards: IGuardDep[];
     public interfaces: IInterfaceDep[];
@@ -266,6 +269,7 @@ export class DependenciesEngine {
     public categorizedComponents: Record<string, IComponentDep[]> = {};
     public categorizedDirectives: Record<string, IDirectiveDep[]> = {};
     public categorizedInjectables: Record<string, IInjectableDep[]> = {};
+    public categorizedTokens: Record<string, IInjectableDep[]> = {};
     public categorizedPipes: Record<string, IPipeDep[]> = {};
     public categorizedClasses: Record<string, IDep[]> = {};
     public categorizedInterfaces: Record<string, IInterfaceDep[]> = {};
@@ -372,6 +376,9 @@ export class DependenciesEngine {
             (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
         );
         this.injectables = [...this.rawData.injectables].sort((a, b) =>
+            (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
+        );
+        this.tokens = [...(this.rawData.tokens ?? [])].sort((a, b) =>
             (a as any).name.toLowerCase().localeCompare((b as any).name.toLowerCase())
         );
         this.interceptors = [...this.rawData.interceptors].sort((a, b) =>
@@ -793,6 +800,7 @@ export class DependenciesEngine {
             strategy,
             depth
         );
+        this.categorizedTokens = this.groupByStrategy(this.tokens as any[], strategy, depth);
         this.categorizedPipes = this.groupByStrategy(this.pipes as any[], strategy, depth);
         this.categorizedClasses = this.groupByStrategy(this.classes as any[], strategy, depth);
         this.categorizedInterfaces = this.groupByStrategy(
@@ -821,6 +829,7 @@ export class DependenciesEngine {
             { list: this.components, kind: 'component', hrefPrefix: 'components' },
             { list: this.directives, kind: 'directive', hrefPrefix: 'directives' },
             { list: this.injectables, kind: 'injectable', hrefPrefix: 'injectables' },
+            { list: this.tokens, kind: 'token', hrefPrefix: 'tokens' },
             { list: this.pipes, kind: 'pipe', hrefPrefix: 'pipes' },
             { list: this.classes, kind: 'class', hrefPrefix: 'classes' },
             { list: this.interfaces, kind: 'interface', hrefPrefix: 'interfaces' },
@@ -920,6 +929,7 @@ export class DependenciesEngine {
             { list: this.components, kind: 'component', hrefPrefix: 'components' },
             { list: this.directives, kind: 'directive', hrefPrefix: 'directives' },
             { list: this.injectables, kind: 'injectable', hrefPrefix: 'injectables' },
+            { list: this.tokens, kind: 'token', hrefPrefix: 'tokens' },
             { list: this.pipes, kind: 'pipe', hrefPrefix: 'pipes' },
             { list: this.classes, kind: 'class', hrefPrefix: 'classes' },
             { list: this.guards, kind: 'guard', hrefPrefix: 'guards' },
@@ -938,6 +948,7 @@ export class DependenciesEngine {
             }
         };
         this.interfaces.forEach(registerRef);
+        this.tokens?.forEach(registerRef);
         this.miscellaneous?.functions?.forEach(registerRef);
         this.miscellaneous?.variables?.forEach(registerRef);
         this.miscellaneous?.typealiases?.forEach(registerRef);
@@ -1019,6 +1030,10 @@ export class DependenciesEngine {
 
     public getInjectables() {
         return this.injectables;
+    }
+
+    public getTokens() {
+        return this.tokens;
     }
 
     public getInterceptors() {

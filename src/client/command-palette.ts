@@ -16,6 +16,7 @@ const ENTITY_TYPES = [
     'directive',
     'service',
     'injectable',
+    'token',
     'pipe',
     'module',
     'class',
@@ -45,6 +46,7 @@ const entityClass = (type: EntityType | 'other'): string => {
         case 'component':
         case 'directive':
         case 'pipe':
+        case 'token':
         case 'module':
         case 'class':
         case 'interface':
@@ -97,6 +99,7 @@ const KIND_LABEL_TO_TYPE: Record<string, EntityType> = {
     Directive: 'directive',
     Pipe: 'pipe',
     Injectable: 'injectable',
+    Token: 'token',
     Class: 'class',
     Interface: 'interface',
     Guard: 'guard',
@@ -141,6 +144,9 @@ const RESULT_ICONS: Record<string, string> = {
     ),
     service: icon(
         '<path d="m18 2 4 4-4 4"/><path d="m6 22-4-4 4-4"/><path d="M22 6H10a4 4 0 0 0-4 4v4"/><path d="M2 18h12a4 4 0 0 0 4-4v-4"/>'
+    ),
+    token: icon(
+        '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>'
     ),
     interface: icon(
         '<path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/>'

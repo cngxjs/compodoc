@@ -43,7 +43,8 @@ import {
     PageWriter,
     PipePageGenerator,
     PlaygroundFileResolver,
-    RoutesPageGenerator
+    RoutesPageGenerator,
+    TokenPageGenerator
 } from './page-generator';
 import { crawlDependencies, crawlMicroDependencies } from './services/dependencies';
 import { startWebServer } from './services/serve';
@@ -77,6 +78,7 @@ export class Application {
     private readonly entityPageGenerator: EntityPageGenerator;
     private readonly directivePageGenerator: DirectivePageGenerator;
     private readonly injectablePageGenerator: InjectablePageGenerator;
+    private readonly tokenPageGenerator: TokenPageGenerator;
     private readonly interceptorPageGenerator: InterceptorPageGenerator;
     private readonly guardPageGenerator: GuardPageGenerator;
     private readonly componentPageGenerator: ComponentPageGenerator;
@@ -122,6 +124,7 @@ export class Application {
         this.entityPageGenerator = new EntityPageGenerator(this.navTabs);
         this.directivePageGenerator = new DirectivePageGenerator(this.navTabs);
         this.injectablePageGenerator = new InjectablePageGenerator(this.navTabs);
+        this.tokenPageGenerator = new TokenPageGenerator(this.navTabs);
         this.interceptorPageGenerator = new InterceptorPageGenerator(this.navTabs);
         this.guardPageGenerator = new GuardPageGenerator(this.navTabs);
         this.componentPageGenerator = new ComponentPageGenerator(this.navTabs);
@@ -446,6 +449,7 @@ export class Application {
         Configuration.mainData.categorizedComponents = DependenciesEngine.categorizedComponents;
         Configuration.mainData.categorizedDirectives = DependenciesEngine.categorizedDirectives;
         Configuration.mainData.categorizedInjectables = DependenciesEngine.categorizedInjectables;
+        Configuration.mainData.categorizedTokens = DependenciesEngine.categorizedTokens;
         Configuration.mainData.categorizedPipes = DependenciesEngine.categorizedPipes;
         Configuration.mainData.categorizedClasses = DependenciesEngine.categorizedClasses;
         Configuration.mainData.categorizedInterfaces = DependenciesEngine.categorizedInterfaces;
@@ -490,6 +494,10 @@ export class Application {
 
         if (diffCrawledData.injectables.length > 0) {
             actions.push(() => this.injectablePageGenerator.prepare());
+        }
+
+        if ((diffCrawledData.tokens?.length ?? 0) > 0) {
+            actions.push(() => this.tokenPageGenerator.prepare());
         }
 
         if (diffCrawledData.interceptors.length > 0) {
@@ -649,6 +657,12 @@ export class Application {
         if (DependenciesEngine.injectables.length > 0) {
             actions.push(() => {
                 return this.injectablePageGenerator.prepare();
+            });
+        }
+
+        if ((DependenciesEngine.tokens?.length ?? 0) > 0) {
+            actions.push(() => {
+                return this.tokenPageGenerator.prepare();
             });
         }
 

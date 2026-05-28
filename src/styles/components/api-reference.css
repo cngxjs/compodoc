@@ -307,6 +307,11 @@
 .cdx-ref-kind-icon--injectable {
     --cdx-ref-kind-color: var(--color-cdx-entity-service);
 }
+.cdx-ref-kind-icon--token {
+    /* Slate-blue — visually adjacent to Injectable (warm brown) but
+     * distinct, and clearly different from Interface's dark grey. */
+    --cdx-ref-kind-color: var(--color-cdx-entity-token, #475569);
+}
 .cdx-ref-kind-icon--class {
     --cdx-ref-kind-color: var(--color-cdx-entity-class);
 }

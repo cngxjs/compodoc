@@ -284,28 +284,36 @@ test.describe('Pipe page', () => {
     });
 });
 
-// ─── Injectable / Token pages ────────────────────────────
+// ─── Token pages ─────────────────────────────────────────
+// InjectionToken / HttpContextToken declarations are emitted at
+// `tokens/<name>.html` (not `injectables/`) — the new dedicated kind
+// route. The legacy injectable-flagged-as-token path is gone.
 
-test.describe('Injectable page', () => {
-    test('API_BASE_URL: token badge in breadcrumb', async ({ page }) => {
-        await page.goto('/injectables/API_BASE_URL.html');
-        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--token').count()).toBe(1);
+test.describe('Token page', () => {
+    test('API_BASE_URL: token badge in hero', async ({ page }) => {
+        await page.goto('/tokens/API_BASE_URL.html');
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--entity-token').count()).toBe(
+            1
+        );
     });
 
-    test('API_BASE_URL: token metadata shows type and providedIn', async ({ page }) => {
-        await page.goto('/injectables/API_BASE_URL.html');
-        const metadata = page.locator('[data-compodoc="block-metadata"]');
-        expect(await metadata.count()).toBe(1);
-        const text = await metadata.textContent();
-        expect(text).toContain('Type');
-        expect(text).toContain('string');
-        expect(text).toContain('Provided in');
-        expect(text).toContain("'root'");
+    test('API_BASE_URL: type signature + providedIn sections', async ({ page }) => {
+        await page.goto('/tokens/API_BASE_URL.html');
+        // The lean TokenPage renders `Type` and `Provided in` as
+        // top-level `cdx-content-section` blocks instead of the older
+        // `block-metadata` row table.
+        const sections = page.locator('.cdx-content-section');
+        const sectionText = (await sections.allTextContents()).join('\n');
+        expect(sectionText).toContain('InjectionToken');
+        expect(sectionText).toContain('string');
+        expect(sectionText).toContain("'root'");
     });
 
     test('FEATURE_FLAGS: token badge', async ({ page }) => {
-        await page.goto('/injectables/FEATURE_FLAGS.html');
-        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--token').count()).toBe(1);
+        await page.goto('/tokens/FEATURE_FLAGS.html');
+        expect(await page.locator('.cdx-entity-hero-badges .cdx-badge--entity-token').count()).toBe(
+            1
+        );
     });
 });
 

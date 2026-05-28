@@ -78,6 +78,7 @@ export class AngularDependencies extends FrameworkDependencies {
             components: [],
             entities: [],
             injectables: [],
+            tokens: [],
             interceptors: [],
             guards: [],
             pipes: [],
@@ -1101,12 +1102,17 @@ export class AngularDependencies extends FrameworkDependencies {
                                         return;
                                     }
 
-                                    // Detect InjectionToken declarations
+                                    // Detect InjectionToken / HttpContextToken declarations
+                                    // — DI keys, semantically distinct from `@Injectable()`
+                                    // service classes. Routed to a separate `tokens`
+                                    // collection so the docs surface them under a dedicated
+                                    // `tokens/<name>.html` URL with a Token-specific page
+                                    // template (no methods / inputs / outputs tab).
                                     if (this.providerDetector.isInjectionToken(infos.initializer)) {
                                         const tokenDep: IInjectableDep = {
                                             name,
                                             id:
-                                                'injectable-' +
+                                                'token-' +
                                                 name +
                                                 '-' +
                                                 crypto
@@ -1114,7 +1120,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                                     .update(name + file)
                                                     .digest('hex'),
                                             file,
-                                            type: 'injectable',
+                                            type: 'token',
                                             properties: [],
                                             methods: [],
                                             deprecated: deps.deprecated || false,
@@ -1140,7 +1146,7 @@ export class AngularDependencies extends FrameworkDependencies {
                                                 return;
                                             }
                                             this.debug(tokenDep);
-                                            outputSymbols.injectables.push(tokenDep);
+                                            outputSymbols.tokens.push(tokenDep);
                                         }
                                         return;
                                     }

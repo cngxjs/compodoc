@@ -369,4 +369,66 @@ test.describe('menuLayout: "feature" sidebar', () => {
         });
         expect(cursor).toBe('pointer');
     });
+
+    test('Token kind: portal chip rail surfaces a Token facet with count > 0', async ({ page }) => {
+        // InjectionToken / HttpContextToken consts now live under the
+        // dedicated `token` kind. The references portal's chip rail
+        // emits one chip per present kind — so a fixture with tokens
+        // produces a Token chip with a non-zero count.
+        await page.goto('/references.html');
+        await page.waitForLoadState('domcontentloaded');
+        const tokenChip = page.locator('[data-cdx-ref-kind-chip="token"]');
+        await expect(tokenChip).toHaveCount(1);
+        const count = await tokenChip.locator('.cdx-ref-kind-chip-count').textContent();
+        expect(Number(count?.trim() ?? '0')).toBeGreaterThan(0);
+    });
+
+    test('Token kind: clicking Token chip leaves token rows visible, hides others', async ({
+        page
+    }) => {
+        await page.goto('/references.html');
+        await page.waitForLoadState('domcontentloaded');
+        // Deselect every non-token kind via the chip rail.
+        const chips = await page.locator('[data-cdx-ref-kind-chip]').all();
+        for (const chip of chips) {
+            const k = await chip.getAttribute('data-cdx-ref-kind-chip');
+            if (k !== 'token') {
+                await chip.click();
+            }
+        }
+        const visibleKinds = await page
+            .locator('.cdx-ref-item:not([data-cdx-ref-hidden])')
+            .evaluateAll(els => els.map(el => el.getAttribute('data-cdx-kind')));
+        expect(visibleKinds.length).toBeGreaterThan(0);
+        expect(visibleKinds.every(k => k === 'token')).toBe(true);
+    });
+
+    test('Token kind: token row links to tokens/<name>.html (not injectables/)', async ({
+        page
+    }) => {
+        await page.goto('/references.html');
+        await page.waitForLoadState('domcontentloaded');
+        const tokenRow = page
+            .locator('.cdx-ref-item[data-cdx-kind="token"] .cdx-ref-item-link')
+            .first();
+        const href = await tokenRow.getAttribute('href');
+        expect(href).toMatch(/^(?:\.\/)?tokens\/[A-Z][A-Z0-9_]*\.html$/);
+    });
+
+    test('Token detail page: hero badge + type + providedIn sections', async ({ page }) => {
+        await page.goto('/tokens/API_BASE_URL.html');
+        await page.waitForLoadState('domcontentloaded');
+        await expect(page.locator('.cdx-entity-hero-badges .cdx-badge--entity-token')).toHaveCount(
+            1
+        );
+        // The lean TokenPage emits content sections (NOT the legacy
+        // entity-page metadata table). Type section renders the
+        // `InjectionToken<...>` signature; Provided in renders the
+        // captured `providedIn` literal.
+        const sectionText = (await page.locator('.cdx-content-section').allTextContents()).join(
+            '\n'
+        );
+        expect(sectionText).toContain('InjectionToken');
+        expect(sectionText).toContain("'root'");
+    });
 });

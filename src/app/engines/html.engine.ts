@@ -33,6 +33,7 @@ import { PackageDependencies } from '../../templates/pages/PackageDependencies';
 import { PackageProperties } from '../../templates/pages/PackageProperties';
 import { PipePage } from '../../templates/pages/PipePage';
 import { Routes } from '../../templates/pages/Routes';
+import { TokenPage } from '../../templates/pages/TokenPage';
 import { UnitTestReport } from '../../templates/pages/UnitTestReport';
 import { logger } from '../../utils/logger';
 import { loadCustomTemplates, renderCustomTemplate } from './custom-template.engine';
@@ -53,6 +54,7 @@ const CONTEXT_TEMPLATE_MAP: Record<string, string> = {
     entity: 'entity',
     directive: 'directive',
     injectable: 'injectable',
+    token: 'token',
     interceptor: 'interceptor',
     guard: 'guard',
     pipe: 'pipe',
@@ -140,6 +142,8 @@ export class HtmlEngine {
             case 'injectable':
                 data.relationships = DependenciesEngine.getRelationships(data.injectable?.name);
                 return InjectablePage(data);
+            case 'token':
+                return TokenPage(data);
             case 'interceptor':
                 return InterceptorPage(data);
             case 'interface':

@@ -44,6 +44,7 @@ export const PAGE_LEVEL_OVERRIDES: readonly string[] = [
     'package-properties',
     'pipe',
     'routes',
+    'token',
     'unit-test-report'
 ];
 

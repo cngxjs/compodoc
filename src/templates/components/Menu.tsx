@@ -29,7 +29,8 @@ import {
     IconModule,
     IconPipe,
     IconPodium,
-    IconSettings
+    IconSettings,
+    IconToken
 } from './Icons';
 
 /** Menu types come in plural form (`components`, `directives`, `classes`).
@@ -41,6 +42,9 @@ const singularizeType = (type: string): string => {
     }
     return type.replace(/s$/, '');
 };
+
+// `singularizeType('tokens')` → `'token'` via the generic strip; explicit
+// here so future readers don't reach for a special-case.
 
 type MenuProps = {
     readonly data: any;
@@ -254,6 +258,8 @@ const kindIconHtml = (kind: EntityKind): string => {
             return IconDirective();
         case 'injectable':
             return IconInjectable();
+        case 'token':
+            return IconToken();
         case 'pipe':
             return IconPipe();
         case 'class':
@@ -884,6 +890,16 @@ export const Menu = (props: MenuProps): string => {
                                 iconHtml: IconInjectable(),
                                 labelKey: 'injectables',
                                 hrefPrefix: 'injectables',
+                                groupDepth: d.groupDepth
+                            })}
+                        {d.tokens?.length > 0 &&
+                            EntitySection({
+                                items: d.tokens,
+                                categorized: d.categorizedTokens,
+                                type: 'tokens',
+                                iconHtml: IconToken(),
+                                labelKey: 'tokens',
+                                hrefPrefix: 'tokens',
                                 groupDepth: d.groupDepth
                             })}
                         {d.interceptors?.length > 0 &&

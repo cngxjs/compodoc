@@ -70,6 +70,7 @@
     --color-cdx-entity-interceptor: #ba25cd; /* fuchsia */
     --color-cdx-entity-function: #52840b; /* lime-800 */
     --color-cdx-entity-variable: #617087; /* slate */
+    --color-cdx-entity-token: #334155; /* slate-700 — sibling of interface, distinctly darker */
     --color-cdx-entity-typealias: #6164f1; /* indigo */
     --color-cdx-entity-enum: #c2410c; /* dark orange */
 

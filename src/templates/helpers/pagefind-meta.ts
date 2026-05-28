@@ -11,6 +11,7 @@ export const KIND_LABELS: Record<EntityKind, string> = {
     directive: 'Directive',
     pipe: 'Pipe',
     injectable: 'Injectable',
+    token: 'Token',
     class: 'Class',
     interface: 'Interface',
     guard: 'Guard',
