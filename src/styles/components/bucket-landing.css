@@ -88,3 +88,164 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+/* Inline filter strip — only rendered when a bucket has ≥ 15 items.
+ * Visual model mirrors the API Reference portal (`.cdx-ref-filter-bar`):
+ * inlined in page flow (no card chrome, no sticky), 48px airy baseline,
+ * pill-shaped kind chips with entity-coloured badges + tabular counts.
+ * The two filter UIs share the `--cdx-ref-row` token so they feel
+ * like one widget across pages. */
+
+.cdx-bucket-landing-filter {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-cdx-md);
+    padding: var(--spacing-cdx-md) 0 var(--spacing-cdx-lg);
+    margin-bottom: var(--spacing-cdx-xl);
+    background: var(--color-cdx-bg);
+    border-bottom: 1px solid var(--color-cdx-border-subtle, var(--color-cdx-border));
+}
+
+.cdx-bucket-landing-filter-label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-xs);
+    padding: 0 var(--spacing-cdx-sm);
+    border-radius: var(--radius-cdx-sm);
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid var(--color-cdx-border);
+    height: var(--cdx-ref-row, 48px);
+    /* Grow to fill the row so the sibling Reset pill sits flush to the
+     * right edge of the filter strip. */
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.cdx-bucket-landing-filter-label:focus-within {
+    outline: 2px solid var(--color-cdx-focus-ring, var(--color-cdx-primary));
+    outline-offset: 1px;
+}
+
+.cdx-bucket-landing-filter-icon {
+    display: inline-flex;
+    color: var(--color-cdx-text-muted);
+    flex: 0 0 auto;
+}
+
+.cdx-bucket-landing-filter-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-cdx-text);
+    font: inherit;
+    padding: var(--spacing-cdx-xs) 0;
+}
+
+.cdx-bucket-landing-filter-input::placeholder {
+    color: var(--color-cdx-text-muted);
+}
+
+/* Native search clear-X is browser-styled; hide it so our typed button
+ * is the only affordance and avoids double-affordance confusion. */
+.cdx-bucket-landing-filter-input::-webkit-search-cancel-button {
+    appearance: none;
+    display: none;
+}
+
+.cdx-bucket-landing-kind-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-cdx-xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cdx-bucket-landing-kind-chips > li {
+    margin: 0;
+}
+
+/* Chips carry a saturated `.cdx-badge--entity-<kind>` chip + count.
+ * Direct visual mapping to the entity badges on the cards below — the
+ * chip works as a one-to-one colour key for the card grid. The API
+ * Reference portal uses the pastel `.cdx-ref-kind-icon` letter-box
+ * instead because it shows every kind side-by-side in a neutral list. */
+.cdx-bucket-landing-kind-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-cdx-xs);
+    padding: var(--spacing-cdx-xs) var(--spacing-cdx-sm);
+    background: transparent;
+    color: var(--color-cdx-text-secondary);
+    border: 1px solid transparent;
+    border-radius: 16px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.cdx-bucket-landing-kind-chip:hover,
+.cdx-bucket-landing-kind-chip:focus-visible {
+    border-color: var(--color-cdx-border-subtle, var(--color-cdx-border));
+    background: var(--color-cdx-bg-alt);
+}
+
+.cdx-bucket-landing-kind-chip[aria-pressed='true'] {
+    border-color: var(--color-cdx-border-subtle, var(--color-cdx-border));
+    background: var(--color-cdx-bg-alt);
+    color: var(--color-cdx-text);
+}
+
+.cdx-bucket-landing-kind-chip > .cdx-badge {
+    /* Badges default to ml-1; reset so they line up flush against the
+     * chip's left edge. */
+    margin-left: 0;
+}
+
+.cdx-bucket-landing-kind-chip-count {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-cdx-text-muted);
+    font-size: 0.75rem;
+}
+
+.cdx-bucket-landing-kind-chip[aria-pressed='true'] .cdx-bucket-landing-kind-chip-count {
+    color: var(--color-cdx-text);
+}
+
+/* Idle Reset pill (nothing to clear) — bucket-landing JS toggles the
+ * `disabled` attr on `.cdx-ref-reset` inside the filter strip. Scope to
+ * the bucket-landing wrapper so the API Reference Reset (which stays
+ * always-enabled) is unaffected. */
+.cdx-bucket-landing-filter .cdx-ref-reset:disabled {
+    cursor: default;
+    opacity: 0.55;
+    background: transparent;
+}
+
+.cdx-bucket-landing-filter-empty {
+    margin: 0;
+    padding: var(--spacing-cdx-sm) 0 0;
+    color: var(--color-cdx-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-sm);
+}
+
+.cdx-bucket-landing-filter-reset {
+    appearance: none;
+    border: 1px solid var(--color-cdx-border-subtle, var(--color-cdx-border));
+    background: transparent;
+    color: var(--color-cdx-text);
+    cursor: pointer;
+    font: inherit;
+    padding: var(--spacing-cdx-xs) var(--spacing-cdx-md);
+    border-radius: var(--radius-cdx-sm);
+}
+
+.cdx-bucket-landing-filter-reset:hover {
+    background: var(--color-cdx-bg-alt);
+}

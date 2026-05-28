@@ -8,6 +8,7 @@ declare function gtag(...args: unknown[]): void;
 
 import { initAnimations } from './animate';
 import { refreshApiReference } from './api-reference';
+import { initBucketLandingFilter } from './bucket-landing-filter';
 import { initCodeBlocks } from './code-blocks';
 import { initCoverage } from './coverage';
 import { initExamples } from './examples';
@@ -107,6 +108,10 @@ const reinitPage = async () => {
     // call cheap on every other page (no `data-cdx-page="api-reference"`
     // root → early return).
     refreshApiReference();
+    // Re-bind the bucket-landing inline filter on SPA navigation into a
+    // `categories/<bucket>.html` page. WeakSet guard inside the init makes
+    // the call a no-op on every other page.
+    initBucketLandingFilter();
     // initToc();
 };
 

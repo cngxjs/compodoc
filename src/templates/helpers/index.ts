@@ -23,6 +23,7 @@ export {
     deriveLibFromBucket,
     firstSentence,
     KIND_LABELS,
+    KIND_LETTER,
     pagefindFilterBlock,
     pagefindMetaBlock
 } from './pagefind-meta';

@@ -24,6 +24,31 @@ export const KIND_LABELS: Record<EntityKind, string> = {
 };
 
 /**
+ * Compact 1–2 character identifier used inside the pastel
+ * `.cdx-ref-kind-icon` letter-box that appears in API Reference rows,
+ * API Reference filter chips, and the bucket-landing filter chips. The
+ * letter is decorative — the full label travels alongside as visible
+ * text and is also exposed via the chip's `title` attribute for
+ * screen-reader users.
+ */
+export const KIND_LETTER: Record<EntityKind, string> = {
+    component: 'C',
+    directive: 'D',
+    pipe: 'P',
+    injectable: 'I',
+    token: 'Tk',
+    class: 'Cl',
+    interface: 'If',
+    guard: 'G',
+    interceptor: 'X',
+    entity: 'E',
+    function: 'F',
+    variable: 'V',
+    typealias: 'Tp',
+    enumeration: 'En'
+};
+
+/**
  * Strip HTML tags from a rendered description and return the first
  * sentence, truncated to ~120 chars for use as a Pagefind search excerpt.
  * Source is the entity's already-rendered `description` HTML (markdown →

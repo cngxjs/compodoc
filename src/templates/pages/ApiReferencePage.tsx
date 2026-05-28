@@ -6,6 +6,7 @@ import {
     deriveLibFromBucket,
     firstSentence,
     KIND_LABELS,
+    KIND_LETTER,
     pagefindMetaBlock,
     relativeUrl,
     t
@@ -42,25 +43,6 @@ const MISC_PLURAL: Record<string, string> = {
     variable: 'variables',
     typealias: 'typealiases',
     enumeration: 'enumerations'
-};
-
-/** Compact kind letter — 1-2 chars, used in the row icon. Keeps the row
- *  scannable; full kind label still surfaces via tooltip + filter chip. */
-const KIND_LETTER: Record<EntityKind, string> = {
-    component: 'C',
-    directive: 'D',
-    pipe: 'P',
-    injectable: 'I',
-    token: 'Tk',
-    class: 'Cl',
-    interface: 'If',
-    guard: 'G',
-    interceptor: 'X',
-    entity: 'E',
-    function: 'F',
-    variable: 'V',
-    typealias: 'Tp',
-    enumeration: 'En'
 };
 
 interface BucketItem extends EntityWithKind {

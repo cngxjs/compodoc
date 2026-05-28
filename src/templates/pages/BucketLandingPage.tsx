@@ -1,6 +1,6 @@
 import Html from '@kitajs/html';
 import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
-import { IconFolder } from '../components/Icons';
+import { IconFolder, IconSearch } from '../components/Icons';
 import {
     deriveLibFromBucket,
     firstSentence,
@@ -101,8 +101,15 @@ const buildHref = (item: BucketItem, depth: number): string => {
 const KindCard = (item: BucketItem, depth: number): string => {
     const excerpt = firstSentence(item.description) ?? '';
     const kindLabel = KIND_LABELS[item.kind as keyof typeof KIND_LABELS] ?? item.kind;
+    const nameLower = item.name.toLowerCase();
+    const textLower = excerpt ? `${nameLower} ${excerpt.toLowerCase()}` : nameLower;
     return (
-        <li class="cdx-bucket-card" data-cdx-kind={item.kind}>
+        <li
+            class="cdx-bucket-card"
+            data-cdx-kind={item.kind}
+            data-cdx-card-name={nameLower}
+            data-cdx-card-text={textLower}
+        >
             <a class="cdx-bucket-card-link" href={buildHref(item, depth)}>
                 <span
                     class={`cdx-badge cdx-badge--entity-${item.kind === 'enumeration' ? 'enum' : item.kind === 'injectable' ? 'injectable' : item.kind}`}
@@ -135,6 +142,109 @@ const KindSection = (
                 </a>
             </h2>
             <ul class="cdx-bucket-card-list">{items.map(i => KindCard(i, depth))}</ul>
+        </section>
+    ) as string;
+};
+
+/** Threshold above which the inline filter strip renders. Below this,
+ *  the page is short enough that filtering would be noise. */
+const FILTER_THRESHOLD = 15;
+
+const KindChip = (kind: string, count: number): string => {
+    const kindLabel = KIND_LABELS[kind as keyof typeof KIND_LABELS] ?? kind;
+    // Saturated entity-kind badge — direct chip-to-card colour mapping
+    // (the cards below carry the same `.cdx-badge--entity-<kind>` chip).
+    // Bucket landings use this convention to make the chip a one-to-one
+    // visual key for the card grid; the API Reference portal uses pastel
+    // letter-boxes instead because it lists every kind side-by-side.
+    const badgeKind = kind === 'enumeration' ? 'enum' : kind;
+    return (
+        <li>
+            <button
+                type="button"
+                class="cdx-bucket-landing-kind-chip"
+                data-cdx-bucket-landing-kind={kind}
+                aria-pressed="false"
+                title={kindLabel}
+            >
+                <span class={`cdx-badge cdx-badge--entity-${badgeKind}`}>{kindLabel}</span>
+                <span class="cdx-bucket-landing-kind-chip-count">{count}</span>
+            </button>
+        </li>
+    ) as string;
+};
+
+/** Ordered list of `(kind, count)` pairs present in this bucket, organised
+ *  with organism kinds first then type kinds (mirrors the section order). */
+const collectKindChips = (items: readonly BucketItem[]): Array<[string, number]> => {
+    const counts = new Map<string, number>();
+    for (const item of items) {
+        counts.set(item.kind, (counts.get(item.kind) ?? 0) + 1);
+    }
+    const ordered: Array<[string, number]> = [];
+    for (const k of [...ORGANISM_KINDS, ...TYPE_KINDS]) {
+        const n = counts.get(k);
+        if (n) {
+            ordered.push([k, n]);
+        }
+    }
+    return ordered;
+};
+
+const FilterBar = (bucket: string, items: readonly BucketItem[]): string => {
+    const chips = collectKindChips(items);
+    const placeholder = `${t('filter-entities')} (${bucket})`;
+    return (
+        <section
+            class="cdx-bucket-landing-filter"
+            data-cdx-bucket-landing-filter
+            aria-label={t('filter-entities')}
+        >
+            <div class="cdx-ref-filter-row cdx-ref-filter-row--primary">
+                <label class="cdx-bucket-landing-filter-label" for="cdx-bucket-landing-q">
+                    <span class="cdx-bucket-landing-filter-icon" aria-hidden="true">
+                        {IconSearch()}
+                    </span>
+                    <span class="sr-only">{t('filter-entities')}</span>
+                    <input
+                        id="cdx-bucket-landing-q"
+                        type="search"
+                        autocomplete="off"
+                        spellcheck="false"
+                        class="cdx-bucket-landing-filter-input"
+                        data-cdx-bucket-landing-input
+                        placeholder={placeholder}
+                    />
+                </label>
+                <button
+                    type="button"
+                    class="cdx-ref-reset"
+                    data-cdx-bucket-landing-reset
+                    aria-label={t('reset')}
+                >
+                    {t('reset')}
+                </button>
+            </div>
+            {chips.length > 1 && (
+                <ul
+                    class="cdx-bucket-landing-kind-chips"
+                    data-cdx-bucket-landing-kinds
+                    role="toolbar"
+                    aria-label={t('filter-entities')}
+                >
+                    {chips.map(([k, n]) => KindChip(k, n))}
+                </ul>
+            )}
+            <p class="cdx-bucket-landing-filter-empty" data-cdx-bucket-landing-empty hidden>
+                <span>{t('empty-search-title')}</span>
+                <button
+                    type="button"
+                    class="cdx-bucket-landing-filter-reset"
+                    data-cdx-bucket-landing-reset
+                >
+                    {t('reset')}
+                </button>
+            </p>
         </section>
     ) as string;
 };
@@ -196,6 +306,8 @@ export const BucketLandingPage = (data: any): string => {
                     <span class="cdx-badge cdx-badge--trait">{t('category')}</span>
                 </div>
             </div>
+
+            {items.length >= FILTER_THRESHOLD && FilterBar(bucket, items)}
 
             <div class="cdx-bucket-landing-content">
                 {KindSection(t('features'), organisms, depth, 'organisms')}
