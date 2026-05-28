@@ -200,6 +200,35 @@ interface SearchResult {
     readonly excerpt?: string;
 }
 
+/** Facet dimensions surfaced in the dropdown. `tier` distinguishes
+ *  Features (primary) from References (reference) so users can narrow to
+ *  curated entry points. Order matches the visual layout. */
+const FACET_DIMS = ['kind', 'lib', 'tier', 'wcag'] as const;
+type FacetDim = (typeof FACET_DIMS)[number];
+
+const FACET_LABELS: Record<FacetDim, string> = {
+    kind: 'Kind',
+    lib: 'Library',
+    tier: 'Tier',
+    wcag: 'WCAG'
+};
+
+const FACET_VALUE_LABELS: Record<FacetDim, Record<string, string>> = {
+    kind: {},
+    lib: {},
+    tier: { primary: 'Primary', reference: 'Reference' },
+    wcag: {}
+};
+
+/** Active filter state — per dimension, multi-select within (OR), AND
+ *  across dimensions. Mirrors Pagefind's filter API. */
+const activeFilters: Record<FacetDim, Set<string>> = {
+    kind: new Set(),
+    lib: new Set(),
+    tier: new Set(),
+    wcag: new Set()
+};
+
 let pagefind: any = null;
 let activeIndex = -1;
 let lastQuery = '';
@@ -215,6 +244,110 @@ const getList = (): HTMLElement | null => getDialog()?.querySelector(LIST_SELECT
 const getEmpty = (): HTMLElement | null => getDialog()?.querySelector(EMPTY_SELECTOR) ?? null;
 
 const getLoading = (): HTMLElement | null => getDialog()?.querySelector(LOADING_SELECTOR) ?? null;
+
+const getFacets = (): HTMLElement | null => getDialog()?.querySelector('.cdx-cp-facets') ?? null;
+
+/** Pagefind expects `filters: { kind: 'Component' | ['Component', 'Pipe'] }` —
+ *  single string when one value is selected in a dimension, array otherwise.
+ *  Empty dimensions are omitted entirely so they don't constrain the query. */
+const buildFiltersObj = (): Record<string, string | string[]> | undefined => {
+    const out: Record<string, string | string[]> = {};
+    let any = false;
+    for (const dim of FACET_DIMS) {
+        const values = Array.from(activeFilters[dim]);
+        if (values.length === 1) {
+            out[dim] = values[0];
+            any = true;
+        } else if (values.length > 1) {
+            out[dim] = values;
+            any = true;
+        }
+    }
+    return any ? out : undefined;
+};
+
+/** Serialize active filters + query into `?q=&kind=&lib=&tier=&wcag=`. Each
+ *  multi-value dimension uses comma-separated values (URL-encoded). Empty
+ *  dimensions omitted so the URL stays short. */
+const updateUrlFromState = () => {
+    const params = new URLSearchParams();
+    if (lastQuery) {
+        params.set('q', lastQuery);
+    }
+    for (const dim of FACET_DIMS) {
+        const values = Array.from(activeFilters[dim]);
+        if (values.length > 0) {
+            params.set(dim, values.join(','));
+        }
+    }
+    const query = params.toString();
+    const url = `${globalThis.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
+    history.replaceState(history.state, '', url);
+};
+
+/** Hydrate active filters + initial query from the current URL — called on
+ *  every `openCommandPalette()` so a user navigating into a deep-linked
+ *  search URL sees the same state. */
+const hydrateStateFromUrl = (): string => {
+    const params = new URLSearchParams(globalThis.location.search);
+    for (const dim of FACET_DIMS) {
+        activeFilters[dim].clear();
+        const raw = params.get(dim);
+        if (raw) {
+            for (const value of raw
+                .split(',')
+                .map(v => v.trim())
+                .filter(Boolean)) {
+                activeFilters[dim].add(value);
+            }
+        }
+    }
+    return params.get('q') ?? '';
+};
+
+/** Render the facet rail. Dimensions with 0 or 1 distinct value are
+ *  hidden — there's nothing to choose. Active chips stay visible even
+ *  when their count drops to 0 (so users can unselect from an empty
+ *  intersection). */
+const renderFacets = (counts: Record<string, Record<string, number>>) => {
+    const root = getFacets();
+    if (!root) {
+        return;
+    }
+    const groups: string[] = [];
+    for (const dim of FACET_DIMS) {
+        const dimCounts = counts[dim] ?? {};
+        const active = activeFilters[dim];
+        const values = new Set<string>([...Object.keys(dimCounts), ...active]);
+        if (values.size <= 1 && active.size === 0) {
+            continue;
+        }
+        const chips: string[] = [];
+        for (const value of [...values].sort()) {
+            const count = dimCounts[value] ?? 0;
+            const isActive = active.has(value);
+            const label = FACET_VALUE_LABELS[dim][value] ?? value;
+            chips.push(
+                `<button type="button" class="cdx-cp-facet-chip" data-dim="${escapeAttr(dim)}" data-value="${escapeAttr(value)}" data-active="${isActive}" aria-pressed="${isActive}">${escapeHtml(label)} <span class="cdx-cp-facet-count">${count}</span></button>`
+            );
+        }
+        groups.push(
+            `<div class="cdx-cp-facet-group"><span class="cdx-cp-facet-label">${escapeHtml(FACET_LABELS[dim])}</span>${chips.join('')}</div>`
+        );
+    }
+    const anyActive = FACET_DIMS.some(d => activeFilters[d].size > 0);
+    if (groups.length === 0) {
+        root.hidden = true;
+        root.innerHTML = '';
+        return;
+    }
+    root.hidden = false;
+    root.innerHTML =
+        groups.join('') +
+        (anyActive
+            ? `<button type="button" class="cdx-cp-facet-reset">Reset filters</button>`
+            : '');
+};
 
 /** Load Pagefind lazily */
 const loadPagefind = async (): Promise<any> => {
@@ -259,11 +392,19 @@ const search = async (query: string) => {
         return;
     }
 
-    if (!query.trim()) {
+    const hasFilters = FACET_DIMS.some(d => activeFilters[d].size > 0);
+
+    if (!query.trim() && !hasFilters) {
         list.innerHTML = '';
         empty.hidden = false;
         empty.textContent = 'Start typing to see results';
+        const facetsRoot = getFacets();
+        if (facetsRoot) {
+            facetsRoot.hidden = true;
+            facetsRoot.innerHTML = '';
+        }
         activeIndex = -1;
+        updateUrlFromState();
         return;
     }
 
@@ -275,8 +416,17 @@ const search = async (query: string) => {
     }
 
     const maxResults = (window as any).MAX_SEARCH_RESULTS ?? 15;
-    const results = await pf.search(query);
-    const sliced = results.results.slice(0, maxResults);
+    const filtersObj = buildFiltersObj();
+    // Pagefind 1.0+ accepts `{ filters }` as the second argument; passing
+    // `undefined` is the same as omitting the option, so the unfiltered
+    // path stays cache-friendly.
+    const searchOptions = filtersObj ? { filters: filtersObj } : undefined;
+    // Empty query + active filters → Pagefind supports `null` for the
+    // query in filter-only mode; falls back to listing all matching pages.
+    const queryArg = query.trim() ? query : null;
+    const results = await pf.search(queryArg, searchOptions);
+    renderFacets((results?.filters ?? {}) as Record<string, Record<string, number>>);
+    const sliced = (results?.results ?? []).slice(0, maxResults);
     const data = await Promise.all(sliced.map((r: any) => r.data()));
 
     const mapped: SearchResult[] = data.map((d: any) => {
@@ -402,9 +552,12 @@ export const openCommandPalette = () => {
         return;
     }
     dialog.showModal();
+    // Hydrate filters + initial query from the current URL — supports
+    // deep links of the form `?q=toast&kind=Component`.
+    const initialQuery = hydrateStateFromUrl();
     const input = getInput();
     if (input) {
-        input.value = '';
+        input.value = initialQuery;
         input.focus();
     }
     const list = getList();
@@ -417,10 +570,15 @@ export const openCommandPalette = () => {
         empty.textContent = 'Start typing to see results';
     }
     activeIndex = -1;
-    lastQuery = '';
+    lastQuery = initialQuery;
 
     // Lazy-load Pagefind on first open
-    loadPagefind();
+    loadPagefind().then(() => {
+        const hasFilters = FACET_DIMS.some(d => activeFilters[d].size > 0);
+        if (initialQuery || hasFilters) {
+            search(initialQuery);
+        }
+    });
 };
 
 /** Close the command palette */
@@ -475,6 +633,7 @@ export const initCommandPalette = () => {
                 return;
             }
             lastQuery = q;
+            updateUrlFromState();
 
             clearTimeout(throttleTimer);
             throttleTimer = setTimeout(() => search(q), THROTTLE_MS);
@@ -498,6 +657,42 @@ export const initCommandPalette = () => {
                     // Let native dialog handle it
                     break;
             }
+        });
+    }
+
+    // Facet chip + reset interactions
+    const facets = getFacets();
+    if (facets) {
+        facets.addEventListener('click', e => {
+            const reset = (e.target as HTMLElement).closest<HTMLButtonElement>(
+                '.cdx-cp-facet-reset'
+            );
+            if (reset) {
+                e.preventDefault();
+                for (const dim of FACET_DIMS) {
+                    activeFilters[dim].clear();
+                }
+                updateUrlFromState();
+                search(lastQuery);
+                return;
+            }
+            const chip = (e.target as HTMLElement).closest<HTMLButtonElement>('.cdx-cp-facet-chip');
+            if (!chip) {
+                return;
+            }
+            e.preventDefault();
+            const dim = chip.dataset.dim as FacetDim | undefined;
+            const value = chip.dataset.value;
+            if (!dim || !value || !(dim in activeFilters)) {
+                return;
+            }
+            if (activeFilters[dim].has(value)) {
+                activeFilters[dim].delete(value);
+            } else {
+                activeFilters[dim].add(value);
+            }
+            updateUrlFromState();
+            search(lastQuery);
         });
     }
 

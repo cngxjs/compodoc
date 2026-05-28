@@ -155,15 +155,93 @@
 .cdx-cp .cdx-cp-kind:not(.cdx-badge) {
     padding: 0.125rem 0.5rem;
     border-radius: var(--radius-cdx-sm);
-    background: color-mix(in srgb, var(--color-cdx-text-muted) 12%, transparent);
+    background: color-mix(
+        in srgb,
+        var(--color-cdx-text-muted) 12%,
+        transparent
+    );
     color: var(--color-cdx-text-muted);
-    border: 1px solid color-mix(in srgb, var(--color-cdx-text-muted) 22%, transparent);
+    border: 1px solid
+        color-mix(in srgb, var(--color-cdx-text-muted) 22%, transparent);
 }
 
 .cdx-cp .cdx-cp-highlight {
     color: var(--color-cdx-primary);
     background: transparent;
     font-weight: 600;
+}
+
+/*  Facet rail (filter chips above results) 
+   Sits between the header and the results body. Hidden when no
+   dimension has >1 distinct value (set via the `hidden` attribute
+   from command-palette.ts). */
+.cdx-cp .cdx-cp-facets {
+    @apply flex flex-col gap-2 px-3 py-2;
+    border-bottom: 1px solid var(--color-cdx-border);
+}
+
+.cdx-cp .cdx-cp-facets[hidden] {
+    display: none;
+}
+
+.cdx-cp .cdx-cp-facet-group {
+    @apply flex flex-wrap items-center gap-1.5;
+}
+
+.cdx-cp .cdx-cp-facet-label {
+    @apply mr-1 text-xs uppercase;
+    color: var(--color-cdx-text-muted);
+    font-family: var(--font-body);
+    letter-spacing: 0.04em;
+}
+
+.cdx-cp .cdx-cp-facet-chip {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs;
+    border: 1px solid var(--color-cdx-border);
+    border-radius: 9999px;
+    background: transparent;
+    color: var(--color-cdx-text-secondary);
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition:
+        background var(--cdx-transition-fast),
+        color var(--cdx-transition-fast),
+        border-color var(--cdx-transition-fast);
+}
+
+.cdx-cp .cdx-cp-facet-chip:hover {
+    background: color-mix(in srgb, var(--color-cdx-primary) 8%, transparent);
+    color: var(--color-cdx-text);
+}
+
+.cdx-cp .cdx-cp-facet-chip[data-active="true"] {
+    background: var(--color-cdx-primary);
+    color: var(--color-cdx-text-inverse, white);
+    border-color: var(--color-cdx-primary);
+}
+
+.cdx-cp .cdx-cp-facet-count {
+    @apply text-xs;
+    color: inherit;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+}
+
+.cdx-cp .cdx-cp-facet-chip[data-active="true"] .cdx-cp-facet-count {
+    opacity: 0.9;
+}
+
+.cdx-cp .cdx-cp-facet-reset {
+    @apply self-start px-2 py-0.5 text-xs;
+    border: none;
+    background: none;
+    color: var(--color-cdx-text-muted);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.cdx-cp .cdx-cp-facet-reset:hover {
+    color: var(--color-cdx-text);
 }
 
 .cdx-cp .cdx-cp-empty,

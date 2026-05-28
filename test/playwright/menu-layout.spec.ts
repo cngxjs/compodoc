@@ -189,6 +189,97 @@ test.describe('menuLayout: "feature" sidebar', () => {
         await expect(row).toBeInViewport();
     });
 
+    test('sidebar bucket label navigates to the auto-generated landing page', async ({ page }) => {
+        // Two-hit-zone contract: clicking the LABEL (an <a>) goes to
+        // `categories/<bucket>.html`; the chevron toggle stays a button.
+        // Both share the row but are distinct hit zones.
+        const features = page.locator('#features-links');
+        const labels = features.locator('a.cdx-bucket-label');
+        await expect(labels.first()).toBeAttached();
+        const href = await labels.first().getAttribute('href');
+        // The SPA router may prefix sidebar links with `./` at runtime;
+        // accept either form so the test is depth-resilient.
+        expect(href).toMatch(/^(?:\.\/)?categories\/[^"]+\.html$/);
+
+        // Navigate directly (the bucket may be collapsed in the sidebar).
+        await page.goto(href!);
+        await page.waitForLoadState('domcontentloaded');
+        await expect(page.locator('.cdx-entity-hero')).toBeVisible();
+        await expect(page.locator('.cdx-bucket-landing-content')).toBeVisible();
+    });
+
+    test('bucket landing page groups members by kind into card lists', async ({ page }) => {
+        // admin-settings bundles a service + multiple components — every
+        // landing page emits an "Organisms" section for components/etc.
+        // and a "References" section for interfaces/functions/types.
+        await page.goto('/categories/features/admin-settings.html');
+        await page.waitForLoadState('domcontentloaded');
+        // Buckets may render one or two card lists (Organisms / References),
+        // depending on which kinds the bucket holds. At least one must exist.
+        expect(await page.locator('.cdx-bucket-card-list').count()).toBeGreaterThan(0);
+        const cards = page.locator('.cdx-bucket-card');
+        expect(await cards.count()).toBeGreaterThan(0);
+        // Cards link out to per-kind detail pages and carry a kind chip.
+        const firstCard = cards.first();
+        await expect(firstCard.locator('.cdx-badge')).toBeAttached();
+        await expect(firstCard.locator('.cdx-bucket-card-name')).toBeAttached();
+        const linkHref = await firstCard.locator('a.cdx-bucket-card-link').getAttribute('href');
+        expect(linkHref).toMatch(/(?:components|directives|pipes|injectables|classes|guards|interceptors|entities|interfaces|miscellaneous)\/[A-Za-z0-9_-]+\.html$/);
+    });
+
+    test('intermediate bucket landings aggregate items from every descendant leaf', async ({
+        page
+    }) => {
+        // `users` is an intermediate folder containing `users/components`.
+        // Its landing page should list every descendant entity, not zero.
+        await page.goto('/categories/users.html');
+        await page.waitForLoadState('domcontentloaded');
+        const cards = page.locator('.cdx-bucket-card');
+        expect(await cards.count()).toBeGreaterThan(0);
+    });
+
+    test('entity hero exposes data-pagefind-filter attributes for the facet UI', async ({
+        page
+    }) => {
+        // Filter attrs are emitted as a hidden span next to the meta block
+        // on every entity hero. They drive the command-palette facet rail
+        // (kind / lib / bucket / tier / wcag).
+        await page.goto('/components/DashboardComponent.html');
+        await page.waitForLoadState('domcontentloaded');
+        const filterSpan = page
+            .locator('.cdx-entity-hero')
+            .first()
+            .locator('span[data-pagefind-filter]');
+        await expect(filterSpan).toHaveCount(1);
+        const attr = await filterSpan.getAttribute('data-pagefind-filter');
+        expect(attr).toContain('kind:Component');
+        // Multi-attribute form must also be present so Pagefind treats
+        // each dimension as a separate facet.
+        await expect(filterSpan).toHaveAttribute('data-pagefind-filter-kind', 'Component');
+    });
+
+    test('WCAG chip + Accessibility section render when @wcag and @a11y tags are present', async ({
+        page
+    }) => {
+        // The standalone fixture's LoadingSpinnerComponent declares
+        // `@wcag AA` + `@a11y ...`. Chip lands in the entity-hero badge row;
+        // note renders as a section above the description.
+        await page.goto('/components/LoadingSpinnerComponent.html');
+        await page.waitForLoadState('domcontentloaded');
+        const chip = page.locator('.cdx-entity-hero .cdx-badge--wcag-aa');
+        await expect(chip).toHaveCount(1);
+        await expect(chip).toContainText('WCAG AA');
+        await expect(chip).toHaveAttribute('data-cdx-wcag', 'AA');
+
+        const note = page.locator('.cdx-a11y-note');
+        await expect(note).toHaveCount(1);
+        await expect(note.locator('.cdx-section-heading')).toContainText('Accessibility');
+        // Markdown rendering: inline code spans (role="status", aria-live,
+        // aria-label, prefers-reduced-motion). Exact count varies by fixture,
+        // assert "at least one" so the spec stays decoupled from the prose.
+        expect(await note.locator('.cdx-a11y-note-body code').count()).toBeGreaterThan(0);
+    });
+
     test('cdx-chip[href] has hover + focus affordance', async ({ page }) => {
         // Any rendered chip with an href should have cursor:pointer per the v0.6.0 affordance.
         await page.goto('/miscellaneous/functions/provideUserFeature.html');
