@@ -1,4 +1,4 @@
-/* API Reference portal — `references.html`. Single-page filter UI for
+/* API Reference portal (`references.html`). Single-page filter UI for
  * the exhaustive symbol surface under `menuLayout: 'feature'`.
  *
  * Visual model mirrors angular.dev/api:
@@ -61,7 +61,7 @@
     pointer-events: none;
 }
 
-/* --- Filter bar (no card chrome, not sticky — scrolls with content) --- */
+/* --- Filter bar (no card chrome, not sticky, scrolls with content) --- */
 
 .cdx-ref-filter-bar {
     display: flex;
@@ -227,11 +227,11 @@
 }
 
 /* --- Kind chips (two-tone: transparent outer + pastel letter-box) ---
- * Outer chip has no fill — just a thin border + label. The pastel
+ * Outer chip has no fill, just a thin border + label. The pastel
  * letter-box on the left carries the kind colour as an 8% tint. Reads
  * as ~32px tall (4+20+4+8px label = light footprint). */
 
-/* Border is transparent in the resting state — the pastel letter-box
+/* Border is transparent in the resting state; the pastel letter-box
  * + label is enough to read the chip. Hover reveals a subtle border as
  * the affordance cue. Active / inactive states are carried by opacity,
  * not by border thickness, so the toggle reads regardless of hover. */
@@ -308,7 +308,7 @@
     --cdx-ref-kind-color: var(--color-cdx-entity-service);
 }
 .cdx-ref-kind-icon--token {
-    /* Slate-blue — visually adjacent to Injectable (warm brown) but
+    /* Slate-blue, visually adjacent to Injectable (warm brown) but
      * distinct, and clearly different from Interface's dark grey. */
     --cdx-ref-kind-color: var(--color-cdx-entity-token, #475569);
 }
@@ -358,7 +358,45 @@
     display: none;
 }
 
-/* Bucket headers reuse `cdx-section-heading` verbatim — same 13px
+/* Sticky bucket headings.
+ *
+ * The double-class selector beats the
+ * `.cdx-content-section:first-child > .cdx-section-heading` rule in
+ * content-sections.css, so the first bucket pins with the same chrome
+ * as the rest.
+ *
+ * `--cdx-app-header-height` lets host sites with a fixed top bar push
+ * the pin point down. Default 0 pins flush. */
+.cdx-ref-bucket-section.cdx-content-section > .cdx-section-heading {
+    position: sticky;
+    /* `.content` has `padding-top: 0.5rem`. Sticky pins at the
+     * content-box top, so bare `top: 0` lands 0.5rem below the
+     * viewport edge. */
+    top: calc(var(--cdx-app-header-height, 0px) - 0.5rem);
+    /* Above cards, below topbar (20), preview (20), command palette
+     * (1000+). */
+    z-index: 5;
+    /* Opaque so cards don't bleed through. `--color-cdx-bg` swaps in
+     * dark mode on its own. */
+    background: var(--color-cdx-bg);
+    /* The flex gap on `.cdx-ref-bucket-list` carries section spacing,
+     * so the heading is a slim band. */
+    margin-top: 0;
+    padding-block: var(--spacing-cdx-sm);
+    border-top: none;
+    border-bottom: 1px solid var(--color-cdx-border-subtle, var(--color-cdx-border));
+    /* Without this, `#cdx-ref-bucket-foo` jumps hide the first card
+     * under the pinned heading. */
+    scroll-margin-top: var(--cdx-app-header-height, 0);
+}
+
+@media print {
+    .cdx-ref-bucket-section.cdx-content-section > .cdx-section-heading {
+        position: static;
+    }
+}
+
+/* Bucket headers reuse `cdx-section-heading` verbatim, same 13px
  * uppercase muted typography as IMPORT / DESCRIPTION on entity pages,
  * same `.cdx-member-permalink` hover-#-link affordance. Inline count
  * sits next to the bucket name and opts out of the uppercase
@@ -375,7 +413,7 @@
 
 /* --- Item rows --- */
 
-/* Container query — the column count tracks the content column's
+/* Container query. The column count tracks the content column's
  * width, NOT the viewport's. The portal lives inside `.content` which
  * has its own padding + responsive width, so `@media` rules would
  * misfire (wide viewports with a fixed-width sidebar still produce a
@@ -387,26 +425,31 @@
 }
 
 /* Auto-fill grid: rows wrap naturally on narrow widths. Row gap is
- * minimal — rows already carry their own breathing via the link's
+ * minimal; rows already carry their own breathing via the link's
  * vertical padding. */
 .cdx-ref-item-list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
+    /* `1fr` resolves to `minmax(auto, 1fr)`, which lets a track grow
+     * past its share for long symbol names and defeats the
+     * `text-overflow: ellipsis` rule below. `minmax(0, 1fr)` clamps
+     * the floor so names truncate. Same fix in the two `@container`
+     * overrides. */
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 0 var(--spacing-cdx-lg);
 }
 
 @container cdx-ref (min-width: 700px) {
     .cdx-ref-item-list {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
 @container cdx-ref (min-width: 1000px) {
     .cdx-ref-item-list {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
@@ -421,7 +464,7 @@
     display: none;
 }
 
-/* Item rows pack tight — `min-height: 36px` sits between the chip's
+/* Item rows pack tight; `min-height: 36px` sits between the chip's
  * 32px and the filter-bar's 40px so the list reads dense but the
  * pastel letter-box keeps a comfortable touch target. */
 .cdx-ref-item-link {
