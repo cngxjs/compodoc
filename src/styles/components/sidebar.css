@@ -162,6 +162,57 @@
 
 /* Menu styles */
 
+/* Bucket two-hit-zone (menuLayout: 'feature') — label is a real <a> link
+ * to the auto-generated `categories/<bucket>.html` landing page, chevron
+ * stays a button that toggles expand. Visually one row; click semantics
+ * are split so reader can navigate vs. expand independently. */
+.cdx-bucket-row {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+}
+
+.cdx-bucket-label {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-xs);
+    min-width: 0;
+    padding-right: var(--spacing-cdx-xs);
+    color: inherit;
+    text-decoration: none;
+}
+
+.cdx-bucket-label:hover .link-name,
+.cdx-bucket-label:focus-visible .link-name {
+    text-decoration: underline;
+}
+
+.cdx-bucket-label:focus-visible {
+    outline: 2px solid var(--color-cdx-focus-ring, var(--color-cdx-primary));
+    outline-offset: -2px;
+    border-radius: var(--radius-cdx-sm);
+}
+
+.cdx-bucket-toggle {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacing-cdx-sm);
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.cdx-bucket-toggle:focus-visible {
+    outline: 2px solid var(--color-cdx-focus-ring, var(--color-cdx-primary));
+    outline-offset: -2px;
+    border-radius: var(--radius-cdx-sm);
+}
+
 .menu ul.list li:not(.copyright) a:hover {
     background: var(--color-cdx-bg-alt);
     box-shadow: inset 3px 0 0 var(--color-cdx-primary-subtle);
@@ -477,7 +528,7 @@ button.menu-toggler:focus-visible {
     }
 }
 
-/* ─── Feature layout — per-kind icon next to each entity name ─── */
+/* Feature layout — per-kind icon next to each entity name  */
 
 /* Force the anchor into a flex row so the kind icon, name, and trailing
    badges line up. The default `.link a` rule above only applies to module

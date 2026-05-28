@@ -16,6 +16,7 @@
 
 export const PAGE_LEVEL_OVERRIDES: readonly string[] = [
     'additional-page',
+    'bucket-landing',
     'class',
     'component',
     'coverage-report',

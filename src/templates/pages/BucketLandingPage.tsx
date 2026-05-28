@@ -1,0 +1,204 @@
+import Html from '@kitajs/html';
+import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
+import { IconFolder } from '../components/Icons';
+import {
+    deriveLibFromBucket,
+    firstSentence,
+    KIND_LABELS,
+    pagefindFilterBlock,
+    pagefindMetaBlock,
+    relativeUrl,
+    t
+} from '../helpers';
+
+/**
+ * Auto-generated landing page for one `@category` bucket under
+ * `menuLayout: 'feature'`. Lists every public symbol that lives in the
+ * bucket, grouped into:
+ *   - "Organisms" — `PRIMARY_KINDS` (components, directives, pipes,
+ *     injectables, classes, guards, interceptors, entities). Curated set
+ *     surfaced under the Features sidebar chapter.
+ *   - "Types" — reference kinds (interfaces, functions, type aliases,
+ *     variables, enumerations). Exhaustive surface under the References
+ *     sidebar chapter.
+ *
+ * URL: `categories/<bucket-id>.html` (bucket path may contain `/`, which
+ * becomes a nested directory). The same URL is linked from both Features
+ * and References sidebar bucket-labels.
+ */
+
+const ORGANISM_KINDS = [
+    'component',
+    'directive',
+    'pipe',
+    'injectable',
+    'class',
+    'guard',
+    'interceptor',
+    'entity'
+] as const;
+
+const TYPE_KINDS = ['interface', 'function', 'typealias', 'variable', 'enumeration'] as const;
+
+interface BucketItem {
+    readonly name: string;
+    readonly kind: string;
+    readonly description?: string;
+    readonly file?: string;
+    readonly category?: string;
+}
+
+interface BucketLandingData {
+    readonly bucket: string;
+    readonly segments: readonly string[];
+    readonly depth: number;
+    readonly items: readonly BucketItem[];
+    readonly aiGenerated?: string | true;
+}
+
+/** Map an entity kind to the URL-path prefix where its detail page lives.
+ *  Mirrors the `path:` field on `Configuration.addPage()` calls in the
+ *  per-kind page generators. */
+const KIND_HREF_PREFIX: Record<string, string> = {
+    component: 'components',
+    directive: 'directives',
+    pipe: 'pipes',
+    injectable: 'injectables',
+    class: 'classes',
+    guard: 'guards',
+    interceptor: 'interceptors',
+    entity: 'entities',
+    interface: 'interfaces'
+};
+
+/** Anchor-kinds use a two-stage href: `@category`-tagged entries land on
+ *  their dedicated detail page, untagged stay as inline anchors on the
+ *  shared collection page. Buckets only render the tagged path (untagged
+ *  items don't belong to any bucket by definition). */
+const MISC_PLURAL: Record<string, string> = {
+    function: 'functions',
+    variable: 'variables',
+    typealias: 'typealiases',
+    enumeration: 'enumerations'
+};
+
+const buildHref = (item: BucketItem, depth: number): string => {
+    const base = relativeUrl(depth);
+    const kind = item.kind;
+    if (kind in KIND_HREF_PREFIX) {
+        return `${base}${KIND_HREF_PREFIX[kind]}/${item.name}.html`;
+    }
+    if (kind in MISC_PLURAL) {
+        // Bucket landings only ever include `@category`-tagged misc items,
+        // so the dedicated detail-page form is always correct.
+        return `${base}miscellaneous/${MISC_PLURAL[kind]}/${item.name}.html`;
+    }
+    return `${base}${item.name}.html`;
+};
+
+const KindCard = (item: BucketItem, depth: number): string => {
+    const excerpt = firstSentence(item.description) ?? '';
+    const kindLabel = KIND_LABELS[item.kind as keyof typeof KIND_LABELS] ?? item.kind;
+    return (
+        <li class="cdx-bucket-card" data-cdx-kind={item.kind}>
+            <a class="cdx-bucket-card-link" href={buildHref(item, depth)}>
+                <span
+                    class={`cdx-badge cdx-badge--entity-${item.kind === 'enumeration' ? 'enum' : item.kind === 'injectable' ? 'injectable' : item.kind}`}
+                >
+                    {kindLabel}
+                </span>
+                <span class="cdx-bucket-card-name">{item.name}</span>
+                {excerpt && <span class="cdx-bucket-card-desc">{excerpt}</span>}
+            </a>
+        </li>
+    ) as string;
+};
+
+const KindSection = (
+    title: string,
+    items: readonly BucketItem[],
+    depth: number,
+    sectionId: string
+): string => {
+    if (items.length === 0) {
+        return '';
+    }
+    return (
+        <section class="cdx-content-section" id={sectionId}>
+            <h2 class="cdx-section-heading">
+                {title}
+                <span class="cdx-badge cdx-badge--count">{items.length}</span>
+                <a class="cdx-member-permalink" href={`#${sectionId}`}>
+                    #
+                </a>
+            </h2>
+            <ul class="cdx-bucket-card-list">{items.map(i => KindCard(i, depth))}</ul>
+        </section>
+    ) as string;
+};
+
+/**
+ * Top-level page renderer. `data` follows the standard page-data shape
+ * (mainData ∪ page); the page-specific payload arrives as
+ * `data.bucketLanding`.
+ */
+export const BucketLandingPage = (data: any): string => {
+    const custom = renderCustomTemplate('bucket-landing', data);
+    if (custom !== null) {
+        return custom;
+    }
+    const payload = data.bucketLanding as BucketLandingData;
+    if (!payload) {
+        return '';
+    }
+    const { bucket, segments, depth, items } = payload;
+    const organisms = items.filter(i => (ORGANISM_KINDS as readonly string[]).includes(i.kind));
+    const types = items.filter(i => (TYPE_KINDS as readonly string[]).includes(i.kind));
+
+    const searchMeta = pagefindMetaBlock({
+        category: bucket,
+        description: items
+            .map(i => firstSentence(i.description))
+            .filter(Boolean)
+            .slice(0, 3)
+            .join(' · ')
+    });
+    const searchFilters = pagefindFilterBlock({
+        kind: 'Bucket',
+        lib: deriveLibFromBucket(bucket),
+        bucket,
+        docsKind: 'primary'
+    });
+
+    return (
+        <>
+            <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-text-secondary)">
+                {searchMeta}
+                {searchFilters}
+                <div class="cdx-entity-hero-watermark" aria-hidden="true">
+                    {IconFolder()}
+                </div>
+                <nav aria-label="Breadcrumb">
+                    <ol class="cdx-breadcrumb">
+                        <li>{t('categories')}</li>
+                        {segments.slice(0, -1).map(seg => (
+                            <li>{seg}</li>
+                        ))}
+                        <li aria-current="page">{segments.at(-1)}</li>
+                    </ol>
+                </nav>
+                <h1 class="cdx-entity-hero-name">
+                    <span>{bucket}</span>
+                </h1>
+                <div class="cdx-entity-hero-badges">
+                    <span class="cdx-badge cdx-badge--trait">{t('category')}</span>
+                </div>
+            </div>
+
+            <div class="cdx-bucket-landing-content">
+                {KindSection(t('features'), organisms, depth, 'organisms')}
+                {KindSection(t('references'), types, depth, 'types')}
+            </div>
+        </>
+    ) as string;
+};

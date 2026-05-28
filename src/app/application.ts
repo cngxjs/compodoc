@@ -23,6 +23,7 @@ import {
     AdditionalPageGenerator,
     AppConfigPageGenerator,
     AssetCopier,
+    BucketLandingPageGenerator,
     ClassPageGenerator,
     ComponentPageGenerator,
     CoveragePageGenerator,
@@ -80,6 +81,7 @@ export class Application {
     private readonly componentPageGenerator: ComponentPageGenerator;
     private readonly modulePageGenerator: ModulePageGenerator;
     private readonly miscellaneousPageGenerator: MiscellaneousPageGenerator;
+    private readonly bucketLandingPageGenerator: BucketLandingPageGenerator;
     private readonly appConfigPageGenerator: AppConfigPageGenerator;
     private readonly routesPageGenerator: RoutesPageGenerator;
     private readonly overviewPageGenerator: OverviewPageGenerator;
@@ -123,6 +125,7 @@ export class Application {
         this.componentPageGenerator = new ComponentPageGenerator(this.navTabs);
         this.modulePageGenerator = new ModulePageGenerator(this.navTabs);
         this.miscellaneousPageGenerator = new MiscellaneousPageGenerator();
+        this.bucketLandingPageGenerator = new BucketLandingPageGenerator();
         this.appConfigPageGenerator = new AppConfigPageGenerator();
         this.routesPageGenerator = new RoutesPageGenerator();
         this.overviewPageGenerator = new OverviewPageGenerator();
@@ -517,6 +520,8 @@ export class Application {
             actions.push(() => this.miscellaneousPageGenerator.prepare());
         }
 
+        actions.push(() => this.bucketLandingPageGenerator.prepare());
+
         if (!Configuration.mainData.disableCoverage) {
             actions.push(() => this.coveragePageGenerator.prepareDocumentation());
         }
@@ -693,6 +698,10 @@ export class Application {
                 return this.miscellaneousPageGenerator.prepare();
             });
         }
+
+        actions.push(() => {
+            return this.bucketLandingPageGenerator.prepare();
+        });
 
         if (!Configuration.mainData.disableCoverage) {
             actions.push(() => {

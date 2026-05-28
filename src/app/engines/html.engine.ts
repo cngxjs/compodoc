@@ -4,6 +4,7 @@ import { Menu } from '../../templates/components/Menu';
 import { Layout } from '../../templates/Layout';
 import { AdditionalPage } from '../../templates/pages/AdditionalPage';
 import { AppConfigPage } from '../../templates/pages/AppConfigPage';
+import { BucketLandingPage } from '../../templates/pages/BucketLandingPage';
 import { ClassPage } from '../../templates/pages/ClassPage';
 import { ComponentPage } from '../../templates/pages/ComponentPage';
 import { CoverageReport } from '../../templates/pages/CoverageReport';
@@ -69,7 +70,8 @@ const CONTEXT_TEMPLATE_MAP: Record<string, string> = {
     'miscellaneous-enumeration': 'miscellaneous-enumeration',
     coverage: 'coverage-report',
     'unit-test': 'unit-test-report',
-    'additional-page': 'additional-page'
+    'additional-page': 'additional-page',
+    'bucket-landing': 'bucket-landing'
 };
 
 export class HtmlEngine {
@@ -166,6 +168,8 @@ export class HtmlEngine {
                 return ComponentPage(data);
             case 'app-config':
                 return AppConfigPage(data);
+            case 'bucket-landing':
+                return BucketLandingPage(data);
             default:
                 return '';
         }

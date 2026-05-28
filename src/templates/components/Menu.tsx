@@ -306,7 +306,18 @@ const FeatureEntityLink = (item: EntityWithKind, defaultTab?: 'api'): string =>
         </li>
     ) as string;
 
-/** Recursive tree node for the cross-kind feature layout. */
+/** Recursive tree node for the cross-kind feature layout.
+ *
+ *  Two-hit-zone row: clicking the LABEL navigates to the auto-generated
+ *  bucket landing page (`categories/<fullPath>.html`); clicking the
+ *  CHEVRON toggles expand. The `<a>` carries an explicit
+ *  `data-cdx-bucket-label` so the client-side collapse handler skips it
+ *  (otherwise the toggle would steal navigation clicks).
+ *
+ *  The bucket landing page exists for EVERY non-empty node — leaves and
+ *  intermediate folders alike — so any label that renders here is
+ *  guaranteed to resolve.
+ */
 const FeatureGroupTree = (props: {
     node: GroupNode;
     depth: number;
@@ -320,24 +331,38 @@ const FeatureGroupTree = (props: {
     }
     const id = `${props.idPrefix}${props.node.fullPath}`;
     const startExpanded = !isCollapsedAll() && props.depth < props.groupDepth;
+    const labelHref = `categories/${props.node.fullPath}.html`;
+    const labelText = props.node.name.charAt(0).toUpperCase() + props.node.name.slice(1);
     return (
-        <li class="chapter inner" style={`--depth: ${props.depth}`}>
-            <button
-                class="simple menu-toggler"
-                type="button"
-                data-cdx-toggle="collapse"
-                data-cdx-target={`#${id}`}
-                aria-expanded={startExpanded ? 'true' : 'false'}
-                aria-controls={id}
-            >
-                <span class="link-name">
-                    {props.node.name.charAt(0).toUpperCase() + props.node.name.slice(1)}
-                </span>
-                {props.node.items.length > 0 && (
-                    <span class="cdx-badge cdx-badge--count">{props.node.items.length}</span>
-                )}
-                {IconChevronRight('cdx-chevron')}
-            </button>
+        <li
+            class="chapter inner cdx-feature-bucket"
+            style={`--depth: ${props.depth}`}
+            data-cdx-bucket={props.node.fullPath}
+        >
+            <div class="cdx-bucket-row">
+                <a
+                    class="cdx-bucket-label"
+                    href={labelHref}
+                    data-cdx-bucket-label="true"
+                    data-type="chapter-link"
+                >
+                    <span class="link-name">{labelText}</span>
+                    {props.node.items.length > 0 && (
+                        <span class="cdx-badge cdx-badge--count">{props.node.items.length}</span>
+                    )}
+                </a>
+                <button
+                    class="simple menu-toggler cdx-bucket-toggle"
+                    type="button"
+                    data-cdx-toggle="collapse"
+                    data-cdx-target={`#${id}`}
+                    aria-expanded={startExpanded ? 'true' : 'false'}
+                    aria-controls={id}
+                    aria-label={`Toggle ${labelText} group`}
+                >
+                    {IconChevronRight('cdx-chevron')}
+                </button>
+            </div>
             <ul class={`links collapse${startExpanded ? ' in' : ''}`} id={id}>
                 {props.node.children.map(child =>
                     FeatureGroupTree({
