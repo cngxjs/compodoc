@@ -276,9 +276,11 @@ Stable contract for `--templates`. Data shapes documented inline in the correspo
 
 ### Page-level
 
-`overview`, `markdown`, `modules`, `module`, `component`, `component-detail`, `controller`, `entity`, `directive`, `injectable`, `interceptor`, `guard`, `pipe`, `class`, `interface`, `routes`, `miscellaneous-functions`, `miscellaneous-variables`, `miscellaneous-typealiases`, `miscellaneous-enumerations`, `miscellaneous-function`, `miscellaneous-variable`, `miscellaneous-typealias`, `miscellaneous-enumeration`, `additional-page`, `package-dependencies`, `package-properties`, `coverage-report`, `unit-test-report`, `menu`, `app-config`
+`overview`, `markdown`, `modules`, `module`, `component`, `component-detail`, `controller`, `entity`, `directive`, `injectable`, `interceptor`, `guard`, `pipe`, `class`, `interface`, `routes`, `miscellaneous-functions`, `miscellaneous-variables`, `miscellaneous-typealiases`, `miscellaneous-enumerations`, `miscellaneous-function`, `miscellaneous-variable`, `miscellaneous-typealias`, `miscellaneous-enumeration`, `additional-page`, `package-dependencies`, `package-properties`, `coverage-report`, `unit-test-report`, `menu`, `app-config`, `bucket-landing`
 
 The four singular miscellaneous contexts (`miscellaneous-function`, `miscellaneous-variable`, `miscellaneous-typealias`, `miscellaneous-enumeration`) target the per-entity detail page generated when a function, variable, type alias, or enumeration carries an `@category` JSDoc tag. The plural contexts continue to drive the shared collection page.
+
+The `bucket-landing` context (v0.6.0+) targets the auto-generated `categories/<bucket-id>.html` pages emitted under `menuLayout: 'feature'`. Data: `data.bucketLanding = { bucket: string, segments: string[], depth: number, items: EntityWithKind[] }`. Both leaf and intermediate folder nodes get pages; intermediate buckets aggregate items from every descendant leaf.
 
 ### Block-level
 
