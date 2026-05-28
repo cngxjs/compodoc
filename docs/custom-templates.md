@@ -54,6 +54,7 @@ These file names correspond to page contexts. Place them in `partials/` inside y
 | `class.js` | Class detail |
 | `interface.js` | Interface detail |
 | `entity.js` | Entity detail |
+| `token.js` | `InjectionToken` / `HttpContextToken` detail page at `tokens/<name>.html` (v0.6.0+) |
 | `routes.js` | Routes page |
 | `markdown.js` | Markdown pages (readme, changelog, etc.) |
 | `additional-page.js` | Additional documentation pages |
@@ -61,11 +62,19 @@ These file names correspond to page contexts. Place them in `partials/` inside y
 | `unit-test-report.js` | Unit test coverage report |
 | `package-dependencies.js` | Package dependencies page |
 | `package-properties.js` | Package properties page |
-| `miscellaneous-functions.js` | Miscellaneous functions |
-| `miscellaneous-variables.js` | Miscellaneous variables |
-| `miscellaneous-typealiases.js` | Miscellaneous type aliases |
-| `miscellaneous-enumerations.js` | Miscellaneous enumerations |
-| `menu.js` | Sidebar navigation menu |
+| `miscellaneous-functions.js` | Miscellaneous functions collection page |
+| `miscellaneous-variables.js` | Miscellaneous variables collection page |
+| `miscellaneous-typealiases.js` | Miscellaneous type aliases collection page |
+| `miscellaneous-enumerations.js` | Miscellaneous enumerations collection page |
+| `miscellaneous-function.js` | Per-entity detail page for an `@category`-tagged function (v0.5.0+) |
+| `miscellaneous-variable.js` | Per-entity detail page for an `@category`-tagged variable (v0.5.0+) |
+| `miscellaneous-typealias.js` | Per-entity detail page for an `@category`-tagged type alias (v0.5.0+) |
+| `miscellaneous-enumeration.js` | Per-entity detail page for an `@category`-tagged enumeration (v0.5.0+) |
+| `bucket-landing.js` | Auto-generated landing page per `@category` / folder bucket at `categories/<bucket-id>.html`. Only emitted under `menuLayout: 'feature'`. Receives `data.bucketLanding = { bucket, segments, depth, items }` (v0.6.0+) |
+| `api-reference.js` | Single-page exhaustive symbol portal at `references.html`. Only emitted under `menuLayout: 'feature'`. Receives `data.categorizedByFeature` (the EXHAUSTIVE per-bucket dict, not the curated primary subset) (v0.6.0+) |
+| `app-config.js` | Application configuration page |
+| `menu.js` | Sidebar navigation menu. Under `menuLayout: 'feature'` also receives `data.menuLayout`, `data.categorizedByFeature` (legacy flat), `data.categorizedByFeaturePrimary` (curated Features chapter), `data.categorizedByFeatureReference` (exhaustive per-bucket reference dict), `data.featuresName`, `data.referencesName` |
+| `version-switcher.js` | Topbar version-switcher dropdown (multi-version mode only). Receives the manifest URL and current label |
 
 Block-level overrides replace a region inside a page rather than the whole page:
 
@@ -73,6 +82,22 @@ Block-level overrides replace a region inside a page rather than the whole page:
 |-|-|
 | `block-theming.js` | Whole Theming tab panel. Receives `{ groups, styleSources, overview, depth }` where `groups` is an array of `{ name, tokens }` buckets, `styleSources` is `{ file, content, language }[]`, and `overview` is the concatenated `@overview` markdown |
 | `block-theming-token.js` | Single token row inside the Theming tab. Receives `{ token, depth }` where `token` is a `ThemeToken` (`name`, `kind`, `type`, `defaultValue`, `description`, `group`, `examples`, `since`, `deprecated`, `see`, `file`, `line`). Replace this when you want custom row chrome but the rest of the panel can stay default |
+| `block-method.js` | Methods section on the API tab |
+| `block-property.js` | Properties section on the API tab |
+| `block-input.js` | Inputs section on the API tab |
+| `block-output.js` | Outputs section on the API tab |
+| `block-accessors.js` | Accessors section on the API tab |
+| `block-host-listener.js` / `block-host-listeners.js` | Single host listener / host listeners section |
+| `block-host-bindings.js` | Host bindings section |
+| `block-derived-state.js` | Derived state (`computed` / `linkedSignal`) section |
+| `block-constructor.js` | Constructor section |
+| `block-enum.js` | Enum members block on enumeration detail pages |
+| `block-typealias.js` | Type alias definition block on typealias detail pages |
+| `block-index.js` | Index grid on the API tab |
+| `block-index-signatures.js` | Index signatures section |
+| `block-playground.js` | Whole Playground tab panel |
+| `playground-content.js` | Single playground block (one `@playground` block) inside the Playground tab |
+| `referenced-by.js` | "Referenced by" chip list at the top of interface and `@category`-tagged misc detail pages. Receives `{ entries: { name, kind, hrefPrefix }[], depth }` (v0.6.0+) |
 
 ## Available helpers
 

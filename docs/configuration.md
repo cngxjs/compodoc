@@ -133,7 +133,7 @@ Controls sidebar behavior and entity page tab configuration.
 
 | Option | CLI | Type | Default | Description |
 |-|-|-|-|-|
-| toggleMenuItems | `--toggleMenuItems` | string[] | `['all']` | Sidebar sections that start collapsed. Pass `'all'` to collapse everything, or a comma-separated list of specific sections: `modules`, `components`, `directives`, `entities`, `classes`, `injectables`, `guards`, `interfaces`, `interceptors`, `pipes`, `miscellaneous`, `additionalPages`, `features` and `references` (the two chapters under `menuLayout: 'feature'`) |
+| toggleMenuItems | `--toggleMenuItems` | string[] | `['all']` | Sidebar sections that start collapsed. Pass `'all'` to collapse everything, or a comma-separated list of specific sections: `modules`, `components`, `directives`, `entities`, `classes`, `injectables`, `tokens`, `guards`, `interfaces`, `interceptors`, `pipes`, `miscellaneous`, `additionalPages`, and `features` (the Features chapter under `menuLayout: 'feature'`; References is a single top-level link with no collapsible tree, so it is not a valid key) |
 | navTabConfig | `--navTabConfig` | object[] | `[]` | Customize the order and labels of entity page tabs. Array of `{ id, label }` objects. Available tab IDs: `info` (overview/metadata), `readme` (component README), `source` (source code), `templateData` (component template), `styleData` (component styles), `tree` (DOM tree), `example` (live examples). Tabs not listed are hidden. If empty (default), all applicable tabs are shown in their default order |
 
 ## Coverage

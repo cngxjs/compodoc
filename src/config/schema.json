@@ -129,7 +129,7 @@
             "items": {
                 "$id": "/properties/toggleMenuItems/items",
                 "type": "string",
-                "title": "Close by default items in the menu values : ['all'] or one of these ['modules','components','directives','classes','injectables','interfaces','pipes','additionalPages']",
+                "title": "Close by default items in the menu values : ['all'] or one of these ['modules','components','directives','entities','classes','injectables','tokens','guards','interfaces','interceptors','pipes','miscellaneous','additionalPages','features'] (features applies under menuLayout: 'feature')",
                 "default": "",
                 "examples": ["all"]
             }
