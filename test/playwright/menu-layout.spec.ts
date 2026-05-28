@@ -251,11 +251,13 @@ test.describe('menuLayout: "feature" sidebar', () => {
     });
 
     test('sidebar bucket label navigates to the auto-generated landing page', async ({ page }) => {
-        // Two-hit-zone contract: clicking the LABEL (an <a>) goes to
-        // `categories/<bucket>.html`; the chevron toggle stays a button.
-        // Both share the row but are distinct hit zones.
+        // Whole-row toggle contract: the row itself is the toggle
+        // (role="button"); the inner `<a data-cdx-bucket-link>` navigates
+        // to `categories/<bucket>.html`. The client handler short-circuits
+        // when the click target sits inside the anchor, so navigation
+        // wins over toggle without `stopPropagation()`.
         const features = page.locator('#features-links');
-        const labels = features.locator('a.cdx-bucket-label');
+        const labels = features.locator('a.cdx-bucket-link[data-cdx-bucket-link]');
         await expect(labels.first()).toBeAttached();
         const href = await labels.first().getAttribute('href');
         // The SPA router may prefix sidebar links with `./` at runtime;
@@ -266,6 +268,38 @@ test.describe('menuLayout: "feature" sidebar', () => {
         await page.goto(href!);
         await page.waitForLoadState('domcontentloaded');
         await expect(page.locator('.cdx-entity-hero')).toBeVisible();
+        await expect(page.locator('.cdx-bucket-landing-content')).toBeVisible();
+    });
+
+    test('clicking the bucket row outside the link toggles expand/collapse', async ({ page }) => {
+        // The row is `role="button"` + `data-cdx-toggle="collapse"`, and
+        // its chevron sits at the far end of the flex layout — clicking
+        // the chevron (which is OUTSIDE `data-cdx-bucket-link`) must
+        // toggle the row without navigating away.
+        const startUrl = page.url();
+        const row = page.locator('#features-links .cdx-bucket-row').first();
+        await expect(row).toBeVisible();
+        const initial = await row.getAttribute('aria-expanded');
+        await row.locator('.cdx-bucket-chevron').click();
+        // After click, aria-expanded must flip and the URL must not change.
+        await expect(row).toHaveAttribute('aria-expanded', initial === 'true' ? 'false' : 'true');
+        expect(page.url()).toBe(startUrl);
+    });
+
+    test('clicking the bucket link navigates without toggling the row', async ({ page }) => {
+        // Inverse of the above: clicking the inner anchor must navigate
+        // to the bucket landing page, not toggle the row. The client
+        // handler short-circuits on `[data-cdx-bucket-link]` so the
+        // anchor's native click runs unaltered. SPA router intercepts
+        // internal anchors and pushes state via fetch + history API
+        // (no full page reload), so the URL settles async — wait for
+        // it explicitly rather than `waitForLoadState`.
+        const link = page.locator('#features-links .cdx-bucket-link').first();
+        const href = await link.getAttribute('href');
+        const target = href!.replace(/^\.\//, '');
+        await link.click();
+        await page.waitForURL(url => url.pathname.endsWith(target));
+        expect(page.url()).toContain(target);
         await expect(page.locator('.cdx-bucket-landing-content')).toBeVisible();
     });
 

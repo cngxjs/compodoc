@@ -314,11 +314,15 @@ const FeatureEntityLink = (item: EntityWithKind, defaultTab?: 'api'): string =>
 
 /** Recursive tree node for the cross-kind feature layout.
  *
- *  Two-hit-zone row: clicking the LABEL navigates to the auto-generated
- *  bucket landing page (`categories/<fullPath>.html`); clicking the
- *  CHEVRON toggles expand. The `<a>` carries an explicit
- *  `data-cdx-bucket-label` so the client-side collapse handler skips it
- *  (otherwise the toggle would steal navigation clicks).
+ *  Whole-row toggle: the `<div class="cdx-bucket-row">` itself carries
+ *  the collapse-toggle attributes (`role="button"`, `tabindex="0"`,
+ *  `data-cdx-toggle="collapse"`, `aria-expanded`, `aria-controls`).
+ *  Clicking anywhere in the row toggles expand, EXCEPT when the click
+ *  originates inside the `<a data-cdx-bucket-link>` label — the
+ *  client-side handler short-circuits there so the anchor's native
+ *  navigation (including Cmd/middle-click new-tab) fires unaltered.
+ *  No `<a>` nested in `<button>` — HTML5 forbids it; row + sibling
+ *  anchor keeps the markup valid and the a11y tree clean.
  *
  *  The bucket landing page exists for EVERY non-empty node — leaves and
  *  intermediate folders alike — so any label that renders here is
@@ -345,29 +349,33 @@ const FeatureGroupTree = (props: {
             style={`--depth: ${props.depth}`}
             data-cdx-bucket={props.node.fullPath}
         >
-            <div class="cdx-bucket-row">
+            {/* biome-ignore lint/a11y/useFocusableInteractive: lowercase `tabindex="0"` is focusable; Biome looks for camelCase */}
+            {/* biome-ignore lint/a11y/useSemanticElements: <button> cannot contain <a> per HTML5; sibling-anchor pattern is the point */}
+            <div
+                class="cdx-bucket-row"
+                data-cdx-bucket-row="true"
+                data-cdx-toggle="collapse"
+                data-cdx-target={`#${id}`}
+                role="button"
+                tabindex="0"
+                aria-expanded={startExpanded ? 'true' : 'false'}
+                aria-controls={id}
+                aria-label={`Toggle ${labelText} group`}
+            >
                 <a
-                    class="cdx-bucket-label"
+                    class="cdx-bucket-link"
                     href={labelHref}
-                    data-cdx-bucket-label="true"
+                    data-cdx-bucket-link="true"
                     data-type="chapter-link"
                 >
                     <span class="link-name">{labelText}</span>
-                    {props.node.items.length > 0 && (
-                        <span class="cdx-badge cdx-badge--count">{props.node.items.length}</span>
-                    )}
                 </a>
-                <button
-                    class="simple menu-toggler cdx-bucket-toggle"
-                    type="button"
-                    data-cdx-toggle="collapse"
-                    data-cdx-target={`#${id}`}
-                    aria-expanded={startExpanded ? 'true' : 'false'}
-                    aria-controls={id}
-                    aria-label={`Toggle ${labelText} group`}
-                >
-                    {IconChevronRight('cdx-chevron')}
-                </button>
+                {props.node.items.length > 0 && (
+                    <span class="cdx-badge cdx-badge--count cdx-bucket-count">
+                        {props.node.items.length}
+                    </span>
+                )}
+                {IconChevronRight('cdx-chevron cdx-bucket-chevron')}
             </div>
             <ul class={`links collapse${startExpanded ? ' in' : ''}`} id={id}>
                 {props.node.children.map(child =>
