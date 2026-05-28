@@ -28,26 +28,30 @@
     margin: 0;
 }
 
+/* Default-theme cards are borderless to match the OverviewStats KPI tiles —
+ * the page background (`--color-cdx-bg`) is a touch darker than
+ * `--color-cdx-bg-elevated`, so a card lifts off the page without needing
+ * a stroke. Themes that genuinely want a stroke (brutalist, ember) layer
+ * one on via `border` in their own `.cdx-bucket-card-link` rule. Hover
+ * lift + shadow mirrors `a.cdx-overview-kpi:hover` so the two card grids
+ * feel like one design system. */
 .cdx-bucket-card-link {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-cdx-xs);
     padding: var(--spacing-cdx-md);
-    border: 1px solid var(--color-cdx-border);
     border-radius: var(--radius-cdx-md);
     background: var(--color-cdx-bg-elevated);
     color: var(--color-cdx-text);
     text-decoration: none;
     transition:
-        transform var(--cdx-transition-fast),
-        box-shadow var(--cdx-transition-fast),
-        border-color var(--cdx-transition-fast);
+        transform 200ms ease-out,
+        box-shadow 200ms ease-out;
 }
 
 .cdx-bucket-card-link:hover {
-    transform: translateY(-1px);
-    border-color: color-mix(in srgb, var(--color-cdx-primary) 40%, var(--color-cdx-border));
-    box-shadow: var(--shadow-cdx-md);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-cdx-lg);
     text-decoration: none;
 }
 
