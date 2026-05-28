@@ -27,7 +27,6 @@ import { PlaygroundContent } from '../blocks/PlaygroundContent';
 import { ProvidersSection } from '../blocks/ProvidersSection';
 import { RouteChip } from '../blocks/RouteChip';
 import { SourceViewer } from '../blocks/SourceViewer';
-import { A11yNote } from '../components/A11yNote';
 import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { EmptyState } from '../components/EmptyState';
 import {
@@ -133,7 +132,6 @@ const hasComponentInfoContent = (data: any): boolean => {
         c.deprecated ||
         c.route ||
         c.description ||
-        c.a11yNote ||
         c.jsdoctags?.length ||
         c.selector ||
         c.constructorObj ||
@@ -175,8 +173,6 @@ const InfoContent = (data: any): string => {
             )}
 
             {RouteChip({ route: c.route })}
-
-            {A11yNote({ a11yNote: c.a11yNote })}
 
             {isInfoSection('description') && c.description && (
                 <section class="cdx-content-section">

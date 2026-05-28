@@ -1,11 +1,10 @@
 import { expect, test } from '@playwright/test';
 
 // Runs against the standalone-app fixture rebuilt with menuLayout: 'feature'
-// (see playwright project `standalone-feature`, port 4004). v0.6.0 splits
-// the cross-kind sidebar into two chapters: Features (components, directives,
-// pipes, injectables, classes, guards, interceptors, entities) and References
-// (interfaces, functions, typealiases, variables, enumerations). Both share
-// the same @category / folder bucket paths.
+// (see playwright project `standalone-feature`, port 4004). Sidebar holds
+// the curated Features chapter (organisms + @docsKind primary promotions);
+// the exhaustive reference catalogue lives on the single-page
+// `references.html` portal, linked as a top-level chapter.
 
 test.describe('menuLayout: "feature" sidebar', () => {
     test.beforeEach(async ({ page }) => {
@@ -13,9 +12,14 @@ test.describe('menuLayout: "feature" sidebar', () => {
         await page.waitForLoadState('domcontentloaded');
     });
 
-    test('renders Features + References chapters and no per-kind chapters', async ({ page }) => {
+    test('renders Features chapter, References top-nav link, and no per-kind chapters', async ({
+        page
+    }) => {
         await expect(page.locator('#features-links')).toHaveCount(1);
-        await expect(page.locator('#references-links')).toHaveCount(1);
+        // The cross-kind References chapter is replaced by a top-level link
+        // pointing at the portal page.
+        await expect(page.locator('#references-links')).toHaveCount(0);
+        await expect(page.locator('.chapter.references a[href$="references.html"]')).toHaveCount(1);
         // The per-kind chapters that exist in default-layout standalone-doc
         // must NOT be rendered under feature layout.
         await expect(page.locator('#components-links')).toHaveCount(0);
@@ -24,11 +28,12 @@ test.describe('menuLayout: "feature" sidebar', () => {
         await expect(page.locator('#pipes-links')).toHaveCount(0);
     });
 
-    test('Miscellaneous chapter is suppressed in feature mode (everything in References)', async ({
+    test('Miscellaneous chapter is suppressed in feature mode (everything in References portal)', async ({
         page
     }) => {
         // Miscellaneous is redundant under feature layout — functions /
-        // variables / typealiases / enumerations all live in References.
+        // variables / typealiases / enumerations all surface on
+        // `references.html` and on per-bucket landings.
         await expect(page.locator('#miscellaneous-links')).toHaveCount(0);
     });
 
@@ -57,56 +62,111 @@ test.describe('menuLayout: "feature" sidebar', () => {
         await expect(first).toHaveAttribute('href', /(?:\.\/)?components\/[A-Za-z]+\.html$/);
     });
 
-    test('References chapter is exhaustive — lists every public symbol per bucket', async ({
-        page
-    }) => {
-        // References is the API surface: every kind appears here, including
-        // primary-kind organisms that already surface under Features. Same
-        // bucket paths as Features, but a different chapter id.
-        const refs = page.locator('#references-links');
-        await expect(refs).toHaveCount(1);
-        // Both a function (reference-kind) AND a component (primary-kind)
-        // surface under References — the bifurcation is no longer disjoint.
-        await expect(refs.locator('a[data-cdx-entity-type="function"]').first()).toBeAttached();
-        await expect(refs.locator('a[data-cdx-entity-type="component"]').first()).toBeAttached();
+    test('top-nav Reference link points at references.html', async ({ page }) => {
+        // The cross-kind exhaustive surface is no longer a sidebar tree — it
+        // lives on the `references.html` portal page. The sidebar surfaces
+        // a single chapter-style link to that page.
+        const navLink = page.locator('.chapter.references a[data-type="chapter-link"]');
+        await expect(navLink).toHaveCount(1);
+        const href = await navLink.getAttribute('href');
+        expect(href).toMatch(/^(?:\.\/)?references\.html$/);
+        // Localised singular label — `t('reference')`.
+        await expect(navLink).toContainText(/Reference/);
     });
 
-    test('primary-kind components surface under BOTH Features and References (TOC + index pattern)', async ({
-        page
-    }) => {
-        // Pick any standalone component from the fixture — `DashboardComponent`
-        // is the canonical one. It MUST appear in both chapters. Same target
-        // page, different default tab — Features stays default Info,
-        // References appends `#api` to open the API tab on page load.
-        // The hrefs render with a relative-URL `./` prefix on the home page;
-        // ends-with matchers stay resilient to depth-dependent prefixes.
-        const inFeatures = page.locator(
-            '#features-links a[href$="components/DashboardComponent.html"]'
-        );
-        const inReferences = page.locator(
-            '#references-links a[href$="components/DashboardComponent.html#api"]'
-        );
-        await expect(inFeatures).toHaveCount(1);
-        await expect(inReferences).toHaveCount(1);
-    });
-
-    test('References-chapter links open the API tab on page load (#api default)', async ({
-        page
-    }) => {
-        // The link contract: References chapter appends `#api` to its
-        // sidebar hrefs for kinds with an API tab. Visibility may be
-        // collapsed by toggleMenuItems — DOM count is enough.
-        const link = page.locator('#references-links a[href$=".html#api"]').first();
-        await expect(link).toHaveCount(1);
-
-        // Pick a component that actually renders an API tab (has inputs,
-        // outputs, or other members). DashboardComponent has none, so the
-        // ComponentPage strips the API tab; AppComponent has `routes` and
-        // therefore keeps it. Navigate directly so we don't depend on the
-        // collapsed-chapter visibility.
-        await page.goto('/components/AppComponent.html#api');
+    test('references.html renders filter bar + bucket sections + items', async ({ page }) => {
+        await page.goto('/references.html');
         await page.waitForLoadState('domcontentloaded');
-        await expect(page.locator('.cdx-tab-panel#api')).toHaveClass(/active/);
+        // Portal hero uses its own lean heading element, not the shared
+        // entity-hero block.
+        await expect(page.locator('h1.cdx-ref-hero-title')).toContainText('API Reference');
+        await expect(page.locator('[data-cdx-ref-search]')).toHaveCount(1);
+        await expect(page.locator('[data-cdx-ref-bucket-select]')).toHaveCount(1);
+        await expect(page.locator('[data-cdx-ref-kind-chip]').first()).toBeAttached();
+        await expect(page.locator('.cdx-ref-bucket-section').first()).toBeAttached();
+        const items = page.locator('.cdx-ref-item');
+        expect(await items.count()).toBeGreaterThan(0);
+    });
+
+    test('references.html filter input narrows visible items + sections', async ({ page }) => {
+        await page.goto('/references.html');
+        await page.waitForLoadState('domcontentloaded');
+        const before = await page.locator('.cdx-ref-item:not([data-cdx-ref-hidden])').count();
+        expect(before).toBeGreaterThan(0);
+
+        await page.locator('[data-cdx-ref-search]').fill('user');
+        // Filter is synchronous on input event — no need to wait.
+        const after = await page.locator('.cdx-ref-item:not([data-cdx-ref-hidden])').count();
+        expect(after).toBeLessThan(before);
+        expect(after).toBeGreaterThan(0);
+        // Visible items should all carry "user" in their name attr.
+        const names = await page
+            .locator('.cdx-ref-item:not([data-cdx-ref-hidden])')
+            .evaluateAll(els => els.map(el => el.getAttribute('data-cdx-name')));
+        expect(names.every(n => (n ?? '').includes('user'))).toBe(true);
+        // Empty buckets hide.
+        const allSections = await page.locator('.cdx-ref-bucket-section').count();
+        const visibleSections = await page
+            .locator('.cdx-ref-bucket-section:not([data-cdx-ref-hidden])')
+            .count();
+        expect(visibleSections).toBeLessThan(allSections);
+    });
+
+    test('references.html kind chip click filters by kind + updates URL', async ({ page }) => {
+        await page.goto('/references.html');
+        await page.waitForLoadState('domcontentloaded');
+        // Reset to baseline (all chips pressed) — applyFilter writes the
+        // current state to the URL on bind, so the first interaction starts
+        // from a known clean URL.
+        await page.locator('[data-cdx-ref-reset]').first().click();
+        await page.locator('[data-cdx-ref-kind-chip="interface"]').click();
+        // Interface chip now inactive → no interface items should be visible.
+        const visibleKinds = await page
+            .locator('.cdx-ref-item:not([data-cdx-ref-hidden])')
+            .evaluateAll(els => els.map(el => el.getAttribute('data-cdx-kind')));
+        expect(visibleKinds.includes('interface')).toBe(false);
+        // URL syncs to the active set (subset of all kinds).
+        await expect(page).toHaveURL(/[?&]kind=/);
+    });
+
+    test('references.html URL state restores on direct deep-link', async ({ page }) => {
+        await page.goto('/references.html?q=user&kind=Component');
+        await page.waitForLoadState('domcontentloaded');
+        await expect(page.locator('[data-cdx-ref-search]')).toHaveValue('user');
+        const visibleKinds = await page
+            .locator('.cdx-ref-item:not([data-cdx-ref-hidden])')
+            .evaluateAll(els => els.map(el => el.getAttribute('data-cdx-kind')));
+        // Only components, no other kinds — case-insensitive URL parsing
+        // accepts both `Component` (label) and `component` (id).
+        expect(new Set(visibleKinds).size).toBeLessThanOrEqual(1);
+        expect(visibleKinds.every(k => k === 'component')).toBe(true);
+    });
+
+    test('references.html reset clears every filter and the URL', async ({ page }) => {
+        await page.goto('/references.html?q=user&kind=Component');
+        await page.waitForLoadState('domcontentloaded');
+        await page.locator('[data-cdx-ref-reset]').first().click();
+        await expect(page.locator('[data-cdx-ref-search]')).toHaveValue('');
+        // Reset writes all-active state, which collapses to no `kind` /
+        // `stability` / `q` / `bucket` params.
+        const url = new URL(page.url());
+        expect(url.searchParams.has('q')).toBe(false);
+        expect(url.searchParams.has('kind')).toBe(false);
+        expect(url.searchParams.has('stability')).toBe(false);
+        expect(url.searchParams.has('bucket')).toBe(false);
+    });
+
+    test('references.html row anchors navigate to entity detail pages', async ({ page }) => {
+        await page.goto('/references.html');
+        await page.waitForLoadState('domcontentloaded');
+        const anchor = page.locator('.cdx-ref-item-link').first();
+        const href = await anchor.getAttribute('href');
+        expect(href).toMatch(/\.html(?:#|$)/);
+        await anchor.click();
+        await page.waitForLoadState('domcontentloaded');
+        // We landed on an entity detail page — every detail page exposes
+        // the entity-hero block.
+        await expect(page.locator('.cdx-entity-hero')).toBeVisible();
     });
 
     test('entity heroes emit Pagefind-discoverable meta spans (kind, category, description)', async ({
@@ -141,19 +201,20 @@ test.describe('menuLayout: "feature" sidebar', () => {
         page
     }) => {
         // standalone-app fixture: provideUserFeature + createDefaultUser are
-        // @category-tagged, roleGuard is untagged. All three are functions and
-        // now live in References, not Features. Tagged detail-page links also
-        // carry `#api` per the References-chapter default; anchor-style URLs
-        // keep their existing `#<name>` fragment.
-        const refs = page.locator('#references-links');
+        // @category-tagged, roleGuard is untagged. The reference-kind
+        // surface is now catalogued on `references.html` — the portal
+        // emits the dedicated-detail-page link for tagged misc, and the
+        // anchor-style URL for untagged.
+        await page.goto('/references.html');
+        await page.waitForLoadState('domcontentloaded');
 
-        const tagged = refs.locator(
-            'a[data-cdx-entity-type="function"][href*="provideUserFeature.html"]'
+        const tagged = page.locator(
+            '.cdx-ref-item-link[href*="miscellaneous/functions/provideUserFeature.html"]'
         );
         await expect(tagged).toHaveCount(1);
 
-        const anchor = refs.locator(
-            'a[data-cdx-entity-type="function"][href*="functions.html#roleGuard"]'
+        const anchor = page.locator(
+            '.cdx-ref-item-link[href*="miscellaneous/functions.html#roleGuard"]'
         );
         await expect(anchor).toHaveCount(1);
 
@@ -266,12 +327,16 @@ test.describe('menuLayout: "feature" sidebar', () => {
         expect(attrs.some(a => a?.startsWith('tier:'))).toBe(true);
     });
 
-    test('WCAG chip + Accessibility section render when @wcag and @a11y tags are present', async ({
+    test('WCAG chip renders when @wcag tag is present; @a11y is not surfaced visually', async ({
         page
     }) => {
         // The standalone fixture's LoadingSpinnerComponent declares
-        // `@wcag AA` + `@a11y ...`. Chip lands in the entity-hero badge row;
-        // note renders as a section above the description.
+        // `@wcag AA` + `@a11y ...`. The chip lands in the entity-hero
+        // badge row as the single visual accessibility-conformance signal.
+        // The `@a11y` note text is preserved in the data model for the
+        // LLM-md export but is intentionally NOT rendered on the page —
+        // the hero chip already carries the user-visible signal and the
+        // section was competing with the description.
         await page.goto('/components/LoadingSpinnerComponent.html');
         await page.waitForLoadState('domcontentloaded');
         const chip = page.locator('.cdx-entity-hero .cdx-badge--wcag-aa');
@@ -279,13 +344,8 @@ test.describe('menuLayout: "feature" sidebar', () => {
         await expect(chip).toContainText('WCAG AA');
         await expect(chip).toHaveAttribute('data-cdx-wcag', 'AA');
 
-        const note = page.locator('.cdx-a11y-note');
-        await expect(note).toHaveCount(1);
-        await expect(note.locator('.cdx-section-heading')).toContainText('Accessibility');
-        // Markdown rendering: inline code spans (role="status", aria-live,
-        // aria-label, prefers-reduced-motion). Exact count varies by fixture,
-        // assert "at least one" so the spec stays decoupled from the prose.
-        expect(await note.locator('.cdx-a11y-note-body code').count()).toBeGreaterThan(0);
+        // Regression guard: no Accessibility section above the description.
+        await expect(page.locator('.cdx-a11y-note')).toHaveCount(0);
     });
 
     test('cdx-chip[href] has hover + focus affordance', async ({ page }) => {

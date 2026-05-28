@@ -141,45 +141,6 @@
     border-color: color-mix(in srgb, hsl(290 55% 48%) 30%, transparent);
 }
 
-/* Accessibility note section rendered above the description on entity Info
- * tabs when the source carries an @a11y JSDoc tag. Reuses the WCAG-AA
- * green base so the chip in the hero (`WCAG AA`) and the note section
- * read as a matching pair. */
-.cdx-a11y-note {
-    padding: var(--spacing-cdx-md);
-    margin-bottom: var(--spacing-cdx-lg);
-    border-left: 3px solid var(--color-cdx-badge-wcag-aa, hsl(145 55% 36%));
-    border-radius: var(--radius-cdx-md);
-    background: color-mix(
-        in srgb,
-        var(--color-cdx-badge-wcag-aa, hsl(145 55% 36%)) 5%,
-        var(--color-cdx-bg-elevated, white)
-    );
-}
-
-.cdx-a11y-note > h3.cdx-section-heading {
-    margin-top: 0;
-    margin-bottom: var(--spacing-cdx-sm);
-    color: var(--color-cdx-text);
-}
-
-.cdx-a11y-note-body {
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--color-cdx-text);
-}
-
-.cdx-a11y-note-body > p:last-child {
-    margin-bottom: 0;
-}
-
-.dark .cdx-a11y-note {
-    background: color-mix(
-        in srgb,
-        var(--color-cdx-badge-wcag-aa, hsl(145 55% 36%)) 12%,
-        var(--color-cdx-bg)
-    );
-}
 
 .cdx-prose > p {
     margin-bottom: 1rem;

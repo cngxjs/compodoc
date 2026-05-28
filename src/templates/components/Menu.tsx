@@ -807,12 +807,12 @@ export const Menu = (props: MenuProps): string => {
                     </li>
                 )}
 
-                {/* Feature-folder layout swaps every per-kind chapter for two cross-kind
-                    chapters: Features (organisms — components, directives, pipes, injectables,
-                    classes, guards, interceptors, entities, plus any reference-kind symbol
-                    promoted via @docsKind primary) and References (interfaces, functions,
-                    typealiases, variables, enumerations). Both share the same @category /
-                    folder bucket paths, so the same bucket may appear in both chapters. */}
+                {/* Feature-folder layout renders ONE curated cross-kind chapter ("Features":
+                    organisms — components, directives, pipes, injectables, classes, guards,
+                    interceptors, entities, plus any reference-kind symbol promoted via
+                    @docsKind primary). The exhaustive reference surface lives on the
+                    `references.html` portal page (linked below as a top-level chapter, not a
+                    tree). That keeps the sidebar scannable and matches angular.dev/api. */}
                 {(d.menuLayout ?? 'type') === 'feature' ? (
                     <>
                         {FeatureSection({
@@ -821,15 +821,18 @@ export const Menu = (props: MenuProps): string => {
                             chapterKey: 'features',
                             label: d.featuresName || t('features')
                         })}
-                        {FeatureSection({
-                            groups: d.categorizedByFeatureReference,
-                            groupDepth: d.groupDepth,
-                            chapterKey: 'references',
-                            label: d.referencesName || t('references'),
-                            // References-chapter links open the API tab by default.
-                            // Features stays default Info — chapter intent drives tab.
-                            defaultTab: 'api'
-                        })}
+                        {Object.keys(d.categorizedByFeature ?? {}).length > 0 && (
+                            <li class="chapter references">
+                                <a
+                                    data-type="chapter-link"
+                                    href="references.html"
+                                    aria-label={t('api-reference')}
+                                >
+                                    {IconList()}
+                                    {t('reference')}
+                                </a>
+                            </li>
+                        )}
                     </>
                 ) : (
                     <>

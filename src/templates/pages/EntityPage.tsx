@@ -27,7 +27,6 @@ import { PlaygroundContent } from '../blocks/PlaygroundContent';
 import { ProvidersSection } from '../blocks/ProvidersSection';
 import { ReferencedBySection } from '../blocks/ReferencedBySection';
 import { RouteChip } from '../blocks/RouteChip';
-import { A11yNote } from '../components/A11yNote';
 import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconDocument } from '../components/EmptyStateIcons';
@@ -203,7 +202,6 @@ const hasInfoContent = (e: any, props: EntityInfoProps): boolean =>
         e.deprecated ||
         e.route ||
         e.description ||
-        e.a11yNote ||
         e.jsdoctags?.length ||
         props.metadataHtml ||
         e.constructorObj ||
@@ -310,9 +308,6 @@ const InfoContent = (props: EntityInfoProps): string => {
 
             {/* Route chip (above description) */}
             {RouteChip({ route: e.route })}
-
-            {/* Accessibility note (above description so a11y context comes first) */}
-            {A11yNote({ a11yNote: e.a11yNote })}
 
             {/* Description */}
             {isInfoSection('description') && e.description && (

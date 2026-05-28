@@ -2,7 +2,6 @@ import Html from '@kitajs/html';
 import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { ParamsTable } from '../blocks/ParamsTable';
 import { ReferencedBySection } from '../blocks/ReferencedBySection';
-import { A11yNote } from '../components/A11yNote';
 import { IconEnum, IconFile, IconFunction, IconTypealias, IconVariable } from '../components/Icons';
 import { WcagBadge } from '../components/WcagBadge';
 import {
@@ -125,20 +124,16 @@ const InfoContent = (item: any, depth: number): string => {
         entries: item.referencedBy,
         depth
     });
-    const a11y = A11yNote({ a11yNote: item.a11yNote });
-    if (!item.description && !a11y) {
+    if (!item.description) {
         return backlinks;
     }
-    const parts: string[] = [backlinks, a11y];
-    if (item.description) {
-        parts.push(
-            Section({
-                title: t('description'),
-                children: parseDescription(item.description, depth)
-            })
-        );
-    }
-    return parts.join('');
+    return [
+        backlinks,
+        Section({
+            title: t('description'),
+            children: parseDescription(item.description, depth)
+        })
+    ].join('');
 };
 
 //  API-tab content (structural data per kind)

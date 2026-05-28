@@ -21,6 +21,7 @@ import {
 } from './generation-promise';
 import {
     AdditionalPageGenerator,
+    ApiReferencePageGenerator,
     AppConfigPageGenerator,
     AssetCopier,
     BucketLandingPageGenerator,
@@ -82,6 +83,7 @@ export class Application {
     private readonly modulePageGenerator: ModulePageGenerator;
     private readonly miscellaneousPageGenerator: MiscellaneousPageGenerator;
     private readonly bucketLandingPageGenerator: BucketLandingPageGenerator;
+    private readonly apiReferencePageGenerator: ApiReferencePageGenerator;
     private readonly appConfigPageGenerator: AppConfigPageGenerator;
     private readonly routesPageGenerator: RoutesPageGenerator;
     private readonly overviewPageGenerator: OverviewPageGenerator;
@@ -126,6 +128,7 @@ export class Application {
         this.modulePageGenerator = new ModulePageGenerator(this.navTabs);
         this.miscellaneousPageGenerator = new MiscellaneousPageGenerator();
         this.bucketLandingPageGenerator = new BucketLandingPageGenerator();
+        this.apiReferencePageGenerator = new ApiReferencePageGenerator();
         this.appConfigPageGenerator = new AppConfigPageGenerator();
         this.routesPageGenerator = new RoutesPageGenerator();
         this.overviewPageGenerator = new OverviewPageGenerator();
@@ -521,6 +524,7 @@ export class Application {
         }
 
         actions.push(() => this.bucketLandingPageGenerator.prepare());
+        actions.push(() => this.apiReferencePageGenerator.prepare());
 
         if (!Configuration.mainData.disableCoverage) {
             actions.push(() => this.coveragePageGenerator.prepareDocumentation());
@@ -701,6 +705,10 @@ export class Application {
 
         actions.push(() => {
             return this.bucketLandingPageGenerator.prepare();
+        });
+
+        actions.push(() => {
+            return this.apiReferencePageGenerator.prepare();
         });
 
         if (!Configuration.mainData.disableCoverage) {

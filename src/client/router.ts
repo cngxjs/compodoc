@@ -7,6 +7,7 @@ declare function gtag(...args: unknown[]): void;
  */
 
 import { initAnimations } from './animate';
+import { refreshApiReference } from './api-reference';
 import { initCodeBlocks } from './code-blocks';
 import { initCoverage } from './coverage';
 import { initExamples } from './examples';
@@ -101,6 +102,11 @@ const reinitPage = async () => {
     // tags from the swapped page need a fresh click handler. WeakSet guards
     // inside `initStackblitz` make this idempotent for already-bound buttons.
     initStackblitz();
+    // Re-bind the API reference portal filter when SPA-navigating into
+    // `references.html`. WeakSet inside `refreshApiReference` makes the
+    // call cheap on every other page (no `data-cdx-page="api-reference"`
+    // root → early return).
+    refreshApiReference();
     // initToc();
 };
 

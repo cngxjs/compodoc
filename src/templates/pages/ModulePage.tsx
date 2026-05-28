@@ -2,7 +2,6 @@ import Html from '@kitajs/html';
 import { BlockMethod } from '../blocks/BlockMethod';
 import { EntityTabs } from '../blocks/EntityTabs';
 import { GraphZoomControls } from '../blocks/GraphControls';
-import { A11yNote } from '../components/A11yNote';
 import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { IconFile, IconInterface, IconMaximize, IconModule } from '../components/Icons';
 import { WcagBadge } from '../components/WcagBadge';
@@ -86,8 +85,6 @@ export const ModulePage = (data: any): string => {
                     <span>{mod.deprecationMessage}</span>
                 </div>
             )}
-
-            {A11yNote({ a11yNote: mod.a11yNote })}
 
             {mod.description && (
                 <section class="cdx-content-section">

@@ -83,7 +83,7 @@ describe('Menu — feature layout', () => {
         clearCustomTemplates();
     });
 
-    it('renders neither chapter when both bifurcated dicts are empty', () => {
+    it('renders no Features chapter, no References link, and no per-kind chapters when feature dicts are empty', () => {
         const html = Menu({
             data: baseData({
                 menuLayout: 'feature',
@@ -91,7 +91,9 @@ describe('Menu — feature layout', () => {
             })
         });
         expect(html).to.not.include('id="features-links"');
-        expect(html).to.not.include('id="references-links"');
+        // The References top-nav link is gated on categorizedByFeature
+        // having entries — empty dict ⇒ no link.
+        expect(html).to.not.include('href="references.html"');
         expect(html).to.not.include('id="components-links"');
     });
 
@@ -157,12 +159,12 @@ describe('Menu — feature layout', () => {
         expect(html).to.include('href="injectables/ButtonService.html"');
     });
 
-    it('renders a References chapter for reference-kind entities, with distinct ids', () => {
+    it('renders a top-level Reference link to references.html when categorizedByFeature has entries', () => {
         const html = Menu({
             data: baseData({
                 menuLayout: 'feature',
                 interfaces: [{ name: 'ToastConfig', file: 'src/toast/toast.types.ts' }],
-                categorizedByFeatureReference: {
+                categorizedByFeature: {
                     toast: [
                         {
                             kind: 'interface',
@@ -174,17 +176,16 @@ describe('Menu — feature layout', () => {
                 }
             })
         });
-        expect(html).to.include('id="references-links"');
-        expect(html).to.include('id="references-group-toast"');
-        // References-chapter links carry `#api` so the API tab activates
-        // on page load — interface is in KINDS_WITH_API_TAB.
-        expect(html).to.include('href="interfaces/ToastConfig.html#api"');
-        // No collisions with the Features chapter's id-prefix.
-        expect(html).to.not.include('id="features-links"');
-        expect(html).to.not.include('id="features-group-toast"');
+        // No bucket-tree under a References chapter — the portal page
+        // owns the exhaustive catalogue now.
+        expect(html).to.not.include('id="references-links"');
+        expect(html).to.not.include('id="references-group-toast"');
+        // Top-level link to the portal page.
+        expect(html).to.include('href="references.html"');
+        expect(html).to.include('class="chapter references"');
     });
 
-    it('renders both chapters when a bucket has items in each', () => {
+    it('renders only the Features chapter (References is a top-nav link, not a tree)', () => {
         const html = Menu({
             data: baseData({
                 menuLayout: 'feature',
@@ -200,8 +201,14 @@ describe('Menu — feature layout', () => {
                         }
                     ]
                 },
-                categorizedByFeatureReference: {
+                categorizedByFeature: {
                     toast: [
+                        {
+                            kind: 'component',
+                            hrefPrefix: 'components',
+                            name: 'CngxToast',
+                            file: 'src/toast/toast.component.ts'
+                        },
                         {
                             kind: 'interface',
                             hrefPrefix: 'interfaces',
@@ -213,20 +220,20 @@ describe('Menu — feature layout', () => {
             })
         });
         expect(html).to.include('id="features-links"');
-        expect(html).to.include('id="references-links"');
-        // Same bucket path in both chapters — id-prefix prevents collision.
         expect(html).to.include('id="features-group-toast"');
-        expect(html).to.include('id="references-group-toast"');
+        // References chapter / per-bucket tree is gone.
+        expect(html).to.not.include('id="references-links"');
+        expect(html).to.not.include('id="references-group-toast"');
+        // Top-nav Reference link points at the portal page.
+        expect(html).to.include('href="references.html"');
     });
 
-    it('honours configured featuresName / referencesName labels', () => {
+    it('honours configured featuresName label', () => {
         const html = Menu({
             data: baseData({
                 menuLayout: 'feature',
                 featuresName: 'Building Blocks',
-                referencesName: 'API',
                 components: [{ name: 'Foo', file: 'src/foo/foo.component.ts' }],
-                interfaces: [{ name: 'FooConfig', file: 'src/foo/foo.types.ts' }],
                 categorizedByFeaturePrimary: {
                     foo: [
                         {
@@ -236,23 +243,10 @@ describe('Menu — feature layout', () => {
                             file: 'src/foo/foo.component.ts'
                         }
                     ]
-                },
-                categorizedByFeatureReference: {
-                    foo: [
-                        {
-                            kind: 'interface',
-                            hrefPrefix: 'interfaces',
-                            name: 'FooConfig',
-                            file: 'src/foo/foo.types.ts'
-                        }
-                    ]
                 }
             })
         });
         expect(html).to.include('Building Blocks');
-        // Custom label overrides the i18n default — the chapter heading
-        // contains the configured string, not the translated "References".
-        expect(html).to.include('>API<');
     });
 
     it('omits per-kind chapters when menuLayout is feature', () => {
@@ -376,55 +370,15 @@ describe('Menu — feature layout', () => {
         expect(html).to.include('class="links collapse in"');
     });
 
-    it('miscellaneous feature-walk: untagged function lands in References, links to anchor', () => {
-        const html = Menu({
-            data: baseData({
-                menuLayout: 'feature',
-                miscellaneous: { functions: [{ name: 'helperFn' }] },
-                categorizedByFeatureReference: {
-                    util: [
-                        {
-                            kind: 'function',
-                            hrefPrefix: 'miscellaneous/functions',
-                            name: 'helperFn',
-                            file: 'src/util/helper.ts'
-                        }
-                    ]
-                }
-            })
-        });
-        expect(html).to.include('id="references-links"');
-        // Anchor-style URL (no @category) — `#api` is NOT appended because
-        // the existing `#helperFn` fragment already targets a specific row;
-        // stacking `#api` would break the deep-link.
-        expect(html).to.include('href="miscellaneous/functions.html#helperFn"');
-        expect(html).to.not.include('href="miscellaneous/functions/helperFn.html"');
-    });
-
-    it('miscellaneous feature-walk: @category-tagged function lands in References, links to detail page', () => {
-        const html = Menu({
-            data: baseData({
-                menuLayout: 'feature',
-                miscellaneous: { functions: [{ name: 'provideToaster', category: 'Toast' }] },
-                categorizedByFeatureReference: {
-                    Toast: [
-                        {
-                            kind: 'function',
-                            hrefPrefix: 'miscellaneous/functions',
-                            name: 'provideToaster',
-                            category: 'Toast',
-                            file: 'src/toast/providers.ts'
-                        }
-                    ]
-                }
-            })
-        });
-        expect(html).to.include('id="references-links"');
-        // Function dedicated detail page — `#api` appended because function
-        // is in KINDS_WITH_API_TAB and the URL has no existing fragment.
-        expect(html).to.include('href="miscellaneous/functions/provideToaster.html#api"');
-        expect(html).to.not.include('href="miscellaneous/functions.html#provideToaster"');
-    });
+    // Note: reference-kind misc symbols (untagged + tagged functions /
+    // variables / typealiases / enumerations) are no longer in the
+    // sidebar at all — the References tree was replaced by a single
+    // top-nav link to `references.html`. The portal page is responsible
+    // for rendering these items; its anchor URLs are exercised by the
+    // Playwright `menu-layout.spec.ts` and unit-tested in
+    // `api-reference-page-generator.spec.ts`. The Menu tests below stay
+    // focused on the Features chapter (curated primary-kinds only) and
+    // the presence/absence of the top-nav link itself.
 
     it('@docsKind primary on a function promotes it into Features chapter', () => {
         const html = Menu({
@@ -455,41 +409,9 @@ describe('Menu — feature layout', () => {
         expect(html).to.include('data-cdx-kind="function"');
     });
 
-    it.each([
-        ['variable', 'variables', false],
-        ['typealias', 'typealiases', false],
-        ['enumeration', 'enumerations', true]
-    ])('miscellaneous feature-walk: %s — tagged → page, untagged → anchor', (kind, plural, hasApiTab) => {
-        const html = Menu({
-            data: baseData({
-                menuLayout: 'feature',
-                categorizedByFeatureReference: {
-                    Group: [
-                        {
-                            kind,
-                            hrefPrefix: `miscellaneous/${plural}`,
-                            name: 'Tagged',
-                            category: 'Group',
-                            file: 'src/lib/file.ts'
-                        },
-                        {
-                            kind,
-                            hrefPrefix: `miscellaneous/${plural}`,
-                            name: 'Untagged',
-                            file: 'src/lib/file.ts'
-                        }
-                    ]
-                }
-            })
-        });
-        // Tagged entries get the dedicated detail page; `#api` is appended
-        // only for kinds whose detail page actually renders an API tab.
-        const taggedSuffix = hasApiTab ? '#api' : '';
-        expect(html).to.include(`href="miscellaneous/${plural}/Tagged.html${taggedSuffix}"`);
-        // Anchor-style URLs always preserve their existing fragment — no
-        // `#api` stacking regardless of kind.
-        expect(html).to.include(`href="miscellaneous/${plural}.html#Untagged"`);
-    });
+    // (Reference-kind misc walk tests removed; the surface they covered
+    // now lives on the references.html portal — see the comment block
+    // above and the api-reference-page-generator unit spec.)
 
     it('honours the menu custom-template override regardless of layout', () => {
         registerCustomTemplate(

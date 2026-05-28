@@ -1,4 +1,5 @@
 export { AdditionalPageGenerator } from './additional-page-generator';
+export { ApiReferencePageGenerator } from './api-reference-page-generator';
 export { AppConfigPageGenerator } from './app-config-page-generator';
 export { AssetCopier, type AssetCopierCallbacks } from './asset-copier';
 export { BucketLandingPageGenerator } from './bucket-landing-page-generator';
