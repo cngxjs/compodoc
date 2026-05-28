@@ -30,12 +30,19 @@
     --color-cdx-entity-module: #2563eb; /* blue-600 */
     --color-cdx-entity-class: #047857; /* emerald-700 */
     --color-cdx-entity-interface: #067792; /* cyan-700 */
+    --color-cdx-entity-token: #334155; /* slate-700 — cooler than interface */
     --color-cdx-entity-guard: #d52222; /* red-700 */
     --color-cdx-entity-interceptor: #a21caf; /* fuchsia-700 cool */
     --color-cdx-entity-function: #4a770e; /* lime-700 */
     --color-cdx-entity-variable: #475569; /* slate-600 */
     --color-cdx-entity-typealias: #4f46e5; /* indigo-600 */
     --color-cdx-entity-enum: #af5109; /* amber-700 */
+
+    /* --- Badge accents (WCAG + AI-generated) --- */
+    --color-cdx-badge-ai-generated: hsl(290 50% 42%); /* cool magenta */
+    --color-cdx-badge-wcag-a: hsl(200 8% 45%); /* ocean-tinted grey */
+    --color-cdx-badge-wcag-aa: hsl(160 55% 32%); /* cyan-shifted green */
+    --color-cdx-badge-wcag-aaa: hsl(200 75% 38%); /* deep cyan-blue */
 
     /* --- Feedback --- */
     --color-cdx-deprecated: hsl(38 80% 33.5%);
@@ -104,12 +111,19 @@
     --color-cdx-entity-module: #60a5fa; /* blue-400 */
     --color-cdx-entity-class: #34d399; /* emerald-400 */
     --color-cdx-entity-interface: #22d3ee; /* cyan-400 */
+    --color-cdx-entity-token: #cbd5e1; /* slate-300 — lighter cool slate */
     --color-cdx-entity-guard: #f87171; /* red-400 */
     --color-cdx-entity-interceptor: #e879f9; /* fuchsia-400 */
     --color-cdx-entity-function: #a3e635; /* lime-400 */
     --color-cdx-entity-variable: #94a3b8; /* slate-400 */
     --color-cdx-entity-typealias: #818cf8; /* indigo-400 */
     --color-cdx-entity-enum: #fb923c; /* orange-400 */
+
+    /* --- Badge accents (WCAG + AI-generated) --- */
+    --color-cdx-badge-ai-generated: hsl(290 65% 70%);
+    --color-cdx-badge-wcag-a: hsl(200 8% 64%);
+    --color-cdx-badge-wcag-aa: hsl(160 60% 58%);
+    --color-cdx-badge-wcag-aaa: hsl(195 75% 62%);
 
     /* --- Feedback --- */
     --color-cdx-deprecated: hsl(38 75% 62%);

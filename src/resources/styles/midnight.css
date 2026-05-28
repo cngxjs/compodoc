@@ -44,12 +44,19 @@
     --color-cdx-entity-module: #818cf8; /* indigo-400 */
     --color-cdx-entity-class: #6ee7b7; /* emerald-300 */
     --color-cdx-entity-interface: #67e8f9; /* cyan-300 */
+    --color-cdx-entity-token: #cbd5e1; /* slate-300 — cool silver-blue, moonlit */
     --color-cdx-entity-guard: #fca5a5; /* red-300 */
     --color-cdx-entity-interceptor: #d946ef; /* fuchsia-500 */
     --color-cdx-entity-function: #bef264; /* lime-300 */
     --color-cdx-entity-variable: #9ca3af; /* gray-400 */
     --color-cdx-entity-typealias: #a5b4fc; /* indigo-300 */
     --color-cdx-entity-enum: #fb923c; /* orange-400 */
+
+    /* --- Badge accents (WCAG + AI-generated) --- */
+    --color-cdx-badge-ai-generated: hsl(290 55% 72%); /* moonlit purple */
+    --color-cdx-badge-wcag-a: hsl(220 8% 64%); /* cool silver */
+    --color-cdx-badge-wcag-aa: hsl(155 50% 58%); /* moonlit green */
+    --color-cdx-badge-wcag-aaa: hsl(215 70% 70%); /* moonlit blue */
 
     /* --- Feedback --- */
     --color-cdx-deprecated: hsl(38 75% 62%);
@@ -125,6 +132,13 @@
     --color-cdx-entity-variable: #9ca3af;
     --color-cdx-entity-typealias: #a5b4fc;
     --color-cdx-entity-enum: #fb923c;
+    --color-cdx-entity-token: #cbd5e1;
+
+    /* --- Badge accents (WCAG + AI-generated) --- */
+    --color-cdx-badge-ai-generated: hsl(290 60% 76%);
+    --color-cdx-badge-wcag-a: hsl(220 10% 68%);
+    --color-cdx-badge-wcag-aa: hsl(155 55% 62%);
+    --color-cdx-badge-wcag-aaa: hsl(215 75% 74%);
 
     /* --- Feedback --- */
     --color-cdx-deprecated: hsl(38 80% 68%);

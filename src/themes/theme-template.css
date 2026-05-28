@@ -43,7 +43,7 @@
   /* --color-cdx-primary-hover:  hsl(222 68% 44%); */
   /* --color-cdx-primary-subtle: hsl(222 68% 96%); */
 
-  /* ── Entity type accents (13 types) ──────────────────── */
+  /* ── Entity type accents (14 types) ──────────────────── */
   /* --color-cdx-entity-component:   #0e8578; */
   /* --color-cdx-entity-service:     #a56a07; */
   /* --color-cdx-entity-directive:   #7c3aed; */
@@ -51,6 +51,7 @@
   /* --color-cdx-entity-module:      #1e6ff5; */
   /* --color-cdx-entity-class:       #05875f; */
   /* --color-cdx-entity-interface:   #475569; */
+  /* --color-cdx-entity-token:       #334155; */
   /* --color-cdx-entity-guard:       #eb1515; */
   /* --color-cdx-entity-interceptor: #ba25cd; */
   /* --color-cdx-entity-function:    #52840b; */
@@ -83,6 +84,10 @@
   /* --color-cdx-badge-content-child:     hsl(55 60% 35%); */
   /* --color-cdx-badge-inject:            hsl(320 45% 45%); */
   /* --color-cdx-badge-host:              hsl(180 50% 35%); */
+  /* --color-cdx-badge-ai-generated:      hsl(290 55% 48%); */
+  /* --color-cdx-badge-wcag-a:            hsl(220 6% 50%); */
+  /* --color-cdx-badge-wcag-aa:           hsl(145 55% 36%); */
+  /* --color-cdx-badge-wcag-aaa:          hsl(212 65% 45%); */
 
   /* ── Modifier base colors ────────────────────────────────
    * Same color-mix() derivation as badges. */
