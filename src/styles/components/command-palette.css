@@ -140,8 +140,24 @@
 
 .cdx-cp .cdx-cp-kind {
     @apply shrink-0 text-xs;
-    color: var(--color-cdx-text-muted);
     font-family: var(--font-body);
+}
+
+/* Pill treatment for the no-badge "Docs" fallback — neutral chrome that
+   matches the colored chip dimensions / radius so non-entity rows
+   (README, CHANGELOG, additional docs) don't look like floating text
+   beside the saturated entity pills.
+
+   When the chip carries a `cdx-badge--entity-<kind>` class, the badge
+   token rules in `badges.css` own bg + foreground (white text on the
+   saturated entity fill); overriding colour here would force dark text
+   on a dark pill in light mode. */
+.cdx-cp .cdx-cp-kind:not(.cdx-badge) {
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-cdx-sm);
+    background: color-mix(in srgb, var(--color-cdx-text-muted) 12%, transparent);
+    color: var(--color-cdx-text-muted);
+    border: 1px solid color-mix(in srgb, var(--color-cdx-text-muted) 22%, transparent);
 }
 
 .cdx-cp .cdx-cp-highlight {

@@ -30,28 +30,31 @@ const ENTITY_TYPES = [
 
 type EntityType = (typeof ENTITY_TYPES)[number];
 
-/** Map entity types to CSS class suffixes (matching design system token names) */
+/** Map entity types to `cdx-badge--entity-<kind>` CSS class suffixes — kept
+ *  in sync with the rules in `src/styles/components/badges.css`. Returns
+ *  `'other'` only for non-entity pages (README, CHANGELOG, ...) so they fall
+ *  through to the muted "Docs" pill. */
 const entityClass = (type: EntityType | 'other'): string => {
     switch (type) {
         case 'service':
         case 'injectable':
-            return 'service';
+            // Badge class is `cdx-badge--entity-injectable`, which itself
+            // uses `--color-cdx-entity-service` for the fill. Both kinds of
+            // search-result point at the same chip.
+            return 'injectable';
         case 'component':
-            return 'component';
         case 'directive':
-            return 'directive';
         case 'pipe':
-            return 'pipe';
         case 'module':
-            return 'module';
         case 'class':
-            return 'class';
         case 'interface':
-            return 'interface';
         case 'guard':
-            return 'guard';
         case 'interceptor':
-            return 'interceptor';
+        case 'function':
+        case 'variable':
+        case 'typealias':
+        case 'enum':
+            return type;
         default:
             return 'other';
     }

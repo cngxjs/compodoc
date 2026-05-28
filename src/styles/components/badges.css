@@ -110,7 +110,7 @@
 .cdx-badge--entity-interface   { background: var(--color-cdx-entity-interface); color: var(--color-cdx-text-inverse, white); border: none; }
 .cdx-badge--entity-guard       { background: var(--color-cdx-entity-guard); color: var(--color-cdx-text-inverse, white); border: none; }
 .cdx-badge--entity-interceptor { background: var(--color-cdx-entity-interceptor); color: var(--color-cdx-text-inverse, white); border: none; }
-.cdx-badge--entity-injectable  { background: var(--color-cdx-entity-service); color: var(--color-cdx-text); border: none; }
+.cdx-badge--entity-injectable  { background: var(--color-cdx-entity-service); color: var(--color-cdx-text-inverse, white); border: none; }
 .cdx-badge--entity-function    { background: var(--color-cdx-entity-function); color: var(--color-cdx-text-inverse, white); border: none; }
 .cdx-badge--entity-variable    { background: var(--color-cdx-entity-variable); color: var(--color-cdx-text-inverse, white); border: none; }
 .cdx-badge--entity-typealias   { background: var(--color-cdx-entity-typealias); color: var(--color-cdx-text-inverse, white); border: none; }
