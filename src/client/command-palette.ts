@@ -191,7 +191,10 @@ interface SearchResult {
     readonly type: EntityType | 'other';
     readonly name: string;
     readonly category?: string;
+    /** First-sentence fallback from `data-pagefind-meta="description"`. */
     readonly description?: string;
+    /** Pagefind's match-context snippet (HTML pre-marked with `<mark>` tags). */
+    readonly excerpt?: string;
 }
 
 let pagefind: any = null;
@@ -276,9 +279,9 @@ const search = async (query: string) => {
     const mapped: SearchResult[] = data.map((d: any) => {
         const meta = d.meta || {};
         const parsed = parseEntityType(meta.title || '');
-        // Prefer the explicit `data-pagefind-meta-kind` attribute emitted by
+        // Prefer the explicit `data-pagefind-meta="kind:..."` value emitted by
         // entity heroes (v0.6.0+) — robust against title-format drift. Fall
-        // back to title parsing for pages that predate the meta attribute
+        // back to title parsing for pages that predate the meta block
         // (custom templates, README/CHANGELOG without a kind, etc.).
         const metaType = typeof meta.kind === 'string' ? KIND_LABEL_TO_TYPE[meta.kind] : undefined;
         return {
@@ -287,7 +290,8 @@ const search = async (query: string) => {
             type: metaType ?? parsed.type,
             name: parsed.name,
             category: typeof meta.category === 'string' ? meta.category : undefined,
-            description: typeof meta.description === 'string' ? meta.description : undefined
+            description: typeof meta.description === 'string' ? meta.description : undefined,
+            excerpt: typeof d.excerpt === 'string' ? d.excerpt : undefined
         };
     });
 
@@ -307,40 +311,28 @@ const search = async (query: string) => {
             if (r.category) {
                 meta.push(`<span class="cdx-cp-category">${escapeHtml(r.category)}</span>`);
             }
-            if (r.description) {
+            // Prefer Pagefind's match-context snippet (already HTML with
+            // `<mark>` highlights around hit terms) — that's the whole point
+            // of the search result. Fall back to the cleaned first-sentence
+            // description meta when no excerpt is available (Pagefind has no
+            // context, e.g. score-driven hits on the title alone).
+            if (r.excerpt) {
+                meta.push(`<span class="cdx-cp-desc">${r.excerpt}</span>`);
+            } else if (r.description) {
                 meta.push(
-                    '<span class="cdx-cp-excerpt">' +
-                        highlightMatch(r.description, searchQuery) +
-                        '</span>'
+                    `<span class="cdx-cp-desc">${highlightMatch(r.description, searchQuery)}</span>`
                 );
             }
             const metaBlock =
                 meta.length > 0 ? `<div class="cdx-cp-meta">${meta.join('')}</div>` : '';
             return (
-                '<a href="' +
-                escapeAttr(r.url) +
-                '" class="cdx-cp-item' +
-                (i === 0 ? ' cdx-cp-active' : '') +
-                '"' +
-                ' role="option" aria-selected="' +
-                (i === 0) +
-                '" data-index="' +
-                i +
-                '" style="--i:' +
-                i +
-                '">' +
+                `<a href="${escapeAttr(r.url)}" class="cdx-cp-item${i === 0 ? ' cdx-cp-active' : ''}" role="option" aria-selected="${i === 0}" data-index="${i}" style="--i:${i}">` +
                 resultIcon(r.type) +
                 '<div class="cdx-cp-body">' +
-                '<span class="cdx-cp-name">' +
-                highlightMatch(r.name, searchQuery) +
-                '</span>' +
+                `<span class="cdx-cp-name">${highlightMatch(r.name, searchQuery)}</span>` +
                 metaBlock +
                 '</div>' +
-                '<span class="' +
-                (entityClass(r.type) !== 'other'
-                    ? `cdx-badge cdx-badge--entity-${entityClass(r.type)} `
-                    : '') +
-                'cdx-cp-type">' +
+                `<span class="${entityClass(r.type) !== 'other' ? `cdx-badge cdx-badge--entity-${entityClass(r.type)} ` : ''}cdx-cp-kind">` +
                 typeLabel(r.type) +
                 '</span>' +
                 '</a>'

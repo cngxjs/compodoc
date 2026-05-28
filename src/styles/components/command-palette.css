@@ -127,12 +127,18 @@
     color: var(--color-cdx-text-secondary);
 }
 
-.cdx-cp .cdx-cp-excerpt {
+.cdx-cp .cdx-cp-desc {
     @apply truncate;
     min-width: 0;
 }
 
-.cdx-cp .cdx-cp-type {
+.cdx-cp .cdx-cp-desc mark {
+    background: transparent;
+    color: var(--color-cdx-primary);
+    font-weight: 600;
+}
+
+.cdx-cp .cdx-cp-kind {
     @apply shrink-0 text-xs;
     color: var(--color-cdx-text-muted);
     font-family: var(--font-body);
