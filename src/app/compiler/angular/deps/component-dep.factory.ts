@@ -63,6 +63,8 @@ export class ComponentDepFactory {
             docsUrl: IO.docsUrl || '',
             slots: IO.slots || [],
             playgrounds: IO.playgrounds || [],
+            ...(IO.wcagLevel && { wcagLevel: IO.wcagLevel }),
+            ...(IO.a11yNote && { a11yNote: IO.a11yNote }),
 
             hostBindings: IO.hostBindings,
             hostListeners: IO.hostListeners,

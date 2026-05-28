@@ -711,7 +711,9 @@ export class AngularDependencies extends FrameworkDependencies {
                             stackblitzUrl: IO.stackblitzUrl || '',
                             githubUrl: IO.githubUrl || '',
                             docsUrl: IO.docsUrl || '',
-                            ...(IO.docsKind === 'primary' && { docsKind: 'primary' as const })
+                            ...(IO.docsKind === 'primary' && { docsKind: 'primary' as const }),
+                            ...(IO.wcagLevel && { wcagLevel: IO.wcagLevel }),
+                            ...(IO.a11yNote && { a11yNote: IO.a11yNote })
                         };
                         if (IO.properties) {
                             interfaceDeps.properties = IO.properties;
@@ -763,7 +765,9 @@ export class AngularDependencies extends FrameworkDependencies {
                                 this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
                                     node
                                 ),
-                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const }),
+                            ...(infos.wcagLevel && { wcagLevel: infos.wcagLevel }),
+                            ...(infos.a11yNote && { a11yNote: infos.a11yNote })
                         };
                         // Detect factory function kind by naming convention
                         const factoryKind = this.providerDetector.detectFactoryKind(name);
@@ -837,7 +841,9 @@ export class AngularDependencies extends FrameworkDependencies {
                                     node
                                 ),
                             file: file,
-                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const }),
+                            ...(infos.wcagLevel && { wcagLevel: infos.wcagLevel }),
+                            ...(infos.a11yNote && { a11yNote: infos.a11yNote })
                         };
 
                         if (!isIgnore(node)) {
@@ -870,7 +876,9 @@ export class AngularDependencies extends FrameworkDependencies {
                                 this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
                                     node
                                 ),
-                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const }),
+                            ...(infos.wcagLevel && { wcagLevel: infos.wcagLevel }),
+                            ...(infos.a11yNote && { a11yNote: infos.a11yNote })
                         };
                         if (node.type) {
                             typeAliasDeps.kind = node.type.kind;
@@ -1031,7 +1039,9 @@ export class AngularDependencies extends FrameworkDependencies {
                                         category,
                                         ...(infos.docsKind === 'primary' && {
                                             docsKind: 'primary' as const
-                                        })
+                                        }),
+                                        ...(infos.wcagLevel && { wcagLevel: infos.wcagLevel }),
+                                        ...(infos.a11yNote && { a11yNote: infos.a11yNote })
                                     };
                                     deps.type = infos.type ? infos.type : '';
                                     if (infos.defaultValue) {
@@ -1293,7 +1303,9 @@ export class AngularDependencies extends FrameworkDependencies {
                                 this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
                                     node
                                 ),
-                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const }),
+                            ...(infos.wcagLevel && { wcagLevel: infos.wcagLevel }),
+                            ...(infos.a11yNote && { a11yNote: infos.a11yNote })
                         };
                         if (node.type) {
                             deps.kind = node.type.kind;
@@ -1328,7 +1340,9 @@ export class AngularDependencies extends FrameworkDependencies {
                                 this.entityVisitor.visitEnumTypeAliasFunctionDeclarationDescription(
                                     node
                                 ),
-                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const }),
+                            ...(infos.wcagLevel && { wcagLevel: infos.wcagLevel }),
+                            ...(infos.a11yNote && { a11yNote: infos.a11yNote })
                         };
                         if (infos.args) {
                             functionDep.args = infos.args;
@@ -1370,7 +1384,9 @@ export class AngularDependencies extends FrameworkDependencies {
                                     node
                                 ),
                             file: file,
-                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const })
+                            ...(infos.docsKind === 'primary' && { docsKind: 'primary' as const }),
+                            ...(infos.wcagLevel && { wcagLevel: infos.wcagLevel }),
+                            ...(infos.a11yNote && { a11yNote: infos.a11yNote })
                         };
                         if (!isIgnore(node)) {
                             this.debug(enumDeps);

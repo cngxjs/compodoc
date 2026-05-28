@@ -4,6 +4,12 @@ import { Component, input } from '@angular/core';
  * Global loading spinner overlay.
  *
  * @since 1.0.0
+ * @wcag AA
+ * @a11y Uses `role="status"` with `aria-live="polite"` so the loading state is
+ *   announced when the overlay activates. The visible "Loading..." text doubles
+ *   as the accessible label; consumers can override via `aria-label` on the host.
+ *   Respects `prefers-reduced-motion` — the rotation pauses when reduced motion
+ *   is requested.
  *
  * @playground Default
  * ```html

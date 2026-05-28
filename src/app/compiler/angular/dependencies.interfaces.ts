@@ -1,3 +1,5 @@
+export type WcagLevel = 'A' | 'AA' | 'AAA';
+
 export interface IDep {
     id?: string;
     type?: string;
@@ -5,6 +7,8 @@ export interface IDep {
     name: string;
     category?: string;
     docsKind?: 'primary';
+    wcagLevel?: WcagLevel;
+    a11yNote?: string;
 }
 
 export interface IInjectableDep extends IDep {

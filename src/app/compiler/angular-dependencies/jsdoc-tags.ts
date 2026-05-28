@@ -1,4 +1,5 @@
 import type { JsdocParserUtil } from '../../../utils';
+import { logger } from '../../../utils/logger';
 
 export class JsdocTags {
     constructor(private readonly jsdocParserUtil: JsdocParserUtil) {}
@@ -20,6 +21,23 @@ export class JsdocTags {
                     const value = raw.split('\n')[0].trim().toLowerCase();
                     if (value === 'primary') {
                         result.docsKind = 'primary';
+                    }
+                }
+                if (tag.tagName.text === 'wcag') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    const value = raw.split('\n')[0].trim().toUpperCase();
+                    if (value === 'A' || value === 'AA' || value === 'AAA') {
+                        result.wcagLevel = value;
+                    } else if (value) {
+                        logger.warn(
+                            `Invalid @wcag level "${value}" — expected one of A, AA, AAA. Ignoring.`
+                        );
+                    }
+                }
+                if (tag.tagName.text === 'a11y') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    if (raw) {
+                        result.a11yNote = raw;
                     }
                 }
             }

@@ -6,7 +6,7 @@ import { markedAcl } from '../../../../../../utils/marked.acl';
 import { markedtags } from '../../../../../../utils/utils';
 
 export class JsdocExtractor {
-    private jsdocParserUtil = new JsdocParserUtil();
+    private readonly jsdocParserUtil = new JsdocParserUtil();
 
     public checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
         tags.forEach(tag => {
@@ -27,6 +27,23 @@ export class JsdocExtractor {
                     const value = raw.split('\n')[0].trim().toLowerCase();
                     if (value === 'primary') {
                         result.docsKind = 'primary';
+                    }
+                }
+                if (tag.tagName.text === 'wcag') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    const value = raw.split('\n')[0].trim().toUpperCase();
+                    if (value === 'A' || value === 'AA' || value === 'AAA') {
+                        result.wcagLevel = value;
+                    } else if (value) {
+                        logger.warn(
+                            `Invalid @wcag level "${value}" — expected one of A, AA, AAA. Ignoring.`
+                        );
+                    }
+                }
+                if (tag.tagName.text === 'a11y') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    if (raw) {
+                        result.a11yNote = raw;
                     }
                 }
             }
@@ -63,7 +80,7 @@ export class JsdocExtractor {
                     result.group = comment.split('\n')[0].trim();
                     break;
                 case 'order':
-                    result.order = parseInt(comment, 10) || 0;
+                    result.order = Number.parseInt(comment, 10) || 0;
                     break;
                 case 'since':
                     result.since = comment.split('\n')[0].trim();
