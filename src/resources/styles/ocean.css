@@ -30,7 +30,7 @@
     --color-cdx-entity-module: #2563eb; /* blue-600 */
     --color-cdx-entity-class: #047857; /* emerald-700 */
     --color-cdx-entity-interface: #067792; /* cyan-700 */
-    --color-cdx-entity-token: #334155; /* slate-700 — cooler than interface */
+    --color-cdx-entity-token: #334155; /* slate-700, cooler than interface */
     --color-cdx-entity-guard: #d52222; /* red-700 */
     --color-cdx-entity-interceptor: #a21caf; /* fuchsia-700 cool */
     --color-cdx-entity-function: #4a770e; /* lime-700 */
@@ -53,7 +53,7 @@
     --color-cdx-border-strong: hsl(195 22% 52%);
     --color-cdx-border-focus: hsl(195 80% 38%);
 
-    /* --- Shadows (deep water — teal tint, softer blur) --- */
+    /* --- Shadows (deep water, teal tint, softer blur) --- */
     --shadow-cdx-sm: 0 1px 3px hsl(200 40% 18% / 0.08);
     --shadow-cdx-md: 0 6px 16px hsl(200 40% 18% / 0.1);
     --shadow-cdx-lg: 0 16px 40px hsl(200 40% 18% / 0.14);
@@ -67,7 +67,7 @@
     --radius-lg: 22px;
     --radius-2xl: 28px;
 
-    /* --- Code blocks (soft teal outline — surface tension) --- */
+    /* --- Code blocks (soft teal outline, surface tension) --- */
     --color-cdx-snippet-bg: hsl(195 24% 95%);
     --color-cdx-snippet-border: hsl(195 30% 82%);
     --color-cdx-snippet-radius: var(--radius-cdx-md);
@@ -111,7 +111,7 @@
     --color-cdx-entity-module: #60a5fa; /* blue-400 */
     --color-cdx-entity-class: #34d399; /* emerald-400 */
     --color-cdx-entity-interface: #22d3ee; /* cyan-400 */
-    --color-cdx-entity-token: #cbd5e1; /* slate-300 — lighter cool slate */
+    --color-cdx-entity-token: #cbd5e1; /* slate-300, lighter cool slate */
     --color-cdx-entity-guard: #f87171; /* red-400 */
     --color-cdx-entity-interceptor: #e879f9; /* fuchsia-400 */
     --color-cdx-entity-function: #a3e635; /* lime-400 */
@@ -134,7 +134,7 @@
     --color-cdx-border-strong: hsl(195 20% 44%);
     --color-cdx-border-focus: hsl(188 72% 62%);
 
-    /* --- Shadows (deep water — darker, teal tint) --- */
+    /* --- Shadows (deep water, darker, teal tint) --- */
     --shadow-cdx-sm: 0 1px 3px hsl(200 60% 3% / 0.5);
     --shadow-cdx-md: 0 6px 18px hsl(200 60% 3% / 0.55);
     --shadow-cdx-lg: 0 18px 44px hsl(200 60% 3% / 0.6);
