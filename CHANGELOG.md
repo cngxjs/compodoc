@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.6.1] - 2026-05-29
+
+### Fixed
+
+- **Custom JSDoc tags now propagate to `class` and `injectable` entities.** The per-kind shape builders in the Angular dependency compiler copy extracted tag fields individually, and the `class` and `injectable` blocks had drifted from the directive / component reference set: classes dropped `@since`, and injectables dropped `@docsKind`, `@wcag`, `@a11y`, `@selector`, and `@relatedTo`. Both shapes now carry the full tag set, so `documentation.json` populates the fields and the class / injectable page heroes render the Primary, Since, WCAG, selector, and Related chips consistently with component and directive pages. Additive to the JSON output — the fields already belong to the schema 2 surface, so no schema bump.
+
 ## [0.6.0] - 2026-05-29
 
 `menuLayout: 'feature'` is reshaped from a single mixed chapter into a curated **Features** chapter plus a single-page **References** portal at `references.html`, with rich Pagefind metadata, accessibility tags, bucket landing pages, a first-class `token` kind, a finalized JSDoc tag system (`@selector`, `@relatedTo`, `@wcag`, `@docsKind primary`, `@github` URL validation), and a full themed token surface to match. `documentation.json` schema bumped to `2` (additive — old readers keep working).

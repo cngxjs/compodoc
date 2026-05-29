@@ -250,6 +250,7 @@ export class AngularDependencies extends FrameworkDependencies {
             githubUrl: IO.githubUrl || '',
             docsUrl: IO.docsUrl || '',
             ...(IO.aiGenerated && { aiGenerated: IO.aiGenerated }),
+            ...(IO.since && { since: IO.since }),
             ...(IO.docsKind === 'primary' && { docsKind: 'primary' as const }),
             ...(IO.wcagLevel && { wcagLevel: IO.wcagLevel }),
             ...(IO.a11yNote && { a11yNote: IO.a11yNote }),
@@ -547,7 +548,13 @@ export class AngularDependencies extends FrameworkDependencies {
                                 ...(IO.figmaUrl && { figmaUrl: IO.figmaUrl }),
                                 ...(IO.stackblitzUrl && { stackblitzUrl: IO.stackblitzUrl }),
                                 ...(IO.githubUrl && { githubUrl: IO.githubUrl }),
-                                ...(IO.docsUrl && { docsUrl: IO.docsUrl })
+                                ...(IO.docsUrl && { docsUrl: IO.docsUrl }),
+                                ...(IO.docsKind === 'primary' && { docsKind: 'primary' as const }),
+                                ...(IO.wcagLevel && { wcagLevel: IO.wcagLevel }),
+                                ...(IO.a11yNote && { a11yNote: IO.a11yNote }),
+                                ...(IO.taggedSelector && { taggedSelector: IO.taggedSelector }),
+                                ...(IO.relatedTo &&
+                                    IO.relatedTo.length > 0 && { relatedTo: IO.relatedTo })
                             };
                             if (IO.constructor && !Configuration.mainData.disableConstructors) {
                                 injectableDeps.constructorObj = IO.constructor;
