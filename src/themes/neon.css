@@ -36,12 +36,19 @@
     --color-cdx-entity-module: #0af;
     --color-cdx-entity-class: #30d158;
     --color-cdx-entity-interface: #5ac8fa;
+    --color-cdx-entity-token: #5e95ff; /* electric indigo — distinct from interface cyan */
     --color-cdx-entity-guard: #ff453a;
     --color-cdx-entity-interceptor: #da5aff;
     --color-cdx-entity-function: #a8ff00;
     --color-cdx-entity-variable: #98989d;
     --color-cdx-entity-typealias: #7d7aff;
     --color-cdx-entity-enum: #ff9500;
+
+    /* --- Badge accents (WCAG + AI-generated) --- */
+    --color-cdx-badge-ai-generated: hsl(320 100% 65%); /* hot pink — neon signature */
+    --color-cdx-badge-wcag-a: hsl(245 10% 64%); /* arcade cool grey */
+    --color-cdx-badge-wcag-aa: hsl(140 100% 55%); /* neon green */
+    --color-cdx-badge-wcag-aaa: hsl(200 100% 60%); /* electric blue */
 
     /* --- Feedback (neon spectrum — hot pink + acid yellow) --- */
     --color-cdx-deprecated: hsl(55 100% 55%);
@@ -122,12 +129,19 @@
     --color-cdx-entity-module: #0af;
     --color-cdx-entity-class: #30d158;
     --color-cdx-entity-interface: #5ac8fa;
+    --color-cdx-entity-token: #6ea5ff;
     --color-cdx-entity-guard: #ff453a;
     --color-cdx-entity-interceptor: #da5aff;
     --color-cdx-entity-function: #a8ff00;
     --color-cdx-entity-variable: #98989d;
     --color-cdx-entity-typealias: #7d7aff;
     --color-cdx-entity-enum: #ff9500;
+
+    /* --- Badge accents (WCAG + AI-generated) --- */
+    --color-cdx-badge-ai-generated: hsl(320 100% 70%);
+    --color-cdx-badge-wcag-a: hsl(245 10% 68%);
+    --color-cdx-badge-wcag-aa: hsl(140 100% 60%);
+    --color-cdx-badge-wcag-aaa: hsl(200 100% 65%);
 
     /* --- Feedback --- */
     --color-cdx-deprecated: hsl(55 100% 58%);

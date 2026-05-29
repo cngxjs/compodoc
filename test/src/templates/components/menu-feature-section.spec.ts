@@ -25,6 +25,8 @@ interface MenuDataFixture {
     entities?: any[];
     modules?: any[];
     categorizedByFeature?: Record<string, any[]>;
+    categorizedByFeaturePrimary?: Record<string, any[]>;
+    categorizedByFeatureReference?: Record<string, any[]>;
     menuLayout?: 'type' | 'feature';
     groupDepth?: number;
     [key: string]: unknown;
@@ -53,6 +55,11 @@ const baseData = (overrides: Partial<MenuDataFixture>): MenuDataFixture => ({
     hideGenerator: true,
     groupDepth: 2,
     menuLayout: 'type',
+    featuresName: '',
+    referencesName: '',
+    categorizedByFeature: {},
+    categorizedByFeaturePrimary: {},
+    categorizedByFeatureReference: {},
     ...overrides
 });
 
@@ -62,7 +69,7 @@ describe('Menu — feature layout', () => {
     const originalModules = DependenciesEngine.modules;
 
     beforeEach(() => {
-        Configuration.mainData.toggleMenuItems = ['features'];
+        Configuration.mainData.toggleMenuItems = ['features', 'references'];
         Configuration.mainData.collapsedAll = false;
         // getAloneElements consults DependenciesEngine.modules; keep it empty so
         // every component/directive in the fixture is treated as standalone.
@@ -76,26 +83,49 @@ describe('Menu — feature layout', () => {
         clearCustomTemplates();
     });
 
-    it('falls back to type layout when categorizedByFeature is empty', () => {
+    it('renders no Features chapter, no References link, and no per-kind chapters when feature dicts are empty', () => {
         const html = Menu({
             data: baseData({
                 menuLayout: 'feature',
-                components: [{ name: 'Foo', file: 'src/foo/foo.component.ts' }],
-                categorizedByFeature: {}
+                components: [{ name: 'Foo', file: 'src/foo/foo.component.ts' }]
             })
         });
         expect(html).to.not.include('id="features-links"');
+        // The References top-nav link is gated on categorizedByFeature
+        // having entries — empty dict ⇒ no link.
+        expect(html).to.not.include('href="references.html"');
         expect(html).to.not.include('id="components-links"');
     });
 
-    it('renders a cross-kind feature chapter mixing entity kinds in one folder', () => {
+    it('Features-chapter links never carry #api (default-Info tab intent)', () => {
+        const html = Menu({
+            data: baseData({
+                menuLayout: 'feature',
+                components: [{ name: 'CngxToast', file: 'src/toast/toast.component.ts' }],
+                categorizedByFeaturePrimary: {
+                    toast: [
+                        {
+                            kind: 'component',
+                            hrefPrefix: 'components',
+                            name: 'CngxToast',
+                            file: 'src/toast/toast.component.ts'
+                        }
+                    ]
+                }
+            })
+        });
+        expect(html).to.include('href="components/CngxToast.html"');
+        expect(html).to.not.include('href="components/CngxToast.html#api"');
+    });
+
+    it('renders a Features chapter mixing primary-kind entities in one folder', () => {
         const html = Menu({
             data: baseData({
                 menuLayout: 'feature',
                 components: [{ name: 'ButtonComponent', file: 'src/button/button.component.ts' }],
                 directives: [{ name: 'RippleDirective', file: 'src/button/ripple.directive.ts' }],
                 injectables: [{ name: 'ButtonService', file: 'src/button/button.service.ts' }],
-                categorizedByFeature: {
+                categorizedByFeaturePrimary: {
                     button: [
                         {
                             kind: 'component',
@@ -129,12 +159,102 @@ describe('Menu — feature layout', () => {
         expect(html).to.include('href="injectables/ButtonService.html"');
     });
 
+    it('renders a top-level Reference link to references.html when categorizedByFeature has entries', () => {
+        const html = Menu({
+            data: baseData({
+                menuLayout: 'feature',
+                interfaces: [{ name: 'ToastConfig', file: 'src/toast/toast.types.ts' }],
+                categorizedByFeature: {
+                    toast: [
+                        {
+                            kind: 'interface',
+                            hrefPrefix: 'interfaces',
+                            name: 'ToastConfig',
+                            file: 'src/toast/toast.types.ts'
+                        }
+                    ]
+                }
+            })
+        });
+        // No bucket-tree under a References chapter — the portal page
+        // owns the exhaustive catalogue now.
+        expect(html).to.not.include('id="references-links"');
+        expect(html).to.not.include('id="references-group-toast"');
+        // Top-level link to the portal page.
+        expect(html).to.include('href="references.html"');
+        expect(html).to.include('class="chapter references"');
+    });
+
+    it('renders only the Features chapter (References is a top-nav link, not a tree)', () => {
+        const html = Menu({
+            data: baseData({
+                menuLayout: 'feature',
+                components: [{ name: 'CngxToast', file: 'src/toast/toast.component.ts' }],
+                interfaces: [{ name: 'ToastConfig', file: 'src/toast/toast.types.ts' }],
+                categorizedByFeaturePrimary: {
+                    toast: [
+                        {
+                            kind: 'component',
+                            hrefPrefix: 'components',
+                            name: 'CngxToast',
+                            file: 'src/toast/toast.component.ts'
+                        }
+                    ]
+                },
+                categorizedByFeature: {
+                    toast: [
+                        {
+                            kind: 'component',
+                            hrefPrefix: 'components',
+                            name: 'CngxToast',
+                            file: 'src/toast/toast.component.ts'
+                        },
+                        {
+                            kind: 'interface',
+                            hrefPrefix: 'interfaces',
+                            name: 'ToastConfig',
+                            file: 'src/toast/toast.types.ts'
+                        }
+                    ]
+                }
+            })
+        });
+        expect(html).to.include('id="features-links"');
+        expect(html).to.include('id="features-group-toast"');
+        // References chapter / per-bucket tree is gone.
+        expect(html).to.not.include('id="references-links"');
+        expect(html).to.not.include('id="references-group-toast"');
+        // Top-nav Reference link points at the portal page.
+        expect(html).to.include('href="references.html"');
+    });
+
+    it('honours configured featuresName label', () => {
+        const html = Menu({
+            data: baseData({
+                menuLayout: 'feature',
+                featuresName: 'Building Blocks',
+                components: [{ name: 'Foo', file: 'src/foo/foo.component.ts' }],
+                categorizedByFeaturePrimary: {
+                    foo: [
+                        {
+                            kind: 'component',
+                            hrefPrefix: 'components',
+                            name: 'Foo',
+                            file: 'src/foo/foo.component.ts'
+                        }
+                    ]
+                }
+            })
+        });
+        expect(html).to.include('Building Blocks');
+    });
+
     it('omits per-kind chapters when menuLayout is feature', () => {
         const html = Menu({
             data: baseData({
                 menuLayout: 'feature',
                 components: [{ name: 'ButtonComponent', file: 'src/button/button.component.ts' }],
-                categorizedByFeature: {
+                categorizedByFeaturePrimary: {
                     button: [
                         {
                             kind: 'component',
@@ -159,9 +279,10 @@ describe('Menu — feature layout', () => {
         });
         expect(html).to.include('id="components-links"');
         expect(html).to.not.include('id="features-links"');
+        expect(html).to.not.include('id="references-links"');
     });
 
-    it('still emits Modules / Additional Pages / Miscellaneous chapters in feature mode', () => {
+    it('still emits Modules / Additional Pages chapters in feature mode, hides Miscellaneous', () => {
         const html = Menu({
             data: baseData({
                 menuLayout: 'feature',
@@ -177,7 +298,7 @@ describe('Menu — feature layout', () => {
                     }
                 ],
                 includesName: 'Guides',
-                categorizedByFeature: {
+                categorizedByFeaturePrimary: {
                     foo: [
                         {
                             kind: 'class',
@@ -191,20 +312,25 @@ describe('Menu — feature layout', () => {
         });
         expect(html).to.include('id="modules-links"');
         expect(html).to.include('id="additional-pages"');
-        expect(html).to.include('id="miscellaneous-links"');
+        // Miscellaneous redundant in feature mode — everything moved into References.
+        expect(html).to.not.include('id="miscellaneous-links"');
         expect(html).to.include('id="features-links"');
     });
 
     it('collapsedAll: true forces every chapter AND every nested folder closed', () => {
-        Configuration.mainData.toggleMenuItems = ['features', 'modules', 'miscellaneous'];
+        Configuration.mainData.toggleMenuItems = [
+            'features',
+            'references',
+            'modules',
+            'miscellaneous'
+        ];
         Configuration.mainData.collapsedAll = true;
         const html = Menu({
             data: baseData({
                 menuLayout: 'feature',
                 modules: [{ name: 'AppModule', id: 'm1' }],
-                miscellaneous: { variables: [{ name: 'X' }] },
                 groupDepth: 4,
-                categorizedByFeature: {
+                categorizedByFeaturePrimary: {
                     'features/admin-settings': [
                         {
                             kind: 'component',
@@ -216,12 +342,8 @@ describe('Menu — feature layout', () => {
                 }
             })
         });
-        // No chapter/group `<ul class="links collapse">` should ever carry
-        // the `in` modifier — that's the bootstrap-collapse "expanded" flag.
         expect(html).to.not.match(/class="links collapse in"/);
         expect(html).to.not.include('aria-expanded="true"');
-        // The Features chapter and its nested folders still RENDER —
-        // collapsedAll only changes initial expansion, not visibility.
         expect(html).to.include('id="features-links"');
         expect(html).to.include('id="features-group-features"');
     });
@@ -233,7 +355,7 @@ describe('Menu — feature layout', () => {
             data: baseData({
                 menuLayout: 'feature',
                 groupDepth: 2,
-                categorizedByFeature: {
+                categorizedByFeaturePrimary: {
                     button: [
                         {
                             kind: 'component',
@@ -245,95 +367,62 @@ describe('Menu — feature layout', () => {
                 }
             })
         });
-        // The Features chapter (listed in toggleMenuItems) and the top-level
-        // `button` group (depth 0 < groupDepth 2) both start expanded.
         expect(html).to.include('class="links collapse in"');
     });
 
-    it('miscellaneous feature-walk: untagged entries link to anchor on collection page', () => {
+    // Note: reference-kind misc symbols (untagged + tagged functions /
+    // variables / typealiases / enumerations) are no longer in the
+    // sidebar at all — the References tree was replaced by a single
+    // top-nav link to `references.html`. The portal page is responsible
+    // for rendering these items; its anchor URLs are exercised by the
+    // Playwright `menu-layout.spec.ts` and unit-tested in
+    // `api-reference-page-generator.spec.ts`. The Menu tests below stay
+    // focused on the Features chapter (curated primary-kinds only) and
+    // the presence/absence of the top-nav link itself.
+
+    it('@docsKind primary on a function promotes it into Features chapter', () => {
         const html = Menu({
             data: baseData({
                 menuLayout: 'feature',
-                miscellaneous: { functions: [{ name: 'helperFn' }] },
-                categorizedByFeature: {
-                    util: [
+                miscellaneous: {
+                    functions: [
+                        { name: 'provideFeedback', category: 'ui/feedback', docsKind: 'primary' }
+                    ]
+                },
+                categorizedByFeaturePrimary: {
+                    'ui/feedback': [
                         {
                             kind: 'function',
                             hrefPrefix: 'miscellaneous/functions',
-                            name: 'helperFn',
-                            file: 'src/util/helper.ts'
+                            name: 'provideFeedback',
+                            category: 'ui/feedback',
+                            docsKind: 'primary',
+                            file: 'src/feedback/providers.ts'
                         }
                     ]
                 }
             })
         });
-        expect(html).to.include('href="miscellaneous/functions.html#helperFn"');
-        expect(html).to.not.include('href="miscellaneous/functions/helperFn.html"');
+        expect(html).to.include('id="features-links"');
+        // Function still renders with its kind icon — promotion changes
+        // chapter membership, not the per-item visual.
+        expect(html).to.include('data-cdx-kind="function"');
     });
 
-    it('miscellaneous feature-walk: @category-tagged entries link to dedicated detail pages', () => {
-        const html = Menu({
-            data: baseData({
-                menuLayout: 'feature',
-                miscellaneous: { functions: [{ name: 'provideToaster', category: 'Toast' }] },
-                categorizedByFeature: {
-                    Toast: [
-                        {
-                            kind: 'function',
-                            hrefPrefix: 'miscellaneous/functions',
-                            name: 'provideToaster',
-                            category: 'Toast',
-                            file: 'src/toast/providers.ts'
-                        }
-                    ]
-                }
-            })
-        });
-        expect(html).to.include('href="miscellaneous/functions/provideToaster.html"');
-        expect(html).to.not.include('href="miscellaneous/functions.html#provideToaster"');
-    });
-
-    it.each([
-        ['variable', 'variables'],
-        ['typealias', 'typealiases'],
-        ['enumeration', 'enumerations']
-    ])('miscellaneous feature-walk: %s — tagged → page, untagged → anchor', (kind, plural) => {
-        const html = Menu({
-            data: baseData({
-                menuLayout: 'feature',
-                categorizedByFeature: {
-                    Group: [
-                        {
-                            kind,
-                            hrefPrefix: `miscellaneous/${plural}`,
-                            name: 'Tagged',
-                            category: 'Group',
-                            file: 'src/lib/file.ts'
-                        },
-                        {
-                            kind,
-                            hrefPrefix: `miscellaneous/${plural}`,
-                            name: 'Untagged',
-                            file: 'src/lib/file.ts'
-                        }
-                    ]
-                }
-            })
-        });
-        expect(html).to.include(`href="miscellaneous/${plural}/Tagged.html"`);
-        expect(html).to.include(`href="miscellaneous/${plural}.html#Untagged"`);
-    });
+    // (Reference-kind misc walk tests removed; the surface they covered
+    // now lives on the references.html portal — see the comment block
+    // above and the api-reference-page-generator unit spec.)
 
     it('honours the menu custom-template override regardless of layout', () => {
         registerCustomTemplate(
             'menu',
             (data: any) => `<nav data-cdx-custom-menu="1">${data.menuLayout}</nav>`
         );
-        // The override is checked in html.engine.render — directly invoke
-        // renderCustomTemplate to verify the registration still wins.
         const html = renderCustomTemplate('menu', {
             menuLayout: 'feature',
-            categorizedByFeature: {}
+            categorizedByFeature: {},
+            categorizedByFeaturePrimary: {},
+            categorizedByFeatureReference: {}
         });
         expect(html).to.equal('<nav data-cdx-custom-menu="1">feature</nav>');
     });

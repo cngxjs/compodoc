@@ -129,7 +129,7 @@
             "items": {
                 "$id": "/properties/toggleMenuItems/items",
                 "type": "string",
-                "title": "Close by default items in the menu values : ['all'] or one of these ['modules','components','directives','classes','injectables','interfaces','pipes','additionalPages']",
+                "title": "Close by default items in the menu values : ['all'] or one of these ['modules','components','directives','entities','classes','injectables','tokens','guards','interfaces','interceptors','pipes','miscellaneous','additionalPages','features'] (features applies under menuLayout: 'feature')",
                 "default": "",
                 "examples": ["all"]
             }
@@ -428,9 +428,23 @@
             "$id": "/properties/menuLayout",
             "type": "string",
             "enum": ["type", "feature"],
-            "title": "Sidebar layout (config-only, no CLI flag). 'type' groups by Angular artefact kind (default), 'feature' groups every kind together by folder/@category",
+            "title": "Sidebar layout (config-only, no CLI flag). 'type' groups by Angular artefact kind (default), 'feature' groups every kind together by folder/@category and splits the sidebar into Features (organisms) and References (type shapes)",
             "default": "type",
             "examples": ["type", "feature"]
+        },
+        "featuresName": {
+            "$id": "/properties/featuresName",
+            "type": "string",
+            "title": "Label for the Features chapter in menuLayout: 'feature' (config-only). Defaults to the translated 'features' i18n key.",
+            "default": "",
+            "examples": ["Features", "Building Blocks"]
+        },
+        "referencesName": {
+            "$id": "/properties/referencesName",
+            "type": "string",
+            "title": "Label for the References chapter in menuLayout: 'feature' (config-only). Defaults to the translated 'references' i18n key.",
+            "default": "",
+            "examples": ["References", "API"]
         },
         "collapsedAll": {
             "$id": "/properties/collapsedAll",

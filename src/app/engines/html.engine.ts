@@ -3,7 +3,9 @@ import { CoverageBadge } from '../../templates/components/CoverageBadge';
 import { Menu } from '../../templates/components/Menu';
 import { Layout } from '../../templates/Layout';
 import { AdditionalPage } from '../../templates/pages/AdditionalPage';
+import { ApiReferencePage } from '../../templates/pages/ApiReferencePage';
 import { AppConfigPage } from '../../templates/pages/AppConfigPage';
+import { BucketLandingPage } from '../../templates/pages/BucketLandingPage';
 import { ClassPage } from '../../templates/pages/ClassPage';
 import { ComponentPage } from '../../templates/pages/ComponentPage';
 import { CoverageReport } from '../../templates/pages/CoverageReport';
@@ -31,6 +33,7 @@ import { PackageDependencies } from '../../templates/pages/PackageDependencies';
 import { PackageProperties } from '../../templates/pages/PackageProperties';
 import { PipePage } from '../../templates/pages/PipePage';
 import { Routes } from '../../templates/pages/Routes';
+import { TokenPage } from '../../templates/pages/TokenPage';
 import { UnitTestReport } from '../../templates/pages/UnitTestReport';
 import { logger } from '../../utils/logger';
 import { loadCustomTemplates, renderCustomTemplate } from './custom-template.engine';
@@ -51,6 +54,7 @@ const CONTEXT_TEMPLATE_MAP: Record<string, string> = {
     entity: 'entity',
     directive: 'directive',
     injectable: 'injectable',
+    token: 'token',
     interceptor: 'interceptor',
     guard: 'guard',
     pipe: 'pipe',
@@ -69,7 +73,9 @@ const CONTEXT_TEMPLATE_MAP: Record<string, string> = {
     'miscellaneous-enumeration': 'miscellaneous-enumeration',
     coverage: 'coverage-report',
     'unit-test': 'unit-test-report',
-    'additional-page': 'additional-page'
+    'additional-page': 'additional-page',
+    'bucket-landing': 'bucket-landing',
+    'api-reference': 'api-reference'
 };
 
 export class HtmlEngine {
@@ -136,6 +142,8 @@ export class HtmlEngine {
             case 'injectable':
                 data.relationships = DependenciesEngine.getRelationships(data.injectable?.name);
                 return InjectablePage(data);
+            case 'token':
+                return TokenPage(data);
             case 'interceptor':
                 return InterceptorPage(data);
             case 'interface':
@@ -166,6 +174,10 @@ export class HtmlEngine {
                 return ComponentPage(data);
             case 'app-config':
                 return AppConfigPage(data);
+            case 'bucket-landing':
+                return BucketLandingPage(data);
+            case 'api-reference':
+                return ApiReferencePage(data);
             default:
                 return '';
         }

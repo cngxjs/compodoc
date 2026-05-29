@@ -121,6 +121,10 @@ const CommandPalette = () =>
                         </svg>
                     </button>
                 </div>
+                <section class="cdx-cp-facets" hidden aria-label="Filter results">
+                    {/* Populated by command-palette.ts when pagefind.filters()
+                          returns at least two values for any dimension. */}
+                </section>
                 <div class="cdx-cp-body" id="cdx-cp-listbox" role="listbox">
                     <div class="cdx-cp-results"></div>
                     <div class="cdx-cp-empty" hidden aria-live="polite">

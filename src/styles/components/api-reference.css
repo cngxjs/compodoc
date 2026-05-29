@@ -1,0 +1,557 @@
+/* API Reference portal (`references.html`). Single-page filter UI for
+ * the exhaustive symbol surface under `menuLayout: 'feature'`.
+ *
+ * Visual model mirrors angular.dev/api:
+ *   - generous whitespace, 8px baseline grid
+ *   - hero: single H1 + one muted sentence (no metric pills)
+ *   - filter UI inlined in page flow (no card chrome)
+ *   - stability chips read as checkboxes (✓ + word), not coloured dots
+ *   - identifier-type chips are pastel letter-boxes, not saturated pills
+ *   - section headers: lowercase, slash-pathed, normal weight; count as
+ *     small muted subscript
+ *   - item rows: left letter-icon + name; right slot empty unless a
+ *     status badge applies (DEPR / EXP / WCAG)
+ *
+ * Hide strategy: rows AND sections both flip `data-cdx-ref-hidden="1"`.
+ * `content-visibility: auto` on items keeps offscreen layout work
+ * cheap on large outputs.
+ *
+ * Scroll-collapse: the page root carries `data-cdx-ref-collapsed="1"`
+ * when the sentinel scrolls out (set by the client filter module).
+ * Collapsed state hides the stability + kind rows; search input,
+ * bucket select, reset, and a disclosure button stay visible. Clicking
+ * the disclosure toggles the expanded state regardless of scroll.
+ */
+
+:root {
+    --cdx-ref-row: 48px; /* airy baseline */
+    --cdx-ref-icon: 20px;
+}
+
+/* --- Hero (lean, airy) --- */
+
+.cdx-ref-hero {
+    padding: var(--spacing-cdx-xl) 0 var(--spacing-cdx-lg);
+    margin-bottom: var(--spacing-cdx-lg);
+}
+
+.cdx-ref-hero-title {
+    font-size: 1.875rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--color-cdx-text);
+}
+
+.cdx-ref-hero-subtitle {
+    margin: var(--spacing-cdx-xs) 0 0;
+    color: var(--color-cdx-text-secondary);
+    font-size: 0.9375rem;
+}
+
+/* --- Page root + sentinel --- */
+
+.cdx-ref-page {
+    margin-top: 0;
+}
+
+.cdx-ref-sentinel {
+    width: 100%;
+    height: 1px;
+    margin-top: -1px;
+    pointer-events: none;
+}
+
+/* --- Filter bar (no card chrome, not sticky, scrolls with content) --- */
+
+.cdx-ref-filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-cdx-md);
+    padding: var(--spacing-cdx-md) 0 var(--spacing-cdx-lg);
+    margin-bottom: var(--spacing-cdx-xl);
+    background: var(--color-cdx-bg);
+    border-bottom: 1px solid var(--color-cdx-border-subtle, var(--color-cdx-border));
+}
+
+.cdx-ref-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-cdx-md);
+    align-items: stretch;
+}
+
+.cdx-ref-search {
+    position: relative;
+    flex: 1 1 240px;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-xs);
+    padding: 0 var(--spacing-cdx-sm);
+    border-radius: var(--radius-cdx-sm);
+    background: var(--color-cdx-bg-elevated);
+    border: 1px solid var(--color-cdx-border);
+    height: var(--cdx-ref-row);
+}
+
+.cdx-ref-search:focus-within {
+    outline: 2px solid var(--color-cdx-focus-ring, var(--color-cdx-primary));
+    outline-offset: 1px;
+}
+
+.cdx-ref-search-icon {
+    display: inline-flex;
+    color: var(--color-cdx-text-muted);
+}
+
+.cdx-ref-search-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-cdx-text);
+    padding: var(--spacing-cdx-xs) 0;
+    font: inherit;
+}
+
+.cdx-ref-search-input:focus {
+    outline: none;
+}
+
+.cdx-ref-search-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--color-cdx-text-muted);
+    cursor: pointer;
+    padding: var(--spacing-cdx-xs);
+    border-radius: var(--radius-cdx-sm);
+}
+
+.cdx-ref-search-clear:hover {
+    color: var(--color-cdx-text);
+    background: var(--color-cdx-bg-alt);
+}
+
+.cdx-ref-bucket-select {
+    appearance: none;
+    height: var(--cdx-ref-row);
+    padding: 0 var(--spacing-cdx-md) 0 var(--spacing-cdx-sm);
+    background: var(--color-cdx-bg-elevated);
+    color: var(--color-cdx-text);
+    border: 1px solid var(--color-cdx-border);
+    border-radius: var(--radius-cdx-sm);
+    font: inherit;
+    cursor: pointer;
+}
+
+.cdx-ref-bucket-select:focus-visible {
+    outline: 2px solid var(--color-cdx-focus-ring, var(--color-cdx-primary));
+    outline-offset: 1px;
+}
+
+.cdx-ref-reset {
+    height: var(--cdx-ref-row);
+    padding: 0 var(--spacing-cdx-md);
+    border: 1px solid var(--color-cdx-border-subtle, var(--color-cdx-border));
+    background: transparent;
+    color: var(--color-cdx-text);
+    border-radius: var(--radius-cdx-sm);
+    cursor: pointer;
+    font: inherit;
+}
+
+.cdx-ref-reset:hover {
+    background: var(--color-cdx-bg-alt);
+}
+
+/* --- Stability "checkbox" chips --- */
+
+.cdx-ref-stability-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-cdx-xs);
+    padding: 4px var(--spacing-cdx-sm);
+    background: transparent;
+    color: var(--color-cdx-text-secondary);
+    border: none;
+    border-radius: var(--radius-cdx-sm);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.cdx-ref-stability-chip:hover {
+    color: var(--color-cdx-text);
+    background: var(--color-cdx-bg-alt);
+}
+
+.cdx-ref-stability-chip[aria-pressed='true'] {
+    color: var(--color-cdx-text);
+}
+
+.cdx-ref-stability-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1.5px solid var(--color-cdx-border-strong, var(--color-cdx-text-muted));
+    background: transparent;
+    color: var(--color-cdx-text-inverse, white);
+    flex: 0 0 auto;
+}
+
+.cdx-ref-stability-chip[aria-pressed='true'] .cdx-ref-stability-check {
+    background: var(--color-cdx-primary);
+    border-color: var(--color-cdx-primary);
+}
+
+.cdx-ref-stability-chip[aria-pressed='true'] .cdx-ref-stability-check::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 8px;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: translateY(-1px) rotate(45deg);
+}
+
+.cdx-ref-stability-count {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-cdx-text-muted);
+    font-size: 0.8125rem;
+}
+
+/* --- Kind chips (two-tone: transparent outer + pastel letter-box) ---
+ * Outer chip has no fill, just a thin border + label. The pastel
+ * letter-box on the left carries the kind colour as an 8% tint. Reads
+ * as ~32px tall (4+20+4+8px label = light footprint). */
+
+/* Border is transparent in the resting state; the pastel letter-box
+ * + label is enough to read the chip. Hover reveals a subtle border as
+ * the affordance cue. Active / inactive states are carried by opacity,
+ * not by border thickness, so the toggle reads regardless of hover. */
+.cdx-ref-kind-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-cdx-xs);
+    padding: 4px var(--spacing-cdx-sm) 4px 4px;
+    background: transparent;
+    color: var(--color-cdx-text-secondary);
+    border: 1px solid transparent;
+    border-radius: 16px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.cdx-ref-kind-chip[aria-pressed='true'] {
+    color: var(--color-cdx-text);
+}
+
+.cdx-ref-kind-chip--inactive {
+    opacity: 0.55;
+}
+
+.cdx-ref-kind-chip:hover,
+.cdx-ref-kind-chip:focus-visible {
+    border-color: var(--color-cdx-border-subtle, var(--color-cdx-border));
+    background: var(--color-cdx-bg-alt);
+}
+
+.cdx-ref-kind-chip-count {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-cdx-text-muted);
+    font-size: 0.75rem;
+}
+
+/* --- Pastel letter-box (used in rows AND filter chips) ---
+ * Background = saturated entity-kind colour at 14% mix with the page
+ * background (pastel tint). Text = saturated colour at full strength.
+ * Dark themes get the same mix; the page background changes so the
+ * result still reads as a pastel chip in both modes. */
+
+.cdx-ref-kind-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--cdx-ref-icon);
+    height: var(--cdx-ref-icon);
+    border-radius: 4px;
+    font-family: var(--font-code);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--cdx-ref-kind-color, var(--color-cdx-text-muted));
+    background: color-mix(
+        in srgb,
+        var(--cdx-ref-kind-color, var(--color-cdx-text-muted)) 14%,
+        transparent
+    );
+    flex: 0 0 auto;
+}
+
+.cdx-ref-kind-icon--component {
+    --cdx-ref-kind-color: var(--color-cdx-entity-component);
+}
+.cdx-ref-kind-icon--directive {
+    --cdx-ref-kind-color: var(--color-cdx-entity-directive);
+}
+.cdx-ref-kind-icon--pipe {
+    --cdx-ref-kind-color: var(--color-cdx-entity-pipe);
+}
+.cdx-ref-kind-icon--injectable {
+    --cdx-ref-kind-color: var(--color-cdx-entity-service);
+}
+.cdx-ref-kind-icon--token {
+    /* Slate-blue, visually adjacent to Injectable (warm brown) but
+     * distinct, and clearly different from Interface's dark grey. */
+    --cdx-ref-kind-color: var(--color-cdx-entity-token, #475569);
+}
+.cdx-ref-kind-icon--class {
+    --cdx-ref-kind-color: var(--color-cdx-entity-class);
+}
+.cdx-ref-kind-icon--interface {
+    --cdx-ref-kind-color: var(--color-cdx-entity-interface);
+}
+.cdx-ref-kind-icon--guard {
+    --cdx-ref-kind-color: var(--color-cdx-entity-guard);
+}
+.cdx-ref-kind-icon--interceptor {
+    --cdx-ref-kind-color: var(--color-cdx-entity-interceptor);
+}
+.cdx-ref-kind-icon--entity {
+    --cdx-ref-kind-color: var(--color-cdx-entity-entity);
+}
+.cdx-ref-kind-icon--function {
+    --cdx-ref-kind-color: var(--color-cdx-entity-function);
+}
+.cdx-ref-kind-icon--variable {
+    --cdx-ref-kind-color: var(--color-cdx-entity-variable);
+}
+.cdx-ref-kind-icon--typealias {
+    --cdx-ref-kind-color: var(--color-cdx-entity-typealias);
+}
+.cdx-ref-kind-icon--enumeration {
+    --cdx-ref-kind-color: var(--color-cdx-entity-enum);
+}
+
+/* --- Bucket sections --- */
+
+.cdx-ref-bucket-list {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--spacing-cdx-xl) * 2);
+}
+
+.cdx-ref-bucket-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-cdx-md);
+}
+
+.cdx-ref-bucket-section[data-cdx-ref-hidden] {
+    display: none;
+}
+
+/* Sticky bucket headings.
+ *
+ * The double-class selector beats the
+ * `.cdx-content-section:first-child > .cdx-section-heading` rule in
+ * content-sections.css, so the first bucket pins with the same chrome
+ * as the rest.
+ *
+ * `--cdx-app-header-height` lets host sites with a fixed top bar push
+ * the pin point down. Default 0 pins flush. */
+.cdx-ref-bucket-section.cdx-content-section > .cdx-section-heading {
+    position: sticky;
+    /* `.content` has `padding-top: 0.5rem`. Sticky pins at the
+     * content-box top, so bare `top: 0` lands 0.5rem below the
+     * viewport edge. */
+    top: calc(var(--cdx-app-header-height, 0px) - 0.5rem);
+    /* Above cards, below topbar (20), preview (20), command palette
+     * (1000+). */
+    z-index: 5;
+    /* Opaque so cards don't bleed through. `--color-cdx-bg` swaps in
+     * dark mode on its own. */
+    background: var(--color-cdx-bg);
+    /* The flex gap on `.cdx-ref-bucket-list` carries section spacing,
+     * so the heading is a slim band. */
+    margin-top: 0;
+    padding-block: var(--spacing-cdx-sm);
+    border-top: none;
+    border-bottom: 1px solid var(--color-cdx-border-subtle, var(--color-cdx-border));
+    /* Without this, `#cdx-ref-bucket-foo` jumps hide the first card
+     * under the pinned heading. */
+    scroll-margin-top: var(--cdx-app-header-height, 0);
+}
+
+@media print {
+    .cdx-ref-bucket-section.cdx-content-section > .cdx-section-heading {
+        position: static;
+    }
+}
+
+/* Bucket headers reuse `cdx-section-heading` verbatim, same 13px
+ * uppercase muted typography as IMPORT / DESCRIPTION on entity pages,
+ * same `.cdx-member-permalink` hover-#-link affordance. Inline count
+ * sits next to the bucket name and opts out of the uppercase
+ * transform so the number reads as a number. */
+.cdx-ref-bucket-count {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-cdx-text-muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: var(--spacing-cdx-xs);
+}
+
+/* --- Item rows --- */
+
+/* Container query. The column count tracks the content column's
+ * width, NOT the viewport's. The portal lives inside `.content` which
+ * has its own padding + responsive width, so `@media` rules would
+ * misfire (wide viewports with a fixed-width sidebar still produce a
+ * narrow content column). `container-type: inline-size` on the page
+ * root lets the grid pick the right number of columns. */
+.cdx-ref-page {
+    container-type: inline-size;
+    container-name: cdx-ref;
+}
+
+/* Auto-fill grid: rows wrap naturally on narrow widths. Row gap is
+ * minimal; rows already carry their own breathing via the link's
+ * vertical padding. */
+.cdx-ref-item-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    /* `1fr` resolves to `minmax(auto, 1fr)`, which lets a track grow
+     * past its share for long symbol names and defeats the
+     * `text-overflow: ellipsis` rule below. `minmax(0, 1fr)` clamps
+     * the floor so names truncate. Same fix in the two `@container`
+     * overrides. */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0 var(--spacing-cdx-lg);
+}
+
+@container cdx-ref (min-width: 700px) {
+    .cdx-ref-item-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@container cdx-ref (min-width: 1000px) {
+    .cdx-ref-item-list {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.cdx-ref-item {
+    list-style: none;
+    margin: 0;
+    content-visibility: auto;
+    contain-intrinsic-size: 0 36px;
+}
+
+.cdx-ref-item[data-cdx-ref-hidden] {
+    display: none;
+}
+
+/* Item rows pack tight; `min-height: 36px` sits between the chip's
+ * 32px and the filter-bar's 40px so the list reads dense but the
+ * pastel letter-box keeps a comfortable touch target. */
+.cdx-ref-item-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-cdx-sm);
+    min-height: 36px;
+    padding: 4px var(--spacing-cdx-sm);
+    border-radius: var(--radius-cdx-sm);
+    color: var(--color-cdx-text);
+    text-decoration: none;
+    transition: background 120ms ease-out;
+}
+
+.cdx-ref-item-link:hover {
+    background: var(--color-cdx-bg-alt);
+    text-decoration: none;
+}
+
+.cdx-ref-item-link:focus-visible {
+    outline: 2px solid var(--color-cdx-focus-ring, var(--color-cdx-primary));
+    outline-offset: 1px;
+}
+
+.cdx-ref-item-name {
+    font-family: var(--font-code);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Badges sit immediately after the name (not at the row's far right).
+ * Reads as a property of the name, not a separate column. The trailing
+ * margin-auto-spacer is intentionally absent. */
+.cdx-ref-item-badges {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+}
+
+.cdx-ref-item-badges:empty {
+    display: none;
+}
+
+.cdx-ref-item-badges > .cdx-badge {
+    margin-left: 0;
+}
+
+/* --- Empty state --- */
+
+.cdx-ref-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-cdx-sm);
+    padding: var(--spacing-cdx-xl) 0;
+    color: var(--color-cdx-text-secondary);
+}
+
+.cdx-ref-empty-state > p {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--color-cdx-text);
+}
+
+.cdx-ref-reset-inline {
+    padding: var(--spacing-cdx-xs) var(--spacing-cdx-md);
+    border: 1px solid var(--color-cdx-primary);
+    background: var(--color-cdx-primary);
+    color: var(--color-cdx-text-inverse, white);
+    border-radius: var(--radius-cdx-sm);
+    cursor: pointer;
+    font: inherit;
+}
+
+.cdx-ref-reset-inline:hover {
+    filter: brightness(1.05);
+}
+
+.cdx-ref-empty-page {
+    padding: var(--spacing-cdx-xl);
+    color: var(--color-cdx-text-secondary);
+    text-align: center;
+}
+

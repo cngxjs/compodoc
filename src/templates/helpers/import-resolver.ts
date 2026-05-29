@@ -15,8 +15,12 @@ export const resolveImportPath = (entityFile: string): string => {
         return '';
     }
 
-    // Normalize: strip leading ./ and trailing filename to get the directory
+    // Normalize: strip leading ./ and trailing filename to get the directory.
+    // Prepend `/` so substring matches work whether the source path is
+    // absolute-style (`/abs/.../projects/ui/feedback/...`) or project-relative
+    // (`projects/ui/feedback/...`).
     const normalizedFile = entityFile.replace(/\\/g, '/');
+    const lookup = normalizedFile.startsWith('/') ? normalizedFile : `/${normalizedFile}`;
 
     let bestMatch = '';
     let bestAlias = '';
@@ -31,7 +35,7 @@ export const resolveImportPath = (entityFile: string): string => {
 
             const fullDir = baseUrl && baseUrl !== '.' ? `${baseUrl}/${dir}` : dir;
 
-            if (normalizedFile.includes(`/${fullDir}/`) || normalizedFile.endsWith(`/${fullDir}`)) {
+            if (lookup.includes(`/${fullDir}/`) || lookup.endsWith(`/${fullDir}`)) {
                 // Prefer longer (more specific) matches
                 if (fullDir.length > bestMatch.length) {
                     bestMatch = fullDir;

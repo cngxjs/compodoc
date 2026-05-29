@@ -92,6 +92,23 @@
     margin: 0;
 }
 
+.cdx-entity-hero-selector {
+    position: relative;
+    z-index: 1;
+    margin: var(--spacing-cdx-xs) 0 0;
+}
+
+.cdx-entity-hero-selector code {
+    display: inline-block;
+    padding: 2px 8px;
+    font-family: var(--font-code);
+    font-size: var(--cdx-text-sm, 0.8125rem);
+    color: var(--color-cdx-text-secondary);
+    background: color-mix(in srgb, var(--color-cdx-code-inline) 6%, transparent);
+    border: 1px solid var(--color-cdx-border-subtle, var(--color-cdx-border));
+    border-radius: var(--radius-cdx-sm);
+}
+
 .cdx-tab-bar {
     margin-top: var(--spacing-cdx-md);
     margin-bottom: var(--spacing-cdx-xl);

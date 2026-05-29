@@ -4,7 +4,16 @@ import { EntityTabs } from '../blocks/EntityTabs';
 import { GraphZoomControls } from '../blocks/GraphControls';
 import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { IconFile, IconInterface, IconMaximize, IconModule } from '../components/Icons';
-import { parseDescription, relativeUrl, resolveBucketSegments, t } from '../helpers';
+import { WcagBadge } from '../components/WcagBadge';
+import {
+    deriveLibFromBucket,
+    firstSentence,
+    pagefindFilterBlock,
+    parseDescription,
+    relativeUrl,
+    resolveBucketSegments,
+    t
+} from '../helpers';
 
 const NG2_MODULES = ['BrowserModule', 'FormsModule', 'HttpModule', 'RouterModule'];
 const isAngularModule = (name: string): boolean => NG2_MODULES.some(m => name.includes(m));
@@ -179,9 +188,26 @@ export const ModulePage = (data: any): string => {
         </>
     ) as string;
 
+    // Module isn't part of `EntityKind`, so emit Pagefind meta inline rather
+    // than going through `pagefindMetaBlock`. Same `data-pagefind-meta="key:value"`
+    // form for the kind chip; description uses inner-text form so commas
+    // / colons in JSDoc survive Pagefind's attribute parser.
+    const moduleExcerpt = firstSentence(mod.description);
     return (
         <>
             <div class="cdx-entity-hero" style="--cdx-hero-color: var(--color-cdx-entity-module)">
+                <span hidden data-pagefind-meta="kind:Module"></span>
+                {moduleExcerpt && (
+                    <span hidden data-pagefind-meta="description">
+                        {moduleExcerpt}
+                    </span>
+                )}
+                {pagefindFilterBlock({
+                    kind: 'Module',
+                    lib: deriveLibFromBucket(mod.file),
+                    docsKind: mod.docsKind === 'primary' ? 'primary' : 'reference',
+                    wcag: mod.wcagLevel
+                })}
                 <div class="cdx-entity-hero-watermark" aria-hidden="true">
                     {IconModule()}
                 </div>
@@ -204,6 +230,7 @@ export const ModulePage = (data: any): string => {
                 <div class="cdx-entity-hero-badges">
                     <span class="cdx-badge cdx-badge--entity-module">Module</span>
                     {AiGeneratedBadge({ aiGenerated: mod.aiGenerated })}
+                    {WcagBadge({ wcagLevel: mod.wcagLevel })}
                 </div>
                 {!data.disableFilePath && mod.file && (
                     <p class="cdx-entity-hero-file" title="Source file">

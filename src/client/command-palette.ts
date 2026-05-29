@@ -16,6 +16,7 @@ const ENTITY_TYPES = [
     'directive',
     'service',
     'injectable',
+    'token',
     'pipe',
     'module',
     'class',
@@ -30,28 +31,32 @@ const ENTITY_TYPES = [
 
 type EntityType = (typeof ENTITY_TYPES)[number];
 
-/** Map entity types to CSS class suffixes (matching design system token names) */
+/** Map entity types to `cdx-badge--entity-<kind>` CSS class suffixes — kept
+ *  in sync with the rules in `src/styles/components/badges.css`. Returns
+ *  `'other'` only for non-entity pages (README, CHANGELOG, ...) so they fall
+ *  through to the muted "Docs" pill. */
 const entityClass = (type: EntityType | 'other'): string => {
     switch (type) {
         case 'service':
         case 'injectable':
-            return 'service';
+            // Badge class is `cdx-badge--entity-injectable`, which itself
+            // uses `--color-cdx-entity-service` for the fill. Both kinds of
+            // search-result point at the same chip.
+            return 'injectable';
         case 'component':
-            return 'component';
         case 'directive':
-            return 'directive';
         case 'pipe':
-            return 'pipe';
+        case 'token':
         case 'module':
-            return 'module';
         case 'class':
-            return 'class';
         case 'interface':
-            return 'interface';
         case 'guard':
-            return 'guard';
         case 'interceptor':
-            return 'interceptor';
+        case 'function':
+        case 'variable':
+        case 'typealias':
+        case 'enum':
+            return type;
         default:
             return 'other';
     }
@@ -83,6 +88,28 @@ const parseEntityType = (title: string): { type: EntityType | 'other'; name: str
         }
     }
     return { type: 'other', name: title };
+};
+
+/** Map the user-facing `data-pagefind-meta-kind` label emitted by entity
+ *  heroes back into the internal `EntityType` discriminator used for
+ *  result-chip colours and icons. Returns `'other'` for unknown labels so
+ *  the existing "Docs" fallback applies. */
+const KIND_LABEL_TO_TYPE: Record<string, EntityType> = {
+    Component: 'component',
+    Directive: 'directive',
+    Pipe: 'pipe',
+    Injectable: 'injectable',
+    Token: 'token',
+    Class: 'class',
+    Interface: 'interface',
+    Guard: 'guard',
+    Interceptor: 'interceptor',
+    Enumeration: 'enum',
+    Function: 'function',
+    Variable: 'variable',
+    'Type Alias': 'typealias',
+    Module: 'module',
+    Entity: 'class'
 };
 
 /** Capitalize first letter */
@@ -117,6 +144,9 @@ const RESULT_ICONS: Record<string, string> = {
     ),
     service: icon(
         '<path d="m18 2 4 4-4 4"/><path d="m6 22-4-4 4-4"/><path d="M22 6H10a4 4 0 0 0-4 4v4"/><path d="M2 18h12a4 4 0 0 0 4-4v-4"/>'
+    ),
+    token: icon(
+        '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>'
     ),
     interface: icon(
         '<path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/>'
@@ -169,12 +199,53 @@ interface SearchResult {
     readonly url: string;
     readonly type: EntityType | 'other';
     readonly name: string;
+    readonly category?: string;
+    /** First-sentence fallback from `data-pagefind-meta="description"`. */
+    readonly description?: string;
+    /** Pagefind's match-context snippet (HTML pre-marked with `<mark>` tags). */
+    readonly excerpt?: string;
 }
+
+/** Facet dimensions surfaced in the dropdown. `tier` distinguishes
+ *  Features (primary) from References (reference) so users can narrow to
+ *  curated entry points. Order matches the visual layout. */
+const FACET_DIMS = ['kind', 'lib', 'tier', 'wcag'] as const;
+type FacetDim = (typeof FACET_DIMS)[number];
+
+const FACET_LABELS: Record<FacetDim, string> = {
+    kind: 'Kind',
+    lib: 'Library',
+    tier: 'Tier',
+    wcag: 'WCAG'
+};
+
+const FACET_VALUE_LABELS: Record<FacetDim, Record<string, string>> = {
+    kind: {},
+    lib: {},
+    tier: { primary: 'Primary', reference: 'Reference' },
+    wcag: {}
+};
+
+/** Active filter state — per dimension, multi-select within (OR), AND
+ *  across dimensions. Mirrors Pagefind's filter API. */
+const activeFilters: Record<FacetDim, Set<string>> = {
+    kind: new Set(),
+    lib: new Set(),
+    tier: new Set(),
+    wcag: new Set()
+};
 
 let pagefind: any = null;
 let activeIndex = -1;
 let lastQuery = '';
 let throttleTimer: ReturnType<typeof setTimeout> | undefined;
+/** Index-wide filter counts cached from `pagefind.filters()` at warmup
+ *  time. Drives the empty-palette state: when the user opens the
+ *  dialog with no query and no active filters, the facet rail shows
+ *  these global counts so they can scope by clicking a chip without
+ *  ever typing. `null` until Pagefind initialises (or stays `null` for
+ *  indexes without filters / `file://` mode). */
+let globalFilterCounts: Record<string, Record<string, number>> | null = null;
 
 const getDialog = (): HTMLDialogElement | null =>
     document.getElementById(DIALOG_ID) as HTMLDialogElement | null;
@@ -186,6 +257,119 @@ const getList = (): HTMLElement | null => getDialog()?.querySelector(LIST_SELECT
 const getEmpty = (): HTMLElement | null => getDialog()?.querySelector(EMPTY_SELECTOR) ?? null;
 
 const getLoading = (): HTMLElement | null => getDialog()?.querySelector(LOADING_SELECTOR) ?? null;
+
+const getFacets = (): HTMLElement | null => getDialog()?.querySelector('.cdx-cp-facets') ?? null;
+
+/** Pagefind expects `filters: { kind: 'Component' | ['Component', 'Pipe'] }` —
+ *  single string when one value is selected in a dimension, array otherwise.
+ *  Empty dimensions are omitted entirely so they don't constrain the query. */
+const buildFiltersObj = (): Record<string, string | string[]> | undefined => {
+    const out: Record<string, string | string[]> = {};
+    let any = false;
+    for (const dim of FACET_DIMS) {
+        const values = Array.from(activeFilters[dim]);
+        if (values.length === 1) {
+            out[dim] = values[0];
+            any = true;
+        } else if (values.length > 1) {
+            out[dim] = values;
+            any = true;
+        }
+    }
+    return any ? out : undefined;
+};
+
+/** Serialize active filters + query into `?q=&kind=&lib=&tier=&wcag=`. Each
+ *  multi-value dimension uses comma-separated values (URL-encoded). Empty
+ *  dimensions omitted so the URL stays short. */
+const updateUrlFromState = () => {
+    const params = new URLSearchParams();
+    if (lastQuery) {
+        params.set('q', lastQuery);
+    }
+    for (const dim of FACET_DIMS) {
+        const values = Array.from(activeFilters[dim]);
+        if (values.length > 0) {
+            params.set(dim, values.join(','));
+        }
+    }
+    const query = params.toString();
+    const url = `${globalThis.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
+    history.replaceState(history.state, '', url);
+};
+
+/** Hydrate active filters + initial query from the current URL — called on
+ *  every `openCommandPalette()` so a user navigating into a deep-linked
+ *  search URL sees the same state. */
+const hydrateStateFromUrl = (): string => {
+    const params = new URLSearchParams(globalThis.location.search);
+    for (const dim of FACET_DIMS) {
+        activeFilters[dim].clear();
+        const raw = params.get(dim);
+        if (raw) {
+            for (const value of raw
+                .split(',')
+                .map(v => v.trim())
+                .filter(Boolean)) {
+                activeFilters[dim].add(value);
+            }
+        }
+    }
+    return params.get('q') ?? '';
+};
+
+/** Render the facet rail. Dimensions with 0 or 1 distinct value are
+ *  hidden — there's nothing to choose. Active chips stay visible even
+ *  when their count drops to 0 (so users can unselect from an empty
+ *  intersection). Non-active 0-count chips are filtered out so a
+ *  narrow query doesn't drown the dropdown in dead values; remaining
+ *  chips are sorted by count descending so the most populated lands
+ *  closest to the dimension label. */
+const renderFacets = (counts: Record<string, Record<string, number>>) => {
+    const root = getFacets();
+    if (!root) {
+        return;
+    }
+    const groups: string[] = [];
+    for (const dim of FACET_DIMS) {
+        const dimCounts = counts[dim] ?? {};
+        const active = activeFilters[dim];
+        const values = new Set<string>([...Object.keys(dimCounts), ...active]);
+        if (values.size <= 1 && active.size === 0) {
+            continue;
+        }
+        const visible = [...values]
+            .filter(value => (dimCounts[value] ?? 0) > 0 || active.has(value))
+            .sort((a, b) => (dimCounts[b] ?? 0) - (dimCounts[a] ?? 0) || a.localeCompare(b));
+        if (visible.length === 0) {
+            continue;
+        }
+        const chips: string[] = [];
+        for (const value of visible) {
+            const count = dimCounts[value] ?? 0;
+            const isActive = active.has(value);
+            const label = FACET_VALUE_LABELS[dim][value] ?? value;
+            chips.push(
+                `<button type="button" class="cdx-cp-facet-chip" data-dim="${escapeAttr(dim)}" data-value="${escapeAttr(value)}" data-active="${isActive}" aria-pressed="${isActive}">${escapeHtml(label)} <span class="cdx-cp-facet-count">${count}</span></button>`
+            );
+        }
+        groups.push(
+            `<div class="cdx-cp-facet-group"><span class="cdx-cp-facet-label">${escapeHtml(FACET_LABELS[dim])}</span>${chips.join('')}</div>`
+        );
+    }
+    const anyActive = FACET_DIMS.some(d => activeFilters[d].size > 0);
+    if (groups.length === 0) {
+        root.hidden = true;
+        root.innerHTML = '';
+        return;
+    }
+    root.hidden = false;
+    root.innerHTML =
+        groups.join('') +
+        (anyActive
+            ? `<button type="button" class="cdx-cp-facet-reset">Reset filters</button>`
+            : '');
+};
 
 /** Load Pagefind lazily */
 const loadPagefind = async (): Promise<any> => {
@@ -209,6 +393,24 @@ const loadPagefind = async (): Promise<any> => {
     try {
         pagefind = await import(/* @vite-ignore */ pagefindUrl);
         await pagefind.init();
+        // Pagefind 1.x lazy-loads its filter index — the first `search()`
+        // call after `init()` returns `filters: {}` until something
+        // touches `filters()`. Warm it up here so the facet rail
+        // populates on the very first query instead of staying empty
+        // until the user types a second character. Cache the
+        // index-wide result for the empty-palette state — no query, no
+        // active filter → render these global counts so the rail
+        // doubles as a "browse the API" affordance.
+        try {
+            globalFilterCounts = (await pagefind.filters()) as Record<
+                string,
+                Record<string, number>
+            >;
+        } catch {
+            // Indexes built without any filters throw here — silently
+            // ignore so search still works in that case.
+            globalFilterCounts = null;
+        }
         if (loading) {
             loading.hidden = true;
         }
@@ -230,11 +432,29 @@ const search = async (query: string) => {
         return;
     }
 
-    if (!query.trim()) {
+    const hasFilters = FACET_DIMS.some(d => activeFilters[d].size > 0);
+
+    if (!query.trim() && !hasFilters) {
         list.innerHTML = '';
         empty.hidden = false;
         empty.textContent = 'Start typing to see results';
+        // Surface the global filter counts so an empty palette is a
+        // valid "browse the API" entry point — clicking Interface
+        // narrows to all interfaces without ever typing. Falls back to
+        // a hidden rail when no global counts are available (Pagefind
+        // still loading, `file://` mode, or an index built without
+        // filters).
+        if (globalFilterCounts) {
+            renderFacets(globalFilterCounts);
+        } else {
+            const facetsRoot = getFacets();
+            if (facetsRoot) {
+                facetsRoot.hidden = true;
+                facetsRoot.innerHTML = '';
+            }
+        }
         activeIndex = -1;
+        updateUrlFromState();
         return;
     }
 
@@ -246,17 +466,35 @@ const search = async (query: string) => {
     }
 
     const maxResults = (window as any).MAX_SEARCH_RESULTS ?? 15;
-    const results = await pf.search(query);
-    const sliced = results.results.slice(0, maxResults);
+    const filtersObj = buildFiltersObj();
+    // Pagefind 1.0+ accepts `{ filters }` as the second argument; passing
+    // `undefined` is the same as omitting the option, so the unfiltered
+    // path stays cache-friendly.
+    const searchOptions = filtersObj ? { filters: filtersObj } : undefined;
+    // Empty query + active filters → Pagefind supports `null` for the
+    // query in filter-only mode; falls back to listing all matching pages.
+    const queryArg = query.trim() ? query : null;
+    const results = await pf.search(queryArg, searchOptions);
+    renderFacets((results?.filters ?? {}) as Record<string, Record<string, number>>);
+    const sliced = (results?.results ?? []).slice(0, maxResults);
     const data = await Promise.all(sliced.map((r: any) => r.data()));
 
     const mapped: SearchResult[] = data.map((d: any) => {
-        const parsed = parseEntityType(d.meta.title || '');
+        const meta = d.meta || {};
+        const parsed = parseEntityType(meta.title || '');
+        // Prefer the explicit `data-pagefind-meta="kind:..."` value emitted by
+        // entity heroes (v0.6.0+) — robust against title-format drift. Fall
+        // back to title parsing for pages that predate the meta block
+        // (custom templates, README/CHANGELOG without a kind, etc.).
+        const metaType = typeof meta.kind === 'string' ? KIND_LABEL_TO_TYPE[meta.kind] : undefined;
         return {
-            title: d.meta.title || '',
+            title: meta.title || '',
             url: d.url,
-            type: parsed.type,
-            name: parsed.name
+            type: metaType ?? parsed.type,
+            name: parsed.name,
+            category: typeof meta.category === 'string' ? meta.category : undefined,
+            description: typeof meta.description === 'string' ? meta.description : undefined,
+            excerpt: typeof d.excerpt === 'string' ? d.excerpt : undefined
         };
     });
 
@@ -271,33 +509,38 @@ const search = async (query: string) => {
     empty.hidden = true;
     const searchQuery = lastQuery;
     list.innerHTML = mapped
-        .map(
-            (r, i) =>
-                '<a href="' +
-                escapeAttr(r.url) +
-                '" class="cdx-cp-item' +
-                (i === 0 ? ' cdx-cp-active' : '') +
-                '"' +
-                ' role="option" aria-selected="' +
-                (i === 0) +
-                '" data-index="' +
-                i +
-                '" style="--i:' +
-                i +
-                '">' +
+        .map((r, i) => {
+            const meta: string[] = [];
+            if (r.category) {
+                meta.push(`<span class="cdx-cp-category">${escapeHtml(r.category)}</span>`);
+            }
+            // Prefer Pagefind's match-context snippet (already HTML with
+            // `<mark>` highlights around hit terms) — that's the whole point
+            // of the search result. Fall back to the cleaned first-sentence
+            // description meta when no excerpt is available (Pagefind has no
+            // context, e.g. score-driven hits on the title alone).
+            if (r.excerpt) {
+                meta.push(`<span class="cdx-cp-desc">${r.excerpt}</span>`);
+            } else if (r.description) {
+                meta.push(
+                    `<span class="cdx-cp-desc">${highlightMatch(r.description, searchQuery)}</span>`
+                );
+            }
+            const metaBlock =
+                meta.length > 0 ? `<div class="cdx-cp-meta">${meta.join('')}</div>` : '';
+            return (
+                `<a href="${escapeAttr(r.url)}" class="cdx-cp-item${i === 0 ? ' cdx-cp-active' : ''}" role="option" aria-selected="${i === 0}" data-index="${i}" style="--i:${i}">` +
                 resultIcon(r.type) +
-                '<span class="cdx-cp-name">' +
-                highlightMatch(r.name, searchQuery) +
-                '</span>' +
-                '<span class="' +
-                (entityClass(r.type) !== 'other'
-                    ? `cdx-badge cdx-badge--entity-${entityClass(r.type)} `
-                    : '') +
-                'cdx-cp-type">' +
+                '<div class="cdx-cp-body">' +
+                `<span class="cdx-cp-name">${highlightMatch(r.name, searchQuery)}</span>` +
+                metaBlock +
+                '</div>' +
+                `<span class="${entityClass(r.type) !== 'other' ? `cdx-badge cdx-badge--entity-${entityClass(r.type)} ` : ''}cdx-cp-kind">` +
                 typeLabel(r.type) +
                 '</span>' +
                 '</a>'
-        )
+            );
+        })
         .join('');
 
     activeIndex = 0;
@@ -346,7 +589,7 @@ const navigateToActive = () => {
     }
     const active = list.querySelector<HTMLAnchorElement>('.cdx-cp-active');
     if (active?.href) {
-        close();
+        closePalette();
         // Use SPA router click simulation
         active.click();
     }
@@ -359,9 +602,12 @@ export const openCommandPalette = () => {
         return;
     }
     dialog.showModal();
+    // Hydrate filters + initial query from the current URL — supports
+    // deep links of the form `?q=toast&kind=Component`.
+    const initialQuery = hydrateStateFromUrl();
     const input = getInput();
     if (input) {
-        input.value = '';
+        input.value = initialQuery;
         input.focus();
     }
     const list = getList();
@@ -374,14 +620,59 @@ export const openCommandPalette = () => {
         empty.textContent = 'Start typing to see results';
     }
     activeIndex = -1;
-    lastQuery = '';
+    lastQuery = initialQuery;
 
-    // Lazy-load Pagefind on first open
-    loadPagefind();
+    // Lazy-load Pagefind on first open. After warmup, either run the
+    // hydrated search (deep link / re-open with existing filters) or
+    // surface the empty-palette state with the cached global counts
+    // so the user sees facet chips immediately.
+    loadPagefind().then(() => {
+        const hasFilters = FACET_DIMS.some(d => activeFilters[d].size > 0);
+        if (initialQuery || hasFilters) {
+            search(initialQuery);
+        } else {
+            search('');
+        }
+    });
 };
 
-/** Close the command palette */
-const close = () => {
+/** Reset every piece of in-memory facet state so a subsequent open
+ *  shows a clean global-counts view rather than the previous query's
+ *  residue: chip counts that read "Component 9" from a "card" query,
+ *  an active filter the user thought they had dismissed, or a
+ *  still-populated input value. The URL is also rolled back to a bare
+ *  path so the back/forward buttons stay sane. Wired to the dialog's
+ *  native `close` event so it fires for every close path — Esc,
+ *  programmatic `close()`, X-button click, and backdrop click — not
+ *  just the paths that route through `closePalette()`.
+ */
+const resetState = () => {
+    for (const dim of FACET_DIMS) {
+        activeFilters[dim].clear();
+    }
+    lastQuery = '';
+    activeIndex = -1;
+    const input = getInput();
+    if (input) {
+        input.value = '';
+    }
+    const facetsRoot = getFacets();
+    if (facetsRoot) {
+        facetsRoot.hidden = true;
+        facetsRoot.innerHTML = '';
+    }
+    const list = getList();
+    if (list) {
+        list.innerHTML = '';
+    }
+    updateUrlFromState();
+};
+
+/** Close the command palette. The `close` event listener wired in
+ *  `initCommandPalette` does the actual state cleanup so the same
+ *  path runs for Esc, backdrop click, and programmatic closes.
+ */
+const closePalette = () => {
     const dialog = getDialog();
     if (!dialog) {
         return;
@@ -400,7 +691,7 @@ export const initCommandPalette = () => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
             e.preventDefault();
             if (dialog.open) {
-                close();
+                closePalette();
             } else {
                 openCommandPalette();
             }
@@ -410,17 +701,18 @@ export const initCommandPalette = () => {
     // Close on backdrop click
     dialog.addEventListener('click', e => {
         if (e.target === dialog) {
-            close();
+            closePalette();
         }
     });
 
     // X-button close
-    dialog.querySelector('.cdx-cp-close')?.addEventListener('click', () => close());
+    dialog.querySelector('.cdx-cp-close')?.addEventListener('click', () => closePalette());
 
-    // Close on Escape (native dialog behavior, but ensure cleanup)
+    // The `<dialog>` element fires `close` for every close path —
+    // native Esc, programmatic `close()`, X click, backdrop click —
+    // so resetting state here covers all of them in one place.
     dialog.addEventListener('close', () => {
-        activeIndex = -1;
-        lastQuery = '';
+        resetState();
     });
 
     // Search input handling
@@ -432,6 +724,7 @@ export const initCommandPalette = () => {
                 return;
             }
             lastQuery = q;
+            updateUrlFromState();
 
             clearTimeout(throttleTimer);
             throttleTimer = setTimeout(() => search(q), THROTTLE_MS);
@@ -455,6 +748,42 @@ export const initCommandPalette = () => {
                     // Let native dialog handle it
                     break;
             }
+        });
+    }
+
+    // Facet chip + reset interactions
+    const facets = getFacets();
+    if (facets) {
+        facets.addEventListener('click', e => {
+            const reset = (e.target as HTMLElement).closest<HTMLButtonElement>(
+                '.cdx-cp-facet-reset'
+            );
+            if (reset) {
+                e.preventDefault();
+                for (const dim of FACET_DIMS) {
+                    activeFilters[dim].clear();
+                }
+                updateUrlFromState();
+                search(lastQuery);
+                return;
+            }
+            const chip = (e.target as HTMLElement).closest<HTMLButtonElement>('.cdx-cp-facet-chip');
+            if (!chip) {
+                return;
+            }
+            e.preventDefault();
+            const dim = chip.dataset.dim as FacetDim | undefined;
+            const value = chip.dataset.value;
+            if (!dim || !value || !(dim in activeFilters)) {
+                return;
+            }
+            if (activeFilters[dim].has(value)) {
+                activeFilters[dim].delete(value);
+            } else {
+                activeFilters[dim].add(value);
+            }
+            updateUrlFromState();
+            search(lastQuery);
         });
     }
 

@@ -16,6 +16,8 @@
 
 export const PAGE_LEVEL_OVERRIDES: readonly string[] = [
     'additional-page',
+    'api-reference',
+    'bucket-landing',
     'class',
     'component',
     'coverage-report',
@@ -42,6 +44,7 @@ export const PAGE_LEVEL_OVERRIDES: readonly string[] = [
     'package-properties',
     'pipe',
     'routes',
+    'token',
     'unit-test-report'
 ];
 
@@ -64,6 +67,8 @@ export const BLOCK_LEVEL_OVERRIDES: readonly string[] = [
     'block-theming-token',
     'block-typealias',
     'playground-content',
+    'referenced-by',
+    'related',
     'version-switcher'
 ];
 

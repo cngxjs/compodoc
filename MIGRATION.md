@@ -27,18 +27,18 @@ ng add @cngxjs/compodocx
 What the schematic does on a project that previously used `@compodoc/compodoc`:
 
 - Removes `@compodoc/compodoc` from `dependencies` and `devDependencies`.
-- Renames any `compodoc:<suffix>` script to `compodocx:<suffix>`. If a `compodocx:<suffix>` already exists with a different value, the source script is renamed to `compodoc:<suffix>-legacy` instead — never overwritten.
+- Renames any `compodoc:<suffix>` script to `compodocx:<suffix>`. If a `compodocx:<suffix>` already exists with a different value, the source script is renamed to `compodoc:<suffix>-legacy` instead - never overwritten.
 - Rewrites the standalone `compodoc` token in any script value to use the new bin.
 - Adds the three default scripts: `compodocx:build`, `compodocx:build-and-serve`, `compodocx:serve`.
 - Creates `tsconfig.doc.json` if it does not already exist.
 
 Useful flags:
 
-- `--skip-migration` — leave the legacy dependency and `compodoc:*` scripts in place.
-- `--project <name>` — required when `angular.json` declares more than one project.
-- `--script-prefix compodoc` — produce `compodoc:*` script names instead of the default.
+- `--skip-migration` - leave the legacy dependency and `compodoc:*` scripts in place.
+- `--project <name>` - required when `angular.json` declares more than one project.
+- `--script-prefix compodoc` - produce `compodoc:*` script names instead of the default.
 
-Re-running `ng add @cngxjs/compodocx` is idempotent (zero diff on the second pass). CI workflow files that invoke `compodoc -p ...` directly are not rewritten — update those manually, or rely on the `compodoc` bin alias the new package still ships.
+Re-running `ng add @cngxjs/compodocx` is idempotent (zero diff on the second pass). CI workflow files that invoke `compodoc -p ...` directly are not rewritten - update those manually, or rely on the `compodoc` bin alias the new package still ships.
 
 The rest of this document only matters if:
 
@@ -77,52 +77,85 @@ Full pattern, deployment recipes, and version-switcher reference: [`docs/version
 
 | Flag | Status | Notes |
 |-|-|-|
-| `-p`, `--tsconfig` | unchanged | |
-| `-d`, `--output` | unchanged | |
-| `-s`, `--serve` | unchanged | |
-| `-r`, `--port` | unchanged | |
-| `-w`, `--watch` | unchanged | |
-| `-o`, `--open` | unchanged | |
-| `-e`, `--exportFormat` | unchanged | `json` and `html` still supported. JSON shape gained typed `Export*` interfaces — see "JSON export" below. |
+| `-p`, `--tsconfig` | unchanged ||
+| `-d`, `--output` | unchanged ||
+| `-s`, `--serve` | unchanged ||
+| `-r`, `--port` | unchanged ||
+| `-w`, `--watch` | unchanged ||
+| `-o`, `--open` | unchanged ||
+| `-e`, `--exportFormat` | unchanged | `json` and `html` still supported. JSON shape gained typed `Export*` interfaces - see "JSON export" below. |
 | `--jsonIndent` | new (default `0`) | Indent for `documentation.json`. Default dropped from `4` to `0` (smaller files). Pass `--jsonIndent 2` to restore human-readable formatting. |
 | `--multiVersion` / `--no-multiVersion` | new (default `true`, BREAKING) | See "Breaking change in 0.3.0" above. |
 | `--versionLabel`, `--versionsRoot`, `--maxVersionsShown` | new | Multi-version controls. See `docs/versioned-docs.md`. |
-| `-n`, `--name` | unchanged | |
-| `-a`, `--assetsFolder` | unchanged | |
-| `-y`, `--extTheme` | unchanged | |
+| `-n`, `--name` | unchanged ||
+| `-a`, `--assetsFolder` | unchanged ||
+| `-y`, `--extTheme` | unchanged ||
 | `--theme` | new theme set | See "Themes" below. |
 | `--templates` | breaking | Now expects JavaScript files (CommonJS modules), not Handlebars partials. See "Custom templates" below. |
-| `--includes`, `--includesName` | unchanged | |
-| `--coverageTest`, `--coverageMinimumPerFile`, `--coverageTestThresholdFail` | unchanged | |
-| `--disableSourceCode`, `--disableDomTree`, `--disableTemplateTab`, `--disableGraph`, `--disableCoverage`, `--disablePrivate`, `--disableProtected`, `--disableInternal`, `--disableLifeCycleHooks`, `--disableConstructors`, `--disableFilePath` | unchanged | |
+| `--includes`, `--includesName` | unchanged ||
+| `--coverageTest`, `--coverageMinimumPerFile`, `--coverageTestThresholdFail` | unchanged ||
+| `--disableSourceCode`, `--disableDomTree`, `--disableTemplateTab`, `--disableGraph`, `--disableCoverage`, `--disablePrivate`, `--disableProtected`, `--disableInternal`, `--disableLifeCycleHooks`, `--disableConstructors`, `--disableFilePath` | unchanged ||
 | `--disableDependenciesTab` | new | Hides the per-component standalone-import graph independently from `--disableGraph`. |
-| `--customFavicon`, `--customLogo` | unchanged | |
-| `--hideGenerator`, `--hideDarkModeToggle` | unchanged | |
-| `--toggleMenuItems`, `--navTabConfig` | unchanged | |
+| `--customFavicon`, `--customLogo` | unchanged ||
+| `--hideGenerator`, `--hideDarkModeToggle` | unchanged ||
+| `--toggleMenuItems`, `--navTabConfig` | unchanged ||
 | `--gaID` | replaces `--gaSite` | GA4 measurement IDs only (`G-XXXXXXXXXX`). SPA pageviews tracked automatically. |
 | `--gaSite` | removed | Universal Analytics is end-of-life. |
 | `--showEffects` | new (default `false`) | Renders Angular `effect()` blocks in a dedicated section on the API tab. |
 | `--publicApiOnly` | new | Restricts processing to symbols re-exported from a project's public entry. |
-| `--minimal`, `--silent`, `--language`, `--maxSearchResults` | unchanged | |
+| `--minimal`, `--silent`, `--language`, `--maxSearchResults` | unchanged ||
 | `--templatePlayground` | removed in v0.4.0 | Deprecated in v0.3.0, removed in v0.4.0. Switch to the JS template override path (`--templates`). The `compodocx migrate` sub-CLI converts existing Handlebars partials automatically. |
 
 Config-file (`.compodocrc.json`, `.compodocrc.yaml`, `.compodocrc.js`) keys mirror the CLI flags one-to-one. Existing config files keep working unchanged.
 
-A handful of options are **config-only** (no matching CLI flag) — they only take effect when set in a config file:
+A handful of options are **config-only** (no matching CLI flag) - they only take effect when set in a config file:
 
 | Key | Default | Notes |
 |-|-|-|
 | `themingTabSections` | `[]` | Subset of `['overview','index','tokens','source']` to render on the Theming tab. |
 | `playgroundDependencies` | `{}` | Extra packages forwarded to every `@playground` StackBlitz manifest. |
-| `menuLayout` | `"type"` | `"type"` keeps the per-kind sidebar chapters (default); `"feature"` collapses every kind into one cross-kind Features chapter grouped by folder. Use `groupDepth >= 2` for the feature mode to feel right in multi-project workspaces. Non-breaking — the default is byte-identical to v0.4.5. |
-| `collapsedAll` | `false` | Force every chapter AND every nested folder group to start collapsed on first load. Overrides `toggleMenuItems` and `groupDepth`-driven expansion. Useful for large codebases. Non-breaking — default off. |
+| `menuLayout` | `"type"` | `"type"` keeps the per-kind sidebar chapters (default); `"feature"` replaces them with a curated **Features** chapter plus a single top-level link to the **`references.html`** API portal. Use `groupDepth >= 2` for the feature mode to feel right in multi-project workspaces. Non-breaking for `"type"` users; v0.6.0 reshaped the `"feature"` layout - see "Feature-layout reshape in v0.6.0" below. |
+| `featuresName` | `""` (i18n default) | Override the **Features** chapter heading under `menuLayout: 'feature'`. Empty string falls back to the translated `features` i18n key. |
+| `referencesName` | `""` (i18n default) | Exposed on `data.referencesName` for `menu.js` / `api-reference.js` overrides. The built-in templates read the localised `reference` / `api-reference` keys directly and do not consume `referencesName`. |
+| `collapsedAll` | `false` | Force every chapter AND every nested folder group to start collapsed on first load. Overrides `toggleMenuItems` and `groupDepth`-driven expansion. Useful for large codebases. Non-breaking - default off. |
+
+### Feature-layout reshape in v0.6.0
+
+`menuLayout: 'feature'` used to render one Features chapter mixing every entity kind in each bucket. v0.6.0 reshaped it into:
+
+- **Features chapter** in the sidebar - the curated subset of organisms a consumer USES (components, directives, pipes, injectables, tokens, classes, guards, interceptors, entities). A reference-kind symbol can opt in via `@docsKind primary`. Bucketed by folder / `@category` with collapsible groups and per-bucket landing pages at `categories/<bucket-id>.html`.
+- **Single-page API Reference portal** at `references.html`, linked from the sidebar as a top-level **Reference** entry (flat anchor, no tree). The portal is the exhaustive catalogue of every public symbol regardless of kind - components, directives, services, types, functions, the lot - filterable by kind / stability / bucket / free-text with URL state persistence. Replaces the per-bucket References chapter that the sidebar tree used to host. Primary-kind organisms appear both in the Features chapter and on the portal - the table-of-contents vs. index pattern, same target page.
+
+Sidebar selectors moved:
+
+| Before (v0.4.6 – v0.5.x) | After (v0.6.0+) |
+|-|-|
+| `#features-links` (held every entity kind) | `#features-links` (primary kinds only) - the exhaustive catalogue lives on `references.html` |
+| `#features-group-<path>` | `#features-group-<path>` (primary kinds only) |
+| (no References tree) | `<li class="chapter references">` flat anchor to `references.html` (no `#references-links`, no group ids) |
+| Miscellaneous chapter rendered alongside Features | Miscellaneous chapter suppressed; every misc symbol surfaces on the portal |
+| (no portal page) | `references.html` single-page catalogue with kind / stability / bucket / text filters and URL state |
+
+Downstream readers of `Configuration.mainData`:
+
+- `categorizedByFeature` - unchanged. The LLM exporter and any third-party reader continue to see the flat, cross-kind dict.
+- `categorizedByFeaturePrimary` - new sibling the Features chapter reads from.
+- `categorizedByFeatureReference` - new sibling holding the EXHAUSTIVE per-bucket index. The built-in sidebar does not consume it (References is a flat link), but `menu.js` and `api-reference.js` overrides can read it to render their own tree.
+
+To opt INTO the new layout, no migration is needed - set `menuLayout: 'feature'` in your config. To customise per-symbol placement, add `@docsKind primary` to any reference-kind JSDoc (function, interface, typealias, variable, enumeration). Set `featuresName` in your config to override the Features chapter label without touching translations. `menuLayout: 'type'` (the default) is unaffected by every v0.6.0 change.
+
+**InjectionToken / HttpContextToken kind split (v0.6.0+).** `export const X = new InjectionToken<T>(...)` and `new HttpContextToken<T>(...)` declarations are no longer classified as `injectable`. They land in a new first-class `token` kind and emit at `tokens/<name>.html` (not `injectables/<name>.html`). Existing URLs pointing at the old `injectables/<TOKEN_NAME>.html` path 404 - readers must update bookmarks. The `Injectable` facet count in the References portal and command palette now reflects only `@Injectable()` classes; `Token` is a sibling facet. `EntityKind` gains `'token'`, `KIND_HREF_PREFIX.token = 'tokens'`, `KIND_LABELS.token = 'Token'`, and `PRIMARY_KINDS` includes it. The detail page renders a leaner template (`TokenPage`, override name `token`) with just hero + Referenced-by + description + type signature + providedIn - no methods, no inputs/outputs, no API tab.
+
+**`#api` default-tab helper preserved for future use.** `KINDS_WITH_API_TAB` and `featureLinkHref(prefix, item, defaultTab)` in `Menu.tsx` still exist - they append `#api` to entity hrefs for the kinds whose detail page actually renders an API tab (component, directive, pipe, injectable, class, interface, guard, interceptor, entity, function, enumeration); typealiases and variables stay plain. No built-in caller passes `defaultTab='api'` in v0.6.0 since the References sidebar tree was retired in favour of the `references.html` portal, and the portal itself links to plain hrefs. Available for custom `menu.js` / `api-reference.js` overrides that want to land readers directly on the API tab.
+
+**Pagefind search metadata.** Entity hero blocks now emit hidden `<span data-pagefind-meta="kind:Component">`, `<span data-pagefind-meta="category:ui/feedback">`, and `<span data-pagefind-meta="description">first sentence text…</span>` fragments so search results can surface the entity kind, bucket category, and a first-sentence excerpt. The literal `key:value` form is required - the per-suffix attribute variant (`data-pagefind-meta-kind="..."`) is not discovered by Pagefind 1.x's static scan and is intentionally not emitted. Empty descriptions are omitted from the index entirely. Helpers ship under `src/templates/helpers/pagefind-meta.ts` (re-exported from `helpers/index.ts`): `KIND_LABELS` / `KIND_LETTER` (Record), `firstSentence(html)`, `pagefindMetaBlock(input)`, `pagefindFilterBlock(input)` (filter-facet dimensions: kind / lib / bucket / tier / wcag), and `deriveLibFromBucket(bucket)`. The in-tree command-palette consumes `meta.kind` directly when present and falls back to title-parsing for legacy builds.
 
 ## JSON export shape
 
 `documentation.json` produced by `compodocx --exportFormat json` gained:
 
 - **Typed shape.** `ExportData` and every per-entity field are exported from `@cngxjs/compodocx`. Downstream tooling can import and narrow without `any`.
-- **Header fields.** `schemaVersion: 1`, `generatedAt` (ISO 8601), `compodocxVersion`. Pre-v0.3.0 outputs had no `schemaVersion` — consumers should treat its absence as version 0.
+- **Header fields.** `schemaVersion: 2` (v0.6.0+; was `1` in v0.3.0–v0.5.0), `generatedAt` (ISO 8601), `compodocxVersion`. Pre-v0.3.0 outputs had no `schemaVersion` - consumers should treat its absence as version 0. The v0.6.0 bump from `1` to `2` is a non-breaking additive change: `tokens?: ExportInjectable[]` was added as a top-level entry (InjectionToken / HttpContextToken collection - previously dropped from JSON entirely), plus optional per-entity fields `docsKind?: 'primary'`, `wcagLevel?: 'A' \| 'AA' \| 'AAA'`, `a11yNote?: string`, `taggedSelector?: string`, `relatedTo?: string[]` on directives / components / interfaces / classes / tokens. Old v1 readers ignore unknown fields and keep working; downstream tools that want to react to the new surface should gate on `schemaVersion >= 2`.
 - **Indent default `0`.** Single-line by default. Pass `--jsonIndent 2` to restore the previous human-readable formatting. `jq` consumers are unaffected.
 
 ## Themes
@@ -131,7 +164,7 @@ The bundled theme set is different.
 
 | Old compodoc theme | Closest replacement |
 |-|-|
-| `gitbook` | `gitbook` (compat theme — preserved) |
+| `gitbook` | `gitbook` (compat theme - preserved) |
 | `material` | `default` or `ocean` |
 | `original` | `default` |
 | `postmark` | `nord` |
@@ -166,52 +199,52 @@ Pass that directory via `--templates ./my-templates`.
 
 ```js
 module.exports = function (data, helpers) {
-    // data    — the full props the built-in template would receive
-    // helpers — everything exported from src/templates/helpers/index.ts
-    return '<html string here>';
+    // data    - the full props the built-in template would receive
+    // helpers - everything exported from src/templates/helpers/index.ts
+    return "<html string here>";
 };
 ```
 
-The returned string is inserted raw — no escaping. `null` / `undefined` falls back to the built-in TSX rendering. Overrides are consulted before the built-in renderer.
+The returned string is inserted raw - no escaping. `null` / `undefined` falls back to the built-in TSX rendering. Overrides are consulted before the built-in renderer.
 
 ### HBS → JS cookbook
 
 ```handlebars
-{{!-- 1. Expression --}}
+{{! 1. Expression }}
 {{name}}
 ```
 
 ```js
-`${data.name}`
+`${data.name}`;
 ```
 
 ```handlebars
-{{!-- 2. Conditional --}}
+{{! 2. Conditional }}
 {{#if deprecated}}<span class="deprecated">{{deprecationMessage}}</span>{{/if}}
 ```
 
 ```js
-data.deprecated ? `<span class="deprecated">${data.deprecationMessage}</span>` : ''
+data.deprecated ? `<span class="deprecated">${data.deprecationMessage}</span>` : "";
 ```
 
 ```handlebars
-{{!-- 3. Iteration --}}
+{{! 3. Iteration }}
 {{#each methods}}
     <li>{{name}}</li>
 {{/each}}
 ```
 
 ```js
-data.methods.map(m => `<li>${m.name}</li>`).join('')
+data.methods.map((m) => `<li>${m.name}</li>`).join("");
 ```
 
 ```handlebars
-{{!-- 4. Helper invocation --}}
+{{! 4. Helper invocation }}
 {{linkType returnType}}
 ```
 
 ```js
-helpers.linkTypeHtml(data.returnType)
+helpers.linkTypeHtml(data.returnType);
 ```
 
 ```handlebars
@@ -220,25 +253,25 @@ helpers.linkTypeHtml(data.returnType)
 ```
 
 ```js
-const blockMethod = require('./block-method.js');
+const blockMethod = require("./block-method.js");
 return blockMethod({ methods: data.instanceMethods, file: data.file }, helpers);
 ```
 
 ```handlebars
-{{!-- 6. Triple-stash (unescaped) --}}
+{{! 6. Triple-stash (unescaped) }}
 {{{rawHtml}}}
 ```
 
 ```js
-data.rawHtml
+data.rawHtml;
 ```
 
 ### Reference templates
 
 Two copy-paste-ready overrides under `test/fixtures/test-templates/partials/`:
 
-- `component.js` — overrides the `component` page-level template, exercises `data.component.*` plus `helpers.parseDescription()`, `functionSignature()`, `extractJsdocParams()`, `linkTypeHtml()`.
-- `block-method.js` — overrides the `block-method` block-level template, exercises iteration, `helpers.t()`, conditional rendering.
+- `component.js` - overrides the `component` page-level template, exercises `data.component.*` plus `helpers.parseDescription()`, `functionSignature()`, `extractJsdocParams()`, `linkTypeHtml()`.
+- `block-method.js` - overrides the `block-method` block-level template, exercises iteration, `helpers.t()`, conditional rendering.
 
 Both are wired into the `cli-templates` integration spec and stay working examples over time.
 
@@ -248,23 +281,27 @@ Stable contract for `--templates`. Data shapes documented inline in the correspo
 
 ### Page-level
 
-`overview`, `markdown`, `modules`, `module`, `component`, `component-detail`, `controller`, `entity`, `directive`, `injectable`, `interceptor`, `guard`, `pipe`, `class`, `interface`, `routes`, `miscellaneous-functions`, `miscellaneous-variables`, `miscellaneous-typealiases`, `miscellaneous-enumerations`, `miscellaneous-function`, `miscellaneous-variable`, `miscellaneous-typealias`, `miscellaneous-enumeration`, `additional-page`, `package-dependencies`, `package-properties`, `coverage-report`, `unit-test-report`, `menu`, `app-config`
+`overview`, `markdown`, `modules`, `module`, `component`, `component-detail`, `controller`, `entity`, `directive`, `injectable`, `interceptor`, `guard`, `pipe`, `class`, `interface`, `routes`, `miscellaneous-functions`, `miscellaneous-variables`, `miscellaneous-typealiases`, `miscellaneous-enumerations`, `miscellaneous-function`, `miscellaneous-variable`, `miscellaneous-typealias`, `miscellaneous-enumeration`, `additional-page`, `package-dependencies`, `package-properties`, `coverage-report`, `unit-test-report`, `menu`, `app-config`, `bucket-landing`
 
 The four singular miscellaneous contexts (`miscellaneous-function`, `miscellaneous-variable`, `miscellaneous-typealias`, `miscellaneous-enumeration`) target the per-entity detail page generated when a function, variable, type alias, or enumeration carries an `@category` JSDoc tag. The plural contexts continue to drive the shared collection page.
 
+The `bucket-landing` context (v0.6.0+) targets the auto-generated `categories/<bucket-id>.html` pages emitted under `menuLayout: 'feature'`. Data: `data.bucketLanding = { bucket: string, segments: string[], depth: number, items: EntityWithKind[] }`. Both leaf and intermediate folder nodes get pages; intermediate buckets aggregate items from every descendant leaf.
+
 ### Block-level
 
-`block-theming`, `block-theming-token`, `block-method`, `block-property`, `block-input`, `block-output`, `block-accessors`, `block-host-listener`, `block-host-listeners`, `block-host-bindings`, `block-derived-state`, `block-constructor`, `block-enum`, `block-typealias`, `block-index`, `block-index-signatures`, `block-playground`, `playground-content`, `version-switcher`
+`block-theming`, `block-theming-token`, `block-method`, `block-property`, `block-input`, `block-output`, `block-accessors`, `block-host-listener`, `block-host-listeners`, `block-host-bindings`, `block-derived-state`, `block-constructor`, `block-enum`, `block-typealias`, `block-index`, `block-index-signatures`, `block-playground`, `playground-content`, `referenced-by`, `version-switcher`
+
+The `referenced-by` block (v0.6.0+) renders the chip-list of primary-kind entities that mention a reference-kind symbol's name in their public surface. Data: `{ entries: ReferencedByEntry[], depth: number }`; `ReferencedByEntry = { name, kind, hrefPrefix }`.
 
 ### Removed / not overridable
 
-- `search-results`, `search-input` — Pagefind replaces Lunr and ships its own UI shell. No override hook.
-- `breadcrumbs` — replaced by inline rendering in the entity hero. Override the page-level template if you need to change breadcrumb markup.
-- `block-relationships`, `index`, `index-misc`, `link-type` — not overridable. `link-type` was a Handlebars helper, available now as `helpers.linkTypeHtml(typeName)` inside any JS override.
+- `search-results`, `search-input` - Pagefind replaces Lunr and ships its own UI shell. No override hook.
+- `breadcrumbs` - replaced by inline rendering in the entity hero. Override the page-level template if you need to change breadcrumb markup.
+- `block-relationships`, `index`, `index-misc`, `link-type` - not overridable. `link-type` was a Handlebars helper, available now as `helpers.linkTypeHtml(typeName)` inside any JS override.
 
 ## Helper API
 
-Every override receives a `helpers` object as its second argument — the full export of `src/templates/helpers/index.ts`. The source is authoritative; key entries:
+Every override receives a `helpers` object as its second argument - the full export of `src/templates/helpers/index.ts`. The source is authoritative; key entries:
 
 | Helper | What it does |
 |-|-|
@@ -296,7 +333,7 @@ compodoc emitted Bootstrap classes plus ad-hoc `compodoc-` names. compodocx pref
 | Bootstrap badges (`.badge`, `.badge-primary`) | `.cdx-badge`, `.cdx-badge--<kind>` |
 | `.alert` | `.cdx-callout`, `.cdx-callout--<variant>` |
 | `.coverage-*` | `.cdx-coverage-*` |
-| `.col-md-*`, `.row` (Bootstrap grid) | gone — replaced by CSS Grid + Flexbox |
+| `.col-md-*`, `.row` (Bootstrap grid) | gone - replaced by CSS Grid + Flexbox |
 | `.modal` | `.cdx-cp-panel` (used for the command palette) |
 
 `data-compodoc="<block-name>"` attributes are emitted on every section to make CSS targeting and downstream scraping stable across versions.
@@ -312,9 +349,10 @@ What does NOT migrate cleanly:
     - `host` is `hostStructured`, an array of `{ kind, name, value }` records.
     - `signalDeps` is a new `string[]` on `computed`/`linked-signal` properties.
 
-  Templates that interpolated the raw strings need to walk the structured shape. Reference TSX: `HostSection.tsx`, `ProvidersSection.tsx`, `BlockDerivedState.tsx`.
+    Templates that interpolated the raw strings need to walk the structured shape. Reference TSX: `HostSection.tsx`, `ProvidersSection.tsx`, `BlockDerivedState.tsx`.
+
 - **`--gaSite` flag.** Use `--gaID G-XXXXXXXXXX` (GA4 measurement ID).
-- **Bootstrap markup contract.** Downstream tooling that scraped specific Bootstrap selectors (e.g. `.card.text-center`, `.panel-default`) needs an update — those classes are no longer emitted. Use the `cdx-*` selectors or the stable `data-compodoc="<block-name>"` attributes instead.
+- **Bootstrap markup contract.** Downstream tooling that scraped specific Bootstrap selectors (e.g. `.card.text-center`, `.panel-default`) needs an update - those classes are no longer emitted. Use the `cdx-*` selectors or the stable `data-compodoc="<block-name>"` attributes instead.
 - **Lunr search index.** Replaced by Pagefind. The `js/search/` and `pageinfo.json` files are gone. Pagefind writes its index to `pagefind/` next to the HTML output.
 
 ## `compodocx migrate` CLI
@@ -365,13 +403,13 @@ The CLI rejects two cases instead of emitting broken output:
 
 ### CSS rewrites
 
-Conservative mode (default) rewrites class names in `.css` / `.scss` / `.sass` only. Aggressive mode (`--aggressive`) also rewrites `.html` / `.ts` / `.tsx` / `.js` — risky against string-literal class names, so the recommended workflow is `--dry-run --aggressive` first.
+Conservative mode (default) rewrites class names in `.css` / `.scss` / `.sass` only. Aggressive mode (`--aggressive`) also rewrites `.html` / `.ts` / `.tsx` / `.js` - risky against string-literal class names, so the recommended workflow is `--dry-run --aggressive` first.
 
 `data-compodoc="<block-name>"` attributes are intentionally preserved.
 
 ### ESM-package corner case
 
-If your project's `package.json` has `"type": "module"`, the `.js` overrides emitted by the converter will fail to load — the loader calls `require()`. Workarounds:
+If your project's `package.json` has `"type": "module"`, the `.js` overrides emitted by the converter will fail to load - the loader calls `require()`. Workarounds:
 
 - Rename converted outputs to `.cjs`, OR
 - Remove the `"type": "module"` declaration in the templates directory (if your overrides live in a sub-folder), OR

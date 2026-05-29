@@ -126,6 +126,17 @@ const bindTogglers = () => {
             }
 
             const clickedEl = e.target as HTMLElement;
+
+            // Feature-bucket two-hit-zone: the row IS the toggler, but
+            // it also wraps a real `<a data-cdx-bucket-link>`. When the
+            // click originates inside the anchor, let the browser run
+            // its native navigation (incl. Cmd/middle-click new-tab)
+            // — we deliberately avoid `event.stopPropagation()` on the
+            // anchor itself so modifier-key flows stay intact.
+            if (clickedEl.closest('[data-cdx-bucket-link]')) {
+                return;
+            }
+
             const link = toggler.closest('a');
 
             if (toggler.classList.contains('simple')) {
@@ -144,6 +155,27 @@ const bindTogglers = () => {
                 toggleCollapse(target);
             }
         });
+
+        // Keyboard support for bucket rows: the row carries
+        // `role="button"` + `tabindex="0"`, so Enter/Space must toggle
+        // the same as a click — unless focus is on the inner anchor,
+        // where the browser's native Enter handles navigation.
+        if (toggler.matches('[data-cdx-bucket-row]')) {
+            toggler.addEventListener('keydown', e => {
+                if (e.key !== 'Enter' && e.key !== ' ') {
+                    return;
+                }
+                if (document.activeElement?.matches('[data-cdx-bucket-link]')) {
+                    return;
+                }
+                const target = toggler.getAttribute('data-cdx-target');
+                if (!target) {
+                    return;
+                }
+                e.preventDefault();
+                toggleCollapse(target);
+            });
+        }
     });
 };
 
@@ -318,12 +350,16 @@ export const expandToActive = () => {
     }
 
     // Mark collapsed ancestors that contain the active entity
-    // (for groups that remain collapsed after state restore)
+    // (for groups that remain collapsed after state restore).
+    // Feature-bucket rows live under `.cdx-bucket-row` instead of
+    // `.menu-toggler`, so the selector matches either.
     let ancestor = active.closest('.chapter.inner') as HTMLElement | null;
     while (ancestor) {
         const collapse = ancestor.querySelector(':scope > ul.links.collapse');
         if (collapse && !collapse.classList.contains('in')) {
-            const toggler = ancestor.querySelector(':scope > .menu-toggler');
+            const toggler = ancestor.querySelector(
+                ':scope > .menu-toggler, :scope > .cdx-bucket-row'
+            );
             if (toggler) {
                 toggler.classList.add('cdx-contains-active');
             }

@@ -141,6 +141,7 @@
     border-color: color-mix(in srgb, hsl(290 55% 48%) 30%, transparent);
 }
 
+
 .cdx-prose > p {
     margin-bottom: 1rem;
 }
@@ -232,11 +233,66 @@
  * Matches the "Features" chip style on the AppConfig provider cards.
  */
 
-.cdx-metadata-value .cdx-chip-list {
+.cdx-chip-list {
     display: flex;
     flex-wrap: wrap;
     gap: 0.375rem;
     align-items: center;
+}
+
+.cdx-referenced-by {
+    margin-top: var(--spacing-cdx-md);
+}
+
+/* @relatedTo pill list. Each pill is a clickable cross-link to a sibling
+ * entity. Visual rhythm matches the bucket-landing filter chips + WCAG
+ * chip: compact padding, --radius-cdx-sm corners (NOT pill-rounded), sans
+ * font (these are navigation labels, not code refs). Unresolved targets
+ * render as a static dashed-border chip so docs authors can spot typos. */
+.cdx-related-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-cdx-xs);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.cdx-related-section {
+    margin-block: var(--spacing-cdx-md);
+}
+
+.cdx-related-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: var(--radius-cdx-sm);
+    border: 1px solid var(--color-cdx-border);
+    background: var(--color-cdx-bg-alt);
+    color: var(--color-cdx-text);
+    font-size: 0.8125rem;
+    font-family: var(--font-sans, inherit);
+    line-height: 1.4;
+    text-decoration: none;
+    transition:
+        background 150ms ease,
+        border-color 150ms ease;
+}
+
+a.cdx-related-pill:hover,
+a.cdx-related-pill:focus-visible {
+    background: var(--color-cdx-bg-elevated);
+    border-color: var(--color-cdx-border-strong, var(--color-cdx-primary));
+    text-decoration: none;
+}
+
+.cdx-related-pill--unresolved {
+    color: var(--color-cdx-text-muted);
+    background: var(--color-cdx-bg, transparent);
+    border-style: dashed;
+    border-color: var(--color-cdx-border-subtle, var(--color-cdx-border));
+    opacity: 0.55;
+    cursor: not-allowed;
 }
 
 .cdx-chip {
@@ -270,6 +326,23 @@ a.cdx-chip:hover {
     border-color: var(--cdx-chip-color);
     color: var(--cdx-chip-color);
     text-decoration: none;
+}
+
+/* Link affordance: only `<a class="cdx-chip" href="…">` chips communicate
+   that they navigate. Static chips (no href — kind badges, status pills)
+   keep their flat appearance. */
+.cdx-chip[href] {
+    cursor: pointer;
+}
+
+.cdx-chip[href]:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.cdx-chip[href]:focus-visible {
+    outline: 2px solid var(--color-cdx-focus-ring, currentColor);
+    outline-offset: 2px;
 }
 
 .cdx-chip-label {

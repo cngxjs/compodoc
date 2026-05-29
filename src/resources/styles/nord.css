@@ -36,12 +36,19 @@
     --color-cdx-entity-module: #5e81ac;
     --color-cdx-entity-class: #a3be8c;
     --color-cdx-entity-interface: #88c0d0;
+    --color-cdx-entity-token: #5e6779; /* Polar Night-lifted slate, distinct from variable */
     --color-cdx-entity-guard: #bf616a;
     --color-cdx-entity-interceptor: #b48ead;
     --color-cdx-entity-function: #a3be8c;
     --color-cdx-entity-variable: #4c566a;
     --color-cdx-entity-typealias: #81a1c1;
     --color-cdx-entity-enum: #d08770;
+
+    /* --- Badge accents (WCAG + AI-generated) --- */
+    --color-cdx-badge-ai-generated: #b48ead; /* Aurora purple */
+    --color-cdx-badge-wcag-a: #8892a4; /* Frost-muted grey */
+    --color-cdx-badge-wcag-aa: #5c8a48; /* Aurora green, deeper */
+    --color-cdx-badge-wcag-aaa: #5e81ac; /* Frost 4 */
 
     /* --- Feedback --- */
     --color-cdx-deprecated: #d08770;
@@ -118,12 +125,19 @@
     --color-cdx-entity-module: #81a1c1;
     --color-cdx-entity-class: #a3be8c;
     --color-cdx-entity-interface: #88c0d0;
+    --color-cdx-entity-token: #a0b4d0; /* Frost-lifted slate on Polar Night */
     --color-cdx-entity-guard: #bf616a;
     --color-cdx-entity-interceptor: #b48ead;
     --color-cdx-entity-function: #a3be8c;
     --color-cdx-entity-variable: #d8dee9;
     --color-cdx-entity-typealias: #81a1c1;
     --color-cdx-entity-enum: #d08770;
+
+    /* --- Badge accents (WCAG + AI-generated) --- */
+    --color-cdx-badge-ai-generated: #b48ead;
+    --color-cdx-badge-wcag-a: #a0aabb;
+    --color-cdx-badge-wcag-aa: #a3be8c;
+    --color-cdx-badge-wcag-aaa: #88c0d0;
 
     /* --- Feedback --- */
     --color-cdx-deprecated: #d08770;

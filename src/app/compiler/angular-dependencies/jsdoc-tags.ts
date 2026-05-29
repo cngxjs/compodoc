@@ -1,9 +1,18 @@
 import type { JsdocParserUtil } from '../../../utils';
+import { warnOnce } from '../../../utils/jsdoc-tag-warn';
 
 export class JsdocTags {
     constructor(private readonly jsdocParserUtil: JsdocParserUtil) {}
 
     public checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
+        // Per-pass counter for first-wins detection on @docsKind. Both
+        // extractor paths run on the same `result` for class-like entities;
+        // we can't compare against `result.docsKind` (already set by pass 1
+        // → would always false-fire on pass 2's first tag). The counter is
+        // pass-local, so pass 2 starts from zero and only fires when the
+        // array genuinely contains ≥ 2 valid @docsKind tags. `warnOnce`
+        // dedups the warn across the two passes.
+        let docsKindCount = 0;
         tags.forEach(tag => {
             if (tag.tagName?.text) {
                 if (tag.tagName.text.includes('deprecated')) {
@@ -14,6 +23,41 @@ export class JsdocTags {
                 }
                 if (tag.tagName.text === 'category') {
                     result.category = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                }
+                if (tag.tagName.text === 'docsKind') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    const value = raw.split('\n')[0].trim().toLowerCase();
+                    if (value === 'primary') {
+                        docsKindCount++;
+                        if (docsKindCount > 1) {
+                            warnOnce(
+                                result,
+                                'docsKind:duplicate',
+                                `Multiple @docsKind primary tags on entity "${result.name || '?'}". First-wins, dropping subsequent.`
+                            );
+                        } else {
+                            result.docsKind = 'primary';
+                        }
+                    }
+                }
+                if (tag.tagName.text === 'wcag') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    const value = raw.split('\n')[0].trim().toUpperCase();
+                    if (value === 'A' || value === 'AA' || value === 'AAA') {
+                        result.wcagLevel = value;
+                    } else if (value) {
+                        warnOnce(
+                            result,
+                            'wcag:invalid',
+                            `Invalid @wcag level "${value}" — expected one of A, AA, AAA. Ignoring.`
+                        );
+                    }
+                }
+                if (tag.tagName.text === 'a11y') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    if (raw) {
+                        result.a11yNote = raw;
+                    }
                 }
             }
         });
@@ -72,12 +116,36 @@ export class JsdocTags {
                 case 'stackblitz':
                     result.stackblitzUrl = comment.split('\n')[0].trim();
                     break;
-                case 'github':
-                    result.githubUrl = comment.split('\n')[0].trim();
+                case 'github': {
+                    const url = comment.split('\n')[0].trim();
+                    if (url.startsWith('https://github.com/')) {
+                        result.githubUrl = url;
+                    } else if (url) {
+                        warnOnce(
+                            result,
+                            'github:invalid',
+                            `Invalid @github URL "${url}" — must start with https://github.com/. Ignoring.`
+                        );
+                    }
                     break;
+                }
                 case 'docs':
                     result.docsUrl = comment.split('\n')[0].trim();
                     break;
+                case 'selector':
+                    result.taggedSelector = comment.split('\n')[0].trim();
+                    break;
+                case 'relatedTo': {
+                    const symbols = comment
+                        .split('\n')[0]
+                        .split(',')
+                        .map(s => s.trim())
+                        .filter(Boolean);
+                    if (symbols.length > 0) {
+                        result.relatedTo = symbols;
+                    }
+                    break;
+                }
                 case 'slot': {
                     // @slot name - description
                     if (!result.slots) {

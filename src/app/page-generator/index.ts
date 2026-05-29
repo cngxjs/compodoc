@@ -1,6 +1,8 @@
 export { AdditionalPageGenerator } from './additional-page-generator';
+export { ApiReferencePageGenerator } from './api-reference-page-generator';
 export { AppConfigPageGenerator } from './app-config-page-generator';
 export { AssetCopier, type AssetCopierCallbacks } from './asset-copier';
+export { BucketLandingPageGenerator } from './bucket-landing-page-generator';
 export { ClassPageGenerator } from './class-page-generator';
 export { ComponentPageGenerator } from './component-page-generator';
 export { CoveragePageGenerator } from './coverage-page-generator';
@@ -20,3 +22,4 @@ export { PageWriter } from './page-writer';
 export { PipePageGenerator } from './pipe-page-generator';
 export { PlaygroundFileResolver } from './playground-file-resolver';
 export { RoutesPageGenerator } from './routes-page-generator';
+export { TokenPageGenerator } from './token-page-generator';

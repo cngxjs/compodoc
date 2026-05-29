@@ -162,12 +162,201 @@
 
 /* Menu styles */
 
+/* Bucket whole-row toggle (menuLayout: 'feature') — the row itself is
+ * the toggle (role="button"); a sibling `<a data-cdx-bucket-link>`
+ * carries the navigation to the auto-generated
+ * `categories/<bucket>.html` landing page. Clicking the row outside
+ * the anchor toggles expand; clicking the anchor navigates (incl.
+ * Cmd/middle-click new-tab). HTML5 forbids `<a>` inside `<button>`,
+ * so the markup is a `<div role="button">` with a sibling anchor —
+ * see `FeatureGroupTree` in `Menu.tsx`.
+ *
+ * Hover, active background, and the primary-subtle left-bar all live
+ * on the row, NOT on the inner anchor — the row owns the visual
+ * highlight so it covers the chevron area uniformly. The anchor's
+ * native hover/active styles are explicitly suppressed below with a
+ * higher-specificity rule that beats `.menu ul.list li:not(.copyright)
+ * a:hover/.active` (0,4,3). */
+.cdx-bucket-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    gap: var(--spacing-cdx-xs);
+    /* Padding + min-height match `.menu ul.list li.chapter .simple`
+     * (chapter `<button>` headers) so feature-mode buckets sit at the
+     * same vertical rhythm as the regular chapter rows above them. */
+    padding: var(--spacing-cdx-sm) var(--spacing-cdx-lg);
+    min-height: 36px;
+    /* Row body uses the default arrow — the toggle action is implied
+     * by the chevron at the row's right edge (which gets
+     * `cursor: pointer`). The anchor child keeps the classic link
+     * hand. Cursors visually split the row into "label + chevron =
+     * interactive" vs. "row backdrop = passive", even though the
+     * click handler toggles the section regardless of where the
+     * cursor lands. */
+    cursor: default;
+    color: inherit;
+    position: relative;
+}
+
+.cdx-bucket-row:hover {
+    background: var(--color-cdx-bg-alt);
+    box-shadow: inset 3px 0 0 var(--color-cdx-primary-subtle);
+    transition:
+        background 120ms ease,
+        box-shadow 120ms ease;
+}
+
+.cdx-bucket-row:focus-visible {
+    outline: 2px solid var(--color-cdx-focus-ring, var(--color-cdx-primary));
+    outline-offset: -2px;
+    border-radius: var(--radius-cdx-sm);
+}
+
+/* Row-level active highlight via `:has()` — covers the entire row,
+ * including the chevron, so the visual stays consistent with the
+ * "whole-row hit zone" mental model. The 4px primary border bar
+ * mirrors the chapter `a.active::before` so feature-mode buckets look
+ * the same as type-mode chapter entries. Padding-left intentionally
+ * stays at the base `var(--spacing-cdx-lg)` (16px) so the label sits
+ * at the same x-coordinate as inactive siblings — the bar paints in
+ * the row's left padding zone WITHOUT pushing the text. Setting a
+ * smaller value (e.g. 12px à la `.menu ul.list li:not(.copyright)
+ * a.active`) would shift the active label left and misalign it with
+ * its siblings in the same group. */
+.cdx-bucket-row:has(.cdx-bucket-link.active) {
+    background: var(--color-cdx-primary-subtle);
+    font-weight: 500;
+}
+
+.cdx-bucket-row:has(.cdx-bucket-link.active)::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--color-cdx-primary);
+    border-radius: 0 2px 2px 0;
+    transform-origin: top;
+    animation: cdx-active-border 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* `.menu ul.list li a` (specificity 0,2,2) is the menu-wide anchor
+ * base — it forces `display: flex`, padding `sm lg`, ellipsis +
+ * overflow hidden on every link. For the bucket label we want a plain
+ * inline text node so the row's flex layout owns positioning end-to-end;
+ * match the base rule's specificity (0,3,2) with the kind-class chain
+ * to reset all four properties at once. Without this the anchor still
+ * carries `padding-left: var(--spacing-cdx-lg)`, and any rule that
+ * changed it on `:hover` would visibly jump the label horizontally.
+ *
+ * `cursor: pointer` is the classic link cursor — together with the
+ * row's `cursor: default` it signals that the label is the navigation
+ * target while the rest of the row is the toggle backdrop. */
+.menu ul.list li:not(.copyright) a.cdx-bucket-link {
+    display: inline;
+    padding: 0;
+    overflow: visible;
+    white-space: normal;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Hover + focus-visible underline communicate "anchor tag behavior" —
+ * the inline anchor (display: inline) wraps the text tightly so the
+ * underline sits directly under the label, not floating at the row's
+ * bottom edge. Hovering the row outside the anchor does NOT trigger
+ * an underline, so the cursor's position visibly distinguishes
+ * "navigate" (anchor) from "toggle" (rest of row). */
+.cdx-bucket-link:hover .link-name,
+.cdx-bucket-link:focus-visible .link-name {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.cdx-bucket-link:focus-visible {
+    outline: 2px solid var(--color-cdx-focus-ring, var(--color-cdx-primary));
+    outline-offset: 1px;
+    border-radius: var(--radius-cdx-sm);
+}
+
+/* High-specificity override: the menu-wide `.menu ul.list
+ * li:not(.copyright) a:hover/.active` rules (0,4,3) would otherwise
+ * win the cascade and paint background + inset shadow on the anchor,
+ * stacking under the row's own highlight. Adding `.cdx-bucket-link`
+ * to the same selector chain (0,5,3) flips the cascade.
+ *
+ * `padding-left: 0` is load-bearing: without it, the menu-wide
+ * `a.active { padding-left: 12px }` (same 0,4,3 specificity as the
+ * hover rule but more specific than the bucket-link base reset at
+ * 0,3,2) wins by source order on `.cdx-bucket-link.active` and shifts
+ * the label 12px right. The row's own `:has()` rule does NOT also
+ * paint padding-left, so the row keeps its base 16px while the anchor
+ * stays flush at 0 — active and inactive labels line up on the same
+ * x-coordinate. `padding-left: 0` is safe on `:hover` too because
+ * the bucket-link base already sets padding to 0, so there is no
+ * horizontal jump between hover and non-hover. */
+.menu ul.list li:not(.copyright) a.cdx-bucket-link:hover,
+.menu ul.list li:not(.copyright) a.cdx-bucket-link.active {
+    background: transparent;
+    box-shadow: none;
+    padding-left: 0;
+}
+
+.menu ul.list li:not(.copyright) a.cdx-bucket-link.active::before {
+    display: none;
+}
+
+.cdx-bucket-count {
+    flex: 0 0 auto;
+}
+
+/* The bucket chevron flows in the flex row instead of using the
+ * absolute positioning the global `.cdx-chevron` rule applies (that
+ * rule targets chapter headers, which lay out differently). Keep the
+ * shared `.cdx-chevron` class so `syncChevrons()` and `toggleCollapse()`
+ * still find it — only override what's incompatible with the bucket
+ * layout. `margin-left: auto` pushes the chevron to the row's right
+ * edge regardless of how wide the inline link is. Rotation is driven
+ * by BOTH `aria-expanded="true"` on the row AND the `.cdx-chevron--open`
+ * class managed by the toggle handler, so the visual state stays
+ * consistent regardless of which path updates first. */
+.cdx-bucket-row .cdx-chevron {
+    position: static;
+    flex: 0 0 auto;
+    margin-left: auto;
+    transform: rotate(0deg);
+    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    /* Chevron is the canonical toggle UI even though the whole row is
+     * the hit zone — give it the link/button hand so the right edge
+     * of the row visibly invites the click. */
+    cursor: pointer;
+}
+
+.cdx-bucket-row[aria-expanded="true"] .cdx-chevron,
+.cdx-bucket-row .cdx-chevron.cdx-chevron--open {
+    transform: rotate(90deg);
+}
+
 .menu ul.list li:not(.copyright) a:hover {
     background: var(--color-cdx-bg-alt);
     box-shadow: inset 3px 0 0 var(--color-cdx-primary-subtle);
     transition:
         background 120ms ease,
         box-shadow 120ms ease;
+}
+
+/* Bucket-link sits inside `.cdx-bucket-row`, which already paints the
+ * full-row hover background. The menu-wide `a:hover` would otherwise
+ * stack a second bg layer + inset-shadow on the anchor only, breaking
+ * the "whole row highlights as one" effect. */
+.cdx-bucket-row .cdx-bucket-link:hover {
+    background: transparent;
+    box-shadow: none;
 }
 
 .menu ul.list li:not(.copyright) a.active {
@@ -205,7 +394,8 @@
     transition: background 120ms ease;
 }
 
-.chapter.inner > .menu-toggler.cdx-contains-active {
+.chapter.inner > .menu-toggler.cdx-contains-active,
+.chapter.inner > .cdx-bucket-row.cdx-contains-active {
     box-shadow: inset 3px 0 0 var(--color-cdx-primary-subtle);
 }
 
@@ -228,15 +418,20 @@
     padding-top: 0;
 }
 
-/* Group header: muted uppercase label — two-tier font scale */
-.chapter.inner > .menu-toggler .link-name {
+/* Group header: muted uppercase label — two-tier font scale.
+ * Feature-mode bucket rows (`.cdx-bucket-row`) get the same treatment
+ * as the `.menu-toggler` headers above them so the vertical rhythm
+ * and typography stay consistent across both layouts. */
+.chapter.inner > .menu-toggler .link-name,
+.chapter.inner > .cdx-bucket-row .link-name {
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--color-cdx-text-muted);
 }
-.chapter.inner[style*="--depth: 0"] > .menu-toggler .link-name {
+.chapter.inner[style*="--depth: 0"] > .menu-toggler .link-name,
+.chapter.inner[style*="--depth: 0"] > .cdx-bucket-row .link-name {
     font-size: 12px;
 }
 
@@ -477,7 +672,7 @@ button.menu-toggler:focus-visible {
     }
 }
 
-/* ─── Feature layout — per-kind icon next to each entity name ─── */
+/* Feature layout — per-kind icon next to each entity name  */
 
 /* Force the anchor into a flex row so the kind icon, name, and trailing
    badges line up. The default `.link a` rule above only applies to module

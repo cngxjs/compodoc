@@ -26,7 +26,7 @@ export type ExportRoute = RouteInterface;
  * other place in `src/` writes a numeric literal as the schema version
  * instead of importing this constant.
  */
-export const EXPORT_SCHEMA_VERSION = 1 as const;
+export const EXPORT_SCHEMA_VERSION = 2 as const;
 
 export type ExportSchemaVersion = typeof EXPORT_SCHEMA_VERSION;
 
@@ -434,4 +434,6 @@ export interface ExportData {
     coverage?: ExportCoverage;
     miscellaneous?: ExportMiscellaneous;
     components?: ExportComponent[];
+    /** InjectionToken / HttpContextToken declarations (v0.6.0+). */
+    tokens?: ExportInjectable[];
 }

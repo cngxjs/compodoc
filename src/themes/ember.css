@@ -31,12 +31,19 @@
     --color-cdx-entity-module: #2563eb; /* blue-600 */
     --color-cdx-entity-class: #15803d; /* green-700 warm */
     --color-cdx-entity-interface: #0e7490; /* cyan-700 warm */
+    --color-cdx-entity-token: #475569; /* slate-600 — cool counterpoint to ember palette */
     --color-cdx-entity-guard: #d82323; /* red-700 */
     --color-cdx-entity-interceptor: #a21caf; /* fuchsia-700 */
     --color-cdx-entity-function: #4c7a0f; /* lime-700 */
     --color-cdx-entity-variable: #57534e; /* stone-600 warm */
     --color-cdx-entity-typealias: #4338ca; /* indigo-700 warm */
     --color-cdx-entity-enum: #c2410c; /* orange-700 */
+
+    /* --- Badge accents (WCAG + AI-generated) --- */
+    --color-cdx-badge-ai-generated: hsl(290 55% 48%); /* magenta pop against orange */
+    --color-cdx-badge-wcag-a: hsl(28 10% 45%); /* warm grey */
+    --color-cdx-badge-wcag-aa: hsl(145 60% 32%); /* warm-shifted green */
+    --color-cdx-badge-wcag-aaa: hsl(210 75% 42%); /* deep blue counterpoint */
 
     /* --- Feedback --- */
     --color-cdx-deprecated: hsl(45 85% 30.5%);
@@ -109,12 +116,19 @@
     --color-cdx-entity-module: #93c5fd; /* blue-300 */
     --color-cdx-entity-class: #86efac; /* green-300 */
     --color-cdx-entity-interface: #67e8f9; /* cyan-300 */
+    --color-cdx-entity-token: #cbd5e1; /* slate-300 — cool counterpoint */
     --color-cdx-entity-guard: #fca5a5; /* red-300 */
     --color-cdx-entity-interceptor: #f0abfc; /* fuchsia-300 */
     --color-cdx-entity-function: #bef264; /* lime-300 */
     --color-cdx-entity-variable: #a8a29e; /* stone-400 */
     --color-cdx-entity-typealias: #a5b4fc; /* indigo-300 */
     --color-cdx-entity-enum: #fdba74; /* orange-300 */
+
+    /* --- Badge accents (WCAG + AI-generated) --- */
+    --color-cdx-badge-ai-generated: hsl(290 70% 72%);
+    --color-cdx-badge-wcag-a: hsl(28 8% 60%);
+    --color-cdx-badge-wcag-aa: hsl(145 55% 60%);
+    --color-cdx-badge-wcag-aaa: hsl(210 75% 65%);
 
     /* --- Feedback --- */
     --color-cdx-deprecated: hsl(45 75% 62%);

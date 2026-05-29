@@ -1,4 +1,6 @@
 import { initAnimations } from './animate';
+import { initApiReference } from './api-reference';
+import { initBucketLandingFilter } from './bucket-landing-filter';
 import { initCodeBlocks } from './code-blocks';
 import { initCommandPalette } from './command-palette';
 import { initCoverage } from './coverage';
@@ -32,6 +34,8 @@ const init = () => {
     initKeyboard();
     initAnimations();
     initVersionSwitcher();
+    initApiReference();
+    initBucketLandingFilter();
     // initToc(); // TODO: enable when ToC styling is finalized
 };
 

@@ -18,6 +18,15 @@ export { linkTypeHtml, resolveType } from './link-type';
 export { modifIcon, modifIconFromArray } from './modif-icon';
 export { modifKind, modifSlug } from './modif-kind';
 export { oneParameterHas } from './one-parameter-has';
+export type { PagefindFilterInput, PagefindMetaInput } from './pagefind-meta';
+export {
+    deriveLibFromBucket,
+    firstSentence,
+    KIND_LABELS,
+    KIND_LETTER,
+    pagefindFilterBlock,
+    pagefindMetaBlock
+} from './pagefind-meta';
 export { parseDescription } from './parse-description';
 export { parseProperty } from './parse-property';
 export { relativeUrl } from './relative-url';

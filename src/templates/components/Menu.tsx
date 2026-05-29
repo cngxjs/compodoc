@@ -29,7 +29,8 @@ import {
     IconModule,
     IconPipe,
     IconPodium,
-    IconSettings
+    IconSettings,
+    IconToken
 } from './Icons';
 
 /** Menu types come in plural form (`components`, `directives`, `classes`).
@@ -41,6 +42,9 @@ const singularizeType = (type: string): string => {
     }
     return type.replace(/s$/, '');
 };
+
+// `singularizeType('tokens')` → `'token'` via the generic strip; explicit
+// here so future readers don't reach for a special-case.
 
 type MenuProps = {
     readonly data: any;
@@ -68,6 +72,44 @@ const entityHref = (prefix: string, item: any): string => {
         return item.category ? `${prefix}/${name}.html` : `${prefix}.html#${name}`;
     }
     return `${prefix}/${name}.html`;
+};
+
+/**
+ * Kinds whose detail page renders an API tab. Used to gate the
+ * References-chapter `#api` smart default: appending the fragment to a
+ * URL whose target page has no API tab would activate nothing and just
+ * leave a confusing fragment in the address bar.
+ *
+ * Typealias + variable detail pages (MiscDetailPage) only render Info
+ * tab — their API surface IS the description / signature, surfaced
+ * inline. Modules / Routes / Coverage are not entity pages.
+ */
+const KINDS_WITH_API_TAB: ReadonlySet<EntityKind> = new Set<EntityKind>([
+    'component',
+    'directive',
+    'pipe',
+    'injectable',
+    'class',
+    'interface',
+    'guard',
+    'interceptor',
+    'entity',
+    'function',
+    'enumeration'
+]);
+
+/**
+ * Sidebar-link href with optional `#api` default-tab hint. The hint is
+ * appended only when the target page actually has an API tab and the
+ * existing href carries no fragment (anchor-style miscellaneous URLs
+ * already encode the target row — never stack `#api` on top of `#name`).
+ */
+const featureLinkHref = (prefix: string, item: any, defaultTab: 'api' | undefined): string => {
+    const base = entityHref(prefix, item);
+    if (defaultTab === 'api' && KINDS_WITH_API_TAB.has(item.kind) && !base.includes('#')) {
+        return `${base}#api`;
+    }
+    return base;
 };
 
 /** Inline badge for entity type indicators */
@@ -216,6 +258,8 @@ const kindIconHtml = (kind: EntityKind): string => {
             return IconDirective();
         case 'injectable':
             return IconInjectable();
+        case 'token':
+            return IconToken();
         case 'pipe':
             return IconPipe();
         case 'class':
@@ -232,11 +276,11 @@ const kindIconHtml = (kind: EntityKind): string => {
 };
 
 /** Render a kind-tagged entity link inside a feature folder. */
-const FeatureEntityLink = (item: EntityWithKind): string =>
+const FeatureEntityLink = (item: EntityWithKind, defaultTab?: 'api'): string =>
     (
         <li class="link cdx-feature-link" data-cdx-kind={item.kind}>
             <a
-                href={entityHref(item.hrefPrefix, item as any)}
+                href={featureLinkHref(item.hrefPrefix, item as any, defaultTab)}
                 data-type="entity-link"
                 data-cdx-entity-type={item.kind}
                 data-cdx-selector={item.selector || undefined}
@@ -268,85 +312,132 @@ const FeatureEntityLink = (item: EntityWithKind): string =>
         </li>
     ) as string;
 
-/** Recursive tree node for the cross-kind feature layout. */
+/** Recursive tree node for the cross-kind feature layout.
+ *
+ *  Whole-row toggle: the `<div class="cdx-bucket-row">` itself carries
+ *  the collapse-toggle attributes (`role="button"`, `tabindex="0"`,
+ *  `data-cdx-toggle="collapse"`, `aria-expanded`, `aria-controls`).
+ *  Clicking anywhere in the row toggles expand, EXCEPT when the click
+ *  originates inside the `<a data-cdx-bucket-link>` label — the
+ *  client-side handler short-circuits there so the anchor's native
+ *  navigation (including Cmd/middle-click new-tab) fires unaltered.
+ *  No `<a>` nested in `<button>` — HTML5 forbids it; row + sibling
+ *  anchor keeps the markup valid and the a11y tree clean.
+ *
+ *  The bucket landing page exists for EVERY non-empty node — leaves and
+ *  intermediate folders alike — so any label that renders here is
+ *  guaranteed to resolve.
+ */
 const FeatureGroupTree = (props: {
     node: GroupNode;
     depth: number;
     groupDepth: number;
+    idPrefix: string;
+    defaultTab?: 'api';
 }): string => {
     const hasContent = props.node.items.length > 0 || props.node.children.length > 0;
     if (!hasContent) {
         return '';
     }
-    const id = `features-group-${props.node.fullPath}`;
+    const id = `${props.idPrefix}${props.node.fullPath}`;
     const startExpanded = !isCollapsedAll() && props.depth < props.groupDepth;
+    const labelHref = `categories/${props.node.fullPath}.html`;
+    const labelText = props.node.name.charAt(0).toUpperCase() + props.node.name.slice(1);
     return (
-        <li class="chapter inner" style={`--depth: ${props.depth}`}>
-            <button
-                class="simple menu-toggler"
-                type="button"
+        <li
+            class="chapter inner cdx-feature-bucket"
+            style={`--depth: ${props.depth}`}
+            data-cdx-bucket={props.node.fullPath}
+        >
+            {/* biome-ignore lint/a11y/useFocusableInteractive: lowercase `tabindex="0"` is focusable; Biome looks for camelCase */}
+            {/* biome-ignore lint/a11y/useSemanticElements: <button> cannot contain <a> per HTML5; sibling-anchor pattern is the point */}
+            <div
+                class="cdx-bucket-row"
+                data-cdx-bucket-row="true"
                 data-cdx-toggle="collapse"
                 data-cdx-target={`#${id}`}
+                role="button"
+                tabindex="0"
                 aria-expanded={startExpanded ? 'true' : 'false'}
                 aria-controls={id}
+                aria-label={`Toggle ${labelText} group`}
             >
-                <span class="link-name">
-                    {props.node.name.charAt(0).toUpperCase() + props.node.name.slice(1)}
-                </span>
+                <a
+                    class="cdx-bucket-link"
+                    href={labelHref}
+                    data-cdx-bucket-link="true"
+                    data-type="chapter-link"
+                >
+                    <span class="link-name">{labelText}</span>
+                </a>
                 {props.node.items.length > 0 && (
-                    <span class="cdx-badge cdx-badge--count">{props.node.items.length}</span>
+                    <span class="cdx-badge cdx-badge--count cdx-bucket-count">
+                        {props.node.items.length}
+                    </span>
                 )}
-                {IconChevronRight('cdx-chevron')}
-            </button>
+                {IconChevronRight('cdx-chevron cdx-bucket-chevron')}
+            </div>
             <ul class={`links collapse${startExpanded ? ' in' : ''}`} id={id}>
                 {props.node.children.map(child =>
                     FeatureGroupTree({
                         node: child,
                         depth: props.depth + 1,
-                        groupDepth: props.groupDepth
+                        groupDepth: props.groupDepth,
+                        idPrefix: props.idPrefix,
+                        defaultTab: props.defaultTab
                     })
                 )}
-                {props.node.items.map((item: EntityWithKind) => FeatureEntityLink(item))}
+                {props.node.items.map((item: EntityWithKind) =>
+                    FeatureEntityLink(item, props.defaultTab)
+                )}
             </ul>
         </li>
     ) as string;
 };
 
 /**
- * Cross-kind feature chapter — replaces every per-kind EntitySection when
- * `menuLayout: 'feature'`. Renders nothing when no folder groups exist.
+ * Cross-kind chapter for `menuLayout: 'feature'`. Renders nothing when the
+ * `groups` dict is empty. The same component renders both the Primary
+ * ("Features") and Reference chapters — `chapterKey` drives the id prefix,
+ * collapse state, and label.
  */
 const FeatureSection = (props: {
     groups?: Record<string, EntityWithKind[]>;
     groupDepth: number;
+    chapterKey: 'features' | 'references';
+    label: string;
+    defaultTab?: 'api';
 }): string => {
     const groups = props.groups ?? {};
     const keys = Object.keys(groups);
     if (keys.length === 0) {
         return '';
     }
-    const id = 'features-links';
+    const id = `${props.chapterKey}-links`;
+    const idPrefix = `${props.chapterKey}-group-`;
     const tree = buildGroupTree(groups as unknown as Record<string, any[]>);
     return (
-        <li class="chapter features">
+        <li class={`chapter ${props.chapterKey}`}>
             <button
                 class="simple menu-toggler"
                 type="button"
                 data-cdx-toggle="collapse"
                 data-cdx-target={`#${id}`}
-                aria-expanded={chapterOpen('features') ? 'true' : 'false'}
+                aria-expanded={chapterOpen(props.chapterKey) ? 'true' : 'false'}
                 aria-controls={id}
             >
                 {IconFolder()}
-                <span>{t('features')}</span>
+                <span>{props.label}</span>
                 {chevron()}
             </button>
-            <ul class={`links collapse${chapterOpen('features') ? ' in' : ''}`} id={id}>
+            <ul class={`links collapse${chapterOpen(props.chapterKey) ? ' in' : ''}`} id={id}>
                 {tree.map(node =>
                     FeatureGroupTree({
                         node,
                         depth: 0,
-                        groupDepth: props.groupDepth
+                        groupDepth: props.groupDepth,
+                        idPrefix,
+                        defaultTab: props.defaultTab
                     })
                 )}
             </ul>
@@ -730,12 +821,33 @@ export const Menu = (props: MenuProps): string => {
                     </li>
                 )}
 
-                {/* Feature-folder layout swaps all per-kind chapters for one cross-kind tree. */}
+                {/* Feature-folder layout renders ONE curated cross-kind chapter ("Features":
+                    organisms — components, directives, pipes, injectables, classes, guards,
+                    interceptors, entities, plus any reference-kind symbol promoted via
+                    @docsKind primary). The exhaustive reference surface lives on the
+                    `references.html` portal page (linked below as a top-level chapter, not a
+                    tree). That keeps the sidebar scannable and matches angular.dev/api. */}
                 {(d.menuLayout ?? 'type') === 'feature' ? (
-                    FeatureSection({
-                        groups: d.categorizedByFeature,
-                        groupDepth: d.groupDepth
-                    })
+                    <>
+                        {FeatureSection({
+                            groups: d.categorizedByFeaturePrimary,
+                            groupDepth: d.groupDepth,
+                            chapterKey: 'features',
+                            label: d.featuresName || t('features')
+                        })}
+                        {Object.keys(d.categorizedByFeature ?? {}).length > 0 && (
+                            <li class="chapter references">
+                                <a
+                                    data-type="chapter-link"
+                                    href="references.html"
+                                    aria-label={t('api-reference')}
+                                >
+                                    {IconList()}
+                                    {t('reference')}
+                                </a>
+                            </li>
+                        )}
+                    </>
                 ) : (
                     <>
                         {/* Standalone entity sections */}
@@ -788,6 +900,16 @@ export const Menu = (props: MenuProps): string => {
                                 hrefPrefix: 'injectables',
                                 groupDepth: d.groupDepth
                             })}
+                        {d.tokens?.length > 0 &&
+                            EntitySection({
+                                items: d.tokens,
+                                categorized: d.categorizedTokens,
+                                type: 'tokens',
+                                iconHtml: IconToken(),
+                                labelKey: 'tokens',
+                                hrefPrefix: 'tokens',
+                                groupDepth: d.groupDepth
+                            })}
                         {d.interceptors?.length > 0 &&
                             EntitySection({
                                 items: d.interceptors,
@@ -831,8 +953,8 @@ export const Menu = (props: MenuProps): string => {
                     </>
                 )}
 
-                {/* Miscellaneous */}
-                {d.miscellaneous && (
+                {/* Miscellaneous — redundant in feature mode (everything moved into References) */}
+                {d.miscellaneous && (d.menuLayout ?? 'type') !== 'feature' && (
                     <li class="chapter">
                         <button
                             class="simple menu-toggler"

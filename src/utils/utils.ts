@@ -96,6 +96,40 @@ export function readConfig(configFile: string): any {
     return result.config;
 }
 
+/**
+ * Resolve `compilerOptions.paths` and `compilerOptions.baseUrl` from a
+ * tsconfig file, following its `extends` chain. TypeScript natively
+ * walks the chain when `parseJsonConfigFileContent` is given a fresh
+ * readResult — values from the leaf override those from ancestors.
+ *
+ * `paths` is returned verbatim; `baseUrl` is rewritten from the
+ * absolute path returned by the compiler API back to a path relative
+ * to `projectRoot`, so the import-resolver can compare it against the
+ * relative `entityFile` strings stored on each dep.
+ */
+export function resolveTsconfigPaths(
+    configFile: string,
+    projectRoot: string
+): { paths: Record<string, string[]>; baseUrl: string } {
+    const readResult = ts.readConfigFile(configFile, ts.sys.readFile);
+    if (readResult.error || !readResult.config) {
+        return { paths: {}, baseUrl: '' };
+    }
+    const parsed = ts.parseJsonConfigFileContent(
+        readResult.config,
+        ts.sys,
+        path.dirname(configFile)
+    );
+    const paths = parsed.options.paths ?? {};
+    const absoluteBaseUrl = parsed.options.baseUrl ?? '';
+    let baseUrl = '';
+    if (absoluteBaseUrl) {
+        const rel = path.relative(projectRoot, absoluteBaseUrl).replace(/\\/g, '/');
+        baseUrl = rel === '' ? '.' : rel;
+    }
+    return { paths, baseUrl };
+}
+
 export function stripBom(source: string): string {
     if (source.charCodeAt(0) === 0xfeff) {
         return source.slice(1);

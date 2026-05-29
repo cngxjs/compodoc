@@ -21,8 +21,10 @@ import {
 } from './generation-promise';
 import {
     AdditionalPageGenerator,
+    ApiReferencePageGenerator,
     AppConfigPageGenerator,
     AssetCopier,
+    BucketLandingPageGenerator,
     ClassPageGenerator,
     ComponentPageGenerator,
     CoveragePageGenerator,
@@ -41,7 +43,8 @@ import {
     PageWriter,
     PipePageGenerator,
     PlaygroundFileResolver,
-    RoutesPageGenerator
+    RoutesPageGenerator,
+    TokenPageGenerator
 } from './page-generator';
 import { crawlDependencies, crawlMicroDependencies } from './services/dependencies';
 import { startWebServer } from './services/serve';
@@ -75,11 +78,14 @@ export class Application {
     private readonly entityPageGenerator: EntityPageGenerator;
     private readonly directivePageGenerator: DirectivePageGenerator;
     private readonly injectablePageGenerator: InjectablePageGenerator;
+    private readonly tokenPageGenerator: TokenPageGenerator;
     private readonly interceptorPageGenerator: InterceptorPageGenerator;
     private readonly guardPageGenerator: GuardPageGenerator;
     private readonly componentPageGenerator: ComponentPageGenerator;
     private readonly modulePageGenerator: ModulePageGenerator;
     private readonly miscellaneousPageGenerator: MiscellaneousPageGenerator;
+    private readonly bucketLandingPageGenerator: BucketLandingPageGenerator;
+    private readonly apiReferencePageGenerator: ApiReferencePageGenerator;
     private readonly appConfigPageGenerator: AppConfigPageGenerator;
     private readonly routesPageGenerator: RoutesPageGenerator;
     private readonly overviewPageGenerator: OverviewPageGenerator;
@@ -118,11 +124,14 @@ export class Application {
         this.entityPageGenerator = new EntityPageGenerator(this.navTabs);
         this.directivePageGenerator = new DirectivePageGenerator(this.navTabs);
         this.injectablePageGenerator = new InjectablePageGenerator(this.navTabs);
+        this.tokenPageGenerator = new TokenPageGenerator(this.navTabs);
         this.interceptorPageGenerator = new InterceptorPageGenerator(this.navTabs);
         this.guardPageGenerator = new GuardPageGenerator(this.navTabs);
         this.componentPageGenerator = new ComponentPageGenerator(this.navTabs);
         this.modulePageGenerator = new ModulePageGenerator(this.navTabs);
         this.miscellaneousPageGenerator = new MiscellaneousPageGenerator();
+        this.bucketLandingPageGenerator = new BucketLandingPageGenerator();
+        this.apiReferencePageGenerator = new ApiReferencePageGenerator();
         this.appConfigPageGenerator = new AppConfigPageGenerator();
         this.routesPageGenerator = new RoutesPageGenerator();
         this.overviewPageGenerator = new OverviewPageGenerator();
@@ -440,6 +449,7 @@ export class Application {
         Configuration.mainData.categorizedComponents = DependenciesEngine.categorizedComponents;
         Configuration.mainData.categorizedDirectives = DependenciesEngine.categorizedDirectives;
         Configuration.mainData.categorizedInjectables = DependenciesEngine.categorizedInjectables;
+        Configuration.mainData.categorizedTokens = DependenciesEngine.categorizedTokens;
         Configuration.mainData.categorizedPipes = DependenciesEngine.categorizedPipes;
         Configuration.mainData.categorizedClasses = DependenciesEngine.categorizedClasses;
         Configuration.mainData.categorizedInterfaces = DependenciesEngine.categorizedInterfaces;
@@ -447,6 +457,10 @@ export class Application {
         Configuration.mainData.categorizedInterceptors = DependenciesEngine.categorizedInterceptors;
         Configuration.mainData.categorizedEntities = DependenciesEngine.categorizedEntities;
         Configuration.mainData.categorizedByFeature = DependenciesEngine.categorizedByFeature;
+        Configuration.mainData.categorizedByFeaturePrimary =
+            DependenciesEngine.categorizedByFeaturePrimary;
+        Configuration.mainData.categorizedByFeatureReference =
+            DependenciesEngine.categorizedByFeatureReference;
 
         Configuration.mainData.routesLength = RouterParserUtil.routesLength();
 
@@ -482,6 +496,10 @@ export class Application {
             actions.push(() => this.injectablePageGenerator.prepare());
         }
 
+        if ((diffCrawledData.tokens?.length ?? 0) > 0) {
+            actions.push(() => this.tokenPageGenerator.prepare());
+        }
+
         if (diffCrawledData.interceptors.length > 0) {
             actions.push(() => this.interceptorPageGenerator.prepare());
         }
@@ -512,6 +530,9 @@ export class Application {
         ) {
             actions.push(() => this.miscellaneousPageGenerator.prepare());
         }
+
+        actions.push(() => this.bucketLandingPageGenerator.prepare());
+        actions.push(() => this.apiReferencePageGenerator.prepare());
 
         if (!Configuration.mainData.disableCoverage) {
             actions.push(() => this.coveragePageGenerator.prepareDocumentation());
@@ -639,6 +660,12 @@ export class Application {
             });
         }
 
+        if ((DependenciesEngine.tokens?.length ?? 0) > 0) {
+            actions.push(() => {
+                return this.tokenPageGenerator.prepare();
+            });
+        }
+
         if (DependenciesEngine.interceptors.length > 0) {
             actions.push(() => {
                 return this.interceptorPageGenerator.prepare();
@@ -689,6 +716,14 @@ export class Application {
                 return this.miscellaneousPageGenerator.prepare();
             });
         }
+
+        actions.push(() => {
+            return this.bucketLandingPageGenerator.prepare();
+        });
+
+        actions.push(() => {
+            return this.apiReferencePageGenerator.prepare();
+        });
 
         if (!Configuration.mainData.disableCoverage) {
             actions.push(() => {

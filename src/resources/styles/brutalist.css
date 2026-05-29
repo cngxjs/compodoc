@@ -32,12 +32,19 @@
     --color-cdx-entity-module: #1d4ed8;
     --color-cdx-entity-class: #166534;
     --color-cdx-entity-interface: #0e6377;
+    --color-cdx-entity-token: #1e293b; /* slate-800 — distinct from variable gray-700 */
     --color-cdx-entity-guard: #b91c1c;
     --color-cdx-entity-interceptor: #86198f;
     --color-cdx-entity-function: #3f6212;
     --color-cdx-entity-variable: #374151;
     --color-cdx-entity-typealias: #3730a3;
     --color-cdx-entity-enum: #9a3412;
+
+    /* --- Badge accents (WCAG + AI-generated, saturated loud) --- */
+    --color-cdx-badge-ai-generated: hsl(300 100% 32%); /* pure magenta */
+    --color-cdx-badge-wcag-a: hsl(0 0% 30%); /* pure grey */
+    --color-cdx-badge-wcag-aa: hsl(120 100% 23%); /* pure green */
+    --color-cdx-badge-wcag-aaa: hsl(210 100% 30%); /* pure blue */
 
     /* --- Feedback (saturated, loud) --- */
     --color-cdx-deprecated: hsl(45 100% 28%);
@@ -125,12 +132,19 @@
     --color-cdx-entity-module: #93c5fd;
     --color-cdx-entity-class: #86efac;
     --color-cdx-entity-interface: #67e8f9;
+    --color-cdx-entity-token: #cbd5e1; /* slate-300 */
     --color-cdx-entity-guard: #fca5a5;
     --color-cdx-entity-interceptor: #f0abfc;
     --color-cdx-entity-function: #bef264;
     --color-cdx-entity-variable: #d1d5db;
     --color-cdx-entity-typealias: #a5b4fc;
     --color-cdx-entity-enum: #fdba74;
+
+    /* --- Badge accents (WCAG + AI-generated) --- */
+    --color-cdx-badge-ai-generated: hsl(300 100% 65%);
+    --color-cdx-badge-wcag-a: hsl(0 0% 72%);
+    --color-cdx-badge-wcag-aa: hsl(120 100% 60%);
+    --color-cdx-badge-wcag-aaa: hsl(210 100% 65%);
 
     /* --- Feedback --- */
     --color-cdx-deprecated: hsl(45 100% 58%);

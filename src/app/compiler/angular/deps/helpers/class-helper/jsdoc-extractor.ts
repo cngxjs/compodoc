@@ -1,14 +1,18 @@
 import type { ts } from 'ts-morph';
 import { extractJsdocPlaygroundBlocks } from '../../../../../../templates/helpers/jsdoc';
 import { JsdocParserUtil } from '../../../../../../utils/jsdoc-parser.util';
+import { warnOnce } from '../../../../../../utils/jsdoc-tag-warn';
 import { logger } from '../../../../../../utils/logger';
 import { markedAcl } from '../../../../../../utils/marked.acl';
 import { markedtags } from '../../../../../../utils/utils';
 
 export class JsdocExtractor {
-    private jsdocParserUtil = new JsdocParserUtil();
+    private readonly jsdocParserUtil = new JsdocParserUtil();
 
     public checkForDeprecation(tags: any[], result: { [key in string | number]: any }) {
+        // See JsdocTags.checkForDeprecation for the rationale behind the
+        // pass-local docsKind counter — same dual-extractor problem.
+        let docsKindCount = 0;
         tags.forEach(tag => {
             if (tag.tagName?.text) {
                 if (tag.tagName.text.indexOf('deprecated') > -1) {
@@ -21,6 +25,41 @@ export class JsdocExtractor {
                     // Take only the first line of the comment (category name)
                     const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
                     result.category = raw.split('\n')[0].trim();
+                }
+                if (tag.tagName.text === 'docsKind') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    const value = raw.split('\n')[0].trim().toLowerCase();
+                    if (value === 'primary') {
+                        docsKindCount++;
+                        if (docsKindCount > 1) {
+                            warnOnce(
+                                result,
+                                'docsKind:duplicate',
+                                `Multiple @docsKind primary tags on entity "${result.name || '?'}". First-wins, dropping subsequent.`
+                            );
+                        } else {
+                            result.docsKind = 'primary';
+                        }
+                    }
+                }
+                if (tag.tagName.text === 'wcag') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    const value = raw.split('\n')[0].trim().toUpperCase();
+                    if (value === 'A' || value === 'AA' || value === 'AAA') {
+                        result.wcagLevel = value;
+                    } else if (value) {
+                        warnOnce(
+                            result,
+                            'wcag:invalid',
+                            `Invalid @wcag level "${value}" — expected one of A, AA, AAA. Ignoring.`
+                        );
+                    }
+                }
+                if (tag.tagName.text === 'a11y') {
+                    const raw = (this.jsdocParserUtil.parseJSDocNode(tag) || '').trim();
+                    if (raw) {
+                        result.a11yNote = raw;
+                    }
                 }
             }
         });
@@ -56,7 +95,7 @@ export class JsdocExtractor {
                     result.group = comment.split('\n')[0].trim();
                     break;
                 case 'order':
-                    result.order = parseInt(comment, 10) || 0;
+                    result.order = Number.parseInt(comment, 10) || 0;
                     break;
                 case 'since':
                     result.since = comment.split('\n')[0].trim();
@@ -79,12 +118,36 @@ export class JsdocExtractor {
                 case 'stackblitz':
                     result.stackblitzUrl = comment.split('\n')[0].trim();
                     break;
-                case 'github':
-                    result.githubUrl = comment.split('\n')[0].trim();
+                case 'github': {
+                    const url = comment.split('\n')[0].trim();
+                    if (url.startsWith('https://github.com/')) {
+                        result.githubUrl = url;
+                    } else if (url) {
+                        warnOnce(
+                            result,
+                            'github:invalid',
+                            `Invalid @github URL "${url}" — must start with https://github.com/. Ignoring.`
+                        );
+                    }
                     break;
+                }
                 case 'docs':
                     result.docsUrl = comment.split('\n')[0].trim();
                     break;
+                case 'selector':
+                    result.taggedSelector = comment.split('\n')[0].trim();
+                    break;
+                case 'relatedTo': {
+                    const symbols = comment
+                        .split('\n')[0]
+                        .split(',')
+                        .map(s => s.trim())
+                        .filter(Boolean);
+                    if (symbols.length > 0) {
+                        result.relatedTo = symbols;
+                    }
+                    break;
+                }
                 case 'slot': {
                     if (!result.slots) {
                         result.slots = [];

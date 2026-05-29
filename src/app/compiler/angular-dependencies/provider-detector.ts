@@ -51,11 +51,13 @@ export class ProviderDetector {
         if (!initializer) {
             return false;
         }
-        // Match: new InjectionToken(...)
+        // Match: new InjectionToken(...) and new HttpContextToken(...) —
+        // both follow the DI-key-as-const idiom, semantically distinct
+        // from `@Injectable()` service classes.
         if (ts.isNewExpression(initializer)) {
             const expr = initializer.expression;
-            if (expr && ts.isIdentifier(expr) && expr.text === 'InjectionToken') {
-                return true;
+            if (expr && ts.isIdentifier(expr)) {
+                return expr.text === 'InjectionToken' || expr.text === 'HttpContextToken';
             }
         }
         return false;

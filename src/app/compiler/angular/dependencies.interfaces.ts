@@ -1,9 +1,16 @@
+export type WcagLevel = 'A' | 'AA' | 'AAA';
+
 export interface IDep {
     id?: string;
     type?: string;
     ctype?: string;
     name: string;
     category?: string;
+    docsKind?: 'primary';
+    wcagLevel?: WcagLevel;
+    a11yNote?: string;
+    taggedSelector?: string;
+    relatedTo?: string[];
 }
 
 export interface IInjectableDep extends IDep {
@@ -26,6 +33,8 @@ export interface IInjectableDep extends IDep {
     accessors?: Object;
     constructorObj?: Object;
     jsdoctags?: Array<string>;
+
+    since?: string;
 
     storybookUrl?: string;
     figmaUrl?: string;

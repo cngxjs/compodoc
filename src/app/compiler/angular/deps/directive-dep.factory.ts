@@ -55,7 +55,12 @@ export class DirectiveDepFactory {
             propertiesClass: IO.properties,
             methodsClass: IO.methods,
             playgrounds: IO.playgrounds || [],
-            exampleUrls: this.helper.getComponentExampleUrls(srcFile.getText())
+            exampleUrls: this.helper.getComponentExampleUrls(srcFile.getText()),
+            ...(IO.docsKind === 'primary' && { docsKind: 'primary' as const }),
+            ...(IO.wcagLevel && { wcagLevel: IO.wcagLevel }),
+            ...(IO.a11yNote && { a11yNote: IO.a11yNote }),
+            ...(IO.taggedSelector && { taggedSelector: IO.taggedSelector }),
+            ...(IO.relatedTo && IO.relatedTo.length > 0 && { relatedTo: IO.relatedTo })
         };
 
         if (Configuration.mainData.disableLifeCycleHooks) {

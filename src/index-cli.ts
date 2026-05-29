@@ -14,7 +14,12 @@ import { parseApiMarkdownExports } from './utils/api-markdown-parser.util';
 import { logger } from './utils/logger';
 import { parsePublicApi } from './utils/public-api-parser.util';
 import { createSourcePathMapper } from './utils/source-path-mapper.util';
-import { EXCLUDE_PATTERNS, INCLUDE_PATTERNS, readConfig } from './utils/utils';
+import {
+    EXCLUDE_PATTERNS,
+    INCLUDE_PATTERNS,
+    readConfig,
+    resolveTsconfigPaths
+} from './utils/utils';
 import { resolveVersion } from './utils/version-resolver.util';
 
 let scannedFiles = [];
@@ -203,11 +208,14 @@ export class CliApplication extends Application {
 
                     const tsConfigFile = readConfig(_file);
 
-                    // Store path aliases for import statement rendering
-                    Configuration.mainData.tsconfigPaths =
-                        tsConfigFile.compilerOptions?.paths ?? {};
-                    Configuration.mainData.tsconfigBaseUrl =
-                        tsConfigFile.compilerOptions?.baseUrl ?? '';
+                    // Store path aliases for import statement rendering.
+                    // `resolveTsconfigPaths` follows the `extends` chain via
+                    // `ts.parseJsonConfigFileContent`, so workspaces that
+                    // declare `paths`/`baseUrl` in a base tsconfig still
+                    // populate the import resolver.
+                    const resolvedPaths = resolveTsconfigPaths(_file, process.cwd());
+                    Configuration.mainData.tsconfigPaths = resolvedPaths.paths;
+                    Configuration.mainData.tsconfigBaseUrl = resolvedPaths.baseUrl;
 
                     // Multi-version: resolve the version label, redirect the
                     // output folder to <output>/<label>/, and remember the
