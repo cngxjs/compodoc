@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
-## [0.6.0] - 2026-05-28
+## [0.6.0] - 2026-05-29
 
 `menuLayout: 'feature'` is reshaped from a single mixed chapter into a curated **Features** chapter plus a single-page **References** portal at `references.html`, with rich Pagefind metadata, accessibility tags, bucket landing pages, a first-class `token` kind, a finalized JSDoc tag system (`@selector`, `@relatedTo`, `@wcag`, `@docsKind primary`, `@github` URL validation), and a full themed token surface to match. `documentation.json` schema bumped to `2` (additive — old readers keep working).
 
