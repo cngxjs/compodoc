@@ -75,6 +75,14 @@
     word-break: break-word;
 }
 
+.cdx-bucket-card-wcag {
+    /* WCAG sub-badge sits below the entity-name on a card. The .cdx-badge
+     * inside it reuses the existing WCAG badge styles — no separate
+     * --sm variant needed; the card-level chip is already compact. */
+    display: inline-flex;
+    align-self: flex-start;
+}
+
 .cdx-bucket-card-desc {
     font-size: 0.8125rem;
     color: var(--color-cdx-text-secondary);
@@ -214,6 +222,53 @@
 
 .cdx-bucket-landing-kind-chip[aria-pressed='true'] .cdx-bucket-landing-kind-chip-count {
     color: var(--color-cdx-text);
+}
+
+/* WCAG chip rail — separate toolbar row below the kind chips. Same
+ * visual rhythm as `.cdx-bucket-landing-kind-chip` so the two rows read
+ * as siblings; each chip carries the WCAG-level badge as colour key. */
+.cdx-bucket-landing-wcag-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-cdx-xs);
+    margin: var(--spacing-cdx-xs) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cdx-bucket-landing-wcag-chips > li {
+    margin: 0;
+}
+
+.cdx-bucket-landing-wcag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-cdx-xs);
+    padding: var(--spacing-cdx-xs) var(--spacing-cdx-sm);
+    background: transparent;
+    color: var(--color-cdx-text-secondary);
+    border: 1px solid transparent;
+    border-radius: 16px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.cdx-bucket-landing-wcag-chip:hover,
+.cdx-bucket-landing-wcag-chip:focus-visible {
+    border-color: var(--color-cdx-border-subtle, var(--color-cdx-border));
+    background: var(--color-cdx-bg-alt);
+}
+
+.cdx-bucket-landing-wcag-chip[aria-pressed='true'] {
+    border-color: var(--color-cdx-border-subtle, var(--color-cdx-border));
+    background: var(--color-cdx-bg-alt);
+    color: var(--color-cdx-text);
+}
+
+.cdx-bucket-landing-wcag-chip > .cdx-badge {
+    margin-left: 0;
 }
 
 /* Idle Reset pill (nothing to clear) — bucket-landing JS toggles the

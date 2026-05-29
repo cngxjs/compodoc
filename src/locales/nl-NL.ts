@@ -212,6 +212,7 @@ export const TRANSLATION_NL_NL = {
     'view-providers': 'View-providers',
     'view-details': 'Details bekijken',
     'wcag-level': 'WCAG-conformiteit',
+    'docskind-primary-title': 'Primair leeroppervlak voor deze categorie',
     yes: 'Ja',
     zoomin: 'Zoom in',
     zoomout: 'Zoom uit'

@@ -212,6 +212,7 @@ export const TRANSLATION_DE_DE = {
     'view-providers': 'View-Provider',
     'view-details': 'Details anzeigen',
     'wcag-level': 'WCAG-Konformität',
+    'docskind-primary-title': 'Primäre Lernoberfläche für diese Kategorie',
     yes: 'Ja',
     zoomin: 'Vergrößern',
     zoomout: 'Verkleinern'

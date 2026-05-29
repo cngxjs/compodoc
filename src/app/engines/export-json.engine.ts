@@ -59,6 +59,7 @@ export class ExportJsonEngine {
         exportData.components = data.components;
         exportData.modules = this.processModules();
         exportData.miscellaneous = data.miscellaneous;
+        exportData.tokens = data.tokens;
         if (!Configuration.mainData.disableRoutesGraph) {
             exportData.routes = data.routes;
         }

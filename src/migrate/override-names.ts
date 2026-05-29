@@ -68,6 +68,7 @@ export const BLOCK_LEVEL_OVERRIDES: readonly string[] = [
     'block-typealias',
     'playground-content',
     'referenced-by',
+    'related',
     'version-switcher'
 ];
 

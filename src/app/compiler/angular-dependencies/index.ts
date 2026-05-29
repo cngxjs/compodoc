@@ -249,7 +249,12 @@ export class AngularDependencies extends FrameworkDependencies {
             stackblitzUrl: IO.stackblitzUrl || '',
             githubUrl: IO.githubUrl || '',
             docsUrl: IO.docsUrl || '',
-            ...(IO.aiGenerated && { aiGenerated: IO.aiGenerated })
+            ...(IO.aiGenerated && { aiGenerated: IO.aiGenerated }),
+            ...(IO.docsKind === 'primary' && { docsKind: 'primary' as const }),
+            ...(IO.wcagLevel && { wcagLevel: IO.wcagLevel }),
+            ...(IO.a11yNote && { a11yNote: IO.a11yNote }),
+            ...(IO.taggedSelector && { taggedSelector: IO.taggedSelector }),
+            ...(IO.relatedTo && IO.relatedTo.length > 0 && { relatedTo: IO.relatedTo })
         };
         let excludeFromClassArray = false;
 
@@ -714,7 +719,10 @@ export class AngularDependencies extends FrameworkDependencies {
                             docsUrl: IO.docsUrl || '',
                             ...(IO.docsKind === 'primary' && { docsKind: 'primary' as const }),
                             ...(IO.wcagLevel && { wcagLevel: IO.wcagLevel }),
-                            ...(IO.a11yNote && { a11yNote: IO.a11yNote })
+                            ...(IO.a11yNote && { a11yNote: IO.a11yNote }),
+                            ...(IO.taggedSelector && { taggedSelector: IO.taggedSelector }),
+                            ...(IO.relatedTo &&
+                                IO.relatedTo.length > 0 && { relatedTo: IO.relatedTo })
                         };
                         if (IO.properties) {
                             interfaceDeps.properties = IO.properties;
@@ -1136,7 +1144,23 @@ export class AngularDependencies extends FrameworkDependencies {
                                             providedIn:
                                                 this.providerDetector.getInjectionTokenProvidedIn(
                                                     infos.initializer
-                                                )
+                                                ),
+                                            since: infos.since || '',
+                                            githubUrl: infos.githubUrl || '',
+                                            ...(infos.docsKind === 'primary' && {
+                                                docsKind: 'primary' as const
+                                            }),
+                                            ...(infos.wcagLevel && {
+                                                wcagLevel: infos.wcagLevel
+                                            }),
+                                            ...(infos.a11yNote && { a11yNote: infos.a11yNote }),
+                                            ...(infos.taggedSelector && {
+                                                taggedSelector: infos.taggedSelector
+                                            }),
+                                            ...(infos.relatedTo &&
+                                                infos.relatedTo.length > 0 && {
+                                                    relatedTo: infos.relatedTo
+                                                })
                                         };
                                         if (!isIgnore(variableNode)) {
                                             if (!this.publicApiFilter.isSymbolAllowed(name, file)) {

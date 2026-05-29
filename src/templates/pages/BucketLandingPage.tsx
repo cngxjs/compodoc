@@ -1,6 +1,7 @@
 import Html from '@kitajs/html';
 import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import { IconFolder, IconSearch } from '../components/Icons';
+import { WcagBadge } from '../components/WcagBadge';
 import {
     deriveLibFromBucket,
     firstSentence,
@@ -47,6 +48,7 @@ interface BucketItem {
     readonly description?: string;
     readonly file?: string;
     readonly category?: string;
+    readonly wcagLevel?: 'A' | 'AA' | 'AAA';
 }
 
 interface BucketLandingData {
@@ -109,6 +111,7 @@ const KindCard = (item: BucketItem, depth: number): string => {
             data-cdx-kind={item.kind}
             data-cdx-card-name={nameLower}
             data-cdx-card-text={textLower}
+            data-cdx-wcag={item.wcagLevel ?? ''}
         >
             <a class="cdx-bucket-card-link" href={buildHref(item, depth)}>
                 <span
@@ -117,6 +120,11 @@ const KindCard = (item: BucketItem, depth: number): string => {
                     {kindLabel}
                 </span>
                 <span class="cdx-bucket-card-name">{item.name}</span>
+                {item.wcagLevel && (
+                    <span class="cdx-bucket-card-wcag">
+                        {WcagBadge({ wcagLevel: item.wcagLevel })}
+                    </span>
+                )}
                 {excerpt && <span class="cdx-bucket-card-desc">{excerpt}</span>}
             </a>
         </li>
@@ -191,8 +199,52 @@ const collectKindChips = (items: readonly BucketItem[]): Array<[string, number]>
     return ordered;
 };
 
+const WCAG_LEVELS = ['A', 'AA', 'AAA'] as const;
+
+/** Ordered list of `(wcagLevel, count)` pairs present in this bucket. Levels
+ *  ordered A → AA → AAA (basic → recommended → enhanced). Returns `[]` when
+ *  no item in the bucket carries a WCAG level — so the chip rail can suppress
+ *  the WCAG section entirely (no "WCAG (0)" ghost). */
+const collectWcagChips = (items: readonly BucketItem[]): Array<[string, number]> => {
+    const counts = new Map<string, number>();
+    for (const item of items) {
+        if (item.wcagLevel) {
+            counts.set(item.wcagLevel, (counts.get(item.wcagLevel) ?? 0) + 1);
+        }
+    }
+    const ordered: Array<[string, number]> = [];
+    for (const lvl of WCAG_LEVELS) {
+        const n = counts.get(lvl);
+        if (n) {
+            ordered.push([lvl, n]);
+        }
+    }
+    return ordered;
+};
+
+const WcagChip = (level: string, count: number): string => {
+    const lowered = level.toLowerCase();
+    return (
+        <li>
+            <button
+                type="button"
+                class="cdx-bucket-landing-wcag-chip"
+                data-cdx-bucket-landing-wcag={level}
+                aria-pressed="false"
+                title={`${t('wcag-level')} ${level}`}
+            >
+                <span class={`cdx-badge cdx-badge--wcag cdx-badge--wcag-${lowered}`}>
+                    {`WCAG ${level}`}
+                </span>
+                <span class="cdx-bucket-landing-kind-chip-count">{count}</span>
+            </button>
+        </li>
+    ) as string;
+};
+
 const FilterBar = (bucket: string, items: readonly BucketItem[]): string => {
     const chips = collectKindChips(items);
+    const wcagChips = collectWcagChips(items);
     const placeholder = `${t('filter-entities')} (${bucket})`;
     return (
         <section
@@ -233,6 +285,16 @@ const FilterBar = (bucket: string, items: readonly BucketItem[]): string => {
                     aria-label={t('filter-entities')}
                 >
                     {chips.map(([k, n]) => KindChip(k, n))}
+                </ul>
+            )}
+            {wcagChips.length > 0 && (
+                <ul
+                    class="cdx-bucket-landing-wcag-chips"
+                    data-cdx-bucket-landing-wcag-chips
+                    role="toolbar"
+                    aria-label={t('wcag-level')}
+                >
+                    {wcagChips.map(([lvl, n]) => WcagChip(lvl, n))}
                 </ul>
             )}
             <p class="cdx-bucket-landing-filter-empty" data-cdx-bucket-landing-empty hidden>

@@ -9,6 +9,8 @@ export interface IDep {
     docsKind?: 'primary';
     wcagLevel?: WcagLevel;
     a11yNote?: string;
+    taggedSelector?: string;
+    relatedTo?: string[];
 }
 
 export interface IInjectableDep extends IDep {
@@ -31,6 +33,8 @@ export interface IInjectableDep extends IDep {
     accessors?: Object;
     constructorObj?: Object;
     jsdoctags?: Array<string>;
+
+    since?: string;
 
     storybookUrl?: string;
     figmaUrl?: string;

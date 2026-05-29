@@ -63,8 +63,11 @@ export class ComponentDepFactory {
             docsUrl: IO.docsUrl || '',
             slots: IO.slots || [],
             playgrounds: IO.playgrounds || [],
+            ...(IO.docsKind === 'primary' && { docsKind: 'primary' as const }),
             ...(IO.wcagLevel && { wcagLevel: IO.wcagLevel }),
             ...(IO.a11yNote && { a11yNote: IO.a11yNote }),
+            ...(IO.taggedSelector && { taggedSelector: IO.taggedSelector }),
+            ...(IO.relatedTo && IO.relatedTo.length > 0 && { relatedTo: IO.relatedTo }),
 
             hostBindings: IO.hostBindings,
             hostListeners: IO.hostListeners,

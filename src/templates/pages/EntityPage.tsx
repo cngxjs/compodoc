@@ -26,6 +26,7 @@ import { JsdocExamplesBlock } from '../blocks/JsdocExamplesBlock';
 import { PlaygroundContent } from '../blocks/PlaygroundContent';
 import { ProvidersSection } from '../blocks/ProvidersSection';
 import { ReferencedBySection } from '../blocks/ReferencedBySection';
+import { RelatedSection } from '../blocks/RelatedSection';
 import { RouteChip } from '../blocks/RouteChip';
 import { AiGeneratedBadge } from '../components/AiGeneratedBadge';
 import { EmptyState } from '../components/EmptyState';
@@ -43,6 +44,7 @@ import {
     IconModule,
     IconPipe
 } from '../components/Icons';
+import { PrimaryBadge } from '../components/PrimaryBadge';
 import { WcagBadge } from '../components/WcagBadge';
 import {
     deriveLibFromBucket,
@@ -211,6 +213,7 @@ const hasInfoContent = (e: any, props: EntityInfoProps): boolean =>
         (e.propertiesClass ?? e.properties ?? []).some((p: any) => p.signalKind === 'inject') ||
         e.extends?.length ||
         e.implements?.length ||
+        e.relatedTo?.length ||
         props.relationships?.incoming?.length ||
         props.relationships?.outgoing?.length ||
         (props.entityKey === 'interface' && e.referencedBy?.length)
@@ -321,6 +324,13 @@ const InfoContent = (props: EntityInfoProps): string => {
                     <div class="cdx-prose">{parseDescription(e.description, props.depth)}</div>
                 </section>
             )}
+
+            {/* Related (cross-links from @relatedTo) */}
+            {RelatedSection({
+                entityName: e.name,
+                relatedTo: e.relatedTo,
+                depth: props.depth ?? 0
+            })}
 
             {/* Examples */}
             {isInfoSection('examples') &&
@@ -591,8 +601,16 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 <h1 class="cdx-entity-hero-name">
                     <span class={e.deprecated ? 'cdx-member-name--deprecated' : ''}>{e.name}</span>
                 </h1>
+                {e.taggedSelector ? (
+                    <p class="cdx-entity-hero-selector">
+                        <code>{e.taggedSelector}</code>
+                    </p>
+                ) : (
+                    ''
+                )}
                 <div class="cdx-entity-hero-badges">
                     <span class={`cdx-badge ${meta.badge}`}>{meta.label}</span>
+                    {PrimaryBadge({ docsKind: e.docsKind })}
                     {props.showStandaloneBadge &&
                     e.standalone &&
                     Configuration.mainData.hasNgModules ? (

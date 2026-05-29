@@ -213,6 +213,7 @@ export const TRANSLATION_RU_RU = {
     'view-providers': 'Провайдеры представления',
     'view-details': 'Подробнее',
     'wcag-level': 'Соответствие WCAG',
+    'docskind-primary-title': 'Основной обучающий элемент категории',
     yes: 'Да',
     zoomin: 'Приблизить',
     zoomout: 'Отдалить'

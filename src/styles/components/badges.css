@@ -63,6 +63,16 @@
 .cdx-badge--ai-generated {
     --cdx-badge-base: var(--color-cdx-badge-ai-generated, hsl(290 55% 48%));
 }
+.cdx-badge--primary {
+    --cdx-badge-base: var(--color-cdx-badge-primary, hsl(38 92% 38%));
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+.cdx-badge--primary svg {
+    width: 10px;
+    height: 10px;
+}
 
 /* Signal primitives */
 .cdx-badge--signal,

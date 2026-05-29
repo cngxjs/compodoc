@@ -1,7 +1,11 @@
 import Html from '@kitajs/html';
 import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
+import { ExternalLinks } from '../blocks/ExternalLinks';
 import { ReferencedBySection } from '../blocks/ReferencedBySection';
+import { RelatedSection } from '../blocks/RelatedSection';
 import { IconToken } from '../components/Icons';
+import { PrimaryBadge } from '../components/PrimaryBadge';
+import { WcagBadge } from '../components/WcagBadge';
 import {
     codeWrap,
     deriveLibFromBucket,
@@ -96,13 +100,23 @@ const Hero = (item: any, _depth: number): string => {
                 <span class="cdx-badge cdx-badge--entity-token" title={t('token')}>
                     {t('token')}
                 </span>
+                {PrimaryBadge({ docsKind: item.docsKind })}
                 {item.deprecated ? (
                     <span class="cdx-badge cdx-badge--deprecated">{t('deprecated')}</span>
                 ) : (
                     ''
                 )}
                 {item.beta ? <span class="cdx-badge cdx-badge--beta">Experimental</span> : ''}
+                {item.since ? <span class="cdx-badge cdx-badge--since">v{item.since}</span> : ''}
+                {WcagBadge({ wcagLevel: item.wcagLevel })}
             </div>
+            {item.taggedSelector ? (
+                <p class="cdx-entity-hero-selector">
+                    <code>{item.taggedSelector}</code>
+                </p>
+            ) : (
+                ''
+            )}
             {tokenType ? (
                 <p class="cdx-entity-hero-context">
                     <code>{Html.escapeHtml(`InjectionToken<${tokenType}>`) as string}</code>
@@ -110,6 +124,13 @@ const Hero = (item: any, _depth: number): string => {
             ) : (
                 ''
             )}
+            {ExternalLinks({
+                storybookUrl: item.storybookUrl,
+                figmaUrl: item.figmaUrl,
+                stackblitzUrl: item.stackblitzUrl,
+                githubUrl: item.githubUrl,
+                docsUrl: item.docsUrl
+            })}
         </div>
     ) as string;
 };
@@ -138,6 +159,12 @@ export const TokenPage = (data: any): string => {
                       children: parseDescription(item.description, depth)
                   })
                 : ''}
+
+            {RelatedSection({
+                entityName: item.name,
+                relatedTo: item.relatedTo,
+                depth
+            })}
 
             {tokenType
                 ? Section({

@@ -22,6 +22,7 @@ const BOUND = new WeakSet<Element>();
 interface FilterState {
     query: string;
     activeKinds: Set<string>;
+    activeWcag: Set<string>;
 }
 
 export function initBucketLandingFilter(): void {
@@ -33,6 +34,7 @@ export function initBucketLandingFilter(): void {
 
     const input = root.querySelector<HTMLInputElement>('[data-cdx-bucket-landing-input]');
     const chipBar = root.querySelector<HTMLElement>('[data-cdx-bucket-landing-kinds]');
+    const wcagBar = root.querySelector<HTMLElement>('[data-cdx-bucket-landing-wcag-chips]');
     const emptyMsg = root.querySelector<HTMLElement>('[data-cdx-bucket-landing-empty]');
     // Both the top-row Reset pill and the inline empty-state Reset
     // carry the same data attr — bind every match.
@@ -49,7 +51,11 @@ export function initBucketLandingFilter(): void {
         document.querySelectorAll<HTMLElement>('.cdx-bucket-landing-content .cdx-content-section')
     );
 
-    const state: FilterState = { query: '', activeKinds: new Set<string>() };
+    const state: FilterState = {
+        query: '',
+        activeKinds: new Set<string>(),
+        activeWcag: new Set<string>()
+    };
 
     const apply = (): void => {
         const q = state.query;
@@ -57,9 +63,12 @@ export function initBucketLandingFilter(): void {
         for (const card of cards) {
             const kind = card.dataset.cdxKind ?? '';
             const text = card.dataset.cdxCardText ?? '';
+            const wcag = card.dataset.cdxWcag ?? '';
             const kindOK = state.activeKinds.size === 0 || state.activeKinds.has(kind);
             const textOK = q === '' || text.includes(q);
-            const visible = kindOK && textOK;
+            const wcagOK =
+                state.activeWcag.size === 0 || (wcag !== '' && state.activeWcag.has(wcag));
+            const visible = kindOK && textOK && wcagOK;
             card.toggleAttribute('hidden', !visible);
             if (visible) {
                 totalVisible++;
@@ -72,7 +81,7 @@ export function initBucketLandingFilter(): void {
         // Top-row Reset pill is disabled when nothing is active — keeps
         // the filter bar visually static so an empty bucket-landing doesn't
         // render a "Reset" affordance with no work to undo.
-        const idle = q === '' && state.activeKinds.size === 0;
+        const idle = q === '' && state.activeKinds.size === 0 && state.activeWcag.size === 0;
         for (const btn of resetBtns) {
             btn.toggleAttribute('disabled', idle);
         }
@@ -98,10 +107,11 @@ export function initBucketLandingFilter(): void {
         input.value = '';
         state.query = '';
         state.activeKinds.clear();
-        if (chipBar) {
-            chipBar
-                .querySelectorAll<HTMLButtonElement>('[aria-pressed="true"]')
-                .forEach(b => b.setAttribute('aria-pressed', 'false'));
+        state.activeWcag.clear();
+        for (const bar of [chipBar, wcagBar]) {
+            bar?.querySelectorAll<HTMLButtonElement>('[aria-pressed="true"]').forEach(b =>
+                b.setAttribute('aria-pressed', 'false')
+            );
         }
         apply();
         input.focus();
@@ -113,7 +123,10 @@ export function initBucketLandingFilter(): void {
     });
 
     input.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && (state.query !== '' || state.activeKinds.size > 0)) {
+        if (
+            e.key === 'Escape' &&
+            (state.query !== '' || state.activeKinds.size > 0 || state.activeWcag.size > 0)
+        ) {
             e.preventDefault();
             clearAll();
         }
@@ -136,6 +149,27 @@ export function initBucketLandingFilter(): void {
             state.activeKinds.add(kind);
         } else {
             state.activeKinds.delete(kind);
+        }
+        apply();
+    });
+
+    wcagBar?.addEventListener('click', e => {
+        const chip = (e.target as Element | null)?.closest<HTMLButtonElement>(
+            '[data-cdx-bucket-landing-wcag]'
+        );
+        if (!chip) {
+            return;
+        }
+        const lvl = chip.dataset.cdxBucketLandingWcag;
+        if (!lvl) {
+            return;
+        }
+        const next = chip.getAttribute('aria-pressed') !== 'true';
+        chip.setAttribute('aria-pressed', String(next));
+        if (next) {
+            state.activeWcag.add(lvl);
+        } else {
+            state.activeWcag.delete(lvl);
         }
         apply();
     });

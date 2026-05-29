@@ -209,6 +209,7 @@ export const TRANSLATION_KO_KR = {
     'view-providers': '뷰 프로바이더',
     'view-details': '자세히 보기',
     'wcag-level': 'WCAG 준수',
+    'docskind-primary-title': '이 카테고리의 주요 학습 대상',
     yes: '네',
     zoomin: '확대',
     zoomout: '축소'
