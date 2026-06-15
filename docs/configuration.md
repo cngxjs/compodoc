@@ -211,13 +211,16 @@ In the flag and heuristic cases, **only** the shell is injected - `@angular/mate
 | Option | CLI | Type | Default | Description |
 |-|-|-|-|-|
 | disablePlaygroundTab | `--disablePlaygroundTab` | boolean | `false` | Hide the per-component Playground tab even when `@playground` blocks are parsed. Independent of `--disableDependenciesTab`. No effect on components without `@playground` blocks (the tab is already absent). |
-| playgroundDependencies | -- (config-only) | object | `{}` | Extra packages to inject into every StackBlitz manifest's `dependencies`, with the version YOU specify. Wins over the consumer-`package.json` auto-forward AND any auto-detected version (e.g. Material). Use for libraries the consumer ships but doesn't `npm install` directly (peer-only CSS themes), or to pin a per-build version. |
+| strictPlaygrounds | `--strictPlaygrounds` | boolean | `false` | **Fail** the build when a non-vendored `@playground` imports a subpath or named symbol absent from the version of the package pinned in `node_modules`. Default (off) only **warns**. See [Pre-publish breakage guard](#pre-publish-breakage-guard-strictplaygrounds). |
+| playgroundDependencies | -- (config-only) | object | `{}` | Extra packages to inject into every StackBlitz manifest's `dependencies`, with the version specifier YOU choose. Wins over the consumer-`package.json` auto-forward AND any auto-detected version (e.g. Material). Use for libraries the consumer ships but doesn't `npm install` directly (peer-only CSS themes), or to pin a per-build version. The value is forwarded into the generated `package.json` **unchanged** — see [Non-registry dependency sources](#non-registry-dependency-sources) for the accepted forms. |
 | playgroundMaterialShell | -- (config-only) | boolean | `false` | Force the Material app shell (Roboto + Material-Icons font links and the `mat-typography mat-app-background` body classes) into every `@playground` `index.html`, independent of Material auto-detect. For libraries themed to look like Material via a Sass theme bridge. Does **not** add `@angular/material`/`@angular/cdk` or Material module imports. See [Material app shell](#material-app-shell-fonts--body-classes). |
 | playgroundDepDepth | -- (config-only) | number | `3` | Max import depth followed when walking a `@playground`'s dependency graph. Raise for deeply-nested examples. Range 1–100. |
 | playgroundFileCountCap | -- (config-only) | number | `25` | Hard ceiling on the number of source files in one `@playground` manifest. Exceeding it fails **that** playground with a message naming the component and the walked files (other playgrounds still build). Raise for large multi-file examples. Range 1–1000. |
 | playgroundFileCap | -- (config-only) | number | `8000` | Per-file character cap before a bundled `@playground` source is truncated with a footer. Raise when a legitimately large source is being cut off. Range 500–1,000,000. |
 | playgroundHead | -- (config-only) | string[] | `[]` | Arbitrary `<head>` entries injected into every `@playground` `index.html` (after the Material shell links, when present). For custom fonts, meta tags, CSP, or preloads. Each entry is emitted verbatim; blank entries are dropped. See [Custom `<head>` and global styles](#custom-head-and-global-styles). |
 | playgroundGlobalStyles | -- (config-only) | string | `''` | Global CSS appended to every `@playground` `src/styles.css`, after the default body reset. For fonts, resets, or any global rules the examples depend on. |
+| playgroundVendor | -- (config-only) | string[] | `[]` | Package names and/or globs (`"@cngx/*"`) to vendor into `@playground` projects from the locally built `dist/` instead of the npm registry. When a playground imports a matching package, its whole built directory (plus the transitive closure of other matching packages) is embedded in the manifest and wired as a `file:` dependency — so the playground runs against the working tree, not the last published release. See [Vendoring the local build](#vendoring-the-local-build-playgroundvendor). |
+| playgroundVendorRoot | -- (config-only) | string | `dist` | Base directory the `playgroundVendor` closure is read from. Each matched package is located by its `package.json` `name`, anywhere under this root — the directory name need not match the package name. |
 
 ```jsonc
 // compodocx.config.json
@@ -267,6 +270,73 @@ export class NavComponent {}
 The referenced file is shipped as the project's `src/app/app.config.ts` (its transitive relative imports are bundled too), and the generated `src/main.ts` wires `bootstrapApplication(AppComponent, appConfig)`. The file **must export `appConfig`**. One `@playgroundConfig` per component applies to all of that component's `@playground` blocks (inline and file-ref alike).
 
 This replaces the older, undocumented trick of adding `export { appConfig } from './app.config'` to the example component purely so the file got bundled — that still works for back-compat, but `@playgroundConfig` is the supported, explicit way.
+
+#### Non-registry dependency sources
+
+`playgroundDependencies` values (and any version specifier the consumer's own `package.json` declares for an auto-forwarded library) are written into the generated playground `package.json` verbatim — compodocx never rewrites them to a semver range against `latest`. So any specifier npm itself understands works, letting a playground pin an unpublished build instead of waiting for a registry release:
+
+| Form | Example |
+|-|-|
+| Exact version / prerelease | `"0.1.0-rc.2"` |
+| dist-tag | `"next"` |
+| Tarball URL | `"https://example.com/pkg/ui-1.2.3.tgz"` |
+| Git ref | `"git+https://github.com/my-org/ui.git#feature/tabs"` |
+
+StackBlitz's WebContainer runs a real `npm install`, so it resolves each of these the same way a local install would. When the package you want to pin lives in your **own** workspace and is built but not yet published, vendoring (below) skips the registry entirely.
+
+#### Vendoring the local build (`playgroundVendor`)
+
+A registry dependency always resolves to the last **published** version, so a playground that imports a symbol which only exists in your working tree fails to compile in the sandbox, and an unreleased bugfix shows stale. `playgroundVendor` fixes this by embedding the locally built `dist/` into the payload — the same mechanism compodocx already uses to inline your example sources, one level deeper.
+
+```jsonc
+// compodocx.config.json
+{
+    "tsconfig": "projects/ui/tsconfig.lib.json",
+    "output": "docs/",
+    "playgroundVendor": ["@cngx/*"],   // names and/or globs
+    "playgroundVendorRoot": "dist"      // default; where the built libs live
+}
+```
+
+How it works, per playground:
+
+- **Closure, not just the direct import.** Starting from the packages the example imports, compodocx walks the matching (`playgroundVendor`) dependency graph and vendors the **full closure**. Vendoring `@cngx/ui` but pulling its `@cngx/common`/`@cngx/core` deps from npm would reintroduce the skew, so the whole closure is embedded. Peer deps that do **not** match a pattern (`@angular/*`, `rxjs`, `tslib`, …) stay registry dependencies.
+- **The whole built directory, verbatim.** For each closure package the entire `dist/<pkg>` tree ships — FESM bundles, typings, the root `package.json` **and** every secondary-entry-point `package.json` + `exports` map — so subpaths like `@cngx/ui/tabs` resolve.
+- **Wired as `file:` deps.** Each vendored package is placed under `vendor/<pkg>/` and declared as `"<pkg>": "file:vendor/<pkg>"` in the generated `package.json`. A root `file:` entry is authoritative: it overrides any registry version and any transitive semver range, so no closure package is pulled from npm.
+
+**Prerequisite:** the libraries must be **built before** compodocx runs (`dist/` present). A typical `docs:full` script already builds the libs first. If `playgroundVendor` names a package whose build output is missing, the docs build **fails** with a clear message (`playgroundVendor: "@cngx/ui" not found under dist — run the library build`) rather than silently falling back to a stale registry version. A glob that matches nothing only warns.
+
+**Size:** vendoring inflates the payload by the dist size (FESM × entry points). A closure that exceeds the internal cap fails the build naming the packages and measured bytes, never a silent truncation.
+
+#### Pre-publish breakage guard (`--strictPlaygrounds`)
+
+For playgrounds whose imports are served from the **registry** (i.e. not vendored), compodocx checks each bare import against the version of the package actually installed in your `node_modules` — the version StackBlitz would resolve. When the example imports an entry point or a named symbol that the pinned version does not have (`import { CngxTabNav } from '@cngx/ui/tabs'` while the published `@cngx/ui` predates `tabs`), the playground compiles locally but fails in the sandbox. The guard surfaces that at docs-build time:
+
+- **Default:** a per-playground **warning** naming the specifier/symbol and the pinned version.
+- **`--strictPlaygrounds`:** the same finding **fails** the build.
+
+Two checks run, both biased toward **no false positives**: a *subpath* check against the pinned package's `exports` map, and a *symbol* check that scans the entry-point `.d.ts`. Anything the static check can't determine — a legacy package without an `exports` map, or typings that re-export via wildcard (`export * from …`) — is left unreported. Vendored packages (`playgroundVendor`) and framework peers (`@angular/*`, `rxjs`, …) are exempt: the former ship the local build, the latter are pinned by the manifest itself.
+
+The static guard is fast but conservative. For full certainty that every playground actually compiles, use the `playground:validate` command below, which performs a real build.
+
+#### `compodocx playground:validate <docsDir>`
+
+A standalone command that **compiles every `@playground`** in a generated documentation folder and reports a per-playground pass/fail summary — the strongest guard, catching breakage the static `--strictPlaygrounds` check can't. It reads the manifests back out of the produced HTML, materializes each StackBlitz project to a temp directory, and runs `npm install` + `npm run build` (`ng build`) against the resolved (and vendored) dependencies.
+
+```bash
+# Generate docs, then validate every playground compiles
+compodocx -p tsconfig.json -d documentation
+compodocx playground:validate documentation
+```
+
+| Flag | Description |
+|-|-|
+| `--filter <text>` | Only validate playgrounds whose title / id / source page matches |
+| `--keep` | Keep the temporary project directories for inspection |
+| `--installCmd <cmd>` | Override the install command (default `npm install --no-audit --no-fund`) |
+| `--buildCmd <cmd>` | Override the build command (default `npm run build`) |
+
+Exit codes: `0` all passed (or none found), `1` at least one failed, `2` fatal (bad args / unreadable docs dir). The command is opt-in and **decoupled from the docs build** — it never slows normal generation. Because it runs a real `npm install` per project, it needs network access and is much slower than the build itself; run it as a CI step after the docs are produced rather than on every local build.
 
 For the complete authoring guide (folder layout, library-author workflow, troubleshooting), see [the Playground guide on compodocx.dev](https://compodocx.dev/guides/playground/).
 

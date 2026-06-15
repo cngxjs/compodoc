@@ -1,6 +1,6 @@
 import { posix } from 'node:path';
 import type { ComponentPlaygroundBlock } from '../../../templates/helpers/jsdoc';
-import { STACKBLITZ_TEMPLATE } from './constants';
+import { STACKBLITZ_TEMPLATE, STACKBLITZ_VENDOR_TOTAL_CAP } from './constants';
 import { emitFileContent } from './format-files';
 import {
     detectMaterialImports,
@@ -8,6 +8,7 @@ import {
     usesMaterialThemeBridge
 } from './material-imports';
 import type { FileRefBundle } from './read-file-ref';
+import { type VendorPackage, vendorClosure } from './vendor';
 import {
     type DepGraphNode,
     type DepGraphResolver,
@@ -93,6 +94,20 @@ export interface BuildOptions extends WalkOptions {
      * resets, or any global rules the example depends on.
      */
     globalStyles?: string;
+    /**
+     * Vendoring input from the `playgroundVendor` config. When set, any
+     * imported package that matches a vendored name (plus its transitive
+     * vendor-dep closure) is embedded into the file map under `vendor/<pkg>/`
+     * and wired as a `file:vendor/<pkg>` dependency — overriding the registry
+     * version so the playground runs against the locally built `dist/` instead
+     * of the last published release. Populated by `PlaygroundVendorResolver`.
+     */
+    vendor?: {
+        /** Available vendor packages, keyed by full package name. */
+        packages: Record<string, VendorPackage>;
+        /** Override for the per-closure byte cap. Defaults to the constant. */
+        totalCap?: number;
+    };
 }
 
 export type BuildResult = { ok: true; value: PlaygroundManifest } | { ok: false; error: string };
@@ -146,8 +161,9 @@ const PROJECT_NAME = 'compodocx-playground';
 const BARE_SPEC_RE = /(?:from|import|export\s+[^'"]*from)\s*['"]([^'".][^'"]*)['"]/g;
 
 // Specifiers handled separately by the explicit dep table above. Skipping
-// these keeps auto-forward focused on the user's own libraries.
-const AUTO_FORWARD_SKIP = new Set<string>([
+// these keeps auto-forward focused on the user's own libraries. Exported so
+// the pre-publish import validator shares one source of "framework peers".
+export const AUTO_FORWARD_SKIP = new Set<string>([
     ...ANGULAR_PEERS,
     ...OPTIONAL_ANGULAR_PEERS,
     ...Object.keys(NON_ANGULAR_PEER_DEFAULTS),
@@ -192,7 +208,10 @@ const fileNameForNode = (node: DepGraphNode, sourceRoot: string): string => {
 
 const collectAllDeps = (
     manifest?: ConsumerPackageJson
-): { dependencies: Record<string, string>; devDependencies: Record<string, string> } => {
+): {
+    dependencies: Record<string, string>;
+    devDependencies: Record<string, string>;
+} => {
     const dependencies: Record<string, string> = {};
     const devDependencies: Record<string, string> = {};
     const provided = {
@@ -369,7 +388,7 @@ const buildTsconfigAppJson = (): string =>
         2
     )}\n`;
 
-// Material "app shell": Roboto + Material-Icons font `<link>`s for `<head>`,
+// Material "app shell": Roboto and Material-Icons font `<link>`s for `<head>`,
 // mirroring exactly what Angular Material's `ng add` schematic writes. The
 // shell is intentionally DECOUPLED from Material module wiring - it can be
 // emitted for a non-Material library that is merely themed to look like
@@ -520,7 +539,7 @@ const buildAppComponentTs = (
 ): string => {
     const isTypescript = language === 'typescript' || language === 'javascript';
 
-    // Body indent: 8 spaces = inside the 4-space `@Component({` block + 4 more
+    // Body indent: 8 spaces = inside the 4-space `@Component({` block and 4 more
     // for the template content. Closing backtick aligns with `template:`.
     const BODY_INDENT = '        ';
     const CLOSE_INDENT = '    ';
@@ -579,7 +598,7 @@ const APP_COMPONENT_PATH = 'src/app/app.component.ts';
  *     AppComponent template) stays unchanged.
  *  3. TS-mode `fileBundle` (`replacesAppComponent: true`): the entry source
  *     IS the AppComponent — read-file-ref already rewrote relative imports
- *     and decorator urls, packed siblings + transitive imports into
+ *     and decorator urls, packed siblings and transitive imports into
  *     `fileBundle.files` under flat `src/app/<basename>` paths. Merge wins
  *     over the dep-graph walked copy on collision.
  */
@@ -637,7 +656,7 @@ export function buildPlaygroundManifest(
         }
     }
 
-    // Material SHELL (font links + body classes) is decoupled from Material
+    // Material SHELL (font links and body classes) is decoupled from Material
     // MODULE wiring. Emit the shell when ANY of: the real `<mat-*>` auto-detect
     // fired; the `playgroundMaterialShell` config flag forced it; or a bundled
     // file `@use`s a Material theme bridge (a non-Material lib themed to look
@@ -690,6 +709,45 @@ export function buildPlaygroundManifest(
         }
     }
 
+    // Vendor the locally built library (`playgroundVendor`). Seed the closure
+    // from the packages this playground actually imports, walk their
+    // vendor-dep edges to the FULL closure, and embed each under `vendor/<pkg>/`
+    // wired as a `file:` dependency. The `file:` entry is authoritative — it
+    // overwrites any registry version auto-forward added AND overrides
+    // transitive semver ranges inside the WebContainer's `npm install`, so no
+    // closure package is pulled stale from the registry. Vendored files bypass
+    // the per-file truncation cap (emitted raw below) — a sliced FESM bundle is
+    // a broken FESM bundle; the closure is size-guarded as a whole instead.
+    let vendorFiles: Record<string, string> | null = null;
+    if (options.vendor && Object.keys(options.vendor.packages).length > 0) {
+        const vendorPackages = options.vendor.packages;
+        const closure = vendorClosure(importedSpecs, vendorPackages);
+        if (closure.length > 0) {
+            const cap = options.vendor.totalCap ?? STACKBLITZ_VENDOR_TOTAL_CAP;
+            const totalBytes = closure.reduce(
+                (sum, name) => sum + vendorPackages[name].byteSize,
+                0
+            );
+            if (totalBytes > cap) {
+                const breakdown = closure
+                    .map(name => `${name} (${vendorPackages[name].byteSize} B)`)
+                    .sort()
+                    .join(', ');
+                return {
+                    ok: false,
+                    error: `Playground vendor closure for "${componentName}" is ${totalBytes} B, over the ${cap} B cap: ${breakdown}`
+                };
+            }
+            vendorFiles = {};
+            for (const name of closure) {
+                dependencies[name] = `file:vendor/${name}`;
+                for (const [rel, content] of Object.entries(vendorPackages[name].files)) {
+                    vendorFiles[`vendor/${name}/${rel}`] = content;
+                }
+            }
+        }
+    }
+
     const files: Record<string, string> = {};
     files['package.json'] = emit(buildPackageJson(dependencies, devDependencies));
     files['angular.json'] = emit(buildAngularJson(hasMaterial));
@@ -701,7 +759,7 @@ export function buildPlaygroundManifest(
     files['src/app/app.config.ts'] = emit(buildAppConfigTs());
 
     if (replacesAppComponent && fileBundle) {
-        // Entry source pre-rewritten by read-file-ref — relative imports +
+        // Entry source pre-rewritten by read-file-ref — relative imports and
         // decorator urls already flattened. Just emit-format and ship.
         files[APP_COMPONENT_PATH] = emit(fileBundle.files[APP_COMPONENT_PATH] ?? '');
     } else {
@@ -728,7 +786,7 @@ export function buildPlaygroundManifest(
         }
     }
 
-    // fileBundle's siblings + transitive imports come last so they win on
+    // fileBundle's siblings and transitive imports come last so they win on
     // collision (e.g. when the example imports the documented component, the
     // BFS-walked rewritten copy supersedes the dep-graph copy at the same key).
     // The AppComponent is already handled above; skip here to avoid double-emit.
@@ -738,6 +796,15 @@ export function buildPlaygroundManifest(
                 continue;
             }
             files[path] = emit(content);
+        }
+    }
+
+    // Vendored dist files ship verbatim — NOT through `emitFileContent`, whose
+    // per-file truncation would corrupt a FESM bundle. CRLF is still normalised
+    // for byte-stability across platforms.
+    if (vendorFiles) {
+        for (const [path, content] of Object.entries(vendorFiles)) {
+            files[path] = content.replaceAll('\r\n', '\n');
         }
     }
 

@@ -45,6 +45,7 @@ export interface ConfigurationFileInterface {
     disableDependencies: boolean;
     disableDependenciesTab: boolean;
     disablePlaygroundTab: boolean;
+    strictPlaygrounds: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
     disableOverview: boolean;
@@ -69,6 +70,8 @@ export interface ConfigurationFileInterface {
     playgroundFileCap: number;
     playgroundHead: string[];
     playgroundGlobalStyles: string;
+    playgroundVendor: string[];
+    playgroundVendorRoot: string;
     groupBy: 'folder' | 'category' | 'none';
     groupDepth: number;
     menuLayout: 'type' | 'feature';

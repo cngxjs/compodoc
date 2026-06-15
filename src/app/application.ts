@@ -43,6 +43,8 @@ import {
     PageWriter,
     PipePageGenerator,
     PlaygroundFileResolver,
+    PlaygroundValidator,
+    PlaygroundVendorResolver,
     RoutesPageGenerator,
     TokenPageGenerator
 } from './page-generator';
@@ -92,6 +94,8 @@ export class Application {
     private readonly additionalPageGenerator: AdditionalPageGenerator;
     private readonly packageDependenciesPageGenerator: PackageDependenciesPageGenerator;
     private readonly playgroundFileResolver: PlaygroundFileResolver;
+    private readonly playgroundVendorResolver: PlaygroundVendorResolver;
+    private readonly playgroundValidator: PlaygroundValidator;
     private readonly coveragePageGenerator: CoveragePageGenerator;
     private readonly assetCopier: AssetCopier;
     private readonly pageWriter: PageWriter;
@@ -138,6 +142,8 @@ export class Application {
         this.additionalPageGenerator = new AdditionalPageGenerator();
         this.packageDependenciesPageGenerator = new PackageDependenciesPageGenerator();
         this.playgroundFileResolver = new PlaygroundFileResolver();
+        this.playgroundVendorResolver = new PlaygroundVendorResolver();
+        this.playgroundValidator = new PlaygroundValidator();
         this.coveragePageGenerator = new CoveragePageGenerator();
         this.assetCopier = new AssetCopier({
             onServe: folder => this.serveAndStartWatch(folder),
@@ -282,7 +288,7 @@ export class Application {
                 };
                 Configuration.mainData.hasZoneJs = 'zone.js' in allDeps;
 
-                // Surface the runtime + peer dep tables to the StackBlitz
+                // Surface the runtime and peer dep tables to the StackBlitz
                 // manifest builder so consumer-declared third-party libraries
                 // (incl. user-authored ones) are auto-forwarded into
                 // `@playground` projects with the right version.
@@ -542,6 +548,13 @@ export class Application {
         // been prepared (so `dependency.playgrounds` is fully populated) and
         // before page rendering reads `data.playgroundFiles`.
         actions.push(() => Promise.resolve(this.playgroundFileResolver.resolve()));
+        // Resolve the `playgroundVendor` closure from the local `dist/` once;
+        // a hard error here (unbuilt library) fails the build deliberately.
+        actions.push(() => Promise.resolve(this.playgroundVendorResolver.resolve()));
+        // Validate non-vendored playground imports against the pinned
+        // node_modules versions — runs after vendoring so vendored packages
+        // are excluded. Warns by default; throws under `--strictPlaygrounds`.
+        actions.push(() => Promise.resolve(this.playgroundValidator.resolve()));
 
         promiseSequential(actions)
             .then(_res => {
@@ -746,6 +759,11 @@ export class Application {
         // Resolve `@playground` file refs after every prepare* step has
         // populated `Configuration.mainData.<kind>.playgrounds`.
         actions.push(() => Promise.resolve(this.playgroundFileResolver.resolve()));
+        // Vendor closure (watch mode) — kept in lockstep with the one-shot
+        // queue so `playgroundVendor` rebuilds aren't a silent no-op.
+        actions.push(() => Promise.resolve(this.playgroundVendorResolver.resolve()));
+        // Pre-publish import validation (watch mode) — same lockstep.
+        actions.push(() => Promise.resolve(this.playgroundValidator.resolve()));
 
         promiseSequential(actions)
             .then(_res => {

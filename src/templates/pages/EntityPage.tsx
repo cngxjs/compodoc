@@ -3,7 +3,8 @@ import Configuration from '../../app/configuration';
 import type {
     ConsumerPackageJson,
     DepGraphResolver,
-    FileRefBundle
+    FileRefBundle,
+    VendorPackage
 } from '../../app/engines/stackblitz';
 import { BlockAccessors } from '../blocks/BlockAccessors';
 import { BlockConstructor } from '../blocks/BlockConstructor';
@@ -186,6 +187,7 @@ export type EntityInfoProps = {
     readonly playgroundFileCap?: number;
     readonly playgroundHead?: string[];
     readonly playgroundGlobalStyles?: string;
+    readonly playgroundVendorPackages?: Record<string, VendorPackage>;
 };
 
 const hasMembers = (e: any): boolean =>
@@ -687,7 +689,8 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 playgroundFileCountCap: props.playgroundFileCountCap,
                 playgroundFileCap: props.playgroundFileCap,
                 playgroundHead: props.playgroundHead,
-                playgroundGlobalStyles: props.playgroundGlobalStyles
+                playgroundGlobalStyles: props.playgroundGlobalStyles,
+                playgroundVendorPackages: props.playgroundVendorPackages
             })}
         </>
     ) as string;

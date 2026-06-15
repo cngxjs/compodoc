@@ -1,4 +1,4 @@
-import type { FileRefBundle } from '../engines/stackblitz';
+import type { FileRefBundle, VendorPackage } from '../engines/stackblitz';
 import type { CoverageData } from './coverageData.interface';
 
 export interface MainDataInterface {
@@ -68,6 +68,14 @@ export interface MainDataInterface {
      * `disableDependenciesTab` — that flag only controls the dependency graph.
      */
     disablePlaygroundTab: boolean;
+    /**
+     * Fail the build when a non-vendored `@playground` imports a subpath or
+     * named symbol that is absent from the version of the package pinned in
+     * the consumer's `node_modules`. Default false → such breakage only warns.
+     * Vendored packages (`playgroundVendor`) are exempt — they ship the local
+     * build, not the registry version. CLI: `--strictPlaygrounds`.
+     */
+    strictPlaygrounds: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
     disableOverview: boolean;
@@ -129,7 +137,7 @@ export interface MainDataInterface {
     stackblitz: boolean;
     stackblitzTemplate: string;
     /**
-     * Subset of the consumer's `package.json` (`dependencies` +
+     * Subset of the consumer's `package.json` (`dependencies` and
      * `peerDependencies`) used to pin third-party deps in `@playground`
      * StackBlitz manifests. Set in `application.ts` after the workspace
      * `package.json` is loaded; left as `{}` when no manifest is reachable.
@@ -147,7 +155,7 @@ export interface MainDataInterface {
      */
     playgroundDependencies: Record<string, string>;
     /**
-     * Force the Material "app shell" (Roboto + Material-Icons font links and
+     * Force the Material "app shell" (Roboto and Material-Icons font links and
      * `mat-typography mat-app-background` body classes) into every generated
      * `@playground` `index.html`, independent of Material auto-detect. Lets a
      * playground themed to look like Material via a Sass theme bridge get the
@@ -182,6 +190,29 @@ export interface MainDataInterface {
      * examples depend on. No CLI flag — config-only.
      */
     playgroundGlobalStyles: string;
+    /**
+     * Package names and/or globs (`"@cngx/*"`) to vendor into `@playground`
+     * StackBlitz projects from the locally built `dist/`. When a playground
+     * imports a matching package, its whole dist dir (plus the transitive
+     * closure of other matching packages) is embedded in the manifest and
+     * wired as a `file:` dependency — so the playground runs against the
+     * working tree, not the last published release. No CLI flag — config-only.
+     */
+    playgroundVendor: string[];
+    /**
+     * Base directory the `playgroundVendor` closure is read from. Each matched
+     * package is located by its `package.json` `name`, anywhere under this
+     * root. Defaults to `dist`. No CLI flag — config-only.
+     */
+    playgroundVendorRoot: string;
+    /**
+     * Vendor packages resolved from `playgroundVendor` at build time, keyed by
+     * full package name. Populated by `PlaygroundVendorResolver` after the
+     * workspace scan; forwarded into every block's manifest builder, which
+     * embeds only the per-playground import closure. Empty when
+     * `playgroundVendor` is unset.
+     */
+    playgroundVendorPackages: Record<string, VendorPackage>;
     /**
      * Resolved file-ref bundles per playground block. Key format:
      * `${componentName}:${blockIndex}`. Populated in `application.ts` after
