@@ -73,15 +73,31 @@ describe('runPlaygroundValidateCli (e2e plumbing)', () => {
 
     it('materializes the manifest files onto disk before building', async () => {
         writeDoc('a.html', manifestScript('pg-keep', 'Keep'));
-        // --buildCmd asserts src/main.ts was written into the project dir.
+        // Run with trivial (robust) build commands and --keep, then assert the
+        // materialized file is on disk directly. Asserting via a relative-path
+        // statSync inside a spawned subprocess is flaky under heavy parallel
+        // load (transient spawn failures surface as a non-zero exit), so the
+        // materialization is verified from the test process instead — the
+        // sibling tests already cover real spawn exit-code plumbing.
         const code = await runPlaygroundValidateCli([
             docsDir,
+            '--keep',
             '--installCmd',
             'node -e 0',
             '--buildCmd',
-            'node -e require("fs").statSync("src/main.ts")'
+            'node -e 0'
         ]);
         expect(code).to.equal(0);
+
+        const printed = stdout.mock.calls.map(c => String(c[0])).join('');
+        const kept = printed.match(/Kept project directories in (.+)/);
+        expect(kept, printed).to.not.equal(null);
+        const tmpRoot = (kept as RegExpMatchArray)[1].trim();
+        try {
+            expect(fs.existsSync(path.join(tmpRoot, 'pg-keep', 'src', 'main.ts'))).to.equal(true);
+        } finally {
+            fs.removeSync(tmpRoot);
+        }
     });
 
     it('dedupes a playground that renders on multiple pages', async () => {
