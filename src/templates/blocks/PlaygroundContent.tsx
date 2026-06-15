@@ -3,7 +3,8 @@ import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import type {
     ConsumerPackageJson,
     DepGraphResolver,
-    FileRefBundle
+    FileRefBundle,
+    VendorPackage
 } from '../../app/engines/stackblitz';
 import type { ComponentPlaygroundBlock } from '../helpers/jsdoc';
 import { BlockPlayground } from './BlockPlayground';
@@ -26,6 +27,12 @@ export type PlaygroundContentProps = {
     readonly head?: string[];
     /** Config-file `playgroundGlobalStyles` — global CSS, forwarded to each block. */
     readonly globalStyles?: string;
+    /**
+     * Vendor packages resolved from `playgroundVendor`, keyed by full package
+     * name. Forwarded to each block; the manifest builder embeds only the
+     * per-playground import closure.
+     */
+    readonly vendorPackages?: Record<string, VendorPackage>;
     /**
      * Pre-resolved file-ref bundles, keyed by block index in
      * `props.playgrounds`. Populated by `application.ts:resolvePlaygroundFiles`
@@ -72,6 +79,7 @@ export function PlaygroundContent(props: PlaygroundContentProps): string {
                     fileCap: props.fileCap,
                     head: props.head,
                     globalStyles: props.globalStyles,
+                    vendorPackages: props.vendorPackages,
                     fileBundle: props.fileBundles?.[index]
                 })
             )}

@@ -23,5 +23,11 @@ export type {
 } from './read-file-ref';
 export { readFileRef, readPlaygroundConfig } from './read-file-ref';
 export { rewriteDecoratorUrls, rewriteRelativeImports } from './rewrite-imports';
+export type {
+    VendorFsReader,
+    VendorPackage,
+    VendorResolveResult
+} from './vendor';
+export { resolveVendorPackages, vendorClosure } from './vendor';
 export type { DepGraphNode, DepGraphResolver, WalkOptions, WalkResult } from './walk-dep-graph';
 export { walkDepGraph } from './walk-dep-graph';

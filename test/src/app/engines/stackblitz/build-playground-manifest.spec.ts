@@ -799,6 +799,143 @@ describe('buildPlaygroundManifest', () => {
         });
     });
 
+    describe('vendoring (P0b)', () => {
+        const vendorPackages = {
+            '@cngx/ui': {
+                name: '@cngx/ui',
+                files: {
+                    'package.json': '{"name":"@cngx/ui"}',
+                    'fesm2022/cngx-ui.mjs': 'export const Ui = 1;',
+                    // Secondary entry point — must ship so `@cngx/ui/tabs` resolves.
+                    'tabs/package.json': '{"name":"@cngx/ui/tabs"}'
+                },
+                vendorDeps: ['@cngx/common'],
+                byteSize: 60
+            },
+            '@cngx/common': {
+                name: '@cngx/common',
+                files: {
+                    'package.json': '{"name":"@cngx/common"}',
+                    'fesm2022/cngx-common.mjs': 'export const C = 1;'
+                },
+                vendorDeps: [],
+                byteSize: 40
+            },
+            '@cngx/unused': {
+                name: '@cngx/unused',
+                files: { 'package.json': '{"name":"@cngx/unused"}' },
+                vendorDeps: [],
+                byteSize: 20
+            }
+        };
+        // Imports a SECONDARY entry of a vendored package — the bare-spec scan
+        // resolves it back to the `@cngx/ui` root for the closure seed.
+        const importingNode: DepGraphNode = {
+            ...rootNode,
+            sourceCode: "import { Tabs } from '@cngx/ui/tabs';\nexport class MyButton {}\n",
+            imports: []
+        };
+
+        it('embeds the import closure as file: deps and drops the registry version', () => {
+            const pkg = {
+                dependencies: { '@angular/core': '^21.0.0', '@cngx/ui': '^1.0.0' }
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([importingNode]),
+                pkg,
+                { vendor: { packages: vendorPackages } }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            // file: entry is authoritative — the auto-forwarded ^1.0.0 is gone.
+            expect(result.value.dependencies['@cngx/ui']).to.equal('file:vendor/@cngx/ui');
+            // Transitive vendor closure is wired too — never pulled from npm.
+            expect(result.value.dependencies['@cngx/common']).to.equal('file:vendor/@cngx/common');
+            // Files embedded under vendor/<pkg>/, secondary entry preserved.
+            expect(result.value.files).to.have.property('vendor/@cngx/ui/fesm2022/cngx-ui.mjs');
+            expect(result.value.files).to.have.property('vendor/@cngx/ui/tabs/package.json');
+            expect(result.value.files).to.have.property(
+                'vendor/@cngx/common/fesm2022/cngx-common.mjs'
+            );
+            // A vendored package nothing imports is neither wired nor shipped.
+            expect(result.value.dependencies).not.to.have.property('@cngx/unused');
+            expect(result.value.files).not.to.have.property('vendor/@cngx/unused/package.json');
+            // The emitted package.json carries the file: dep.
+            const rootPkg = JSON.parse(result.value.files['package.json']);
+            expect(rootPkg.dependencies['@cngx/ui']).to.equal('file:vendor/@cngx/ui');
+        });
+
+        it('is a no-op when the playground imports nothing vendored', () => {
+            const pkg = { dependencies: { '@angular/core': '^21.0.0' } };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                pkg,
+                { vendor: { packages: vendorPackages } }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            expect(result.value.dependencies).not.to.have.property('@cngx/ui');
+            expect(Object.keys(result.value.files).some(p => p.startsWith('vendor/'))).to.be.false;
+        });
+
+        it('ships vendored files raw — bypasses the per-file truncation cap', () => {
+            const big = 'x'.repeat(STACKBLITZ_FILE_CAP + 5000);
+            const vp = {
+                '@cngx/ui': {
+                    name: '@cngx/ui',
+                    files: {
+                        'package.json': '{"name":"@cngx/ui"}',
+                        'fesm2022/big.mjs': big
+                    },
+                    vendorDeps: [],
+                    byteSize: big.length + 20
+                }
+            };
+            const pkg = { dependencies: { '@angular/core': '^21.0.0' } };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([importingNode]),
+                pkg,
+                { vendor: { packages: vp } }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            // Full FESM body survives — a truncated bundle would be broken.
+            expect(result.value.files['vendor/@cngx/ui/fesm2022/big.mjs'].length).to.equal(
+                big.length
+            );
+        });
+
+        it('fails with a named per-package breakdown when the closure blows the cap', () => {
+            const pkg = { dependencies: { '@angular/core': '^21.0.0' } };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([importingNode]),
+                pkg,
+                { vendor: { packages: vendorPackages, totalCap: 50 } }
+            );
+            // Closure @cngx/ui (60) + @cngx/common (40) = 100 B > 50 B cap.
+            expect(result.ok).to.be.false;
+            if (result.ok) {
+                return;
+            }
+            expect(result.error).to.contain('@cngx/ui');
+            expect(result.error).to.contain('over the 50');
+        });
+    });
+
     it('emits POSIX paths only — never backslashes (F2)', () => {
         const winPath: DepGraphNode = {
             ...rootNode,

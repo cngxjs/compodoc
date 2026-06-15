@@ -12,7 +12,7 @@ import type { PageInterface } from './interfaces/page.interface';
 
 export class Configuration implements ConfigurationInterface {
     private _pages: PageInterface[] = [];
-    private _mainData: MainDataInterface = {
+    private readonly _mainData: MainDataInterface = {
         output: COMPODOC_DEFAULTS.folder,
         theme: COMPODOC_DEFAULTS.theme,
         extTheme: '',
@@ -48,7 +48,12 @@ export class Configuration implements ConfigurationInterface {
         tokens: [],
         interceptors: [],
         guards: [],
-        miscellaneous: { variables: [], functions: [], typealiases: [], enumerations: [] },
+        miscellaneous: {
+            variables: [],
+            functions: [],
+            typealiases: [],
+            enumerations: []
+        },
         routes: [],
         tsconfig: '',
         toggleMenuItems: COMPODOC_DEFAULTS.toggleMenuItems,
@@ -126,6 +131,9 @@ export class Configuration implements ConfigurationInterface {
         playgroundFileCap: STACKBLITZ_FILE_CAP,
         playgroundHead: [],
         playgroundGlobalStyles: '',
+        playgroundVendor: [],
+        playgroundVendorRoot: 'dist',
+        playgroundVendorPackages: {},
         playgroundFiles: {},
         appConfig: [],
         categorizedComponents: {},

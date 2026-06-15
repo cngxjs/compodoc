@@ -70,5 +70,6 @@ export const DirectivePage = (data: any): string =>
         playgroundFileCountCap: data.playgroundFileCountCap,
         playgroundFileCap: data.playgroundFileCap,
         playgroundHead: data.playgroundHead,
-        playgroundGlobalStyles: data.playgroundGlobalStyles
+        playgroundGlobalStyles: data.playgroundGlobalStyles,
+        playgroundVendorPackages: data.playgroundVendorPackages
     });

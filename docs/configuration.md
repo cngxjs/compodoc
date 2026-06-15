@@ -218,6 +218,8 @@ In the flag and heuristic cases, **only** the shell is injected - `@angular/mate
 | playgroundFileCap | -- (config-only) | number | `8000` | Per-file character cap before a bundled `@playground` source is truncated with a footer. Raise when a legitimately large source is being cut off. Range 500–1,000,000. |
 | playgroundHead | -- (config-only) | string[] | `[]` | Arbitrary `<head>` entries injected into every `@playground` `index.html` (after the Material shell links, when present). For custom fonts, meta tags, CSP, or preloads. Each entry is emitted verbatim; blank entries are dropped. See [Custom `<head>` and global styles](#custom-head-and-global-styles). |
 | playgroundGlobalStyles | -- (config-only) | string | `''` | Global CSS appended to every `@playground` `src/styles.css`, after the default body reset. For fonts, resets, or any global rules the examples depend on. |
+| playgroundVendor | -- (config-only) | string[] | `[]` | Package names and/or globs (`"@cngx/*"`) to vendor into `@playground` projects from the locally built `dist/` instead of the npm registry. When a playground imports a matching package, its whole built directory (plus the transitive closure of other matching packages) is embedded in the manifest and wired as a `file:` dependency — so the playground runs against the working tree, not the last published release. See [Vendoring the local build](#vendoring-the-local-build-playgroundvendor). |
+| playgroundVendorRoot | -- (config-only) | string | `dist` | Base directory the `playgroundVendor` closure is read from. Each matched package is located by its `package.json` `name`, anywhere under this root — the directory name need not match the package name. |
 
 ```jsonc
 // compodocx.config.json
@@ -279,7 +281,31 @@ This replaces the older, undocumented trick of adding `export { appConfig } from
 | Tarball URL | `"https://example.com/pkg/ui-1.2.3.tgz"` |
 | Git ref | `"git+https://github.com/my-org/ui.git#feature/tabs"` |
 
-StackBlitz's WebContainer runs a real `npm install`, so it resolves each of these the same way a local install would.
+StackBlitz's WebContainer runs a real `npm install`, so it resolves each of these the same way a local install would. When the package you want to pin lives in your **own** workspace and is built but not yet published, vendoring (below) skips the registry entirely.
+
+#### Vendoring the local build (`playgroundVendor`)
+
+A registry dependency always resolves to the last **published** version, so a playground that imports a symbol which only exists in your working tree fails to compile in the sandbox, and an unreleased bugfix shows stale. `playgroundVendor` fixes this by embedding the locally built `dist/` into the payload — the same mechanism compodocx already uses to inline your example sources, one level deeper.
+
+```jsonc
+// compodocx.config.json
+{
+    "tsconfig": "projects/ui/tsconfig.lib.json",
+    "output": "docs/",
+    "playgroundVendor": ["@cngx/*"],   // names and/or globs
+    "playgroundVendorRoot": "dist"      // default; where the built libs live
+}
+```
+
+How it works, per playground:
+
+- **Closure, not just the direct import.** Starting from the packages the example imports, compodocx walks the matching (`playgroundVendor`) dependency graph and vendors the **full closure**. Vendoring `@cngx/ui` but pulling its `@cngx/common`/`@cngx/core` deps from npm would reintroduce the skew, so the whole closure is embedded. Peer deps that do **not** match a pattern (`@angular/*`, `rxjs`, `tslib`, …) stay registry dependencies.
+- **The whole built directory, verbatim.** For each closure package the entire `dist/<pkg>` tree ships — FESM bundles, typings, the root `package.json` **and** every secondary-entry-point `package.json` + `exports` map — so subpaths like `@cngx/ui/tabs` resolve.
+- **Wired as `file:` deps.** Each vendored package is placed under `vendor/<pkg>/` and declared as `"<pkg>": "file:vendor/<pkg>"` in the generated `package.json`. A root `file:` entry is authoritative: it overrides any registry version and any transitive semver range, so no closure package is pulled from npm.
+
+**Prerequisite:** the libraries must be **built before** compodocx runs (`dist/` present). A typical `docs:full` script already builds the libs first. If `playgroundVendor` names a package whose build output is missing, the docs build **fails** with a clear message (`playgroundVendor: "@cngx/ui" not found under dist — run the library build`) rather than silently falling back to a stale registry version. A glob that matches nothing only warns.
+
+**Size:** vendoring inflates the payload by the dist size (FESM × entry points). A closure that exceeds the internal cap fails the build naming the packages and measured bytes, never a silent truncation.
 
 For the complete authoring guide (folder layout, library-author workflow, troubleshooting), see [the Playground guide on compodocx.dev](https://compodocx.dev/guides/playground/).
 
