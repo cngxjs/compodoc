@@ -209,6 +209,7 @@ In the flag and heuristic cases, **only** the shell is injected - `@angular/mate
 | Option | CLI | Type | Default | Description |
 |-|-|-|-|-|
 | disablePlaygroundTab | `--disablePlaygroundTab` | boolean | `false` | Hide the per-component Playground tab even when `@playground` blocks are parsed. Independent of `--disableDependenciesTab`. No effect on components without `@playground` blocks (the tab is already absent). |
+| strictPlaygrounds | `--strictPlaygrounds` | boolean | `false` | **Fail** the build when a non-vendored `@playground` imports a subpath or named symbol absent from the version of the package pinned in `node_modules`. Default (off) only **warns**. See [Pre-publish breakage guard](#pre-publish-breakage-guard-strictplaygrounds). |
 | playgroundDependencies | -- (config-only) | object | `{}` | Extra packages to inject into every StackBlitz manifest's `dependencies`, with the version specifier YOU choose. Wins over the consumer-`package.json` auto-forward AND any auto-detected version (e.g. Material). Use for libraries the consumer ships but doesn't `npm install` directly (peer-only CSS themes), or to pin a per-build version. The value is forwarded into the generated `package.json` **unchanged** — see [Non-registry dependency sources](#non-registry-dependency-sources) for the accepted forms. |
 | playgroundMaterialShell | -- (config-only) | boolean | `false` | Force the Material app shell (Roboto + Material-Icons font links and the `mat-typography mat-app-background` body classes) into every `@playground` `index.html`, independent of Material auto-detect. For libraries themed to look like Material via a Sass theme bridge. Does **not** add `@angular/material`/`@angular/cdk` or Material module imports. See [Material app shell](#material-app-shell-fonts--body-classes). |
 | playgroundVendor | -- (config-only) | string[] | `[]` | Package names and/or globs (`"@cngx/*"`) to vendor into `@playground` projects from the locally built `dist/` instead of the npm registry. When a playground imports a matching package, its whole built directory (plus the transitive closure of other matching packages) is embedded in the manifest and wired as a `file:` dependency — so the playground runs against the working tree, not the last published release. See [Vendoring the local build](#vendoring-the-local-build-playgroundvendor). |
@@ -263,6 +264,15 @@ How it works, per playground:
 **Prerequisite:** the libraries must be **built before** compodocx runs (`dist/` present). A typical `docs:full` script already builds the libs first. If `playgroundVendor` names a package whose build output is missing, the docs build **fails** with a clear message (`playgroundVendor: "@cngx/ui" not found under dist — run the library build`) rather than silently falling back to a stale registry version. A glob that matches nothing only warns.
 
 **Size:** vendoring inflates the payload by the dist size (FESM × entry points). A closure that exceeds the internal cap fails the build naming the packages and measured bytes, never a silent truncation.
+
+#### Pre-publish breakage guard (`--strictPlaygrounds`)
+
+For playgrounds whose imports are served from the **registry** (i.e. not vendored), compodocx checks each bare import against the version of the package actually installed in your `node_modules` — the version StackBlitz would resolve. When the example imports an entry point or a named symbol that the pinned version does not have (`import { CngxTabNav } from '@cngx/ui/tabs'` while the published `@cngx/ui` predates `tabs`), the playground compiles locally but fails in the sandbox. The guard surfaces that at docs-build time:
+
+- **Default:** a per-playground **warning** naming the specifier/symbol and the pinned version.
+- **`--strictPlaygrounds`:** the same finding **fails** the build.
+
+Two checks run, both biased toward **no false positives**: a *subpath* check against the pinned package's `exports` map, and a *symbol* check that scans the entry-point `.d.ts`. Anything the static check can't determine — a legacy package without an `exports` map, or typings that re-export via wildcard (`export * from …`) — is left unreported. Vendored packages (`playgroundVendor`) and framework peers (`@angular/*`, `rxjs`, …) are exempt: the former ship the local build, the latter are pinned by the manifest itself.
 
 For the complete authoring guide (folder layout, library-author workflow, troubleshooting), see [the Playground guide on compodocx.dev](https://compodocx.dev/guides/playground/).
 
