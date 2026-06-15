@@ -43,6 +43,7 @@ import {
     PageWriter,
     PipePageGenerator,
     PlaygroundFileResolver,
+    PlaygroundValidator,
     PlaygroundVendorResolver,
     RoutesPageGenerator,
     TokenPageGenerator
@@ -94,6 +95,7 @@ export class Application {
     private readonly packageDependenciesPageGenerator: PackageDependenciesPageGenerator;
     private readonly playgroundFileResolver: PlaygroundFileResolver;
     private readonly playgroundVendorResolver: PlaygroundVendorResolver;
+    private readonly playgroundValidator: PlaygroundValidator;
     private readonly coveragePageGenerator: CoveragePageGenerator;
     private readonly assetCopier: AssetCopier;
     private readonly pageWriter: PageWriter;
@@ -141,6 +143,7 @@ export class Application {
         this.packageDependenciesPageGenerator = new PackageDependenciesPageGenerator();
         this.playgroundFileResolver = new PlaygroundFileResolver();
         this.playgroundVendorResolver = new PlaygroundVendorResolver();
+        this.playgroundValidator = new PlaygroundValidator();
         this.coveragePageGenerator = new CoveragePageGenerator();
         this.assetCopier = new AssetCopier({
             onServe: folder => this.serveAndStartWatch(folder),
@@ -548,6 +551,10 @@ export class Application {
         // Resolve the `playgroundVendor` closure from the local `dist/` once;
         // a hard error here (unbuilt library) fails the build deliberately.
         actions.push(() => Promise.resolve(this.playgroundVendorResolver.resolve()));
+        // Validate non-vendored playground imports against the pinned
+        // node_modules versions — runs after vendoring so vendored packages
+        // are excluded. Warns by default; throws under `--strictPlaygrounds`.
+        actions.push(() => Promise.resolve(this.playgroundValidator.resolve()));
 
         promiseSequential(actions)
             .then(_res => {
@@ -755,6 +762,8 @@ export class Application {
         // Vendor closure (watch mode) — kept in lockstep with the one-shot
         // queue so `playgroundVendor` rebuilds aren't a silent no-op.
         actions.push(() => Promise.resolve(this.playgroundVendorResolver.resolve()));
+        // Pre-publish import validation (watch mode) — same lockstep.
+        actions.push(() => Promise.resolve(this.playgroundValidator.resolve()));
 
         promiseSequential(actions)
             .then(_res => {

@@ -45,6 +45,7 @@ export interface ConfigurationFileInterface {
     disableDependencies: boolean;
     disableDependenciesTab: boolean;
     disablePlaygroundTab: boolean;
+    strictPlaygrounds: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
     disableOverview: boolean;

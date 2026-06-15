@@ -603,6 +603,13 @@ export function applyConfigToMainData(
         mainData.disablePlaygroundTab = programOptions.disablePlaygroundTab;
     }
 
+    if (configFile.strictPlaygrounds) {
+        mainData.strictPlaygrounds = configFile.strictPlaygrounds;
+    }
+    if (programOptions.strictPlaygrounds) {
+        mainData.strictPlaygrounds = programOptions.strictPlaygrounds;
+    }
+
     if (configFile.disableProperties) {
         mainData.disableProperties = configFile.disableProperties;
     }

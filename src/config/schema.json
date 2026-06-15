@@ -361,6 +361,28 @@
             "default": "",
             "examples": [":root { --brand: #06f; }"]
         },
+        "playgroundVendor": {
+            "$id": "/properties/playgroundVendor",
+            "type": "array",
+            "items": { "type": "string" },
+            "title": "Package names and/or globs (e.g. @scope/*) to vendor into @playground projects from the locally built dist/ instead of the npm registry. The matched package and its transitive closure are embedded and wired as file: dependencies, so the playground runs against the working tree, not the last published release.",
+            "default": [],
+            "examples": [["@cngx/*"]]
+        },
+        "playgroundVendorRoot": {
+            "$id": "/properties/playgroundVendorRoot",
+            "type": "string",
+            "title": "Base directory the playgroundVendor closure is read from. Each matched package is located by its package.json name, anywhere under this root. Defaults to dist.",
+            "default": "dist",
+            "examples": ["dist"]
+        },
+        "strictPlaygrounds": {
+            "$id": "/properties/strictPlaygrounds",
+            "type": "boolean",
+            "title": "Fail the build when a non-vendored @playground imports a subpath or named symbol absent from the version of the package pinned in node_modules. Default false (warn only).",
+            "default": false,
+            "examples": [false]
+        },
         "disableProperties": {
             "$id": "/properties/disableProperties",
             "type": "boolean",

@@ -68,6 +68,14 @@ export interface MainDataInterface {
      * `disableDependenciesTab` — that flag only controls the dependency graph.
      */
     disablePlaygroundTab: boolean;
+    /**
+     * Fail the build when a non-vendored `@playground` imports a subpath or
+     * named symbol that is absent from the version of the package pinned in
+     * the consumer's `node_modules`. Default false → such breakage only warns.
+     * Vendored packages (`playgroundVendor`) are exempt — they ship the local
+     * build, not the registry version. CLI: `--strictPlaygrounds`.
+     */
+    strictPlaygrounds: boolean;
     disableProperties: boolean;
     disableFilePath: boolean;
     disableOverview: boolean;
