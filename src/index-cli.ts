@@ -51,6 +51,15 @@ export class CliApplication extends Application {
             process.exit(exitCode);
         }
 
+        // `compodocx playground:validate <docsDir>` — compile every embedded
+        // @playground (npm install + ng build) and report pass/fail. CI gate,
+        // decoupled from the doc-generation surface.
+        if (process.argv[2] === 'playground:validate') {
+            const { runPlaygroundValidateCli } = await import('./playground-validate');
+            const exitCode = await runPlaygroundValidateCli(process.argv.slice(3));
+            process.exit(exitCode);
+        }
+
         defineFlags(program).parse(process.argv);
 
         const outputHelp = () => {
