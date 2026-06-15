@@ -317,6 +317,27 @@ For playgrounds whose imports are served from the **registry** (i.e. not vendore
 
 Two checks run, both biased toward **no false positives**: a *subpath* check against the pinned package's `exports` map, and a *symbol* check that scans the entry-point `.d.ts`. Anything the static check can't determine — a legacy package without an `exports` map, or typings that re-export via wildcard (`export * from …`) — is left unreported. Vendored packages (`playgroundVendor`) and framework peers (`@angular/*`, `rxjs`, …) are exempt: the former ship the local build, the latter are pinned by the manifest itself.
 
+The static guard is fast but conservative. For full certainty that every playground actually compiles, use the `playground:validate` command below, which performs a real build.
+
+#### `compodocx playground:validate <docsDir>`
+
+A standalone command that **compiles every `@playground`** in a generated documentation folder and reports a per-playground pass/fail summary — the strongest guard, catching breakage the static `--strictPlaygrounds` check can't. It reads the manifests back out of the produced HTML, materializes each StackBlitz project to a temp directory, and runs `npm install` + `npm run build` (`ng build`) against the resolved (and vendored) dependencies.
+
+```bash
+# Generate docs, then validate every playground compiles
+compodocx -p tsconfig.json -d documentation
+compodocx playground:validate documentation
+```
+
+| Flag | Description |
+|-|-|
+| `--filter <text>` | Only validate playgrounds whose title / id / source page matches |
+| `--keep` | Keep the temporary project directories for inspection |
+| `--installCmd <cmd>` | Override the install command (default `npm install --no-audit --no-fund`) |
+| `--buildCmd <cmd>` | Override the build command (default `npm run build`) |
+
+Exit codes: `0` all passed (or none found), `1` at least one failed, `2` fatal (bad args / unreadable docs dir). The command is opt-in and **decoupled from the docs build** — it never slows normal generation. Because it runs a real `npm install` per project, it needs network access and is much slower than the build itself; run it as a CI step after the docs are produced rather than on every local build.
+
 For the complete authoring guide (folder layout, library-author workflow, troubleshooting), see [the Playground guide on compodocx.dev](https://compodocx.dev/guides/playground/).
 
 ## Legacy `@stackblitz <url>` integration
