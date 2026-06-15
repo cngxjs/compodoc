@@ -15,6 +15,17 @@ export const STACKBLITZ_FILE_COUNT_CAP = 25;
 export const STACKBLITZ_FILE_CAP = 8000;
 
 /**
+ * Total byte cap on a single playground's vendored (`playgroundVendor`)
+ * closure. Vendoring inlines whole `dist/` trees (FESM bundles × secondary
+ * entry points), so the per-file truncation cap does NOT apply to vendored
+ * files — truncating a FESM bundle would corrupt it. Instead the closure is
+ * measured up front and the build FAILS, naming the packages and sizes, when
+ * it blows this cap. Generous by design: a typical UI-lib closure is well
+ * under 1 MB; the ceiling exists to stop a runaway payload, not to trim.
+ */
+export const STACKBLITZ_VENDOR_TOTAL_CAP = 4_000_000;
+
+/**
  * StackBlitz `template` value passed to `openProject`. We deliberately use
  * `'node'` (WebContainer-based) rather than `'angular-cli'`: the latter has
  * a pinned Angular version baked into StackBlitz's runtime, which conflicts

@@ -241,6 +241,20 @@ export function applyConfigToMainData(
         mainData.playgroundMaterialShell = configFile.playgroundMaterialShell;
     }
 
+    if (
+        Array.isArray(configFile.playgroundVendor) &&
+        configFile.playgroundVendor.every(p => typeof p === 'string')
+    ) {
+        mainData.playgroundVendor = configFile.playgroundVendor;
+    }
+
+    if (
+        typeof configFile.playgroundVendorRoot === 'string' &&
+        configFile.playgroundVendorRoot.length > 0
+    ) {
+        mainData.playgroundVendorRoot = configFile.playgroundVendorRoot;
+    }
+
     if (configFile.includes) {
         mainData.includes = configFile.includes;
     }

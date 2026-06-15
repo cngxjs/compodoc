@@ -6,7 +6,8 @@ import {
     type ConsumerPackageJson,
     type DepGraphNode,
     type DepGraphResolver,
-    type FileRefBundle
+    type FileRefBundle,
+    type VendorPackage
 } from '../../app/engines/stackblitz';
 import { highlightCode } from '../../app/engines/syntax-highlight.engine';
 import { logger } from '../../utils/logger';
@@ -35,6 +36,12 @@ export type BlockPlaygroundProps = {
      * body classes into `index.html` without adding `@angular/material`.
      */
     readonly materialShell?: boolean;
+    /**
+     * Vendor packages resolved from `playgroundVendor`, keyed by full package
+     * name. When the playground imports a vendored package, the builder
+     * embeds its closure as `file:` deps. Empty/undefined → registry-only.
+     */
+    readonly vendorPackages?: Record<string, VendorPackage>;
     /**
      * Pre-resolved file-ref bundle for `block.fileRef` blocks. Populated by
      * `application.ts:resolvePlaygroundFiles` and forwarded through
@@ -78,6 +85,9 @@ export function BlockPlayground(props: BlockPlaygroundProps): string {
     }
     if (props.materialShell) {
         options.materialShell = true;
+    }
+    if (props.vendorPackages && Object.keys(props.vendorPackages).length > 0) {
+        options.vendor = { packages: props.vendorPackages };
     }
     const built = buildPlaygroundManifest(
         props.componentName,

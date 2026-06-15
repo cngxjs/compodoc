@@ -21,5 +21,6 @@ export { PackageDependenciesPageGenerator } from './package-dependencies-page-ge
 export { PageWriter } from './page-writer';
 export { PipePageGenerator } from './pipe-page-generator';
 export { PlaygroundFileResolver } from './playground-file-resolver';
+export { PlaygroundVendorResolver } from './playground-vendor-resolver';
 export { RoutesPageGenerator } from './routes-page-generator';
 export { TokenPageGenerator } from './token-page-generator';

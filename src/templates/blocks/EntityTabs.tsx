@@ -2,7 +2,8 @@ import Html from '@kitajs/html';
 import type {
     ConsumerPackageJson,
     DepGraphResolver,
-    FileRefBundle
+    FileRefBundle,
+    VendorPackage
 } from '../../app/engines/stackblitz';
 import { EmptyState } from '../components/EmptyState';
 import { EmptyIconBook, EmptyIconFile } from '../components/EmptyStateIcons';
@@ -35,6 +36,7 @@ type EntityTabsProps = {
     readonly workspacePackage?: ConsumerPackageJson;
     readonly playgroundDependencies?: Record<string, string>;
     readonly playgroundMaterialShell?: boolean;
+    readonly playgroundVendorPackages?: Record<string, VendorPackage>;
 };
 
 /** Render the tab bar + tab panels for entity detail pages. */
@@ -171,6 +173,7 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                                     workspacePackage: props.workspacePackage,
                                     extraDependencies: props.playgroundDependencies,
                                     materialShell: props.playgroundMaterialShell,
+                                    vendorPackages: props.playgroundVendorPackages,
                                     fileBundles
                                 });
                             })()}
