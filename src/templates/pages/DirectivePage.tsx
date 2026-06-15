@@ -65,5 +65,8 @@ export const DirectivePage = (data: any): string =>
         playgroundResolver: data.playgroundResolver,
         workspacePackage: data.workspacePackage,
         playgroundDependencies: data.playgroundDependencies,
-        playgroundMaterialShell: data.playgroundMaterialShell
+        playgroundMaterialShell: data.playgroundMaterialShell,
+        playgroundDepDepth: data.playgroundDepDepth,
+        playgroundFileCountCap: data.playgroundFileCountCap,
+        playgroundFileCap: data.playgroundFileCap
     });

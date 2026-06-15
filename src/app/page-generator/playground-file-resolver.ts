@@ -67,7 +67,9 @@ export class PlaygroundFileResolver {
                         );
                         continue;
                     }
-                    const result = readFileRef(block.fileRef, hostFile, fsReader);
+                    const result = readFileRef(block.fileRef, hostFile, fsReader, {
+                        maxFiles: Configuration.mainData.playgroundFileCountCap
+                    });
                     if (!result.ok) {
                         logger.warn(
                             `Playground "${block.title ?? '<untitled>'}" on ${entity.name}: ${result.error}`

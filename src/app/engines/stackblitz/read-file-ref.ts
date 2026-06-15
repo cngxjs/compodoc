@@ -181,9 +181,15 @@ const readTsFileRef = (
         }
         collectedCount++;
         if (collectedCount > maxFiles) {
+            const walked = [...Object.keys(files), posix.basename(next)]
+                .map(p => posix.basename(p))
+                .join(', ');
             return {
                 ok: false,
-                error: `Playground file walk exceeded ${maxFiles} files`
+                error:
+                    `Playground file walk from ${posix.basename(entryPath)} exceeded the ` +
+                    `${maxFiles}-file cap (playgroundFileCountCap). Walked: ${walked}. ` +
+                    `Trim the example's imports or raise playgroundFileCountCap.`
             };
         }
         files[flatPath(next)] = rewriteRelativeImports(content);

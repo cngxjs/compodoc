@@ -35,6 +35,9 @@ type EntityTabsProps = {
     readonly workspacePackage?: ConsumerPackageJson;
     readonly playgroundDependencies?: Record<string, string>;
     readonly playgroundMaterialShell?: boolean;
+    readonly playgroundDepDepth?: number;
+    readonly playgroundFileCountCap?: number;
+    readonly playgroundFileCap?: number;
 };
 
 /** Render the tab bar + tab panels for entity detail pages. */
@@ -171,6 +174,9 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                                     workspacePackage: props.workspacePackage,
                                     extraDependencies: props.playgroundDependencies,
                                     materialShell: props.playgroundMaterialShell,
+                                    depth: props.playgroundDepDepth,
+                                    maxFiles: props.playgroundFileCountCap,
+                                    fileCap: props.playgroundFileCap,
                                     fileBundles
                                 });
                             })()}

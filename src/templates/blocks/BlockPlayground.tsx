@@ -35,6 +35,10 @@ export type BlockPlaygroundProps = {
      * body classes into `index.html` without adding `@angular/material`.
      */
     readonly materialShell?: boolean;
+    /** Config caps: `playgroundDepDepth` / `playgroundFileCountCap` / `playgroundFileCap`. */
+    readonly depth?: number;
+    readonly maxFiles?: number;
+    readonly fileCap?: number;
     /**
      * Pre-resolved file-ref bundle for `block.fileRef` blocks. Populated by
      * `application.ts:resolvePlaygroundFiles` and forwarded through
@@ -78,6 +82,15 @@ export function BlockPlayground(props: BlockPlaygroundProps): string {
     }
     if (props.materialShell) {
         options.materialShell = true;
+    }
+    if (typeof props.depth === 'number') {
+        options.depth = props.depth;
+    }
+    if (typeof props.maxFiles === 'number') {
+        options.maxFiles = props.maxFiles;
+    }
+    if (typeof props.fileCap === 'number') {
+        options.fileCap = props.fileCap;
     }
     const built = buildPlaygroundManifest(
         props.componentName,

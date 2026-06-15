@@ -18,6 +18,10 @@ export type PlaygroundContentProps = {
     readonly extraDependencies?: Record<string, string>;
     /** Config-file `playgroundMaterialShell` — forwarded to each block. */
     readonly materialShell?: boolean;
+    /** Config caps forwarded to each block. */
+    readonly depth?: number;
+    readonly maxFiles?: number;
+    readonly fileCap?: number;
     /**
      * Pre-resolved file-ref bundles, keyed by block index in
      * `props.playgrounds`. Populated by `application.ts:resolvePlaygroundFiles`
@@ -59,6 +63,9 @@ export function PlaygroundContent(props: PlaygroundContentProps): string {
                     workspacePackage: props.workspacePackage,
                     extraDependencies: props.extraDependencies,
                     materialShell: props.materialShell,
+                    depth: props.depth,
+                    maxFiles: props.maxFiles,
+                    fileCap: props.fileCap,
                     fileBundle: props.fileBundles?.[index]
                 })
             )}

@@ -27,4 +27,21 @@ describe('emitFileContent', () => {
         const mixed = 'line one\r\nline two\r\nline three';
         expect(emitFileContent(mixed)).to.equal('line one\nline two\nline three');
     });
+
+    it('honours a custom cap (playgroundFileCap)', () => {
+        const text = 'x'.repeat(100);
+        const out = emitFileContent(text, 20);
+        expect(out.length).to.equal(20 + STACKBLITZ_TRUNCATION_FOOTER.length);
+        expect(out.startsWith('x'.repeat(20))).to.be.true;
+    });
+
+    it('falls back to the default cap for a non-positive or non-finite cap', () => {
+        const long = 'a'.repeat(STACKBLITZ_FILE_CAP + 100);
+        expect(emitFileContent(long, 0).length).to.equal(
+            STACKBLITZ_FILE_CAP + STACKBLITZ_TRUNCATION_FOOTER.length
+        );
+        expect(emitFileContent(long, Number.NaN).length).to.equal(
+            STACKBLITZ_FILE_CAP + STACKBLITZ_TRUNCATION_FOOTER.length
+        );
+    });
 });

@@ -1,5 +1,10 @@
 import { COMPODOC_DEFAULTS } from '../utils/defaults';
 
+import {
+    STACKBLITZ_DEP_DEPTH,
+    STACKBLITZ_FILE_CAP,
+    STACKBLITZ_FILE_COUNT_CAP
+} from './engines/stackblitz/constants';
 import type { ConfigurationInterface } from './interfaces/configuration.interface';
 import type { CoverageData } from './interfaces/coverageData.interface';
 import type { MainDataInterface } from './interfaces/main-data.interface';
@@ -116,6 +121,9 @@ export class Configuration implements ConfigurationInterface {
         workspacePackage: {},
         playgroundDependencies: {},
         playgroundMaterialShell: false,
+        playgroundDepDepth: STACKBLITZ_DEP_DEPTH,
+        playgroundFileCountCap: STACKBLITZ_FILE_COUNT_CAP,
+        playgroundFileCap: STACKBLITZ_FILE_CAP,
         playgroundFiles: {},
         appConfig: [],
         categorizedComponents: {},

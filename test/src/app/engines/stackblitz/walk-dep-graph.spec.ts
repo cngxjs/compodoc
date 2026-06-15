@@ -54,13 +54,17 @@ describe('walkDepGraph', () => {
         }
     });
 
-    it('aborts with Result.err when the file-count cap is exceeded', () => {
+    it('aborts with Result.err naming the root, cap, and walked files', () => {
         const ten = Array.from({ length: 10 }, (_, i) => `Node${i}`);
         const nodes = [node('Root', ten), ...ten.map(n => node(n))];
         const result = walkDepGraph('Root', resolverFor(nodes), { maxFiles: 5 });
         expect(result.ok).to.be.false;
         if (!result.ok) {
-            expect(result.error).to.contain('5 files');
+            expect(result.error).to.contain('"Root"');
+            expect(result.error).to.contain('5-file cap');
+            expect(result.error).to.contain('playgroundFileCountCap');
+            // Lists the files walked before the cap was hit.
+            expect(result.error).to.contain('Walked:');
         }
     });
 

@@ -190,7 +190,9 @@ export class X {}
         if (result.ok) {
             return;
         }
-        expect(result.error).to.contain('2 files');
+        expect(result.error).to.contain('2-file cap');
+        expect(result.error).to.contain('playgroundFileCountCap');
+        expect(result.error).to.contain('Walked:');
     });
 
     it('rejects unsupported extensions', () => {
