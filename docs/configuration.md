@@ -245,6 +245,24 @@ The Material shell covers the common case (Roboto + Material-Icons). For anythin
 
 `playgroundHead` entries land inside `<head>` (after the Material shell links if those are emitted); `playgroundGlobalStyles` is appended verbatim after the default body reset in `src/styles.css`, so the reset still applies. Both are global (every playground in the build); per-block customization is available through a custom `block-playground` template override.
 
+#### Providers and routing: `@playgroundConfig`
+
+A playground that needs `provideRouter`, HTTP interceptors, or any application providers ships an `app.config.ts`. Annotate the documented component with a component-level `@playgroundConfig` JSDoc tag pointing at a relative `.ts` file:
+
+```ts
+/**
+ * @playgroundConfig ./playground/app.config.ts
+ *
+ * @playground Routed demo ./playground/router-demo.component.ts
+ */
+@Component({ selector: 'app-nav', /* … */ })
+export class NavComponent {}
+```
+
+The referenced file is shipped as the project's `src/app/app.config.ts` (its transitive relative imports are bundled too), and the generated `src/main.ts` wires `bootstrapApplication(AppComponent, appConfig)`. The file **must export `appConfig`**. One `@playgroundConfig` per component applies to all of that component's `@playground` blocks (inline and file-ref alike).
+
+This replaces the older, undocumented trick of adding `export { appConfig } from './app.config'` to the example component purely so the file got bundled — that still works for back-compat, but `@playgroundConfig` is the supported, explicit way.
+
 For the complete authoring guide (folder layout, library-author workflow, troubleshooting), see [the Playground guide on compodocx.dev](https://compodocx.dev/guides/playground/).
 
 ## Legacy `@stackblitz <url>` integration

@@ -254,6 +254,51 @@ export const extractJsdocPlaygroundBlocks = (
     return { blocks, warnings };
 };
 
+// A relative `.ts` path token — the only valid `@playgroundConfig` value.
+const PLAYGROUND_CONFIG_PATH = /^(\.\.?\/[^\s]+\.ts)$/;
+
+/**
+ * Parse a component-level `@playgroundConfig <path>` tag — the supported way to
+ * ship an `app.config.ts` (with `provideRouter`, interceptors, …) into the
+ * component's `@playground` projects and wire `bootstrapApplication(App,
+ * appConfig)`. Replaces the undocumented `export { appConfig } from
+ * './app.config'` re-export trick (which still works for back-compat).
+ *
+ * One per component (applies to every `@playground` block on it). The
+ * referenced file must be a relative `.ts` path and export `appConfig`. Extra
+ * tags after the first are ignored with a warning.
+ */
+export const extractJsdocPlaygroundConfig = (
+    jsdocTags: any[]
+): { configRef?: string; warnings: string[] } => {
+    const warnings: string[] = [];
+    if (!Array.isArray(jsdocTags)) {
+        return { warnings };
+    }
+    let configRef: string | undefined;
+    for (const jt of jsdocTags) {
+        if (jt?.tagName?.text !== 'playgroundConfig') {
+            continue;
+        }
+        const value = readTagComment(jt).trim();
+        const match = value.match(PLAYGROUND_CONFIG_PATH);
+        if (!match) {
+            warnings.push(
+                `@playgroundConfig dropped: expected a relative .ts path, got "${value || '<empty>'}"`
+            );
+            continue;
+        }
+        if (configRef !== undefined) {
+            warnings.push(
+                `@playgroundConfig "${match[1]}" ignored: only one is allowed per component`
+            );
+            continue;
+        }
+        configRef = match[1];
+    }
+    return { configRef, warnings };
+};
+
 /** Get the comment from the first @returns/@return tag. */
 export const jsdocReturnsComment = (jsdocTags: any[]): string => {
     for (const jt of jsdocTags) {
