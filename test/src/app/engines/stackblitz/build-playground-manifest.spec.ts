@@ -559,6 +559,66 @@ describe('buildPlaygroundManifest', () => {
         expect(result.value.dependencies['@my-org/themes']).to.equal('*');
     });
 
+    describe('non-registry dependency sources (P0a)', () => {
+        // `playgroundDependencies` (→ extraDependencies) and the consumer-pkg
+        // auto-forward path both thread version SPECIFIERS through verbatim:
+        // no semver coercion, no `latest`-pinning. So anything npm understands
+        // as a dependency value works — exact prereleases, dist-tags, tarball
+        // URLs, and git refs — letting a playground pin an unpublished build
+        // without waiting for a registry release.
+        const NON_REGISTRY_SOURCES: Record<string, string> = {
+            '@my-org/exact-prerelease': '0.1.0-rc.2',
+            '@my-org/dist-tag': 'next',
+            '@my-org/tarball': 'https://example.com/pkg/my-org-ui-1.2.3.tgz',
+            '@my-org/git-ref': 'git+https://github.com/my-org/ui.git#feature/tabs'
+        };
+
+        it('threads every non-registry source through extraDependencies unchanged', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                {
+                    dependencies: { '@angular/core': '^21.0.0' }
+                },
+                { extraDependencies: NON_REGISTRY_SOURCES }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const pkg = JSON.parse(result.value.files['package.json']);
+            for (const [name, spec] of Object.entries(NON_REGISTRY_SOURCES)) {
+                expect(result.value.dependencies[name]).to.equal(spec);
+                // Must survive JSON serialisation into the emitted package.json.
+                expect(pkg.dependencies[name]).to.equal(spec);
+            }
+        });
+
+        it('forwards a non-registry source declared in the consumer package.json verbatim', () => {
+            const node: DepGraphNode = {
+                ...rootNode,
+                sourceCode:
+                    "import { CngxButton } from '@my-org/ui-kit';\nexport class MyButton {}\n",
+                imports: []
+            };
+            const pkg = {
+                dependencies: {
+                    '@angular/core': '^21.0.0',
+                    '@my-org/ui-kit': 'git+https://github.com/my-org/ui.git#next'
+                }
+            };
+            const result = buildPlaygroundManifest('MyButton', block, resolverFor([node]), pkg);
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            expect(result.value.dependencies['@my-org/ui-kit']).to.equal(
+                'git+https://github.com/my-org/ui.git#next'
+            );
+        });
+    });
+
     it('emits POSIX paths only — never backslashes (F2)', () => {
         const winPath: DepGraphNode = {
             ...rootNode,
