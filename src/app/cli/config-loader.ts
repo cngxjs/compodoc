@@ -237,6 +237,10 @@ export function applyConfigToMainData(
         mainData.playgroundDependencies = configFile.playgroundDependencies;
     }
 
+    if (typeof configFile.playgroundMaterialShell === 'boolean') {
+        mainData.playgroundMaterialShell = configFile.playgroundMaterialShell;
+    }
+
     if (configFile.includes) {
         mainData.includes = configFile.includes;
     }

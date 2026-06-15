@@ -2,7 +2,11 @@ import { posix } from 'node:path';
 import type { ComponentPlaygroundBlock } from '../../../templates/helpers/jsdoc';
 import { STACKBLITZ_TEMPLATE } from './constants';
 import { emitFileContent } from './format-files';
-import { detectMaterialImports, type MaterialImport } from './material-imports';
+import {
+    detectMaterialImports,
+    type MaterialImport,
+    usesMaterialThemeBridge
+} from './material-imports';
 import type { FileRefBundle } from './read-file-ref';
 import {
     type DepGraphNode,
@@ -61,6 +65,15 @@ export interface BuildOptions extends WalkOptions {
      * or to pin a specific version per playground.
      */
     extraDependencies?: Record<string, string>;
+    /**
+     * Force the Material "app shell" (Roboto and Material-Icons font links in
+     * `<head>` and the `mat-typography mat-app-background` body classes) into
+     * the generated `index.html`, independent of Material auto-detect. Set
+     * from the `playgroundMaterialShell` config flag. Does NOT add
+     * `@angular/material` / `@angular/cdk` deps or Material module imports -
+     * that wiring stays gated behind the real `<mat-*>` auto-detect.
+     */
+    materialShell?: boolean;
 }
 
 export type BuildResult = { ok: true; value: PlaygroundManifest } | { ok: false; error: string };
@@ -337,19 +350,29 @@ const buildTsconfigAppJson = (): string =>
         2
     )}\n`;
 
-const buildIndexHtml = (hasMaterial: boolean): string => {
-    const headExtras = hasMaterial
-        ? [
-              '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
-              '  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">',
-              '  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">'
-          ]
-        : [];
-    // `mat-typography` and `mat-app-background` are the global hooks the
-    // prebuilt M3 themes target. Without them, Material widgets render
-    // unstyled — even with the theme CSS loaded — because the theme rules
-    // are scoped under those class selectors.
-    const bodyClass = hasMaterial ? ' class="mat-typography mat-app-background"' : '';
+// Material "app shell": Roboto + Material-Icons font `<link>`s for `<head>`,
+// mirroring exactly what Angular Material's `ng add` schematic writes. The
+// shell is intentionally DECOUPLED from Material module wiring - it can be
+// emitted for a non-Material library that is merely themed to look like
+// Material (see `usesMaterialThemeBridge` / the `materialShell` option).
+const MATERIAL_SHELL_HEAD_LINKS = [
+    '  <link rel="preconnect" href="https://fonts.googleapis.com">',
+    '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
+    '  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">',
+    '  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">'
+];
+
+// `mat-typography` and `mat-app-background` are the global hooks the prebuilt
+// M3 themes (and Material theme bridges) target. Without them, Material-styled
+// widgets render unstyled - even with the theme CSS loaded - because the theme
+// rules are scoped under those class selectors.
+const MATERIAL_SHELL_BODY_CLASS = 'mat-typography mat-app-background';
+
+const buildIndexHtml = (includeShell: boolean): string => {
+    // Built once from a single boolean, so the shell can never be emitted
+    // twice even when both the auto-detect and the heuristic/flag fire.
+    const headExtras = includeShell ? MATERIAL_SHELL_HEAD_LINKS : [];
+    const bodyClass = includeShell ? ` class="${MATERIAL_SHELL_BODY_CLASS}"` : '';
     return [
         '<!doctype html>',
         '<html lang="en">',
@@ -568,6 +591,20 @@ export function buildPlaygroundManifest(
         }
     }
 
+    // Material SHELL (font links + body classes) is decoupled from Material
+    // MODULE wiring. Emit the shell when ANY of: the real `<mat-*>` auto-detect
+    // fired; the `playgroundMaterialShell` config flag forced it; or a bundled
+    // file `@use`s a Material theme bridge (a non-Material lib themed to look
+    // like Material). Deps / module imports / the prebuilt theme stay gated on
+    // `hasMaterial` alone - the heuristic/flag never pull `@angular/material`.
+    const shellFromHeuristic =
+        usesMaterialThemeBridge(effectiveBlock.snippet ?? '') ||
+        walk.value.some(node => usesMaterialThemeBridge(node.sourceCode)) ||
+        (fileBundle
+            ? Object.values(fileBundle.files).some(content => usesMaterialThemeBridge(content))
+            : false);
+    const emitMaterialShell = hasMaterial || options.materialShell === true || shellFromHeuristic;
+
     // Auto-forward consumer-declared third-party packages referenced in the
     // inlined source, the snippet itself, and any fileBundle bare-specifier
     // discovered by read-file-ref's BFS walk. The consumer's `package.json`
@@ -612,7 +649,7 @@ export function buildPlaygroundManifest(
     files['angular.json'] = emitFileContent(buildAngularJson(hasMaterial));
     files['tsconfig.json'] = emitFileContent(buildTsconfigJson());
     files['tsconfig.app.json'] = emitFileContent(buildTsconfigAppJson());
-    files['src/index.html'] = emitFileContent(buildIndexHtml(hasMaterial));
+    files['src/index.html'] = emitFileContent(buildIndexHtml(emitMaterialShell));
     files['src/styles.css'] = emitFileContent(buildStylesCss());
     files['src/main.ts'] = emitFileContent(buildMainTs());
     files['src/app/app.config.ts'] = emitFileContent(buildAppConfigTs());

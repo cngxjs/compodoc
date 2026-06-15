@@ -110,3 +110,21 @@ export function detectMaterialImports(snippet: string): MaterialImport[] {
 
     return Array.from(found.values()).sort((a, b) => a.module.localeCompare(b.module));
 }
+
+// Sass `@use` of a Material theme bridge - e.g.
+// `@use '@cngx/themes/material/azure-theme';`. A non-Material component
+// library themed to LOOK like Material pulls in Roboto / Material-Icons fonts
+// and the M3 body background via such a bridge, but renders no `<mat-*>`
+// element, so the element/directive auto-detect never fires. Matching this
+// opts the playground into the Material SHELL (font links and body classes)
+// WITHOUT the Material MODULE wiring (deps + AppComponent imports).
+const MATERIAL_THEME_BRIDGE_RE = /@use\s+['"][^'"]*material[^'"]*theme/i;
+
+/**
+ * True when `source` contains a Sass `@use` of a Material theme bridge.
+ * Pure - no I/O. Scan any bundled file (component `.scss`, snippet, walked
+ * source) and OR the results to decide whether to emit the Material shell.
+ */
+export function usesMaterialThemeBridge(source: string): boolean {
+    return typeof source === 'string' && MATERIAL_THEME_BRIDGE_RE.test(source);
+}

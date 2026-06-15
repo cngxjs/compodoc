@@ -1,6 +1,7 @@
 import Html from '@kitajs/html';
 import { renderCustomTemplate } from '../../app/engines/custom-template.engine';
 import {
+    type BuildOptions,
     buildPlaygroundManifest,
     type ConsumerPackageJson,
     type DepGraphNode,
@@ -29,6 +30,11 @@ export type BlockPlaygroundProps = {
     readonly workspacePackage?: ConsumerPackageJson;
     /** Config-file `playgroundDependencies` — wins over consumer-pkg auto-forward. */
     readonly extraDependencies?: Record<string, string>;
+    /**
+     * Config-file `playgroundMaterialShell` - forces the Material font links and
+     * body classes into `index.html` without adding `@angular/material`.
+     */
+    readonly materialShell?: boolean;
     /**
      * Pre-resolved file-ref bundle for `block.fileRef` blocks. Populated by
      * `application.ts:resolvePlaygroundFiles` and forwarded through
@@ -66,12 +72,19 @@ export function BlockPlayground(props: BlockPlaygroundProps): string {
     const resolve =
         props.resolve ??
         buildFallbackResolver(props.componentName, props.componentFile, props.componentSourceCode);
+    const options: BuildOptions = {};
+    if (props.extraDependencies) {
+        options.extraDependencies = props.extraDependencies;
+    }
+    if (props.materialShell) {
+        options.materialShell = true;
+    }
     const built = buildPlaygroundManifest(
         props.componentName,
         props.block,
         resolve,
         props.workspacePackage,
-        props.extraDependencies ? { extraDependencies: props.extraDependencies } : undefined,
+        Object.keys(options).length > 0 ? options : undefined,
         props.fileBundle
     );
 

@@ -292,6 +292,107 @@ describe('buildPlaygroundManifest', () => {
         expect(indexHtml).to.contain('<body class="mat-typography mat-app-background">');
     });
 
+    describe('Material shell (decoupled from module wiring)', () => {
+        const scssBundle = (scss: string) => ({
+            entry: '/repo/src/app/my-button/my-button.component.ts',
+            files: { 'src/app/my-button.component.scss': scss },
+            bareSpecifiers: new Set<string>(),
+            replacesAppComponent: false
+        });
+
+        it('emits the shell when a bundled file @use-s a Material theme bridge, without pulling @angular/material', () => {
+            // `block` is plain `<my-button .../>` — no `<mat-*>`, so the
+            // element/directive auto-detect never fires. The heuristic does.
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                {},
+                scssBundle("@use '@cngx/themes/material/azure-theme';\n:host { display: block; }\n")
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const indexHtml = result.value.files['src/index.html'];
+            expect(indexHtml).to.contain(
+                '<link rel="preconnect" href="https://fonts.googleapis.com">'
+            );
+            expect(indexHtml).to.contain('https://fonts.googleapis.com/css2?family=Roboto');
+            expect(indexHtml).to.contain('Material+Icons');
+            expect(indexHtml).to.contain('<body class="mat-typography mat-app-background">');
+            // Shell only — NOT the Material module wiring.
+            expect(result.value.dependencies).not.to.have.property('@angular/material');
+            expect(result.value.dependencies).not.to.have.property('@angular/cdk');
+            const ng = JSON.parse(result.value.files['angular.json']);
+            const styles = ng.projects['compodocx-playground'].architect.build.options.styles;
+            expect(styles).not.to.contain('@angular/material/prebuilt-themes/azure-blue.css');
+        });
+
+        it('forces the shell on a plain non-Material playground when materialShell is set', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                { materialShell: true }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const indexHtml = result.value.files['src/index.html'];
+            expect(indexHtml).to.contain('css2?family=Roboto');
+            expect(indexHtml).to.contain('<body class="mat-typography mat-app-background">');
+            expect(result.value.dependencies).not.to.have.property('@angular/material');
+            expect(result.value.dependencies).not.to.have.property('@angular/cdk');
+        });
+
+        it('leaves index.html bare for a plain non-Material playground (no heuristic, no flag)', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                {},
+                scssBundle(':host { color: rebeccapurple; }\n')
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const indexHtml = result.value.files['src/index.html'];
+            expect(indexHtml).not.to.contain('mat-typography');
+            expect(indexHtml).not.to.contain('Roboto');
+            expect(result.value.dependencies).not.to.have.property('@angular/material');
+        });
+
+        it('never emits the shell twice when both <mat-*> auto-detect and the theme-bridge heuristic match', () => {
+            const matBlock: ComponentPlaygroundBlock = {
+                ...block,
+                snippet: '<mat-card>Hi</mat-card>'
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                matBlock,
+                resolverFor([rootNode]),
+                consumerPkg,
+                { materialShell: true },
+                scssBundle("@use './material/brand-theme';\n")
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const indexHtml = result.value.files['src/index.html'];
+            expect(indexHtml.split('css2?family=Roboto').length - 1).to.equal(1);
+            expect(indexHtml.split('mat-typography mat-app-background').length - 1).to.equal(1);
+            // Real auto-detect fired → module wiring IS present.
+            expect(result.value.dependencies).to.have.property('@angular/material');
+        });
+    });
+
     it('preserves the snippet language inside the demo component template', () => {
         const tsBlock: ComponentPlaygroundBlock = {
             ...block,

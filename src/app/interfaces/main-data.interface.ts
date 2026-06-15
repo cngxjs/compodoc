@@ -147,6 +147,14 @@ export interface MainDataInterface {
      */
     playgroundDependencies: Record<string, string>;
     /**
+     * Force the Material "app shell" (Roboto + Material-Icons font links and
+     * `mat-typography mat-app-background` body classes) into every generated
+     * `@playground` `index.html`, independent of Material auto-detect. Lets a
+     * playground themed to look like Material via a Sass theme bridge get the
+     * shell without pulling `@angular/material`. No CLI flag — config-only.
+     */
+    playgroundMaterialShell: boolean;
+    /**
      * Resolved file-ref bundles per playground block. Key format:
      * `${componentName}:${blockIndex}`. Populated in `application.ts` after
      * the dep-graph build by walking every component/directive/etc with at

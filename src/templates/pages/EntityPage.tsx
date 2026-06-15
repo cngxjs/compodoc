@@ -180,6 +180,7 @@ export type EntityInfoProps = {
     readonly playgroundResolver?: DepGraphResolver;
     readonly workspacePackage?: ConsumerPackageJson;
     readonly playgroundDependencies?: Record<string, string>;
+    readonly playgroundMaterialShell?: boolean;
 };
 
 const hasMembers = (e: any): boolean =>
@@ -675,7 +676,8 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 playgroundFiles: props.playgroundFiles,
                 playgroundResolver: props.playgroundResolver,
                 workspacePackage: props.workspacePackage,
-                playgroundDependencies: props.playgroundDependencies
+                playgroundDependencies: props.playgroundDependencies,
+                playgroundMaterialShell: props.playgroundMaterialShell
             })}
         </>
     ) as string;
