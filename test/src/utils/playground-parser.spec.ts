@@ -1,7 +1,15 @@
-import { extractJsdocPlaygroundBlocks } from '../../../src/templates/helpers/jsdoc';
+import {
+    extractJsdocPlaygroundBlocks,
+    extractJsdocPlaygroundConfig
+} from '../../../src/templates/helpers/jsdoc';
 
 const playgroundTag = (comment: string) => ({
     tagName: { text: 'playground' },
+    comment
+});
+
+const configTag = (comment: string) => ({
+    tagName: { text: 'playgroundConfig' },
     comment
 });
 
@@ -174,5 +182,46 @@ describe('extractJsdocPlaygroundBlocks', () => {
             // Title is at line 2, file-ref blocks point at the title line itself.
             expect(blocks[0].line).to.equal(2);
         });
+    });
+});
+
+describe('extractJsdocPlaygroundConfig', () => {
+    it('extracts a relative .ts config path', () => {
+        const { configRef, warnings } = extractJsdocPlaygroundConfig([
+            configTag('./playground/app.config.ts')
+        ]);
+        expect(warnings).to.deep.equal([]);
+        expect(configRef).to.equal('./playground/app.config.ts');
+    });
+
+    it('returns undefined when no @playgroundConfig tag is present', () => {
+        const { configRef } = extractJsdocPlaygroundConfig([playgroundTag('Default')]);
+        expect(configRef).to.be.undefined;
+    });
+
+    it('rejects a non-.ts path with a warning', () => {
+        const { configRef, warnings } = extractJsdocPlaygroundConfig([
+            configTag('./app.config.html')
+        ]);
+        expect(configRef).to.be.undefined;
+        expect(warnings).to.have.length(1);
+        expect(warnings[0]).to.contain('relative .ts path');
+    });
+
+    it('rejects a bare-specifier (non-relative) path', () => {
+        const { configRef, warnings } = extractJsdocPlaygroundConfig([
+            configTag('@my-org/app.config.ts')
+        ]);
+        expect(configRef).to.be.undefined;
+        expect(warnings).to.have.length(1);
+    });
+
+    it('keeps the first and warns on additional @playgroundConfig tags', () => {
+        const { configRef, warnings } = extractJsdocPlaygroundConfig([
+            configTag('./a.config.ts'),
+            configTag('./b.config.ts')
+        ]);
+        expect(configRef).to.equal('./a.config.ts');
+        expect(warnings.some(w => w.includes('only one is allowed'))).to.be.true;
     });
 });

@@ -211,6 +211,8 @@ In the flag and heuristic cases, **only** the shell is injected - `@angular/mate
 | disablePlaygroundTab | `--disablePlaygroundTab` | boolean | `false` | Hide the per-component Playground tab even when `@playground` blocks are parsed. Independent of `--disableDependenciesTab`. No effect on components without `@playground` blocks (the tab is already absent). |
 | playgroundDependencies | -- (config-only) | object | `{}` | Extra packages to inject into every StackBlitz manifest's `dependencies`, with the version YOU specify. Wins over the consumer-`package.json` auto-forward AND any auto-detected version (e.g. Material). Use for libraries the consumer ships but doesn't `npm install` directly (peer-only CSS themes), or to pin a per-build version. |
 | playgroundMaterialShell | -- (config-only) | boolean | `false` | Force the Material app shell (Roboto + Material-Icons font links and the `mat-typography mat-app-background` body classes) into every `@playground` `index.html`, independent of Material auto-detect. For libraries themed to look like Material via a Sass theme bridge. Does **not** add `@angular/material`/`@angular/cdk` or Material module imports. See [Material app shell](#material-app-shell-fonts--body-classes). |
+| playgroundHead | -- (config-only) | string[] | `[]` | Arbitrary `<head>` entries injected into every `@playground` `index.html` (after the Material shell links, when present). For custom fonts, meta tags, CSP, or preloads. Each entry is emitted verbatim; blank entries are dropped. See [Custom `<head>` and global styles](#custom-head-and-global-styles). |
+| playgroundGlobalStyles | -- (config-only) | string | `''` | Global CSS appended to every `@playground` `src/styles.css`, after the default body reset. For fonts, resets, or any global rules the examples depend on. |
 
 ```jsonc
 // compodocx.config.json
@@ -224,6 +226,42 @@ In the flag and heuristic cases, **only** the shell is injected - `@angular/mate
     }
 }
 ```
+
+#### Custom `<head>` and global styles
+
+The Material shell covers the common case (Roboto + Material-Icons). For anything else a playground needs in the page shell, `playgroundHead` and `playgroundGlobalStyles` let you contribute to the generated `index.html` `<head>` and `src/styles.css` directly — these extend the **same** shell writer the Material option uses, so they compose with it rather than replacing the scaffold.
+
+```jsonc
+// compodocx.config.json
+{
+    "playgroundHead": [
+        "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">",
+        "<link href=\"https://fonts.googleapis.com/css2?family=Inter&display=swap\" rel=\"stylesheet\">",
+        "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'self'\">"
+    ],
+    "playgroundGlobalStyles": ":root { --brand: #0066ff; }\nbody { font-family: Inter, sans-serif; }"
+}
+```
+
+`playgroundHead` entries land inside `<head>` (after the Material shell links if those are emitted); `playgroundGlobalStyles` is appended verbatim after the default body reset in `src/styles.css`, so the reset still applies. Both are global (every playground in the build); per-block customization is available through a custom `block-playground` template override.
+
+#### Providers and routing: `@playgroundConfig`
+
+A playground that needs `provideRouter`, HTTP interceptors, or any application providers ships an `app.config.ts`. Annotate the documented component with a component-level `@playgroundConfig` JSDoc tag pointing at a relative `.ts` file:
+
+```ts
+/**
+ * @playgroundConfig ./playground/app.config.ts
+ *
+ * @playground Routed demo ./playground/router-demo.component.ts
+ */
+@Component({ selector: 'app-nav', /* … */ })
+export class NavComponent {}
+```
+
+The referenced file is shipped as the project's `src/app/app.config.ts` (its transitive relative imports are bundled too), and the generated `src/main.ts` wires `bootstrapApplication(AppComponent, appConfig)`. The file **must export `appConfig`**. One `@playgroundConfig` per component applies to all of that component's `@playground` blocks (inline and file-ref alike).
+
+This replaces the older, undocumented trick of adding `export { appConfig } from './app.config'` to the example component purely so the file got bundled — that still works for back-compat, but `@playgroundConfig` is the supported, explicit way.
 
 For the complete authoring guide (folder layout, library-author workflow, troubleshooting), see [the Playground guide on compodocx.dev](https://compodocx.dev/guides/playground/).
 

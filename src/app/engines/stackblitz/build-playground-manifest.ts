@@ -74,6 +74,19 @@ export interface BuildOptions extends WalkOptions {
      * that wiring stays gated behind the real `<mat-*>` auto-detect.
      */
     materialShell?: boolean;
+    /**
+     * Arbitrary `<head>` entries appended to the generated `index.html` (after
+     * the Material shell links, when present). From the `playgroundHead` config
+     * — for fonts, meta tags, CSP, preloads. Emitted verbatim; blank entries
+     * are dropped.
+     */
+    head?: string[];
+    /**
+     * Global CSS appended verbatim to the generated `src/styles.css`, after the
+     * default body reset. From the `playgroundGlobalStyles` config — for fonts,
+     * resets, or any global rules the example depends on.
+     */
+    globalStyles?: string;
 }
 
 export type BuildResult = { ok: true; value: PlaygroundManifest } | { ok: false; error: string };
@@ -368,10 +381,21 @@ const MATERIAL_SHELL_HEAD_LINKS = [
 // rules are scoped under those class selectors.
 const MATERIAL_SHELL_BODY_CLASS = 'mat-typography mat-app-background';
 
-const buildIndexHtml = (includeShell: boolean): string => {
+/**
+ * Single `index.html` writer for every playground. `includeShell` adds the
+ * Material font links + body classes; `extraHead` appends arbitrary author
+ * `<head>` entries (`playgroundHead`) AFTER the shell links — fonts, meta,
+ * CSP, preloads. Each entry is indented to match the surrounding markup but
+ * otherwise emitted verbatim. Keeping this the ONE index.html path means the
+ * shell and custom-head contributions never fork into competing writers.
+ */
+const buildIndexHtml = (includeShell: boolean, extraHead: string[] = []): string => {
     // Built once from a single boolean, so the shell can never be emitted
     // twice even when both the auto-detect and the heuristic/flag fire.
-    const headExtras = includeShell ? MATERIAL_SHELL_HEAD_LINKS : [];
+    const shellHead = includeShell ? MATERIAL_SHELL_HEAD_LINKS : [];
+    const customHead = extraHead
+        .filter(line => typeof line === 'string' && line.trim().length > 0)
+        .map(line => (line.startsWith('  ') ? line : `  ${line.trim()}`));
     const bodyClass = includeShell ? ` class="${MATERIAL_SHELL_BODY_CLASS}"` : '';
     return [
         '<!doctype html>',
@@ -381,7 +405,8 @@ const buildIndexHtml = (includeShell: boolean): string => {
         '  <title>compodocx playground</title>',
         '  <base href="/">',
         '  <meta name="viewport" content="width=device-width, initial-scale=1">',
-        ...headExtras,
+        ...shellHead,
+        ...customHead,
         '</head>',
         `<body${bodyClass}>`,
         '  <app-root></app-root>',
@@ -391,8 +416,13 @@ const buildIndexHtml = (includeShell: boolean): string => {
     ].join('\n');
 };
 
-const buildStylesCss = (): string =>
-    [
+/**
+ * Single `src/styles.css` writer. `extraStyles` (`playgroundGlobalStyles`) is
+ * appended verbatim after the default body reset, so an author can ship global
+ * CSS the example needs without overriding the whole stylesheet.
+ */
+const buildStylesCss = (extraStyles = ''): string => {
+    const base = [
         'body {',
         '  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;',
         '  margin: 0;',
@@ -400,7 +430,13 @@ const buildStylesCss = (): string =>
         '  color: #1c1c1c;',
         '}',
         ''
-    ].join('\n');
+    ];
+    const trimmed = typeof extraStyles === 'string' ? extraStyles.trim() : '';
+    if (trimmed.length > 0) {
+        base.push(trimmed, '');
+    }
+    return base.join('\n');
+};
 
 const buildMainTs = (): string =>
     [
@@ -649,8 +685,8 @@ export function buildPlaygroundManifest(
     files['angular.json'] = emitFileContent(buildAngularJson(hasMaterial));
     files['tsconfig.json'] = emitFileContent(buildTsconfigJson());
     files['tsconfig.app.json'] = emitFileContent(buildTsconfigAppJson());
-    files['src/index.html'] = emitFileContent(buildIndexHtml(emitMaterialShell));
-    files['src/styles.css'] = emitFileContent(buildStylesCss());
+    files['src/index.html'] = emitFileContent(buildIndexHtml(emitMaterialShell, options.head));
+    files['src/styles.css'] = emitFileContent(buildStylesCss(options.globalStyles));
     files['src/main.ts'] = emitFileContent(buildMainTs());
     files['src/app/app.config.ts'] = emitFileContent(buildAppConfigTs());
 

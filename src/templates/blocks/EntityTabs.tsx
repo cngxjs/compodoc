@@ -35,6 +35,8 @@ type EntityTabsProps = {
     readonly workspacePackage?: ConsumerPackageJson;
     readonly playgroundDependencies?: Record<string, string>;
     readonly playgroundMaterialShell?: boolean;
+    readonly playgroundHead?: string[];
+    readonly playgroundGlobalStyles?: string;
 };
 
 /** Render the tab bar + tab panels for entity detail pages. */
@@ -171,6 +173,8 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                                     workspacePackage: props.workspacePackage,
                                     extraDependencies: props.playgroundDependencies,
                                     materialShell: props.playgroundMaterialShell,
+                                    head: props.playgroundHead,
+                                    globalStyles: props.playgroundGlobalStyles,
                                     fileBundles
                                 });
                             })()}
