@@ -194,6 +194,8 @@ Three authoring modes, dispatched by the trailing token on the tag line:
 
 All three modes share the same scaffold (Angular CLI 21 standalone project, WebContainer template). Material widgets are auto-detected: when the demo references known Material selectors or attribute directives, `@angular/material` and `@angular/cdk` are force-pinned and the prebuilt theme is wired up automatically. Bare-specifier imports in any walked source are auto-forwarded with the version your `package.json` declares.
 
+In TS-component mode, `templateUrl` / `styleUrl` / `styleUrls` are resolved from a **string or a plain template literal** (`templateUrl: \`./x.component.html\``). A value the resolver can't statically resolve — an interpolated literal (`` `./x.${variant}.html` ``) or a computed identifier (`styleUrls: STYLES`) — **fails that playground with a clear error** naming the decorator, rather than silently shipping it without its template/styles. Use a literal path, or inline the `template` / `styles` in the demo component.
+
 ### Material app shell (fonts + body classes)
 
 The Roboto / Material-Icons font `<link>`s and the `mat-typography mat-app-background` body classes (the "Material app shell", matching Angular Material's `ng add`) are normally emitted only when the Material auto-detect fires. That misses libraries that are merely *themed to look like* Material via a Sass theme bridge - their templates contain no `<mat-*>` element, so without the shell Roboto never loads and the app background is missing.

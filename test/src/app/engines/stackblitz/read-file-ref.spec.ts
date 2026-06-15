@@ -205,6 +205,71 @@ export class X {}
         expect(result.error).to.contain('.html or .ts');
     });
 
+    it('supports a plain template-literal templateUrl/styleUrl (no interpolation)', () => {
+        const ENTRY = '/repo/src/app/x.component.ts';
+        const fs = fsFor({
+            [ENTRY]: [
+                "import { Component } from '@angular/core';",
+                '@Component({',
+                '    templateUrl: `./x.component.html`,',
+                '    styleUrls: [`./x.component.css`]',
+                '})',
+                'export class X {}'
+            ].join('\n'),
+            '/repo/src/app/x.component.html': '<p>hi</p>',
+            '/repo/src/app/x.component.css': 'p { color: red; }'
+        });
+        const result = readFileRef('./x.component.ts', '/repo/src/app/host.ts', fs);
+        expect(result.ok).to.be.true;
+        if (!result.ok) {
+            return;
+        }
+        expect(result.value.files['src/app/x.component.html']).to.equal('<p>hi</p>');
+        expect(result.value.files['src/app/x.component.css']).to.equal('p { color: red; }');
+    });
+
+    it('reports an interpolated templateUrl instead of silently dropping it', () => {
+        const ENTRY = '/repo/src/app/x.component.ts';
+        const fs = fsFor({
+            [ENTRY]: [
+                "import { Component } from '@angular/core';",
+                'const variant = "dark";',
+                '@Component({',
+                '    templateUrl: `./x.${variant}.component.html`',
+                '})',
+                'export class X {}'
+            ].join('\n')
+        });
+        const result = readFileRef('./x.component.ts', '/repo/src/app/host.ts', fs);
+        expect(result.ok).to.be.false;
+        if (result.ok) {
+            return;
+        }
+        expect(result.error).to.contain('templateUrl');
+        expect(result.error).to.contain('non-literal');
+    });
+
+    it('reports a computed (identifier) styleUrls instead of silently dropping it', () => {
+        const ENTRY = '/repo/src/app/x.component.ts';
+        const fs = fsFor({
+            [ENTRY]: [
+                "import { Component } from '@angular/core';",
+                'const STYLES = ["./x.css"];',
+                '@Component({',
+                '    styleUrls: STYLES',
+                '})',
+                'export class X {}'
+            ].join('\n')
+        });
+        const result = readFileRef('./x.component.ts', '/repo/src/app/host.ts', fs);
+        expect(result.ok).to.be.false;
+        if (result.ok) {
+            return;
+        }
+        expect(result.error).to.contain('styleUrls');
+        expect(result.error).to.contain('non-literal');
+    });
+
     it('appends an AppComponent alias when the entry class has a different name', () => {
         const ENTRY = '/repo/src/app/x/sample.component.ts';
         const SRC = `

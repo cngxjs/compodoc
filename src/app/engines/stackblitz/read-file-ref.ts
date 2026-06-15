@@ -48,10 +48,20 @@ export type FileRefResult = { ok: true; value: FileRefBundle } | { ok: false; er
 const APP_COMPONENT_PATH = 'src/app/app.component.ts';
 const APP_DIR = 'src/app';
 
-const TEMPLATE_URL_RE = /templateUrl\s*:\s*['"]([^'"]+)['"]/;
-const STYLE_URL_RE = /styleUrl\s*:\s*['"]([^'"]+)['"]/;
+// Decorator-url extractors. The quote class includes the backtick so a plain
+// template literal (`templateUrl: \`./x.html\``) is supported like a string
+// literal. Interpolated (`${…}`) or computed values are caught separately and
+// reported, never silently dropped (see the `*_PRESENT` guards below).
+const TEMPLATE_URL_RE = /templateUrl\s*:\s*['"`]([^'"`]+)['"`]/;
+const STYLE_URL_RE = /styleUrl\s*:\s*['"`]([^'"`]+)['"`]/;
 const STYLE_URLS_RE = /styleUrls\s*:\s*\[([^\]]+)\]/;
-const STYLE_URLS_ITEM_RE = /['"]([^'"]+)['"]/g;
+const STYLE_URLS_ITEM_RE = /['"`]([^'"`]+)['"`]/g;
+// "Key is present" detectors — used to turn a key whose value our extractor
+// can't parse (computed identifier, interpolated literal) into a clear error
+// instead of a silently-missing sibling.
+const TEMPLATE_URL_PRESENT = /\btemplateUrl\s*:/;
+const STYLE_URL_PRESENT = /\bstyleUrl\s*:/;
+const STYLE_URLS_PRESENT = /\bstyleUrls\s*:/;
 // Matches both `from '...'` (named/namespace imports + re-exports) and
 // side-effect `import '...'`. The `from` form covers `import { X } from '..'`,
 // `import X from '..'`, `import * as N from '..'`, and `export ... from '..'`;
@@ -123,7 +133,10 @@ const readTsFileRef = (
     const bareSpecifiers = new Set<string>();
     const entryDir = posix.dirname(entryPath);
 
-    // Decorator siblings — templateUrl / styleUrl / styleUrls.
+    // Decorator siblings — templateUrl / styleUrl / styleUrls. Each is parsed
+    // from a string OR plain template literal; a key that is present but whose
+    // value our extractor can't resolve (computed identifier or interpolated
+    // literal) is reported, never silently skipped into a broken playground.
     const tplMatch = entryContent.match(TEMPLATE_URL_RE);
     if (tplMatch) {
         const sibling = readSibling(entryDir, tplMatch[1], 'templateUrl', fs);
@@ -131,7 +144,10 @@ const readTsFileRef = (
             return sibling;
         }
         files[flatPath(sibling.value.path)] = sibling.value.content;
+    } else if (TEMPLATE_URL_PRESENT.test(entryContent)) {
+        return { ok: false, error: unparseableUrlError('templateUrl') };
     }
+
     const styleUrlMatch = entryContent.match(STYLE_URL_RE);
     if (styleUrlMatch) {
         const sibling = readSibling(entryDir, styleUrlMatch[1], 'styleUrl', fs);
@@ -139,18 +155,29 @@ const readTsFileRef = (
             return sibling;
         }
         files[flatPath(sibling.value.path)] = sibling.value.content;
+    } else if (STYLE_URL_PRESENT.test(entryContent)) {
+        return { ok: false, error: unparseableUrlError('styleUrl') };
     }
+
     const styleUrlsMatch = entryContent.match(STYLE_URLS_RE);
     if (styleUrlsMatch) {
         STYLE_URLS_ITEM_RE.lastIndex = 0;
         let m: RegExpExecArray | null;
+        let matchedAny = false;
         while ((m = STYLE_URLS_ITEM_RE.exec(styleUrlsMatch[1])) !== null) {
+            matchedAny = true;
             const sibling = readSibling(entryDir, m[1], 'styleUrls', fs);
             if (!sibling.ok) {
                 return sibling;
             }
             files[flatPath(sibling.value.path)] = sibling.value.content;
         }
+        // `styleUrls: [foo]` (non-literal items) — array found, nothing parsed.
+        if (!matchedAny) {
+            return { ok: false, error: unparseableUrlError('styleUrls') };
+        }
+    } else if (STYLE_URLS_PRESENT.test(entryContent)) {
+        return { ok: false, error: unparseableUrlError('styleUrls') };
     }
 
     // Pack the entry as app.component.ts. Both transforms run — relative
@@ -214,12 +241,25 @@ type SiblingResult =
     | { ok: true; value: { path: string; content: string } }
     | { ok: false; error: string };
 
+/**
+ * Clear message for a decorator url whose value is present but not a plain
+ * string / template literal — a computed identifier or an interpolated
+ * `${…}` path the file-ref walker can't statically resolve.
+ */
+const unparseableUrlError = (label: string): string =>
+    `Playground entry uses a non-literal ${label} (computed value or interpolated ` +
+    `template literal). Use a plain string or template-literal path so the file ` +
+    `can be bundled, or inline the template/styles.`;
+
 const readSibling = (
     entryDir: string,
     rawPath: string,
     label: string,
     fs: FsReader
 ): SiblingResult => {
+    if (rawPath.includes('${')) {
+        return { ok: false, error: unparseableUrlError(label) };
+    }
     const resolved = posix.normalize(posix.join(entryDir, rawPath));
     const content = fs.readFile(resolved);
     if (content === null) {
