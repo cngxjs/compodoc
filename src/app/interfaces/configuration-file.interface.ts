@@ -67,6 +67,8 @@ export interface ConfigurationFileInterface {
     playgroundMaterialShell: boolean;
     playgroundVendor: string[];
     playgroundVendorRoot: string;
+    playgroundHead: string[];
+    playgroundGlobalStyles: string;
     groupBy: 'folder' | 'category' | 'none';
     groupDepth: number;
     menuLayout: 'type' | 'feature';

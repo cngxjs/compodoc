@@ -19,6 +19,10 @@ export type PlaygroundContentProps = {
     readonly extraDependencies?: Record<string, string>;
     /** Config-file `playgroundMaterialShell` — forwarded to each block. */
     readonly materialShell?: boolean;
+    /** Config-file `playgroundHead` — extra `<head>` entries, forwarded to each block. */
+    readonly head?: string[];
+    /** Config-file `playgroundGlobalStyles` — global CSS, forwarded to each block. */
+    readonly globalStyles?: string;
     /**
      * Vendor packages resolved from `playgroundVendor`, keyed by full package
      * name. Forwarded to each block; the manifest builder embeds only the
@@ -67,6 +71,8 @@ export function PlaygroundContent(props: PlaygroundContentProps): string {
                     extraDependencies: props.extraDependencies,
                     materialShell: props.materialShell,
                     vendorPackages: props.vendorPackages,
+                    head: props.head,
+                    globalStyles: props.globalStyles,
                     fileBundle: props.fileBundles?.[index]
                 })
             )}

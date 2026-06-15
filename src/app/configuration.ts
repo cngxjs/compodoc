@@ -125,6 +125,8 @@ export class Configuration implements ConfigurationInterface {
         playgroundVendor: [],
         playgroundVendorRoot: 'dist',
         playgroundVendorPackages: {},
+        playgroundHead: [],
+        playgroundGlobalStyles: '',
         playgroundFiles: {},
         appConfig: [],
         categorizedComponents: {},

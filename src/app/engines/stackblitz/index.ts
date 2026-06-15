@@ -25,8 +25,14 @@ export type {
     ParsedImport
 } from './import-analysis';
 export { extractImports, validateImports } from './import-analysis';
-export type { FileRefBundle, FileRefResult, FsReader } from './read-file-ref';
-export { readFileRef } from './read-file-ref';
+export type {
+    FileRefBundle,
+    FileRefResult,
+    FsReader,
+    PlaygroundConfigBundle,
+    PlaygroundConfigResult
+} from './read-file-ref';
+export { readFileRef, readPlaygroundConfig } from './read-file-ref';
 export { rewriteDecoratorUrls, rewriteRelativeImports } from './rewrite-imports';
 export type {
     VendorFsReader,

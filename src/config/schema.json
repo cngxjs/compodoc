@@ -341,6 +341,21 @@
             "default": false,
             "examples": [false]
         },
+        "playgroundHead": {
+            "$id": "/properties/playgroundHead",
+            "type": "array",
+            "items": { "type": "string" },
+            "title": "Arbitrary <head> entries injected into every @playground index.html (after the Material shell links, when present) — for custom fonts, meta tags, CSP, or preloads. Emitted verbatim.",
+            "default": [],
+            "examples": [["<link rel=\"stylesheet\" href=\"https://example.com/font.css\">"]]
+        },
+        "playgroundGlobalStyles": {
+            "$id": "/properties/playgroundGlobalStyles",
+            "type": "string",
+            "title": "Global CSS appended to every @playground src/styles.css, after the default body reset — for fonts, resets, or any global rules the examples depend on.",
+            "default": "",
+            "examples": [":root { --brand: #06f; }"]
+        },
         "disableProperties": {
             "$id": "/properties/disableProperties",
             "type": "boolean",

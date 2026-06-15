@@ -393,6 +393,145 @@ describe('buildPlaygroundManifest', () => {
         });
     });
 
+    describe('@playgroundConfig bundle (P1)', () => {
+        it('a config-only bundle overrides the scaffold app.config.ts on an inline block', () => {
+            // What PlaygroundFileResolver produces for an inline block carrying
+            // `@playgroundConfig`: no htmlSnippet, replacesAppComponent false,
+            // files carry the author's app.config.ts (+ deps).
+            const configBundle = {
+                entry: '/repo/src/app/playground/app.config.ts',
+                files: {
+                    'src/app/app.config.ts':
+                        "import { provideRouter } from '@angular/router';\n" +
+                        "import { routes } from './routes';\n" +
+                        'export const appConfig = { providers: [provideRouter(routes)] };\n',
+                    'src/app/routes.ts': 'export const routes = [];\n'
+                },
+                bareSpecifiers: new Set<string>(['@angular/router']),
+                replacesAppComponent: false
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                { dependencies: { '@angular/core': '^21.0.0', '@angular/router': '^21.0.0' } },
+                {},
+                configBundle
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            // Author config wins over the default scaffold config.
+            expect(result.value.files['src/app/app.config.ts']).to.contain('provideRouter');
+            expect(result.value.files['src/app/app.config.ts']).not.to.contain(
+                'provideZoneChangeDetection'
+            );
+            // Its relative dep ships too.
+            expect(result.value.files['src/app/routes.ts']).to.equal('export const routes = [];\n');
+            // main.ts still wires bootstrapApplication(AppComponent, appConfig).
+            expect(result.value.files['src/main.ts']).to.contain(
+                'bootstrapApplication(AppComponent, appConfig)'
+            );
+            // Inline block still drives the AppComponent (config-only bundle).
+            expect(result.value.files['src/app/app.component.ts']).to.contain('@Component');
+        });
+    });
+
+    describe('custom <head> and global styles (P1)', () => {
+        it('appends playgroundHead entries into index.html <head>', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                {
+                    head: [
+                        '<link rel="stylesheet" href="https://example.com/font.css">',
+                        '<meta name="x" content="y">'
+                    ]
+                }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const indexHtml = result.value.files['src/index.html'];
+            expect(indexHtml).to.contain('https://example.com/font.css');
+            expect(indexHtml).to.contain('<meta name="x" content="y">');
+            // Inserted inside <head>, before the closing tag.
+            expect(indexHtml.indexOf('example.com/font.css')).to.be.lessThan(
+                indexHtml.indexOf('</head>')
+            );
+        });
+
+        it('appends playgroundGlobalStyles verbatim after the body reset in styles.css', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                { globalStyles: ':root { --brand: #06f; }' }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const styles = result.value.files['src/styles.css'];
+            expect(styles).to.contain('--brand: #06f;');
+            // After the default body reset, not replacing it.
+            expect(styles).to.contain('font-family: system-ui');
+            expect(styles.indexOf('font-family')).to.be.lessThan(styles.indexOf('--brand'));
+        });
+
+        it('composes custom head with the Material shell (shell links first)', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                { materialShell: true, head: ['<meta name="after-shell" content="1">'] }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const indexHtml = result.value.files['src/index.html'];
+            expect(indexHtml.indexOf('css2?family=Roboto')).to.be.lessThan(
+                indexHtml.indexOf('after-shell')
+            );
+        });
+
+        it('drops blank head entries and leaves output unchanged for empty inputs', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                { head: ['', '   '], globalStyles: '   ' }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const base = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg
+            );
+            if (!base.ok) {
+                return;
+            }
+            expect(result.value.files['src/index.html']).to.equal(
+                base.value.files['src/index.html']
+            );
+            expect(result.value.files['src/styles.css']).to.equal(
+                base.value.files['src/styles.css']
+            );
+        });
+    });
+
     it('preserves the snippet language inside the demo component template', () => {
         const tsBlock: ComponentPlaygroundBlock = {
             ...block,

@@ -36,6 +36,10 @@ export type BlockPlaygroundProps = {
      * body classes into `index.html` without adding `@angular/material`.
      */
     readonly materialShell?: boolean;
+    /** Config-file `playgroundHead` — extra `<head>` entries for `index.html`. */
+    readonly head?: string[];
+    /** Config-file `playgroundGlobalStyles` — CSS appended to `src/styles.css`. */
+    readonly globalStyles?: string;
     /**
      * Vendor packages resolved from `playgroundVendor`, keyed by full package
      * name. When the playground imports a vendored package, the builder
@@ -88,6 +92,12 @@ export function BlockPlayground(props: BlockPlaygroundProps): string {
     }
     if (props.vendorPackages && Object.keys(props.vendorPackages).length > 0) {
         options.vendor = { packages: props.vendorPackages };
+    }
+    if (props.head && props.head.length > 0) {
+        options.head = props.head;
+    }
+    if (props.globalStyles && props.globalStyles.length > 0) {
+        options.globalStyles = props.globalStyles;
     }
     const built = buildPlaygroundManifest(
         props.componentName,

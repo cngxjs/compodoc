@@ -1,5 +1,8 @@
 import type { ts } from 'ts-morph';
-import { extractJsdocPlaygroundBlocks } from '../../../../../../templates/helpers/jsdoc';
+import {
+    extractJsdocPlaygroundBlocks,
+    extractJsdocPlaygroundConfig
+} from '../../../../../../templates/helpers/jsdoc';
 import { JsdocParserUtil } from '../../../../../../utils/jsdoc-parser.util';
 import { warnOnce } from '../../../../../../utils/jsdoc-tag-warn';
 import { logger } from '../../../../../../utils/logger';
@@ -191,6 +194,22 @@ export class JsdocExtractor {
         }
         for (const w of warnings) {
             logger.warn(w);
+        }
+
+        // Component-level `@playgroundConfig <path>` — ships an app.config.ts
+        // into every playground project. Only meaningful alongside blocks.
+        const { configRef, warnings: configWarnings } = extractJsdocPlaygroundConfig(tags);
+        for (const w of configWarnings) {
+            logger.warn(w);
+        }
+        if (configRef) {
+            if (blocks.length > 0) {
+                result.playgroundConfig = configRef;
+            } else {
+                logger.warn(
+                    `@playgroundConfig "${configRef}" ignored: no @playground blocks on this entity`
+                );
+            }
         }
     }
 
