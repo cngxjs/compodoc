@@ -241,6 +241,17 @@ export function applyConfigToMainData(
         mainData.playgroundMaterialShell = configFile.playgroundMaterialShell;
     }
 
+    if (
+        Array.isArray(configFile.playgroundHead) &&
+        configFile.playgroundHead.every(line => typeof line === 'string')
+    ) {
+        mainData.playgroundHead = configFile.playgroundHead;
+    }
+
+    if (typeof configFile.playgroundGlobalStyles === 'string') {
+        mainData.playgroundGlobalStyles = configFile.playgroundGlobalStyles;
+    }
+
     if (configFile.includes) {
         mainData.includes = configFile.includes;
     }

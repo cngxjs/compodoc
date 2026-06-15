@@ -116,6 +116,8 @@ export class Configuration implements ConfigurationInterface {
         workspacePackage: {},
         playgroundDependencies: {},
         playgroundMaterialShell: false,
+        playgroundHead: [],
+        playgroundGlobalStyles: '',
         playgroundFiles: {},
         appConfig: [],
         categorizedComponents: {},

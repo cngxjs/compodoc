@@ -393,6 +393,100 @@ describe('buildPlaygroundManifest', () => {
         });
     });
 
+    describe('custom <head> and global styles (P1)', () => {
+        it('appends playgroundHead entries into index.html <head>', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                {
+                    head: [
+                        '<link rel="stylesheet" href="https://example.com/font.css">',
+                        '<meta name="x" content="y">'
+                    ]
+                }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const indexHtml = result.value.files['src/index.html'];
+            expect(indexHtml).to.contain('https://example.com/font.css');
+            expect(indexHtml).to.contain('<meta name="x" content="y">');
+            // Inserted inside <head>, before the closing tag.
+            expect(indexHtml.indexOf('example.com/font.css')).to.be.lessThan(
+                indexHtml.indexOf('</head>')
+            );
+        });
+
+        it('appends playgroundGlobalStyles verbatim after the body reset in styles.css', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                { globalStyles: ':root { --brand: #06f; }' }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const styles = result.value.files['src/styles.css'];
+            expect(styles).to.contain('--brand: #06f;');
+            // After the default body reset, not replacing it.
+            expect(styles).to.contain('font-family: system-ui');
+            expect(styles.indexOf('font-family')).to.be.lessThan(styles.indexOf('--brand'));
+        });
+
+        it('composes custom head with the Material shell (shell links first)', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                { materialShell: true, head: ['<meta name="after-shell" content="1">'] }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const indexHtml = result.value.files['src/index.html'];
+            expect(indexHtml.indexOf('css2?family=Roboto')).to.be.lessThan(
+                indexHtml.indexOf('after-shell')
+            );
+        });
+
+        it('drops blank head entries and leaves output unchanged for empty inputs', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                { head: ['', '   '], globalStyles: '   ' }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const base = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg
+            );
+            if (!base.ok) {
+                return;
+            }
+            expect(result.value.files['src/index.html']).to.equal(
+                base.value.files['src/index.html']
+            );
+            expect(result.value.files['src/styles.css']).to.equal(
+                base.value.files['src/styles.css']
+            );
+        });
+    });
+
     it('preserves the snippet language inside the demo component template', () => {
         const tsBlock: ComponentPlaygroundBlock = {
             ...block,
