@@ -312,6 +312,13 @@
             "additionalProperties": { "type": "string" },
             "examples": [{ "@my-org/ui-kit": "^1.0.0" }]
         },
+        "playgroundMaterialShell": {
+            "$id": "/properties/playgroundMaterialShell",
+            "type": "boolean",
+            "title": "Force the Material app shell (Roboto + Material-Icons font links and the mat-typography / mat-app-background body classes) into every @playground index.html, independent of Material auto-detect. Use for component libraries themed to look like Material via a Sass theme bridge. Does not add @angular/material or @angular/cdk.",
+            "default": false,
+            "examples": [false]
+        },
         "disableProperties": {
             "$id": "/properties/disableProperties",
             "type": "boolean",

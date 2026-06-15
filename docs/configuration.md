@@ -194,10 +194,23 @@ Three authoring modes, dispatched by the trailing token on the tag line:
 
 All three modes share the same scaffold (Angular CLI 21 standalone project, WebContainer template). Material widgets are auto-detected: when the demo references known Material selectors or attribute directives, `@angular/material` and `@angular/cdk` are force-pinned and the prebuilt theme is wired up automatically. Bare-specifier imports in any walked source are auto-forwarded with the version your `package.json` declares.
 
+### Material app shell (fonts + body classes)
+
+The Roboto / Material-Icons font `<link>`s and the `mat-typography mat-app-background` body classes (the "Material app shell", matching Angular Material's `ng add`) are normally emitted only when the Material auto-detect fires. That misses libraries that are merely *themed to look like* Material via a Sass theme bridge - their templates contain no `<mat-*>` element, so without the shell Roboto never loads and the app background is missing.
+
+The shell is now decoupled from Material module wiring and is emitted when **any** of these hold:
+
+- the real `<mat-*>` auto-detect fired (unchanged - this also adds `@angular/material`/`@angular/cdk` and the prebuilt theme);
+- `playgroundMaterialShell: true` is set in the config (forces the shell on every playground);
+- a bundled playground file contains a Sass `@use` of a Material theme bridge, i.e. it matches `@use '…material…theme'` (e.g. `@use '@cngx/themes/material/azure-theme';`).
+
+In the flag and heuristic cases, **only** the shell is injected - `@angular/material`/`@angular/cdk` are **not** added to dependencies and no Material modules are added to `AppComponent.imports`. That wiring stays gated behind the real `<mat-*>` auto-detect.
+
 | Option | CLI | Type | Default | Description |
 |-|-|-|-|-|
 | disablePlaygroundTab | `--disablePlaygroundTab` | boolean | `false` | Hide the per-component Playground tab even when `@playground` blocks are parsed. Independent of `--disableDependenciesTab`. No effect on components without `@playground` blocks (the tab is already absent). |
 | playgroundDependencies | -- (config-only) | object | `{}` | Extra packages to inject into every StackBlitz manifest's `dependencies`, with the version YOU specify. Wins over the consumer-`package.json` auto-forward AND any auto-detected version (e.g. Material). Use for libraries the consumer ships but doesn't `npm install` directly (peer-only CSS themes), or to pin a per-build version. |
+| playgroundMaterialShell | -- (config-only) | boolean | `false` | Force the Material app shell (Roboto + Material-Icons font links and the `mat-typography mat-app-background` body classes) into every `@playground` `index.html`, independent of Material auto-detect. For libraries themed to look like Material via a Sass theme bridge. Does **not** add `@angular/material`/`@angular/cdk` or Material module imports. See [Material app shell](#material-app-shell-fonts--body-classes). |
 
 ```jsonc
 // compodocx.config.json

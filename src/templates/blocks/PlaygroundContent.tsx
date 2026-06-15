@@ -16,6 +16,8 @@ export type PlaygroundContentProps = {
     readonly resolve?: DepGraphResolver;
     readonly workspacePackage?: ConsumerPackageJson;
     readonly extraDependencies?: Record<string, string>;
+    /** Config-file `playgroundMaterialShell` — forwarded to each block. */
+    readonly materialShell?: boolean;
     /**
      * Pre-resolved file-ref bundles, keyed by block index in
      * `props.playgrounds`. Populated by `application.ts:resolvePlaygroundFiles`
@@ -56,6 +58,7 @@ export function PlaygroundContent(props: PlaygroundContentProps): string {
                     resolve: props.resolve,
                     workspacePackage: props.workspacePackage,
                     extraDependencies: props.extraDependencies,
+                    materialShell: props.materialShell,
                     fileBundle: props.fileBundles?.[index]
                 })
             )}

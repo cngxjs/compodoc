@@ -63,6 +63,7 @@ export interface ConfigurationFileInterface {
     themingTabSections: string[];
     stackblitz: boolean;
     stackblitzTemplate: string;
+    playgroundMaterialShell: boolean;
     groupBy: 'folder' | 'category' | 'none';
     groupDepth: number;
     menuLayout: 'type' | 'feature';

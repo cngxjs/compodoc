@@ -776,6 +776,7 @@ export const ComponentPage = (data: any): string => {
                                 resolve: data.playgroundResolver,
                                 workspacePackage: data.workspacePackage,
                                 extraDependencies: data.playgroundDependencies,
+                                materialShell: data.playgroundMaterialShell,
                                 fileBundles: fileBundles as never
                             });
                         })()}
