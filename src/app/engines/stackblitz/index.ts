@@ -14,8 +14,14 @@ export {
     STACKBLITZ_TRUNCATION_FOOTER
 } from './constants';
 export { emitFileContent } from './format-files';
-export type { FileRefBundle, FileRefResult, FsReader } from './read-file-ref';
-export { readFileRef } from './read-file-ref';
+export type {
+    FileRefBundle,
+    FileRefResult,
+    FsReader,
+    PlaygroundConfigBundle,
+    PlaygroundConfigResult
+} from './read-file-ref';
+export { readFileRef, readPlaygroundConfig } from './read-file-ref';
 export { rewriteDecoratorUrls, rewriteRelativeImports } from './rewrite-imports';
 export type { DepGraphNode, DepGraphResolver, WalkOptions, WalkResult } from './walk-dep-graph';
 export { walkDepGraph } from './walk-dep-graph';

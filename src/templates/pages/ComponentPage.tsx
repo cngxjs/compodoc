@@ -780,6 +780,8 @@ export const ComponentPage = (data: any): string => {
                                 depth: data.playgroundDepDepth,
                                 maxFiles: data.playgroundFileCountCap,
                                 fileCap: data.playgroundFileCap,
+                                head: data.playgroundHead,
+                                globalStyles: data.playgroundGlobalStyles,
                                 fileBundles: fileBundles as never
                             });
                         })()}

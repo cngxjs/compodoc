@@ -216,6 +216,8 @@ In the flag and heuristic cases, **only** the shell is injected - `@angular/mate
 | playgroundDepDepth | -- (config-only) | number | `3` | Max import depth followed when walking a `@playground`'s dependency graph. Raise for deeply-nested examples. Range 1–100. |
 | playgroundFileCountCap | -- (config-only) | number | `25` | Hard ceiling on the number of source files in one `@playground` manifest. Exceeding it fails **that** playground with a message naming the component and the walked files (other playgrounds still build). Raise for large multi-file examples. Range 1–1000. |
 | playgroundFileCap | -- (config-only) | number | `8000` | Per-file character cap before a bundled `@playground` source is truncated with a footer. Raise when a legitimately large source is being cut off. Range 500–1,000,000. |
+| playgroundHead | -- (config-only) | string[] | `[]` | Arbitrary `<head>` entries injected into every `@playground` `index.html` (after the Material shell links, when present). For custom fonts, meta tags, CSP, or preloads. Each entry is emitted verbatim; blank entries are dropped. See [Custom `<head>` and global styles](#custom-head-and-global-styles). |
+| playgroundGlobalStyles | -- (config-only) | string | `''` | Global CSS appended to every `@playground` `src/styles.css`, after the default body reset. For fonts, resets, or any global rules the examples depend on. |
 
 ```jsonc
 // compodocx.config.json
@@ -229,6 +231,42 @@ In the flag and heuristic cases, **only** the shell is injected - `@angular/mate
     }
 }
 ```
+
+#### Custom `<head>` and global styles
+
+The Material shell covers the common case (Roboto + Material-Icons). For anything else a playground needs in the page shell, `playgroundHead` and `playgroundGlobalStyles` let you contribute to the generated `index.html` `<head>` and `src/styles.css` directly — these extend the **same** shell writer the Material option uses, so they compose with it rather than replacing the scaffold.
+
+```jsonc
+// compodocx.config.json
+{
+    "playgroundHead": [
+        "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">",
+        "<link href=\"https://fonts.googleapis.com/css2?family=Inter&display=swap\" rel=\"stylesheet\">",
+        "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'self'\">"
+    ],
+    "playgroundGlobalStyles": ":root { --brand: #0066ff; }\nbody { font-family: Inter, sans-serif; }"
+}
+```
+
+`playgroundHead` entries land inside `<head>` (after the Material shell links if those are emitted); `playgroundGlobalStyles` is appended verbatim after the default body reset in `src/styles.css`, so the reset still applies. Both are global (every playground in the build); per-block customization is available through a custom `block-playground` template override.
+
+#### Providers and routing: `@playgroundConfig`
+
+A playground that needs `provideRouter`, HTTP interceptors, or any application providers ships an `app.config.ts`. Annotate the documented component with a component-level `@playgroundConfig` JSDoc tag pointing at a relative `.ts` file:
+
+```ts
+/**
+ * @playgroundConfig ./playground/app.config.ts
+ *
+ * @playground Routed demo ./playground/router-demo.component.ts
+ */
+@Component({ selector: 'app-nav', /* … */ })
+export class NavComponent {}
+```
+
+The referenced file is shipped as the project's `src/app/app.config.ts` (its transitive relative imports are bundled too), and the generated `src/main.ts` wires `bootstrapApplication(AppComponent, appConfig)`. The file **must export `appConfig`**. One `@playgroundConfig` per component applies to all of that component's `@playground` blocks (inline and file-ref alike).
+
+This replaces the older, undocumented trick of adding `export { appConfig } from './app.config'` to the example component purely so the file got bundled — that still works for back-compat, but `@playgroundConfig` is the supported, explicit way.
 
 For the complete authoring guide (folder layout, library-author workflow, troubleshooting), see [the Playground guide on compodocx.dev](https://compodocx.dev/guides/playground/).
 

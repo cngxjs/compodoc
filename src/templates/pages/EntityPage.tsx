@@ -184,6 +184,8 @@ export type EntityInfoProps = {
     readonly playgroundDepDepth?: number;
     readonly playgroundFileCountCap?: number;
     readonly playgroundFileCap?: number;
+    readonly playgroundHead?: string[];
+    readonly playgroundGlobalStyles?: string;
 };
 
 const hasMembers = (e: any): boolean =>
@@ -683,7 +685,9 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 playgroundMaterialShell: props.playgroundMaterialShell,
                 playgroundDepDepth: props.playgroundDepDepth,
                 playgroundFileCountCap: props.playgroundFileCountCap,
-                playgroundFileCap: props.playgroundFileCap
+                playgroundFileCap: props.playgroundFileCap,
+                playgroundHead: props.playgroundHead,
+                playgroundGlobalStyles: props.playgroundGlobalStyles
             })}
         </>
     ) as string;

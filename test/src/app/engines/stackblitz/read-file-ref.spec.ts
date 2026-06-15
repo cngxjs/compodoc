@@ -1,6 +1,7 @@
 import {
     type FsReader,
-    readFileRef
+    readFileRef,
+    readPlaygroundConfig
 } from '../../../../../src/app/engines/stackblitz/read-file-ref';
 
 const fsFor = (files: Record<string, string>): FsReader => ({
@@ -323,5 +324,61 @@ export class X {}
         }
         expect(result.value.files['src/app/a.css']).to.equal('a {}');
         expect(result.value.files['src/app/b.css']).to.equal('b {}');
+    });
+});
+
+describe('readPlaygroundConfig', () => {
+    it('places the config at src/app/app.config.ts and rewrites relative imports', () => {
+        const fs = fsFor({
+            '/repo/src/app/playground/app.config.ts':
+                "import { provideRouter } from '@angular/router';\n" +
+                "import { routes } from './routes';\n" +
+                'export const appConfig = { providers: [provideRouter(routes)] };\n',
+            '/repo/src/app/playground/routes.ts': 'export const routes = [];\n'
+        });
+        const result = readPlaygroundConfig('./playground/app.config.ts', HOST, fs);
+        expect(result.ok).to.be.true;
+        if (!result.ok) {
+            return;
+        }
+        expect(result.value.files['src/app/app.config.ts']).to.contain('appConfig');
+        // Relative import flattened to './routes'.
+        expect(result.value.files['src/app/app.config.ts']).to.contain("from './routes'");
+        // Transitive relative import walked in.
+        expect(result.value.files['src/app/routes.ts']).to.equal('export const routes = [];\n');
+        // Bare specifier surfaced for dep auto-forward.
+        expect(result.value.bareSpecifiers.has('@angular/router')).to.be.true;
+    });
+
+    it('errors on a non-.ts config path', () => {
+        const fs = fsFor({});
+        const result = readPlaygroundConfig('./app.config.json', HOST, fs);
+        expect(result.ok).to.be.false;
+        if (result.ok) {
+            return;
+        }
+        expect(result.error).to.contain('.ts');
+    });
+
+    it('errors when the config file is missing', () => {
+        const fs = fsFor({});
+        const result = readPlaygroundConfig('./playground/app.config.ts', HOST, fs);
+        expect(result.ok).to.be.false;
+        if (result.ok) {
+            return;
+        }
+        expect(result.error).to.contain('Cannot find playground config');
+    });
+
+    it('errors when a transitively imported file is missing', () => {
+        const fs = fsFor({
+            '/repo/src/app/app.config.ts': "import './missing';\nexport const appConfig = {};\n"
+        });
+        const result = readPlaygroundConfig('./app.config.ts', HOST, fs);
+        expect(result.ok).to.be.false;
+        if (result.ok) {
+            return;
+        }
+        expect(result.error).to.contain('Cannot find imported file');
     });
 });

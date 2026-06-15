@@ -124,6 +124,8 @@ export class Configuration implements ConfigurationInterface {
         playgroundDepDepth: STACKBLITZ_DEP_DEPTH,
         playgroundFileCountCap: STACKBLITZ_FILE_COUNT_CAP,
         playgroundFileCap: STACKBLITZ_FILE_CAP,
+        playgroundHead: [],
+        playgroundGlobalStyles: '',
         playgroundFiles: {},
         appConfig: [],
         categorizedComponents: {},

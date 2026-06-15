@@ -67,6 +67,8 @@ export interface ConfigurationFileInterface {
     playgroundDepDepth: number;
     playgroundFileCountCap: number;
     playgroundFileCap: number;
+    playgroundHead: string[];
+    playgroundGlobalStyles: string;
     groupBy: 'folder' | 'category' | 'none';
     groupDepth: number;
     menuLayout: 'type' | 'feature';

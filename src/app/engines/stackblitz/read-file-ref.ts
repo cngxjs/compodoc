@@ -46,6 +46,7 @@ export interface FileRefBundle {
 export type FileRefResult = { ok: true; value: FileRefBundle } | { ok: false; error: string };
 
 const APP_COMPONENT_PATH = 'src/app/app.component.ts';
+const APP_CONFIG_PATH = 'src/app/app.config.ts';
 const APP_DIR = 'src/app';
 
 // Decorator-url extractors. The quote class includes the backtick so a plain
@@ -54,6 +55,21 @@ const APP_DIR = 'src/app';
 // reported, never silently dropped (see the `*_PRESENT` guards below).
 const TEMPLATE_URL_RE = /templateUrl\s*:\s*['"`]([^'"`]+)['"`]/;
 const STYLE_URL_RE = /styleUrl\s*:\s*['"`]([^'"`]+)['"`]/;
+
+/**
+ * Result of resolving a `@playgroundConfig` reference: the config file (placed
+ * at `src/app/app.config.ts`) plus its transitive relative-import closure,
+ * ready to merge into a playground's file map. `bareSpecifiers` feed the
+ * manifest's dependency auto-forward.
+ */
+export interface PlaygroundConfigBundle {
+    files: Record<string, string>;
+    bareSpecifiers: Set<string>;
+}
+
+export type PlaygroundConfigResult =
+    | { ok: true; value: PlaygroundConfigBundle }
+    | { ok: false; error: string };
 const STYLE_URLS_RE = /styleUrls\s*:\s*\[([^\]]+)\]/;
 const STYLE_URLS_ITEM_RE = /['"`]([^'"`]+)['"`]/g;
 // "Key is present" detectors — used to turn a key whose value our extractor
@@ -236,6 +252,72 @@ const readTsFileRef = (
         }
     };
 };
+
+/**
+ * Resolve a `@playgroundConfig <path>` reference. Reads the config `.ts`,
+ * places it at `src/app/app.config.ts` (where `src/main.ts` imports
+ * `appConfig` from), rewrites its relative imports, and BFS-walks the
+ * transitive relative-import closure into flat `src/app/<basename>` paths —
+ * the same packing the TS file-ref walk uses. The config file must export
+ * `appConfig`.
+ *
+ * Result.err on: non-`.ts` extension, missing entry, an unresolved relative
+ * import, or a walk that exceeds `maxFiles`.
+ */
+export function readPlaygroundConfig(
+    configRef: string,
+    hostFile: string,
+    fs: FsReader,
+    options: { maxFiles?: number } = {}
+): PlaygroundConfigResult {
+    const maxFiles = options.maxFiles ?? STACKBLITZ_FILE_COUNT_CAP;
+    const hostDir = posix.dirname(toPosix(hostFile));
+    const entryPath = posix.normalize(posix.join(hostDir, configRef));
+
+    if (posix.extname(entryPath) !== '.ts') {
+        return { ok: false, error: `Playground config must be a .ts file: ${configRef}` };
+    }
+    const entryContent = fs.readFile(entryPath);
+    if (entryContent === null) {
+        return { ok: false, error: `Cannot find playground config file: ${configRef}` };
+    }
+
+    const files: Record<string, string> = {};
+    const bareSpecifiers = new Set<string>();
+    const entryDir = posix.dirname(entryPath);
+
+    files[APP_CONFIG_PATH] = rewriteRelativeImports(entryContent);
+    for (const spec of extractBareSpecifiers(entryContent)) {
+        bareSpecifiers.add(spec);
+    }
+
+    const visited = new Set<string>([entryPath]);
+    const queue: string[] = [];
+    enqueueRelativeImports(entryContent, entryDir, visited, queue);
+
+    let collectedCount = 1;
+    while (queue.length > 0) {
+        const next = queue.shift();
+        if (next === undefined) {
+            break;
+        }
+        const content = fs.readFile(next);
+        if (content === null) {
+            return { ok: false, error: `Cannot find imported file: ${next}` };
+        }
+        collectedCount++;
+        if (collectedCount > maxFiles) {
+            return { ok: false, error: `Playground config walk exceeded ${maxFiles} files` };
+        }
+        files[flatPath(next)] = rewriteRelativeImports(content);
+        for (const spec of extractBareSpecifiers(content)) {
+            bareSpecifiers.add(spec);
+        }
+        enqueueRelativeImports(content, posix.dirname(next), visited, queue);
+    }
+
+    return { ok: true, value: { files, bareSpecifiers } };
+}
 
 type SiblingResult =
     | { ok: true; value: { path: string; content: string } }

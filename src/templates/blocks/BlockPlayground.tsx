@@ -39,6 +39,10 @@ export type BlockPlaygroundProps = {
     readonly depth?: number;
     readonly maxFiles?: number;
     readonly fileCap?: number;
+    /** Config-file `playgroundHead` — extra `<head>` entries for `index.html`. */
+    readonly head?: string[];
+    /** Config-file `playgroundGlobalStyles` — CSS appended to `src/styles.css`. */
+    readonly globalStyles?: string;
     /**
      * Pre-resolved file-ref bundle for `block.fileRef` blocks. Populated by
      * `application.ts:resolvePlaygroundFiles` and forwarded through
@@ -91,6 +95,12 @@ export function BlockPlayground(props: BlockPlaygroundProps): string {
     }
     if (typeof props.fileCap === 'number') {
         options.fileCap = props.fileCap;
+    }
+    if (props.head && props.head.length > 0) {
+        options.head = props.head;
+    }
+    if (props.globalStyles && props.globalStyles.length > 0) {
+        options.globalStyles = props.globalStyles;
     }
     const built = buildPlaygroundManifest(
         props.componentName,

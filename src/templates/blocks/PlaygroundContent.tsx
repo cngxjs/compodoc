@@ -22,6 +22,10 @@ export type PlaygroundContentProps = {
     readonly depth?: number;
     readonly maxFiles?: number;
     readonly fileCap?: number;
+    /** Config-file `playgroundHead` — extra `<head>` entries, forwarded to each block. */
+    readonly head?: string[];
+    /** Config-file `playgroundGlobalStyles` — global CSS, forwarded to each block. */
+    readonly globalStyles?: string;
     /**
      * Pre-resolved file-ref bundles, keyed by block index in
      * `props.playgrounds`. Populated by `application.ts:resolvePlaygroundFiles`
@@ -66,6 +70,8 @@ export function PlaygroundContent(props: PlaygroundContentProps): string {
                     depth: props.depth,
                     maxFiles: props.maxFiles,
                     fileCap: props.fileCap,
+                    head: props.head,
+                    globalStyles: props.globalStyles,
                     fileBundle: props.fileBundles?.[index]
                 })
             )}

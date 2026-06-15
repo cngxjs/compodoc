@@ -171,6 +171,18 @@ export interface MainDataInterface {
      */
     playgroundFileCap: number;
     /**
+     * Arbitrary `<head>` entries injected into every generated `@playground`
+     * `index.html` (after the Material shell links, when present). For custom
+     * fonts, meta tags, CSP, or preloads. No CLI flag — config-only.
+     */
+    playgroundHead: string[];
+    /**
+     * Global CSS appended to every generated `@playground` `src/styles.css`,
+     * after the default body reset. For fonts, resets, or any global rules the
+     * examples depend on. No CLI flag — config-only.
+     */
+    playgroundGlobalStyles: string;
+    /**
      * Resolved file-ref bundles per playground block. Key format:
      * `${componentName}:${blockIndex}`. Populated in `application.ts` after
      * the dep-graph build by walking every component/directive/etc with at
