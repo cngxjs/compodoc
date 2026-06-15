@@ -6,6 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.7.0] - 2026-06-15
+
+A playground-focused release. The `@playground` (StackBlitz) engine gains local-build vendoring, a pre-publish compile guard plus a standalone validate command, a customizable page shell, application-config injection, and configurable dependency-walk caps. All additions are config-only or opt-in; existing playgrounds render unchanged.
+
+### Added
+
+- **Vendoring the local build (`playgroundVendor` / `playgroundVendorRoot`).** Names and/or globs (`"@cngx/*"`) of locally built packages to embed into `@playground` projects from `dist/` instead of pulling them from the npm registry. When a playground imports a matching package, its whole built directory plus the transitive closure of other matching packages is embedded in the manifest and wired as a `file:` dependency, so the playground runs against the working tree rather than the last published release. `playgroundVendorRoot` (default `dist`) sets the base directory the closure is read from; each package is located by its `package.json` `name`, anywhere under that root. Registry peers (`@angular/*`, `rxjs`, `tslib`, ...) stay registry dependencies. Naming a package whose build output is missing fails the docs build with a clear message; a glob that matches nothing only warns.
+- **Pre-publish breakage guard (`--strictPlaygrounds`).** For playgrounds whose imports resolve from the registry, each bare import is checked against the version of the package actually installed in `node_modules` (the version StackBlitz would resolve). An imported entry point or named symbol the pinned version lacks is surfaced at docs-build time: a per-playground warning by default, promoted to a hard build failure under `--strictPlaygrounds`. Both checks (subpath against the `exports` map, symbol against the entry `.d.ts`) are biased toward no false positives; vendored packages and framework peers are exempt.
+- **`compodocx playground:validate <docsDir>` subcommand.** Compiles every `@playground` in a generated documentation folder and reports a per-playground pass/fail summary, the strongest guard. It reads the manifests back out of the produced HTML, materializes each StackBlitz project to a temp directory, and runs a real `npm install` + `npm run build`. Opt-in and decoupled from the docs build. Flags `--filter`, `--keep`, `--installCmd`, `--buildCmd`; exit codes `0` all passed / none found, `1` at least one failed, `2` fatal.
+- **Custom `<head>` and global styles (`playgroundHead` / `playgroundGlobalStyles`).** `playgroundHead` appends arbitrary `<head>` entries to every generated `index.html` (after the Material shell links, when present) for custom fonts, meta tags, CSP, or preloads. `playgroundGlobalStyles` appends global CSS to every `src/styles.css` after the default body reset. Both extend the same shell writer the Material option uses, so they compose with it rather than replacing the scaffold. Per-block customization remains available through a `block-playground` template override.
+- **`@playgroundConfig <relative.ts>` component JSDoc tag.** Ship an `app.config.ts` (providers, `provideRouter`, HTTP interceptors, any application config) into a component's playgrounds. The referenced file is shipped as the project's `src/app/app.config.ts` (its transitive relative imports bundled too) and `src/main.ts` wires `bootstrapApplication(AppComponent, appConfig)`; the file must export `appConfig`. One tag per component applies to all of that component's `@playground` blocks. Replaces the older undocumented `export { appConfig } from './app.config'` trick, which still works for back-compat.
+- **`playgroundMaterialShell` config flag.** Forces the StackBlitz shell to emit the Roboto + Material-Icons font links and `mat-typography mat-app-background` body classes even when no `<mat-*>` elements are auto-detected and no Sass theme bridge is present. The shell still emits automatically on `<mat-*>` detection or a Material theme `@use`. The flag and heuristics control only the shell; they do not wire `@angular/material` / `@angular/cdk` deps or a prebuilt theme (those still require real `<mat-*>` usage).
+- **Configurable dependency-walk caps (`playgroundDepDepth` / `playgroundFileCountCap` / `playgroundFileCap`).** Config-overridable versions of the built-in StackBlitz caps: max import depth followed when walking a playground's dependency graph (default `3`, range 1–100), hard ceiling on source files in one manifest (default `25`, range 1–1000), and per-file character cap before truncation (default `8000`, range 500–1,000,000). Cap-exceeded errors now name the root, the cap key, and the walked files.
+- **Template-literal and computed decorator URLs.** `templateUrl` / `styleUrl` / `styleUrls` written as plain template literals (`` templateUrl: `./x.html` ``) are now resolved like string literals when bundling a `@playground`. Interpolated (`${...}`) or computed values are reported with a clear error instead of being silently dropped into a broken playground.
+
 ## [0.6.1] - 2026-05-29
 
 ### Fixed
@@ -387,7 +402,7 @@ First cngx-line tag. compodocx forks compodoc 1.1.32 with the analyzer and confi
 - All other compodoc flags retained with identical behavior.
 - Help text rewritten where stale (`--templates` no longer says "Handlebars").
 
-### UI redesign (Phase 5)
+### UI redesign
 
 Full visual overhaul:
 
