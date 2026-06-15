@@ -181,6 +181,9 @@ export type EntityInfoProps = {
     readonly workspacePackage?: ConsumerPackageJson;
     readonly playgroundDependencies?: Record<string, string>;
     readonly playgroundMaterialShell?: boolean;
+    readonly playgroundDepDepth?: number;
+    readonly playgroundFileCountCap?: number;
+    readonly playgroundFileCap?: number;
     readonly playgroundHead?: string[];
     readonly playgroundGlobalStyles?: string;
 };
@@ -680,6 +683,9 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 workspacePackage: props.workspacePackage,
                 playgroundDependencies: props.playgroundDependencies,
                 playgroundMaterialShell: props.playgroundMaterialShell,
+                playgroundDepDepth: props.playgroundDepDepth,
+                playgroundFileCountCap: props.playgroundFileCountCap,
+                playgroundFileCap: props.playgroundFileCap,
                 playgroundHead: props.playgroundHead,
                 playgroundGlobalStyles: props.playgroundGlobalStyles
             })}

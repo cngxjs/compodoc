@@ -64,6 +64,9 @@ export interface ConfigurationFileInterface {
     stackblitz: boolean;
     stackblitzTemplate: string;
     playgroundMaterialShell: boolean;
+    playgroundDepDepth: number;
+    playgroundFileCountCap: number;
+    playgroundFileCap: number;
     playgroundHead: string[];
     playgroundGlobalStyles: string;
     groupBy: 'folder' | 'category' | 'none';

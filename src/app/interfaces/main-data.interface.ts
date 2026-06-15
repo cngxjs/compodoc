@@ -155,6 +155,22 @@ export interface MainDataInterface {
      */
     playgroundMaterialShell: boolean;
     /**
+     * Max import depth followed when walking a playground's dependency graph
+     * (`playgroundDepDepth`, default `STACKBLITZ_DEP_DEPTH`). No CLI flag.
+     */
+    playgroundDepDepth: number;
+    /**
+     * Hard ceiling on source files in one playground manifest
+     * (`playgroundFileCountCap`, default `STACKBLITZ_FILE_COUNT_CAP`). Exceeding
+     * it fails that playground with a message naming the walked files.
+     */
+    playgroundFileCountCap: number;
+    /**
+     * Per-file character cap before truncation (`playgroundFileCap`, default
+     * `STACKBLITZ_FILE_CAP`). No CLI flag — config-only.
+     */
+    playgroundFileCap: number;
+    /**
      * Arbitrary `<head>` entries injected into every generated `@playground`
      * `index.html` (after the Material shell links, when present). For custom
      * fonts, meta tags, CSP, or preloads. No CLI flag — config-only.

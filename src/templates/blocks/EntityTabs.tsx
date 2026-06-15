@@ -35,6 +35,9 @@ type EntityTabsProps = {
     readonly workspacePackage?: ConsumerPackageJson;
     readonly playgroundDependencies?: Record<string, string>;
     readonly playgroundMaterialShell?: boolean;
+    readonly playgroundDepDepth?: number;
+    readonly playgroundFileCountCap?: number;
+    readonly playgroundFileCap?: number;
     readonly playgroundHead?: string[];
     readonly playgroundGlobalStyles?: string;
 };
@@ -173,6 +176,9 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                                     workspacePackage: props.workspacePackage,
                                     extraDependencies: props.playgroundDependencies,
                                     materialShell: props.playgroundMaterialShell,
+                                    depth: props.playgroundDepDepth,
+                                    maxFiles: props.playgroundFileCountCap,
+                                    fileCap: props.playgroundFileCap,
                                     head: props.playgroundHead,
                                     globalStyles: props.playgroundGlobalStyles,
                                     fileBundles

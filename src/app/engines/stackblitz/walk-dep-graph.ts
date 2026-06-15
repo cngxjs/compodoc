@@ -1,5 +1,12 @@
 import { STACKBLITZ_DEP_DEPTH, STACKBLITZ_FILE_COUNT_CAP } from './constants';
 
+// Local POSIX basename — keeps this module free of a node:path import so it
+// stays trivially portable. Splits on both separators for cross-platform paths.
+const posixBasename = (file: string): string => {
+    const parts = file.replaceAll('\\', '/').split('/');
+    return parts[parts.length - 1] || file;
+};
+
 /**
  * One entry in the playground dep graph. `imports` is a list of named
  * dependencies (entity names) that the resolver knows how to map back to
@@ -74,9 +81,13 @@ export function walkDepGraph(
             continue;
         }
         if (collected.length >= maxFiles) {
+            const walked = collected.map(n => posixBasename(n.file)).join(', ');
             return {
                 ok: false,
-                error: `Playground dep walk exceeded ${maxFiles} files (root: "${rootName}")`
+                error:
+                    `Playground dep walk for "${rootName}" exceeded the ${maxFiles}-file cap ` +
+                    `(playgroundFileCountCap). Walked: ${walked}. ` +
+                    `Trim the example's imports or raise playgroundFileCountCap.`
             };
         }
         collected.push(node);

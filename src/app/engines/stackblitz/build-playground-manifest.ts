@@ -75,6 +75,12 @@ export interface BuildOptions extends WalkOptions {
      */
     materialShell?: boolean;
     /**
+     * Per-file character cap applied at the emitter (`playgroundFileCap`).
+     * Defaults to `STACKBLITZ_FILE_CAP`. Bundled sources longer than this are
+     * truncated with a footer.
+     */
+    fileCap?: number;
+    /**
      * Arbitrary `<head>` entries appended to the generated `index.html` (after
      * the Material shell links, when present). From the `playgroundHead` config
      * — for fonts, meta tags, CSP, preloads. Emitted verbatim; blank entries
@@ -587,6 +593,10 @@ export function buildPlaygroundManifest(
 ): BuildResult {
     const sourceRoot = (options.sourceRoot ?? DEFAULT_SOURCE_ROOT).replaceAll('\\', '/');
 
+    // Per-file truncation cap, configurable via `playgroundFileCap`. Bound once
+    // here so every file written below shares the same limit.
+    const emit = (content: unknown): string => emitFileContent(content, options.fileCap);
+
     const walk = walkDepGraph(componentName, resolve, options);
     if (!walk.ok) {
         return walk;
@@ -681,21 +691,21 @@ export function buildPlaygroundManifest(
     }
 
     const files: Record<string, string> = {};
-    files['package.json'] = emitFileContent(buildPackageJson(dependencies, devDependencies));
-    files['angular.json'] = emitFileContent(buildAngularJson(hasMaterial));
-    files['tsconfig.json'] = emitFileContent(buildTsconfigJson());
-    files['tsconfig.app.json'] = emitFileContent(buildTsconfigAppJson());
-    files['src/index.html'] = emitFileContent(buildIndexHtml(emitMaterialShell, options.head));
-    files['src/styles.css'] = emitFileContent(buildStylesCss(options.globalStyles));
-    files['src/main.ts'] = emitFileContent(buildMainTs());
-    files['src/app/app.config.ts'] = emitFileContent(buildAppConfigTs());
+    files['package.json'] = emit(buildPackageJson(dependencies, devDependencies));
+    files['angular.json'] = emit(buildAngularJson(hasMaterial));
+    files['tsconfig.json'] = emit(buildTsconfigJson());
+    files['tsconfig.app.json'] = emit(buildTsconfigAppJson());
+    files['src/index.html'] = emit(buildIndexHtml(emitMaterialShell, options.head));
+    files['src/styles.css'] = emit(buildStylesCss(options.globalStyles));
+    files['src/main.ts'] = emit(buildMainTs());
+    files['src/app/app.config.ts'] = emit(buildAppConfigTs());
 
     if (replacesAppComponent && fileBundle) {
         // Entry source pre-rewritten by read-file-ref — relative imports +
         // decorator urls already flattened. Just emit-format and ship.
-        files[APP_COMPONENT_PATH] = emitFileContent(fileBundle.files[APP_COMPONENT_PATH] ?? '');
+        files[APP_COMPONENT_PATH] = emit(fileBundle.files[APP_COMPONENT_PATH] ?? '');
     } else {
-        files[APP_COMPONENT_PATH] = emitFileContent(
+        files[APP_COMPONENT_PATH] = emit(
             buildAppComponentTs(
                 componentName,
                 componentImportPath,
@@ -714,7 +724,7 @@ export function buildPlaygroundManifest(
     if (!replacesAppComponent) {
         for (const node of walk.value) {
             const path = fileNameForNode(node, sourceRoot);
-            files[path] = emitFileContent(node.sourceCode);
+            files[path] = emit(node.sourceCode);
         }
     }
 
@@ -727,7 +737,7 @@ export function buildPlaygroundManifest(
             if (path === APP_COMPONENT_PATH) {
                 continue;
             }
-            files[path] = emitFileContent(content);
+            files[path] = emit(content);
         }
     }
 

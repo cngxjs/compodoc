@@ -567,6 +567,47 @@ describe('buildPlaygroundManifest', () => {
         expect(fileBody).to.contain('truncated by compodocx');
     });
 
+    it('honours a custom fileCap (playgroundFileCap) at the emitter', () => {
+        const fat: DepGraphNode = {
+            ...rootNode,
+            sourceCode: 'a'.repeat(2000)
+        };
+        const result = buildPlaygroundManifest('MyButton', block, resolverFor([fat]), consumerPkg, {
+            fileCap: 500
+        });
+        expect(result.ok).to.be.true;
+        if (!result.ok) {
+            return;
+        }
+        const fileBody = result.value.files['src/app/my-button.component.ts'];
+        // Truncated at the custom 500-char cap (+ footer), not the 8000 default.
+        expect(fileBody).to.contain('truncated by compodocx');
+        expect(fileBody.length).to.be.lessThan(1000);
+    });
+
+    it('surfaces the file-count cap error naming the playground component', () => {
+        const many = Array.from({ length: 30 }, (_, i) => `Dep${i}`);
+        const nodes: DepGraphNode[] = [
+            { ...rootNode, imports: many },
+            ...many.map(name => ({
+                name,
+                file: `src/app/${name.toLowerCase()}.ts`,
+                sourceCode: `export const ${name} = 1;`,
+                imports: []
+            }))
+        ];
+        const result = buildPlaygroundManifest('MyButton', block, resolverFor(nodes), consumerPkg, {
+            maxFiles: 5
+        });
+        expect(result.ok).to.be.false;
+        if (result.ok) {
+            return;
+        }
+        expect(result.error).to.contain('"MyButton"');
+        expect(result.error).to.contain('playgroundFileCountCap');
+        expect(result.error).to.contain('Walked:');
+    });
+
     it('produces byte-equal manifests for the same input (idempotency)', () => {
         const a = buildPlaygroundManifest('MyButton', block, resolverFor([rootNode]), consumerPkg);
         const b = buildPlaygroundManifest('MyButton', block, resolverFor([rootNode]), consumerPkg);

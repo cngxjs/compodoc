@@ -241,6 +241,26 @@ export function applyConfigToMainData(
         mainData.playgroundMaterialShell = configFile.playgroundMaterialShell;
     }
 
+    const setPlaygroundCap = (
+        value: unknown,
+        min: number,
+        max: number,
+        assign: (n: number) => void
+    ): void => {
+        if (typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max) {
+            assign(value);
+        }
+    };
+    setPlaygroundCap(configFile.playgroundDepDepth, 1, 100, n => {
+        mainData.playgroundDepDepth = n;
+    });
+    setPlaygroundCap(configFile.playgroundFileCountCap, 1, 1000, n => {
+        mainData.playgroundFileCountCap = n;
+    });
+    setPlaygroundCap(configFile.playgroundFileCap, 500, 1_000_000, n => {
+        mainData.playgroundFileCap = n;
+    });
+
     if (
         Array.isArray(configFile.playgroundHead) &&
         configFile.playgroundHead.every(line => typeof line === 'string')

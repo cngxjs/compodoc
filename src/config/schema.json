@@ -319,6 +319,33 @@
             "default": false,
             "examples": [false]
         },
+        "playgroundDepDepth": {
+            "$id": "/properties/playgroundDepDepth",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "title": "Max import depth followed when walking a @playground's dependency graph. Default 3.",
+            "default": 3,
+            "examples": [3]
+        },
+        "playgroundFileCountCap": {
+            "$id": "/properties/playgroundFileCountCap",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "title": "Hard ceiling on the number of source files in one @playground manifest. Exceeding it fails that playground with a message naming the walked files. Default 25.",
+            "default": 25,
+            "examples": [25]
+        },
+        "playgroundFileCap": {
+            "$id": "/properties/playgroundFileCap",
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 1000000,
+            "title": "Per-file character cap before a bundled @playground source is truncated with a footer. Default 8000.",
+            "default": 8000,
+            "examples": [8000]
+        },
         "playgroundHead": {
             "$id": "/properties/playgroundHead",
             "type": "array",

@@ -35,6 +35,10 @@ export type BlockPlaygroundProps = {
      * body classes into `index.html` without adding `@angular/material`.
      */
     readonly materialShell?: boolean;
+    /** Config caps: `playgroundDepDepth` / `playgroundFileCountCap` / `playgroundFileCap`. */
+    readonly depth?: number;
+    readonly maxFiles?: number;
+    readonly fileCap?: number;
     /** Config-file `playgroundHead` — extra `<head>` entries for `index.html`. */
     readonly head?: string[];
     /** Config-file `playgroundGlobalStyles` — CSS appended to `src/styles.css`. */
@@ -82,6 +86,15 @@ export function BlockPlayground(props: BlockPlaygroundProps): string {
     }
     if (props.materialShell) {
         options.materialShell = true;
+    }
+    if (typeof props.depth === 'number') {
+        options.depth = props.depth;
+    }
+    if (typeof props.maxFiles === 'number') {
+        options.maxFiles = props.maxFiles;
+    }
+    if (typeof props.fileCap === 'number') {
+        options.fileCap = props.fileCap;
     }
     if (props.head && props.head.length > 0) {
         options.head = props.head;

@@ -18,6 +18,10 @@ export type PlaygroundContentProps = {
     readonly extraDependencies?: Record<string, string>;
     /** Config-file `playgroundMaterialShell` — forwarded to each block. */
     readonly materialShell?: boolean;
+    /** Config caps forwarded to each block. */
+    readonly depth?: number;
+    readonly maxFiles?: number;
+    readonly fileCap?: number;
     /** Config-file `playgroundHead` — extra `<head>` entries, forwarded to each block. */
     readonly head?: string[];
     /** Config-file `playgroundGlobalStyles` — global CSS, forwarded to each block. */
@@ -63,6 +67,9 @@ export function PlaygroundContent(props: PlaygroundContentProps): string {
                     workspacePackage: props.workspacePackage,
                     extraDependencies: props.extraDependencies,
                     materialShell: props.materialShell,
+                    depth: props.depth,
+                    maxFiles: props.maxFiles,
+                    fileCap: props.fileCap,
                     head: props.head,
                     globalStyles: props.globalStyles,
                     fileBundle: props.fileBundles?.[index]
