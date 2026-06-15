@@ -142,8 +142,9 @@ const PROJECT_NAME = 'compodocx-playground';
 const BARE_SPEC_RE = /(?:from|import|export\s+[^'"]*from)\s*['"]([^'".][^'"]*)['"]/g;
 
 // Specifiers handled separately by the explicit dep table above. Skipping
-// these keeps auto-forward focused on the user's own libraries.
-const AUTO_FORWARD_SKIP = new Set<string>([
+// these keeps auto-forward focused on the user's own libraries. Exported so
+// the pre-publish import validator shares one source of "framework peers".
+export const AUTO_FORWARD_SKIP = new Set<string>([
     ...ANGULAR_PEERS,
     ...OPTIONAL_ANGULAR_PEERS,
     ...Object.keys(NON_ANGULAR_PEER_DEFAULTS),

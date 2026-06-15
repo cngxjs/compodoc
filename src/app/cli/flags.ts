@@ -212,6 +212,11 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             COMPODOC_DEFAULTS.disablePlaygroundTab
         )
         .option(
+            '--strictPlaygrounds',
+            'Fail the build when a non-vendored @playground imports a subpath or symbol absent from the pinned dependency version (default: warn only)',
+            COMPODOC_DEFAULTS.strictPlaygrounds
+        )
+        .option(
             '--disableProperties',
             'Do not add the properties list',
             COMPODOC_DEFAULTS.disableProperties
