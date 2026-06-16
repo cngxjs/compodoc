@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.7.1] - 2026-06-16
+
+A `playgroundVendor` payload-size fix. Vendoring a real component library now produces a slim StackBlitz project that launches instead of failing with `413 Request Entity Too Large`.
+
+### Fixed
+
+- **`playgroundVendor` payload now fits StackBlitz's project-POST limit.** Vendoring a real component library previously embedded the whole `dist/<pkg>` tree verbatim, which blows StackBlitz's ~2 MB `openProject` POST limit and fails the playground launch with `413 Request Entity Too Large`. The vendored payload is now slimmed and pruned: sourcemaps (`*.map`) and legacy or duplicate bundle directories (`esm2022/`, `esm2020/`, `fesm2020/`, ...) are dropped - keeping only `fesm2022/*.mjs`, typings, and the `package.json` files - and each package is reduced to the entry points the playground actually imports, plus any sibling or cross-package entry point a kept FESM chunk or its typings references, followed transitively. SCSS-only dependencies referenced via `@use` now seed the vendor closure as well, so a theme bridge is vendored from the local build instead of resolving stale from the registry. Pruning is conservative: a package with no `exports` map, or whose imported subpath maps to no known entry point, still ships whole.
+
+### Added
+
+- **`playgroundVendorCap` and `playgroundVendorIncludeSourcemaps` config keys.** `playgroundVendorCap` (default ~1.5 MB, set under the StackBlitz POST limit) is the backstop byte cap on a single playground's slimmed-and-pruned vendored closure; a closure that exceeds it fails the build naming the per-package bytes, and says so explicitly when the payload also exceeds the StackBlitz limit. `playgroundVendorIncludeSourcemaps` (default `false`) keeps `*.map` sourcemaps in vendored packages.
+
 ## [0.7.0] - 2026-06-15
 
 A playground-focused release. The `@playground` (StackBlitz) engine gains local-build vendoring, a pre-publish compile guard plus a standalone validate command, a customizable page shell, application-config injection, and configurable dependency-walk caps. All additions are config-only or opt-in; existing playgrounds render unchanged.
