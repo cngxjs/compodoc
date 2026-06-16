@@ -46,7 +46,9 @@ export class PlaygroundVendorResolver {
             listFiles: (dir: string): string[] => listFilesRecursive(dir)
         };
 
-        const result = resolveVendorPackages(patterns, vendorRoot, reader);
+        const result = resolveVendorPackages(patterns, vendorRoot, reader, {
+            includeSourcemaps: Configuration.mainData.playgroundVendorIncludeSourcemaps === true
+        });
 
         for (const warning of result.warnings) {
             logger.warn(warning);

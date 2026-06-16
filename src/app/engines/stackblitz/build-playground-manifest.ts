@@ -1,14 +1,24 @@
 import { posix } from 'node:path';
 import type { ComponentPlaygroundBlock } from '../../../templates/helpers/jsdoc';
-import { STACKBLITZ_TEMPLATE, STACKBLITZ_VENDOR_TOTAL_CAP } from './constants';
+import {
+    STACKBLITZ_POST_LIMIT,
+    STACKBLITZ_TEMPLATE,
+    STACKBLITZ_VENDOR_TOTAL_CAP
+} from './constants';
 import { emitFileContent } from './format-files';
 import {
     detectMaterialImports,
+    extractScssUseSpecifiers,
     type MaterialImport,
     usesMaterialThemeBridge
 } from './material-imports';
 import type { FileRefBundle } from './read-file-ref';
-import { type VendorPackage, vendorClosure } from './vendor';
+import {
+    extractRawBareSpecifiers,
+    pruneVendorClosure,
+    type VendorPackage,
+    vendorClosure
+} from './vendor';
 import {
     type DepGraphNode,
     type DepGraphResolver,
@@ -721,29 +731,67 @@ export function buildPlaygroundManifest(
     let vendorFiles: Record<string, string> | null = null;
     if (options.vendor && Object.keys(options.vendor.packages).length > 0) {
         const vendorPackages = options.vendor.packages;
-        const closure = vendorClosure(importedSpecs, vendorPackages);
+
+        // Raw subpath specifiers (`@cngx/ui/tabs`, not just `@cngx/ui`) from the
+        // SAME sources the Material-shell heuristic scans: walked TS, the
+        // snippet, and the fileBundle. TS imports/exports AND SCSS `@use` both
+        // count — an SCSS-only theme bridge must seed the closure or it ships
+        // stale from the registry. These also drive the entry-point prune.
+        const rawSpecs = new Set<string>();
+        const scanSources = [
+            effectiveBlock.snippet ?? '',
+            ...walk.value.map(node => node.sourceCode),
+            ...(fileBundle ? Object.values(fileBundle.files) : [])
+        ];
+        for (const src of scanSources) {
+            for (const spec of extractRawBareSpecifiers(src)) {
+                rawSpecs.add(spec);
+            }
+            for (const spec of extractScssUseSpecifiers(src)) {
+                rawSpecs.add(spec);
+            }
+        }
+
+        // Seed the closure from TS-import roots AND the raw subpath roots (which
+        // include the SCSS `@use` packages), then walk vendor-dep edges.
+        const seeds = new Set<string>(importedSpecs);
+        for (const spec of rawSpecs) {
+            seeds.add(resolvePackageRoot(spec));
+        }
+        const closure = vendorClosure(seeds, vendorPackages);
+
         if (closure.length > 0) {
+            const pruned = pruneVendorClosure(closure, vendorPackages, rawSpecs);
             const cap = options.vendor.totalCap ?? STACKBLITZ_VENDOR_TOTAL_CAP;
-            const totalBytes = closure.reduce(
-                (sum, name) => sum + vendorPackages[name].byteSize,
-                0
-            );
+            const perPkgBytes: Record<string, number> = {};
+            const staged: Record<string, string> = {};
+            let totalBytes = 0;
+            for (const name of closure) {
+                let bytes = 0;
+                for (const [rel, content] of Object.entries(pruned[name] ?? {})) {
+                    staged[`vendor/${name}/${rel}`] = content;
+                    bytes += content.length;
+                }
+                perPkgBytes[name] = bytes;
+                totalBytes += bytes;
+            }
             if (totalBytes > cap) {
                 const breakdown = closure
-                    .map(name => `${name} (${vendorPackages[name].byteSize} B)`)
+                    .map(name => `${name} (${perPkgBytes[name] ?? 0} B)`)
                     .sort()
                     .join(', ');
+                const overPost =
+                    totalBytes > STACKBLITZ_POST_LIMIT
+                        ? ` This also exceeds StackBlitz's ~${STACKBLITZ_POST_LIMIT} B project-POST limit, so the playground would fail to launch with HTTP 413 — reduce the imported surface or split the example.`
+                        : '';
                 return {
                     ok: false,
-                    error: `Playground vendor closure for "${componentName}" is ${totalBytes} B, over the ${cap} B cap: ${breakdown}`
+                    error: `Playground vendor closure for "${componentName}" is ${totalBytes} B after slimming + pruning, over the ${cap} B cap: ${breakdown}.${overPost}`
                 };
             }
-            vendorFiles = {};
+            vendorFiles = staged;
             for (const name of closure) {
                 dependencies[name] = `file:vendor/${name}`;
-                for (const [rel, content] of Object.entries(vendorPackages[name].files)) {
-                    vendorFiles[`vendor/${name}/${rel}`] = content;
-                }
             }
         }
     }

@@ -42,6 +42,7 @@ type EntityTabsProps = {
     readonly playgroundHead?: string[];
     readonly playgroundGlobalStyles?: string;
     readonly playgroundVendorPackages?: Record<string, VendorPackage>;
+    readonly playgroundVendorCap?: number;
 };
 
 /** Render the tab bar + tab panels for entity detail pages. */
@@ -184,6 +185,7 @@ export const EntityTabs = (props: EntityTabsProps): string =>
                                     head: props.playgroundHead,
                                     globalStyles: props.playgroundGlobalStyles,
                                     vendorPackages: props.playgroundVendorPackages,
+                                    vendorCap: props.playgroundVendorCap,
                                     fileBundles
                                 });
                             })()}

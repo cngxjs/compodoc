@@ -33,6 +33,8 @@ export type PlaygroundContentProps = {
      * per-playground import closure.
      */
     readonly vendorPackages?: Record<string, VendorPackage>;
+    /** Config-file `playgroundVendorCap` — forwarded to each block. */
+    readonly vendorCap?: number;
     /**
      * Pre-resolved file-ref bundles, keyed by block index in
      * `props.playgrounds`. Populated by `application.ts:resolvePlaygroundFiles`
@@ -80,6 +82,7 @@ export function PlaygroundContent(props: PlaygroundContentProps): string {
                     head: props.head,
                     globalStyles: props.globalStyles,
                     vendorPackages: props.vendorPackages,
+                    vendorCap: props.vendorCap,
                     fileBundle: props.fileBundles?.[index]
                 })
             )}

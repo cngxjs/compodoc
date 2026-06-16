@@ -188,6 +188,7 @@ export type EntityInfoProps = {
     readonly playgroundHead?: string[];
     readonly playgroundGlobalStyles?: string;
     readonly playgroundVendorPackages?: Record<string, VendorPackage>;
+    readonly playgroundVendorCap?: number;
 };
 
 const hasMembers = (e: any): boolean =>
@@ -690,7 +691,8 @@ export const renderEntityPage = (props: EntityInfoProps): string => {
                 playgroundFileCap: props.playgroundFileCap,
                 playgroundHead: props.playgroundHead,
                 playgroundGlobalStyles: props.playgroundGlobalStyles,
-                playgroundVendorPackages: props.playgroundVendorPackages
+                playgroundVendorPackages: props.playgroundVendorPackages,
+                playgroundVendorCap: props.playgroundVendorCap
             })}
         </>
     ) as string;

@@ -128,3 +128,30 @@ const MATERIAL_THEME_BRIDGE_RE = /@use\s+['"][^'"]*material[^'"]*theme/i;
 export function usesMaterialThemeBridge(source: string): boolean {
     return typeof source === 'string' && MATERIAL_THEME_BRIDGE_RE.test(source);
 }
+
+// Sass `@use` / `@forward` of a BARE specifier (package path, not a relative
+// `./partial`). e.g. `@use '@cngx/themes/material/azure-theme' as t;` →
+// `@cngx/themes/material/azure-theme`. The leading char class excludes `.`,
+// `/`, `~` so only package-rooted specifiers match. Trailing `as`/`with`/`;`
+// is left outside the capture.
+const SCSS_USE_SPEC_RE = /@(?:use|forward)\s+['"]([^'".~/][^'"]*)['"]/g;
+
+/**
+ * Every bare-specifier `@use`/`@forward` target in a Sass source, verbatim
+ * (subpath kept). Pure. An SCSS-only dependency — a theme bridge a component
+ * pulls in via `@use '@cngx/themes/…'` — is invisible to the TS import scan, so
+ * the vendor closure must seed from these too or it ships the dep stale from
+ * the registry.
+ */
+export function extractScssUseSpecifiers(source: string): string[] {
+    if (typeof source !== 'string' || source.length === 0) {
+        return [];
+    }
+    const out: string[] = [];
+    SCSS_USE_SPEC_RE.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = SCSS_USE_SPEC_RE.exec(source)) !== null) {
+        out.push(m[1]);
+    }
+    return out;
+}

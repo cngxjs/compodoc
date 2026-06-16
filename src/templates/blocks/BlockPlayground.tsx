@@ -50,6 +50,8 @@ export type BlockPlaygroundProps = {
      * embeds its closure as `file:` deps. Empty/undefined → registry-only.
      */
     readonly vendorPackages?: Record<string, VendorPackage>;
+    /** Config-file `playgroundVendorCap` — backstop on the vendored closure. */
+    readonly vendorCap?: number;
     /**
      * Pre-resolved file-ref bundle for `block.fileRef` blocks. Populated by
      * `application.ts:resolvePlaygroundFiles` and forwarded through
@@ -111,6 +113,9 @@ export function BlockPlayground(props: BlockPlaygroundProps): string {
     }
     if (props.vendorPackages && Object.keys(props.vendorPackages).length > 0) {
         options.vendor = { packages: props.vendorPackages };
+        if (typeof props.vendorCap === 'number') {
+            options.vendor.totalCap = props.vendorCap;
+        }
     }
     const built = buildPlaygroundManifest(
         props.componentName,
