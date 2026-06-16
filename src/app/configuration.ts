@@ -3,7 +3,8 @@ import { COMPODOC_DEFAULTS } from '../utils/defaults';
 import {
     STACKBLITZ_DEP_DEPTH,
     STACKBLITZ_FILE_CAP,
-    STACKBLITZ_FILE_COUNT_CAP
+    STACKBLITZ_FILE_COUNT_CAP,
+    STACKBLITZ_VENDOR_TOTAL_CAP
 } from './engines/stackblitz/constants';
 import type { ConfigurationInterface } from './interfaces/configuration.interface';
 import type { CoverageData } from './interfaces/coverageData.interface';
@@ -134,6 +135,8 @@ export class Configuration implements ConfigurationInterface {
         playgroundGlobalStyles: '',
         playgroundVendor: [],
         playgroundVendorRoot: 'dist',
+        playgroundVendorCap: STACKBLITZ_VENDOR_TOTAL_CAP,
+        playgroundVendorIncludeSourcemaps: false,
         playgroundVendorPackages: {},
         playgroundFiles: {},
         appConfig: [],

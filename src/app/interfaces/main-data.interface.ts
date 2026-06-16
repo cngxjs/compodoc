@@ -206,6 +206,21 @@ export interface MainDataInterface {
      */
     playgroundVendorRoot: string;
     /**
+     * Backstop byte cap on a single playground's slimmed-and-pruned vendored
+     * closure (`playgroundVendorCap`). Defaults to {@link
+     * STACKBLITZ_VENDOR_TOTAL_CAP}, set under StackBlitz's project-POST limit
+     * so a build fails fast rather than producing a manifest that 413s. No CLI
+     * flag — config-only.
+     */
+    playgroundVendorCap: number;
+    /**
+     * Keep `*.map` sourcemaps in vendored packages
+     * (`playgroundVendorIncludeSourcemaps`, default `false`). Sourcemaps are a
+     * large slice of FESM byte size and the WebContainer build never needs
+     * them, so they are dropped unless this is set. No CLI flag — config-only.
+     */
+    playgroundVendorIncludeSourcemaps: boolean;
+    /**
      * Vendor packages resolved from `playgroundVendor` at build time, keyed by
      * full package name. Populated by `PlaygroundVendorResolver` after the
      * workspace scan; forwarded into every block's manifest builder, which

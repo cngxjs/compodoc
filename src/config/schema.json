@@ -376,6 +376,22 @@
             "default": "dist",
             "examples": ["dist"]
         },
+        "playgroundVendorCap": {
+            "$id": "/properties/playgroundVendorCap",
+            "type": "integer",
+            "minimum": 50000,
+            "maximum": 2000000,
+            "title": "Backstop byte cap on a single playground's slimmed-and-pruned vendored closure. Defaults to 1500000, set under StackBlitz's ~2MB project-POST limit so an oversized closure fails the build instead of producing a manifest that 413s on launch.",
+            "default": 1500000,
+            "examples": [1500000]
+        },
+        "playgroundVendorIncludeSourcemaps": {
+            "$id": "/properties/playgroundVendorIncludeSourcemaps",
+            "type": "boolean",
+            "title": "Keep *.map sourcemaps in vendored packages. Off by default — sourcemaps are a large slice of FESM byte size and the WebContainer build never reads them.",
+            "default": false,
+            "examples": [false]
+        },
         "strictPlaygrounds": {
             "$id": "/properties/strictPlaygrounds",
             "type": "boolean",

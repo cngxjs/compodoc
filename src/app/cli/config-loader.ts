@@ -9,6 +9,7 @@ import { parseJsonIndent } from '../../utils/json-indent.util';
 import { logger } from '../../utils/logger';
 import { parseMaxVersionsShown } from '../../utils/max-versions-shown.util';
 import I18nEngine from '../engines/i18n.engine';
+import { STACKBLITZ_POST_LIMIT } from '../engines/stackblitz/constants';
 import type { ConfigurationFileInterface } from '../interfaces/configuration-file.interface';
 import type { MainDataInterface } from '../interfaces/main-data.interface';
 
@@ -284,6 +285,16 @@ export function applyConfigToMainData(
         configFile.playgroundVendorRoot.length > 0
     ) {
         mainData.playgroundVendorRoot = configFile.playgroundVendorRoot;
+    }
+
+    // Backstop closure cap. Floor keeps a meaningful payload; ceiling is the
+    // observed StackBlitz POST limit — raising past it re-opens the 413.
+    setPlaygroundCap(configFile.playgroundVendorCap, 50_000, STACKBLITZ_POST_LIMIT, n => {
+        mainData.playgroundVendorCap = n;
+    });
+
+    if (typeof configFile.playgroundVendorIncludeSourcemaps === 'boolean') {
+        mainData.playgroundVendorIncludeSourcemaps = configFile.playgroundVendorIncludeSourcemaps;
     }
 
     if (configFile.includes) {

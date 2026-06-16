@@ -72,6 +72,8 @@ export interface ConfigurationFileInterface {
     playgroundGlobalStyles: string;
     playgroundVendor: string[];
     playgroundVendorRoot: string;
+    playgroundVendorCap: number;
+    playgroundVendorIncludeSourcemaps: boolean;
     groupBy: 'folder' | 'category' | 'none';
     groupDepth: number;
     menuLayout: 'type' | 'feature';

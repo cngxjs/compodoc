@@ -783,6 +783,7 @@ export const ComponentPage = (data: any): string => {
                                 head: data.playgroundHead,
                                 globalStyles: data.playgroundGlobalStyles,
                                 vendorPackages: data.playgroundVendorPackages,
+                                vendorCap: data.playgroundVendorCap,
                                 fileBundles: fileBundles as never
                             });
                         })()}

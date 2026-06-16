@@ -15,15 +15,33 @@ export const STACKBLITZ_FILE_COUNT_CAP = 25;
 export const STACKBLITZ_FILE_CAP = 8000;
 
 /**
- * Total byte cap on a single playground's vendored (`playgroundVendor`)
- * closure. Vendoring inlines whole `dist/` trees (FESM bundles × secondary
- * entry points), so the per-file truncation cap does NOT apply to vendored
- * files — truncating a FESM bundle would corrupt it. Instead the closure is
- * measured up front and the build FAILS, naming the packages and sizes, when
- * it blows this cap. Generous by design: a typical UI-lib closure is well
- * under 1 MB; the ceiling exists to stop a runaway payload, not to trim.
+ * Observed StackBlitz project-POST limit. `openProject` submits the whole
+ * project (files + dependencies) as a single form POST to stackblitz.com;
+ * their edge (nginx) rejects bodies past roughly this size with
+ * `413 Request Entity Too Large`. It is the REAL binding constraint on a
+ * vendored playground's payload — the per-closure byte cap below is set under
+ * it so a build fails fast instead of producing a manifest that 413s on click.
+ * Not officially documented; sourced from the practical failure point.
  */
-export const STACKBLITZ_VENDOR_TOTAL_CAP = 4_000_000;
+export const STACKBLITZ_POST_LIMIT = 2_000_000;
+
+/**
+ * Total byte cap on a single playground's vendored (`playgroundVendor`)
+ * closure, AFTER slimming (sourcemaps + legacy bundle dirs dropped) and
+ * entry-point pruning (only imported entry points + their referenced siblings
+ * ship). The per-file truncation cap does NOT apply to vendored files —
+ * truncating a FESM bundle would corrupt it — so the slimmed-and-pruned
+ * closure is measured up front and the build FAILS, naming packages and sizes,
+ * when it blows this cap.
+ *
+ * Default is set comfortably under {@link STACKBLITZ_POST_LIMIT} to leave room
+ * for the non-vendored scaffold files and the form-encoding overhead of the
+ * POST. Overridable per build via the `playgroundVendorCap` config key for the
+ * rare oversized closure; raising it past the StackBlitz limit re-opens the
+ * 413 it exists to prevent. The slimming/pruning is the real fix — this cap is
+ * the backstop.
+ */
+export const STACKBLITZ_VENDOR_TOTAL_CAP = 1_500_000;
 
 /**
  * StackBlitz `template` value passed to `openProject`. We deliberately use

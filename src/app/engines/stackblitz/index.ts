@@ -37,8 +37,15 @@ export { rewriteDecoratorUrls, rewriteRelativeImports } from './rewrite-imports'
 export type {
     VendorFsReader,
     VendorPackage,
+    VendorResolveOptions,
     VendorResolveResult
 } from './vendor';
-export { resolveVendorPackages, vendorClosure } from './vendor';
+export {
+    extractRawBareSpecifiers,
+    extractRelativeImports,
+    pruneVendorClosure,
+    resolveVendorPackages,
+    vendorClosure
+} from './vendor';
 export type { DepGraphNode, DepGraphResolver, WalkOptions, WalkResult } from './walk-dep-graph';
 export { walkDepGraph } from './walk-dep-graph';
