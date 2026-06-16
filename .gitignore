@@ -45,6 +45,9 @@ src/**/*.js
 src/resources/js/compodocx.js
 src/resources/js/chunks/
 
+# npm pack output (e.g. `npm pack`, release dry-runs)
+*.tgz
+
 # Miscellaneous
 tmp/
 .tmp/
