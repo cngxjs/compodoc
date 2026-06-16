@@ -934,6 +934,68 @@ describe('buildPlaygroundManifest', () => {
             expect(result.error).to.contain('@cngx/ui');
             expect(result.error).to.contain('over the 50');
         });
+
+        it('seeds the vendor closure from an SCSS @use specifier', () => {
+            const themesPkg = {
+                '@cngx/themes': {
+                    name: '@cngx/themes',
+                    files: {
+                        'package.json': '{"name":"@cngx/themes"}',
+                        'material/x-theme.scss': '/* theme */'
+                    },
+                    vendorDeps: [],
+                    byteSize: 50
+                }
+            };
+            // No TS import of @cngx/themes — only an SCSS @use in the styles.
+            const node: DepGraphNode = {
+                ...rootNode,
+                sourceCode:
+                    '@Component({ styles: ["@use \'@cngx/themes/material/x-theme\';"] })\n' +
+                    'export class MyButton {}\n',
+                imports: []
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([node]),
+                { dependencies: { '@angular/core': '^21.0.0' } },
+                { vendor: { packages: themesPkg } }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            expect(result.value.dependencies['@cngx/themes']).to.equal('file:vendor/@cngx/themes');
+            expect(result.value.files).to.have.property(
+                'vendor/@cngx/themes/material/x-theme.scss'
+            );
+        });
+
+        it('cap error names the StackBlitz POST limit when the closure exceeds it', () => {
+            const huge = 'x'.repeat(2_100_000);
+            const vp = {
+                '@cngx/ui': {
+                    name: '@cngx/ui',
+                    files: { 'package.json': '{"name":"@cngx/ui"}', 'fesm2022/huge.mjs': huge },
+                    vendorDeps: [],
+                    byteSize: huge.length
+                }
+            };
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([importingNode]),
+                { dependencies: { '@angular/core': '^21.0.0' } },
+                { vendor: { packages: vp } } // default cap (1.5 MB) < 2.1 MB
+            );
+            expect(result.ok).to.be.false;
+            if (result.ok) {
+                return;
+            }
+            expect(result.error).to.contain('after slimming + pruning');
+            expect(result.error).to.contain('413');
+        });
     });
 
     it('emits POSIX paths only — never backslashes (F2)', () => {

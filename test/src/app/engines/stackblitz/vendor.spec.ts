@@ -1,4 +1,5 @@
 import {
+    pruneVendorClosure,
     resolveVendorPackages,
     type VendorFsReader,
     type VendorPackage,
@@ -57,6 +58,45 @@ describe('resolveVendorPackages', () => {
             'package.json'
         ]);
         expect(pkg.byteSize).to.be.greaterThan(0);
+    });
+
+    it('drops sourcemaps and legacy bundle dirs; byteSize reflects the slim set', () => {
+        const files = {
+            'dist/ui/package.json': pkgJson('@cngx/ui'),
+            'dist/ui/index.d.ts': 'export declare const x: number;',
+            'dist/ui/fesm2022/cngx-ui.mjs': 'export const x = 1;',
+            'dist/ui/fesm2022/cngx-ui.mjs.map': '{"version":3,"sources":[]}',
+            // Legacy / duplicate bundle dirs the WebContainer build never reads.
+            'dist/ui/esm2022/cngx-ui.mjs': 'export const x = 1; // dupe',
+            'dist/ui/esm2022/cngx-ui.mjs.map': '{}',
+            'dist/ui/fesm2020/cngx-ui.mjs': 'old',
+            'dist/ui/bundles/cngx-ui.umd.js': 'umd'
+        };
+        const result = resolveVendorPackages(['@cngx/ui'], 'dist', readerFromMap(files));
+        const pkg = result.packages['@cngx/ui'];
+        expect(Object.keys(pkg.files).sort()).to.deep.equal([
+            'fesm2022/cngx-ui.mjs',
+            'index.d.ts',
+            'package.json'
+        ]);
+        // byteSize sums only the kept (slim) files.
+        const expected =
+            files['dist/ui/package.json'].length +
+            files['dist/ui/index.d.ts'].length +
+            files['dist/ui/fesm2022/cngx-ui.mjs'].length;
+        expect(pkg.byteSize).to.equal(expected);
+    });
+
+    it('keeps sourcemaps when includeSourcemaps is set', () => {
+        const files = {
+            'dist/ui/package.json': pkgJson('@cngx/ui'),
+            'dist/ui/fesm2022/cngx-ui.mjs': 'export const x = 1;',
+            'dist/ui/fesm2022/cngx-ui.mjs.map': '{"version":3}'
+        };
+        const result = resolveVendorPackages(['@cngx/ui'], 'dist', readerFromMap(files), {
+            includeSourcemaps: true
+        });
+        expect(result.packages['@cngx/ui'].files).to.have.property('fesm2022/cngx-ui.mjs.map');
     });
 
     it('keeps secondary-entry-point package.json as files, not separate packages', () => {
@@ -174,5 +214,140 @@ describe('vendorClosure', () => {
         };
         const closure = vendorClosure(['a'], packages).sort();
         expect(closure).to.deep.equal(['a', 'b']);
+    });
+});
+
+describe('pruneVendorClosure', () => {
+    // Realistic ng-packagr layout: an `exports` map keying each entry point to
+    // its FESM chunk + typings. `@cngx/ui/tabs` references a sibling entry
+    // (`@cngx/ui/a11y`) and a cross-package entry (`@cngx/common/forms`).
+    const uiPkg: VendorPackage = {
+        name: '@cngx/ui',
+        files: {
+            'package.json': JSON.stringify({
+                name: '@cngx/ui',
+                exports: {
+                    '.': { types: './index.d.ts', default: './fesm2022/ui.mjs' },
+                    './tabs': { types: './tabs/index.d.ts', default: './fesm2022/ui-tabs.mjs' },
+                    './a11y': { types: './a11y/index.d.ts', default: './fesm2022/ui-a11y.mjs' },
+                    './unused': {
+                        types: './unused/index.d.ts',
+                        default: './fesm2022/ui-unused.mjs'
+                    }
+                }
+            }),
+            'index.d.ts': 'export {};',
+            'fesm2022/ui.mjs': 'export const Ui = 1;',
+            'fesm2022/ui-tabs.mjs':
+                "import { A11y } from '@cngx/ui/a11y';\n" +
+                "import { Forms } from '@cngx/common/forms';\nexport const Tabs = 1;",
+            'fesm2022/ui-a11y.mjs': 'export const A11y = 1;',
+            'fesm2022/ui-unused.mjs': 'export const Unused = 1;',
+            'tabs/index.d.ts': 'export declare const Tabs: number;',
+            'a11y/index.d.ts': 'export declare const A11y: number;',
+            'unused/index.d.ts': 'export declare const Unused: number;'
+        },
+        vendorDeps: ['@cngx/common'],
+        byteSize: 0
+    };
+
+    const commonPkg: VendorPackage = {
+        name: '@cngx/common',
+        files: {
+            'package.json': JSON.stringify({
+                name: '@cngx/common',
+                exports: {
+                    '.': { types: './index.d.ts', default: './fesm2022/common.mjs' },
+                    './forms': {
+                        types: './forms/index.d.ts',
+                        default: './fesm2022/common-forms.mjs'
+                    },
+                    './other': {
+                        types: './other/index.d.ts',
+                        default: './fesm2022/common-other.mjs'
+                    }
+                }
+            }),
+            'index.d.ts': 'export {};',
+            'fesm2022/common.mjs': 'export const C = 1;',
+            'fesm2022/common-forms.mjs': 'export const Forms = 1;',
+            'fesm2022/common-other.mjs': 'export const Other = 1;',
+            'forms/index.d.ts': 'export declare const Forms: number;',
+            'other/index.d.ts': 'export declare const Other: number;'
+        },
+        vendorDeps: [],
+        byteSize: 0
+    };
+
+    it('keeps the imported entry + transitively-referenced sibling, drops the rest', () => {
+        const out = pruneVendorClosure(['@cngx/ui'], { '@cngx/ui': uiPkg }, ['@cngx/ui/tabs']);
+        expect(Object.keys(out['@cngx/ui']).sort()).to.deep.equal([
+            'a11y/index.d.ts', // reached: ui-tabs imports @cngx/ui/a11y
+            'fesm2022/ui-a11y.mjs',
+            'fesm2022/ui-tabs.mjs',
+            'index.d.ts', // root typings always kept
+            'package.json', // root pkg.json (exports map) always kept
+            'tabs/index.d.ts'
+        ]);
+        // Unreached entry and the un-imported root FESM are dropped.
+        expect(out['@cngx/ui']).not.to.have.property('fesm2022/ui-unused.mjs');
+        expect(out['@cngx/ui']).not.to.have.property('unused/index.d.ts');
+        expect(out['@cngx/ui']).not.to.have.property('fesm2022/ui.mjs');
+    });
+
+    it('follows cross-package entry-point references', () => {
+        const out = pruneVendorClosure(
+            ['@cngx/ui', '@cngx/common'],
+            { '@cngx/ui': uiPkg, '@cngx/common': commonPkg },
+            ['@cngx/ui/tabs']
+        );
+        // ui-tabs imports @cngx/common/forms → only that entry of common ships.
+        expect(Object.keys(out['@cngx/common']).sort()).to.deep.equal([
+            'fesm2022/common-forms.mjs',
+            'forms/index.d.ts',
+            'index.d.ts',
+            'package.json'
+        ]);
+        expect(out['@cngx/common']).not.to.have.property('fesm2022/common-other.mjs');
+    });
+
+    it('ships only root files for a closure package nothing references', () => {
+        // `@cngx/ui` (root) is imported but its root FESM references no sibling;
+        // `@cngx/common` is in the closure via vendorDeps but never reached.
+        const out = pruneVendorClosure(
+            ['@cngx/ui', '@cngx/common'],
+            { '@cngx/ui': uiPkg, '@cngx/common': commonPkg },
+            ['@cngx/ui']
+        );
+        expect(Object.keys(out['@cngx/common']).sort()).to.deep.equal([
+            'index.d.ts',
+            'package.json'
+        ]);
+    });
+
+    it('ships the whole package when an imported subpath maps to no entry', () => {
+        const out = pruneVendorClosure(['@cngx/ui'], { '@cngx/ui': uiPkg }, [
+            '@cngx/ui/tabs/internal'
+        ]);
+        expect(Object.keys(out['@cngx/ui']).sort()).to.deep.equal(Object.keys(uiPkg.files).sort());
+    });
+
+    it('ships the whole package when there is no exports map to read', () => {
+        const noExports: VendorPackage = {
+            name: '@cngx/x',
+            files: {
+                'package.json': '{"name":"@cngx/x"}',
+                'fesm2022/x.mjs': 'export const X = 1;',
+                'y/index.d.ts': 'export declare const Y: number;'
+            },
+            vendorDeps: [],
+            byteSize: 0
+        };
+        const out = pruneVendorClosure(['@cngx/x'], { '@cngx/x': noExports }, ['@cngx/x']);
+        expect(Object.keys(out['@cngx/x']).sort()).to.deep.equal([
+            'fesm2022/x.mjs',
+            'package.json',
+            'y/index.d.ts'
+        ]);
     });
 });
