@@ -453,24 +453,43 @@ const buildIndexHtml = (includeShell: boolean, extraHead: string[] = []): string
 
 /**
  * Single `src/styles.css` writer. `extraStyles` (`playgroundGlobalStyles`) is
- * appended verbatim after the default body reset, so an author can ship global
- * CSS the example needs without overriding the whole stylesheet.
+ * emitted around the default body reset: any leading `@import` / `@charset` /
+ * `@layer`-statement at-rules are hoisted ABOVE the reset (the CSS spec requires
+ * those preludes to precede every style rule, else the browser drops them), and
+ * the remaining author CSS is emitted AFTER the reset so it can still override
+ * it. This lets `playgroundGlobalStyles: "@import '...';"` actually load.
  */
 const buildStylesCss = (extraStyles = ''): string => {
-    const base = [
+    const reset = [
         'body {',
         '  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;',
         '  margin: 0;',
         '  padding: 1.5rem;',
         '  color: #1c1c1c;',
-        '}',
-        ''
+        '}'
     ];
     const trimmed = typeof extraStyles === 'string' ? extraStyles.trim() : '';
-    if (trimmed.length > 0) {
-        base.push(trimmed, '');
+    if (trimmed.length === 0) {
+        return reset.join('\n') + '\n';
     }
-    return base.join('\n');
+
+    // `@import` / `@charset` / `@layer name;` are statement at-rules that must
+    // come before any style rule. Match the statement form only (terminated by
+    // `;` with no block), so a `@layer x { ... }` block stays with the body CSS.
+    const preludeRe = /@(?:import|charset|layer)\b[^;{]*;/gi;
+    const prelude = trimmed.match(preludeRe) ?? [];
+    const rest = trimmed.replace(preludeRe, '').trim();
+
+    const out: string[] = [];
+    if (prelude.length > 0) {
+        out.push(prelude.join('\n'), '');
+    }
+    out.push(...reset);
+    if (rest.length > 0) {
+        out.push('', rest);
+    }
+    out.push('');
+    return out.join('\n');
 };
 
 const buildMainTs = (): string =>
