@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.7.2] - 2026-06-24
+
+A small `playgroundGlobalStyles` fix so a foundation stylesheet pulled in with `@import` actually loads.
+
+### Fixed
+
+- **`playgroundGlobalStyles` no longer drops a leading `@import`.** The configured global CSS was appended verbatim after the generated `src/styles.css` body reset, so a leading `@import` (the common way to pull a foundation stylesheet into a playground) landed after a style rule and was discarded per the CSS spec - the imported CSS never loaded. Leading `@import` / `@charset` / `@layer`-statement at-rules are now hoisted above the body reset; the remaining author CSS still follows the reset so it can override it.
+
 ## [0.7.1] - 2026-06-16
 
 A `playgroundVendor` payload-size fix. Vendoring a real component library now produces a slim StackBlitz project that launches instead of failing with `413 Request Entity Too Large`.
