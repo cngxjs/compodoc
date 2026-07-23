@@ -484,6 +484,54 @@ describe('buildPlaygroundManifest', () => {
             expect(styles.indexOf('font-family')).to.be.lessThan(styles.indexOf('--brand'));
         });
 
+        it('hoists a leading @import ABOVE the body reset (CSS drops preludes after a rule)', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                { globalStyles: "@import 'https://fonts.example/x.css';\n:root { --brand: #06f; }" }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            const styles = result.value.files['src/styles.css'];
+            expect(styles.indexOf('@import')).to.be.lessThan(styles.indexOf('font-family'));
+            expect(styles.indexOf('font-family')).to.be.lessThan(styles.indexOf('--brand'));
+            // @import is valid CSS — the sheet stays .css, no .scss is emitted.
+            expect(result.value.files).to.not.have.property('src/styles.scss');
+        });
+
+        it('ships styles as .scss and wires angular.json when globalStyles carry a Sass @use', () => {
+            const result = buildPlaygroundManifest(
+                'MyButton',
+                block,
+                resolverFor([rootNode]),
+                consumerPkg,
+                {
+                    globalStyles:
+                        "@use '@cngx/themes/material/azure-theme' as t;\nbody { background: #fff; }"
+                }
+            );
+            expect(result.ok).to.be.true;
+            if (!result.ok) {
+                return;
+            }
+            // Sass-only prelude ⇒ the global sheet must be .scss so the Angular
+            // builder actually compiles it; the .css variant is gone.
+            expect(result.value.files).to.have.property('src/styles.scss');
+            expect(result.value.files).to.not.have.property('src/styles.css');
+            const styles = result.value.files['src/styles.scss'];
+            // @use hoisted to the very top (Sass errors if it follows any rule).
+            expect(styles.indexOf('@use')).to.be.lessThan(styles.indexOf('font-family'));
+            expect(styles.indexOf('font-family')).to.be.lessThan(styles.indexOf('background'));
+            // angular.json points the styles entry at the .scss file.
+            const angularJson = result.value.files['angular.json'];
+            expect(angularJson).to.contain('src/styles.scss');
+            expect(angularJson).to.not.contain('src/styles.css');
+        });
+
         it('composes custom head with the Material shell (shell links first)', () => {
             const result = buildPlaygroundManifest(
                 'MyButton',

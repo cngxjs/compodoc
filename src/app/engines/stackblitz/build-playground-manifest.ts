@@ -272,10 +272,10 @@ const buildPackageJson = (deps: Record<string, string>, devDeps: Record<string, 
         2
     )}\n`;
 
-const buildAngularJson = (hasMaterial: boolean): string => {
+const buildAngularJson = (hasMaterial: boolean, stylesFile = 'src/styles.css'): string => {
     const styles = hasMaterial
-        ? ['src/styles.css', '@angular/material/prebuilt-themes/azure-blue.css']
-        : ['src/styles.css'];
+        ? [stylesFile, '@angular/material/prebuilt-themes/azure-blue.css']
+        : [stylesFile];
     return `${JSON.stringify(
         {
             version: 1,
@@ -452,12 +452,26 @@ const buildIndexHtml = (includeShell: boolean, extraHead: string[] = []): string
 };
 
 /**
- * Single `src/styles.css` writer. `extraStyles` (`playgroundGlobalStyles`) is
+ * True when the author's global styles carry a Sass-only statement prelude
+ * (`@use` / `@forward`). Those resolve only when the stylesheet is compiled by
+ * Sass, and the Angular application builder picks Sass purely by file
+ * extension — so a global sheet carrying them must ship as `.scss`, not `.css`
+ * (see the `stylesFile` selection in `buildPlaygroundManifest`). `@import` /
+ * `@charset` / `@layer` are valid CSS and do NOT force `.scss`.
+ */
+export const hasSassPrelude = (styles?: string): boolean =>
+    typeof styles === 'string' && /@(?:use|forward)\b[^;{]*;/i.test(styles);
+
+/**
+ * Global-stylesheet writer for `playgroundGlobalStyles`. `extraStyles` is
  * emitted around the default body reset: any leading `@import` / `@charset` /
- * `@layer`-statement at-rules are hoisted ABOVE the reset (the CSS spec requires
- * those preludes to precede every style rule, else the browser drops them), and
- * the remaining author CSS is emitted AFTER the reset so it can still override
- * it. This lets `playgroundGlobalStyles: "@import '...';"` actually load.
+ * `@layer` / `@use` / `@forward` statement at-rules are hoisted ABOVE the reset
+ * (CSS drops `@import`/`@charset` that follow a rule, and Sass errors on a
+ * `@use`/`@forward` that follows one), and the remaining author CSS is emitted
+ * AFTER the reset so it can still override it. The caller writes the result to
+ * `src/styles.scss` when {@link hasSassPrelude} holds and `src/styles.css`
+ * otherwise, so `playgroundGlobalStyles: "@import '...';"` (or `@use`) actually
+ * loads.
  */
 const buildStylesCss = (extraStyles = ''): string => {
     const reset = [
@@ -473,10 +487,12 @@ const buildStylesCss = (extraStyles = ''): string => {
         return reset.join('\n') + '\n';
     }
 
-    // `@import` / `@charset` / `@layer name;` are statement at-rules that must
-    // come before any style rule. Match the statement form only (terminated by
-    // `;` with no block), so a `@layer x { ... }` block stays with the body CSS.
-    const preludeRe = /@(?:import|charset|layer)\b[^;{]*;/gi;
+    // `@import` / `@charset` / `@layer name;` / `@use` / `@forward` are statement
+    // at-rules that must come before any style rule. Match the statement form
+    // only (terminated by `;` with no block), so a `@layer x { ... }` block stays
+    // with the body CSS. `@use`/`@forward` are Sass preludes and are even
+    // stricter — Sass errors if they follow any rule — so they are hoisted too.
+    const preludeRe = /@(?:import|charset|layer|use|forward)\b[^;{]*;/gi;
     const prelude = trimmed.match(preludeRe) ?? [];
     const rest = trimmed.replace(preludeRe, '').trim();
 
@@ -815,13 +831,18 @@ export function buildPlaygroundManifest(
         }
     }
 
+    // A global sheet carrying a Sass prelude (`@use`/`@forward`) must ship as
+    // `.scss` so the Angular builder runs Sass on it; `@import`-only styles
+    // stay `.css` to avoid pulling the Sass toolchain in needlessly.
+    const stylesFile = hasSassPrelude(options.globalStyles) ? 'src/styles.scss' : 'src/styles.css';
+
     const files: Record<string, string> = {};
     files['package.json'] = emit(buildPackageJson(dependencies, devDependencies));
-    files['angular.json'] = emit(buildAngularJson(hasMaterial));
+    files['angular.json'] = emit(buildAngularJson(hasMaterial, stylesFile));
     files['tsconfig.json'] = emit(buildTsconfigJson());
     files['tsconfig.app.json'] = emit(buildTsconfigAppJson());
     files['src/index.html'] = emit(buildIndexHtml(emitMaterialShell, options.head));
-    files['src/styles.css'] = emit(buildStylesCss(options.globalStyles));
+    files[stylesFile] = emit(buildStylesCss(options.globalStyles));
     files['src/main.ts'] = emit(buildMainTs());
     files['src/app/app.config.ts'] = emit(buildAppConfigTs());
 
