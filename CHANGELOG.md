@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.7.3] - 2026-07-23
+
+A feature-layout fix so reference-only libraries get a first-class navigation node, plus a `playgroundGlobalStyles` fix so a global Sass theme entry point actually compiles.
+
+### Added
+
+- **`featureLibraryScope` gives reference-only libraries a first-class node under `menuLayout: 'feature'`.** A folder / `@category` bucket previously earned a node in the Features chapter only when it shipped a class-like kind (component, directive, pipe, injectable, token, class, guard, interceptor, entity). A modern-Angular library whose public surface is purely functions, interfaces, and type aliases - `provideX` / `withX` helpers, functional composables, signal-store features, adapter types - had no library node and scattered into the flat reference sections. The new config-only `featureLibraryScope: 'primary' | 'auto' | 'all'` (default `'auto'`) decides this per bucket: `'primary'` keeps the previous class-like-only behaviour; `'auto'` falls a bucket with no class-like symbol back to its full reference surface, so pure function/type libraries are first-class while class-like buckets stay curated; `'all'` lists every bucket's complete surface. The exhaustive `references.html` portal and the `categories/<bucket>.html` landing pages are unchanged in every mode.
+
+### Fixed
+
+- **`playgroundGlobalStyles` now compiles a global Sass entry point.** The configured global styles were always written to `src/styles.css`, and the Angular application builder selects Sass purely by file extension, so a Sass-only prelude such as `@use '@cngx/themes/material/azure-theme';` never resolved - a global Material theme bridge was silently dropped. Leading `@use` / `@forward` statements are now hoisted above the body reset alongside the existing `@import` / `@charset` / `@layer` handling (Sass errors when they follow any rule), and when the value carries a Sass prelude the sheet is emitted as `src/styles.scss` with the `angular.json` styles entry pointed at it. Plain-CSS values stay `src/styles.css`.
+
 ## [0.7.2] - 2026-06-24
 
 A small `playgroundGlobalStyles` fix so a foundation stylesheet pulled in with `@import` actually loads.
