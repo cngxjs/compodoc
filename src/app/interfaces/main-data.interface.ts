@@ -253,6 +253,7 @@ export interface MainDataInterface {
     groupBy: 'folder' | 'category' | 'none' | '';
     groupDepth: number;
     menuLayout: 'type' | 'feature';
+    featureLibraryScope: 'primary' | 'auto' | 'all';
     featuresName: string;
     referencesName: string;
     collapsedAll: boolean;

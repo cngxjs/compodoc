@@ -223,6 +223,33 @@ describe('applyConfigToMainData', () => {
         expect(mainData.menuLayout).toBe('feature');
     });
 
+    it('featureLibraryScope propagates from config', () => {
+        const mainData = makeMainData();
+        const program = makeProgram();
+        applyConfigToMainData(mainData, { featureLibraryScope: 'primary' }, program, {
+            cwd: '/tmp/test'
+        });
+        expect(mainData.featureLibraryScope).toBe('primary');
+    });
+
+    it('invalid featureLibraryScope exits with code 2', () => {
+        const mainData = makeMainData();
+        const program = makeProgram();
+        const exitSpy = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
+            throw new Error(`process.exit(${code})`);
+        }) as never);
+        expect(() =>
+            applyConfigToMainData(
+                mainData,
+                { featureLibraryScope: 'invalid' as unknown as 'auto' },
+                program,
+                { cwd: '/tmp/test' }
+            )
+        ).toThrow(/process\.exit\(2\)/);
+        expect(exitSpy).toHaveBeenCalledWith(2);
+        exitSpy.mockRestore();
+    });
+
     it('collapsedAll: true propagates from config', () => {
         const mainData = makeMainData();
         const program = makeProgram();
