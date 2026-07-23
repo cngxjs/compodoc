@@ -23,6 +23,9 @@ import DependenciesEngine, {
 describe('DependenciesEngine — Primary/Reference bifurcation', () => {
     beforeEach(() => {
         Configuration.mainData.groupDepth = 2;
+        // Pin the default scope so each test starts from a known state; the
+        // scope-specific tests below override it explicitly.
+        Configuration.mainData.featureLibraryScope = 'auto';
     });
 
     const makeParsed = (overrides: Partial<any> = {}): any => ({
@@ -101,7 +104,8 @@ describe('DependenciesEngine — Primary/Reference bifurcation', () => {
         expect(refs.map(i => i.name).sort()).toEqual(['CngxToast', 'ToastConfig']);
     });
 
-    it('drops a bucket from Primary when no primary-kind item lives there (References still shows it)', () => {
+    it('scope "primary" drops a bucket with no primary-kind item (References still shows it)', () => {
+        Configuration.mainData.featureLibraryScope = 'primary';
         DependenciesEngine.init(
             makeParsed({
                 interfaces: [
@@ -115,6 +119,86 @@ describe('DependenciesEngine — Primary/Reference bifurcation', () => {
         );
         expect(DependenciesEngine.categorizedByFeaturePrimary).toEqual({});
         expect(DependenciesEngine.categorizedByFeatureReference['toast']).toHaveLength(1);
+    });
+
+    it('scope "auto" (default) surfaces a reference-only library as a Features node', () => {
+        // Modern Angular: an adapter lib exporting only a function + interface
+        // + type alias must appear as a first-class library, not vanish.
+        DependenciesEngine.init(
+            makeParsed({
+                interfaces: [
+                    {
+                        name: 'CngxQueryLike',
+                        file: 'src/interop/query/from-query.ts',
+                        category: 'interop'
+                    }
+                ],
+                miscellaneous: {
+                    variables: [],
+                    enumerations: [],
+                    groupedVariables: [],
+                    groupedFunctions: [],
+                    groupedEnumerations: [],
+                    groupedTypeAliases: [],
+                    functions: [
+                        {
+                            name: 'fromQuery',
+                            file: 'src/interop/query/from-query.ts',
+                            category: 'interop'
+                        }
+                    ],
+                    typealiases: [
+                        {
+                            name: 'CngxAsyncStateProps',
+                            file: 'src/interop/signals/with-cngx-async-state.ts',
+                            category: 'interop'
+                        }
+                    ]
+                }
+            })
+        );
+        const primary = DependenciesEngine.categorizedByFeaturePrimary['interop'] ?? [];
+        expect(primary.map(i => i.name).sort()).toEqual([
+            'CngxAsyncStateProps',
+            'CngxQueryLike',
+            'fromQuery'
+        ]);
+        expect(DependenciesEngine.categorizedByFeatureReference['interop']).toHaveLength(3);
+    });
+
+    it('scope "auto" keeps a class-like bucket curated (reference kinds stay off the node)', () => {
+        DependenciesEngine.init(
+            makeParsed({
+                components: [
+                    { name: 'CngxToast', file: 'src/toast/toast.component.ts', category: 'toast' }
+                ],
+                interfaces: [
+                    { name: 'ToastConfig', file: 'src/toast/toast.types.ts', category: 'toast' }
+                ]
+            })
+        );
+        // Has a primary item ⇒ no fallback; the interface stays References-only.
+        expect(DependenciesEngine.categorizedByFeaturePrimary['toast'].map(i => i.name)).toEqual([
+            'CngxToast'
+        ]);
+        expect(DependenciesEngine.categorizedByFeatureReference['toast']).toHaveLength(2);
+    });
+
+    it('scope "all" lists the complete surface of every bucket under Features', () => {
+        Configuration.mainData.featureLibraryScope = 'all';
+        DependenciesEngine.init(
+            makeParsed({
+                components: [
+                    { name: 'CngxToast', file: 'src/toast/toast.component.ts', category: 'toast' }
+                ],
+                interfaces: [
+                    { name: 'ToastConfig', file: 'src/toast/toast.types.ts', category: 'toast' }
+                ]
+            })
+        );
+        expect(
+            DependenciesEngine.categorizedByFeaturePrimary['toast'].map(i => i.name).sort()
+        ).toEqual(['CngxToast', 'ToastConfig']);
     });
 
     it('a primary-only bucket surfaces in BOTH chapters (References is exhaustive)', () => {

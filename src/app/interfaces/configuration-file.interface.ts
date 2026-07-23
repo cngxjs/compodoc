@@ -77,6 +77,7 @@ export interface ConfigurationFileInterface {
     groupBy: 'folder' | 'category' | 'none';
     groupDepth: number;
     menuLayout: 'type' | 'feature';
+    featureLibraryScope: 'primary' | 'auto' | 'all';
     collapsedAll: boolean;
     shikiTheme: string;
 }

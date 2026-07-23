@@ -82,7 +82,7 @@ export function loadConfigFile(opts: LoadConfigOptions): ConfigFileResult {
  * Side-effects allowed:
  *  - `process.exit(1)` for invalid `--jsonIndent` / `--maxVersionsShown` /
  *    missing custom-theme file / `--tsconfig` boolean.
- *  - `process.exit(2)` for invalid `menuLayout` / `collapsedAll` / `featuresName` / `referencesName` config.
+ *  - `process.exit(2)` for invalid `menuLayout` / `featureLibraryScope` / `collapsedAll` / `featuresName` / `referencesName` config.
  *  - Mutates `logger.silent` and `logger.routeToStderr`.
  *  - Mutates `I18nEngine` via the language-availability warning.
  *
@@ -753,6 +753,17 @@ export function applyConfigToMainData(
             process.exit(2);
         }
         mainData.menuLayout = layout;
+    }
+
+    if (configFile.featureLibraryScope !== undefined) {
+        const featureLibraryScope = configFile.featureLibraryScope;
+        if (!COMPODOC_DEFAULTS.featureLibraryScopesSupported.includes(featureLibraryScope)) {
+            logger.error(
+                `Invalid featureLibraryScope value "${featureLibraryScope}". Expected "primary", "auto" or "all".`
+            );
+            process.exit(2);
+        }
+        mainData.featureLibraryScope = featureLibraryScope;
     }
 
     if (configFile.featuresName !== undefined) {

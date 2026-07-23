@@ -887,16 +887,37 @@ export class DependenciesEngine {
         // Same target page; readers pick the chapter that matches their
         // intent (toolbox view vs. API surface view). `docsKind` is ignored
         // here because References is the full surface, not a residual.
+        //
+        // `featureLibraryScope` governs which buckets get a Features/Libraries
+        // node and what it lists — modern Angular libraries often ship only
+        // functions / interfaces / type aliases (provideX/withX helpers,
+        // functional composables, adapter types) and would otherwise never
+        // surface as a library:
+        //   'primary' — strict: only buckets with a class-like (or promoted)
+        //               symbol appear, listing just those items (legacy).
+        //   'auto'    — a bucket with no primary items falls back to its full
+        //               reference surface, so a pure-function lib is first-class
+        //               while class-like libs stay curated (default).
+        //   'all'     — every bucket lists its complete surface under Features.
+        const scope = Configuration.mainData.featureLibraryScope ?? 'auto';
         const primary: Record<string, EntityWithKind[]> = {};
         const reference: Record<string, EntityWithKind[]> = {};
         for (const [bucket, items] of Object.entries(groups)) {
             const primaryItems = items.filter(
                 i => PRIMARY_KINDS.has(i.kind) || (i as any).docsKind === 'primary'
             );
+            let nodeItems: EntityWithKind[];
+            if (scope === 'all') {
+                nodeItems = items;
+            } else if (scope === 'auto' && primaryItems.length === 0) {
+                nodeItems = items;
+            } else {
+                nodeItems = primaryItems;
+            }
             // Leaf-level pruning: empty buckets never enter the dict, so the
             // tree builder cannot synthesise an empty intermediate node.
-            if (primaryItems.length > 0) {
-                primary[bucket] = primaryItems;
+            if (nodeItems.length > 0) {
+                primary[bucket] = nodeItems;
             }
             if (items.length > 0) {
                 reference[bucket] = items;

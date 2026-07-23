@@ -156,6 +156,7 @@ export class Configuration implements ConfigurationInterface {
         groupBy: '',
         groupDepth: 2,
         menuLayout: 'type',
+        featureLibraryScope: 'auto',
         featuresName: 'Features',
         referencesName: 'References',
         collapsedAll: false,
