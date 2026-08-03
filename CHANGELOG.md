@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 For the upstream compodoc history that predates the cngx fork, see <https://github.com/compodoc/compodoc/blob/master/CHANGELOG.md>.
 
+## [0.8.0] - 2026-08-03
+
+Content slots are now documented on directive pages, not only on component pages.
+
+### Added
+
+- **`@slot` inventory renders on directive pages.** The `@slot <name> <description>` tag was extracted and rendered for components only, so a directive that hosts projected content documented nothing - and slot hosts are frequently directives (a list item, a tab host), whose own API tab is often the emptiest because the marker directives they accept carry no inputs or outputs. `slots` is now carried through the directive dependency factory, and the section moved into a shared `ContentSlots` template block so component and directive pages render one implementation with the same `#content-slots` anchor.
+
 ## [0.7.3] - 2026-07-23
 
 A feature-layout fix so reference-only libraries get a first-class navigation node, plus a `playgroundGlobalStyles` fix so a global Sass theme entry point actually compiles.
