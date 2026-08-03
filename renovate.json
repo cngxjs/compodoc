@@ -1,0 +1,65 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": ["config:recommended", ":dependencyDashboard", ":semanticCommits"],
+    "baseBranches": ["develop"],
+    "timezone": "Europe/Vienna",
+    "schedule": ["before 6am on monday"],
+    "prConcurrentLimit": 5,
+    "prHourlyLimit": 2,
+    "minimumReleaseAge": "3 days",
+    "labels": ["dependencies"],
+    "rangeStrategy": "bump",
+    "lockFileMaintenance": {
+        "enabled": true,
+        "schedule": ["before 6am on the first day of the month"]
+    },
+    "packageRules": [
+        {
+            "description": "Majors are opened only after an explicit tick on the dependency dashboard",
+            "matchUpdateTypes": ["major"],
+            "dependencyDashboardApproval": true
+        },
+        {
+            "description": "devDependency patches and minors merge themselves once CI is green",
+            "matchDepTypes": ["devDependencies"],
+            "matchUpdateTypes": ["patch", "minor"],
+            "automerge": true,
+            "automergeType": "pr"
+        },
+        {
+            "description": "Tailwind CLI and runtime must move in lockstep",
+            "matchPackageNames": ["tailwindcss", "@tailwindcss/cli"],
+            "groupName": "tailwind"
+        },
+        {
+            "description": "marked and its type stubs must move in lockstep",
+            "matchPackageNames": ["marked", "@types/marked"],
+            "groupName": "marked"
+        },
+        {
+            "matchPackageNames": ["@angular-devkit/**"],
+            "groupName": "angular-devkit"
+        },
+        {
+            "matchPackageNames": ["@types/**"],
+            "groupName": "type definitions"
+        },
+        {
+            "description": "Bumping Biome also requires syncing the biome.json $schema URL by hand",
+            "matchPackageNames": ["@biomejs/biome"],
+            "labels": ["dependencies", "needs-manual-followup"],
+            "automerge": false
+        },
+        {
+            "description": "Node types stay on the major matching engines.node",
+            "matchPackageNames": ["@types/node"],
+            "matchUpdateTypes": ["major"],
+            "enabled": false
+        }
+    ],
+    "vulnerabilityAlerts": {
+        "labels": ["security"],
+        "minimumReleaseAge": null,
+        "schedule": ["at any time"]
+    }
+}
