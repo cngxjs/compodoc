@@ -55,6 +55,7 @@ export class DirectiveDepFactory {
             propertiesClass: IO.properties,
             methodsClass: IO.methods,
             playgrounds: IO.playgrounds || [],
+            slots: IO.slots || [],
             exampleUrls: this.helper.getComponentExampleUrls(srcFile.getText()),
             ...(IO.docsKind === 'primary' && { docsKind: 'primary' as const }),
             ...(IO.wcagLevel && { wcagLevel: IO.wcagLevel }),
@@ -171,6 +172,7 @@ export interface IDirectiveDep extends IDep {
     propertiesClass: any;
     methodsClass: any;
     playgrounds?: ComponentPlaygroundBlock[];
+    slots?: Array<{ name: string; description: string }>;
     exampleUrls: Array<string>;
 
     constructorObj?: Object;

@@ -1,3 +1,4 @@
+import { ContentSlotsSection } from '../blocks/ContentSlots';
 import {
     MetadataChipsRow,
     MetadataCodeRow,
@@ -35,7 +36,7 @@ const DirectiveMetadata = (directive: any): string => {
     rows.push(MetadataChipsRow('extends', (directive.extends as string[]) ?? []));
     rows.push(MetadataChipsRow('implements', (directive.implements as string[]) ?? []));
 
-    return MetadataSection({ rows });
+    return MetadataSection({ rows }) + ContentSlotsSection(directive.slots);
 };
 
 export const DirectivePage = (data: any): string =>
