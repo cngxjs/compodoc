@@ -11,6 +11,7 @@ import { BlockOutput } from '../blocks/BlockOutput';
 import { BlockProperty } from '../blocks/BlockProperty';
 import { BlockRelationshipGraph } from '../blocks/BlockRelationshipGraph';
 import { BlockTheming } from '../blocks/BlockTheming';
+import { ContentSlotsSection } from '../blocks/ContentSlots';
 import { DependenciesSection } from '../blocks/DependenciesSection';
 import { ExternalLinks } from '../blocks/ExternalLinks';
 import { DEPENDENCY_LEGEND_ITEMS, GraphLegend, GraphZoomControls } from '../blocks/GraphControls';
@@ -201,26 +202,7 @@ const InfoContent = (data: any): string => {
 
             {isInfoSection('metadata') && ComponentMetadata(c)}
 
-            {isInfoSection('metadata') && c.slots?.length > 0 && (
-                <section class="cdx-content-section">
-                    <h3 class="cdx-section-heading" id="content-slots">
-                        Content Slots
-                        <a class="cdx-member-permalink" href="#content-slots">
-                            #
-                        </a>
-                    </h3>
-                    <dl class="cdx-metadata-card">
-                        {c.slots.map((slot: any) => (
-                            <>
-                                <dt>
-                                    <code>{slot.name}</code>
-                                </dt>
-                                <dd>{slot.description}</dd>
-                            </>
-                        ))}
-                    </dl>
-                </section>
-            )}
+            {isInfoSection('metadata') && ContentSlotsSection(c.slots)}
 
             {isInfoSection('host') && c.hostStructured?.length > 0 && HostSection(c.hostStructured)}
 
